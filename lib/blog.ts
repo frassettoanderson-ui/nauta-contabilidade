@@ -1,224 +1,226 @@
-import { supabase } from './supabase'
-import type { PostWithRelations, PaginatedPosts, Categoria, Tag } from '@/types/blog'
+import pool from './db'
+import type { Categoria, Tag, Post, PostWithRelations, PaginatedPosts } from '@/types/blog'
 
-const PER_PAGE = 10
-
-/* ─── Helpers ─────────────────────────────────── */
-
-/** Busca tags de um array de posts de uma vez (N+1 free) */
-async function attachTags(posts: PostWithRelations[]): Promise<PostWithRelations[]> {
-  if (!posts.length) return posts
-  const ids = posts.map(p => p.id)
-  const { data } = await supabase
-    .from('posts_tags')
-    .select('post_id, tags(id, nome, slug)')
-    .in('post_id', ids)
-  const map: Record<string, Tag[]> = {}
-  ;(data ?? []).forEach((row: { post_id: string; tags: Tag | Tag[] | null }) => {
-    if (!map[row.post_id]) map[row.post_id] = []
-    const t = row.tags
-    if (t) {
-      if (Array.isArray(t)) map[row.post_id].push(...t)
-      else map[row.post_id].push(t)
-    }
-  })
-  return posts.map(p => ({ ...p, tags: map[p.id] ?? [] }))
-}
-
-/* ─── Listagem pública ─────────────────────────── */
+// ─── PUBLIC ────────────────────────────────────────────────────────────────
 
 export async function getPosts({
   page = 1,
+  perPage = 9,
   categoria,
-  busca,
+  search,
 }: {
   page?: number
+  perPage?: number
   categoria?: string
-  busca?: string
+  search?: string
 } = {}): Promise<PaginatedPosts> {
-  const from = (page - 1) * PER_PAGE
-  const to   = from + PER_PAGE - 1
-
-  let query = supabase
-    .from('posts')
-    .select('*, categoria:categorias(id,nome,slug)', { count: 'exact' })
-    .eq('status', 'publicado')
-    .order('criado_em', { ascending: false })
-    .range(from, to)
+  const offset = (page - 1) * perPage
+  const params: any[] = ['publicado']
+  let where = 'p.status = $1'
+  let idx = 2
 
   if (categoria) {
-    const { data: cat } = await supabase.from('categorias').select('id').eq('slug', categoria).single()
-    if (cat) query = query.eq('categoria_id', cat.id)
+    where += ` AND c.slug = $${idx++}`
+    params.push(categoria)
+  }
+  if (search) {
+    where += ` AND (p.titulo ILIKE $${idx} OR p.resumo ILIKE $${idx})`
+    params.push(`%${search}%`)
+    idx++
   }
 
-  if (busca) {
-    query = query.or(`titulo.ilike.%${busca}%,resumo.ilike.%${busca}%`)
-  }
+  const countRes = await pool.query(
+    `SELECT COUNT(*) FROM posts p LEFT JOIN categorias c ON p.categoria_id = c.id WHERE ${where}`,
+    params
+  )
+  const total = parseInt(countRes.rows[0].count)
 
-  const { data, count, error } = await query
-  if (error) throw error
+  const res = await pool.query(
+    `SELECT p.*, c.id as cat_id, c.nome as cat_nome, c.slug as cat_slug
+     FROM posts p
+     LEFT JOIN categorias c ON p.categoria_id = c.id
+     WHERE ${where}
+     ORDER BY p.criado_em DESC
+     LIMIT $${idx} OFFSET $${idx + 1}`,
+    [...params, perPage, offset]
+  )
 
-  const posts = await attachTags((data ?? []) as PostWithRelations[])
-  return {
-    posts,
-    total: count ?? 0,
-    page,
-    perPage: PER_PAGE,
-    totalPages: Math.ceil((count ?? 0) / PER_PAGE),
-  }
+  const posts = await Promise.all(res.rows.map(async (row) => {
+    const tagsRes = await pool.query(
+      `SELECT t.* FROM tags t JOIN posts_tags pt ON t.id = pt.tag_id WHERE pt.post_id = $1`,
+      [row.id]
+    )
+    return rowToPost(row, tagsRes.rows)
+  }))
+
+  return { posts, total, page, perPage, totalPages: Math.ceil(total / perPage) }
 }
 
 export async function getPostBySlug(slug: string): Promise<PostWithRelations | null> {
-  const { data, error } = await supabase
-    .from('posts')
-    .select('*, categoria:categorias(id,nome,slug)')
-    .eq('slug', slug)
-    .eq('status', 'publicado')
-    .single()
-  if (error || !data) return null
-  const [post] = await attachTags([data as PostWithRelations])
-  return post
+  const res = await pool.query(
+    `SELECT p.*, c.id as cat_id, c.nome as cat_nome, c.slug as cat_slug
+     FROM posts p
+     LEFT JOIN categorias c ON p.categoria_id = c.id
+     WHERE p.slug = $1 AND p.status = 'publicado'`,
+    [slug]
+  )
+  if (!res.rows[0]) return null
+  const tagsRes = await pool.query(
+    `SELECT t.* FROM tags t JOIN posts_tags pt ON t.id = pt.tag_id WHERE pt.post_id = $1`,
+    [res.rows[0].id]
+  )
+  return rowToPost(res.rows[0], tagsRes.rows)
 }
 
-export async function getRelatedPosts(categoriaId: string, excludeId: string): Promise<PostWithRelations[]> {
-  const { data } = await supabase
-    .from('posts')
-    .select('*, categoria:categorias(id,nome,slug)')
-    .eq('status', 'publicado')
-    .eq('categoria_id', categoriaId)
-    .neq('id', excludeId)
-    .order('criado_em', { ascending: false })
-    .limit(3)
-  return await attachTags((data ?? []) as PostWithRelations[])
+export async function getRelatedPosts(postId: string, categoriaId: string | null): Promise<PostWithRelations[]> {
+  const res = await pool.query(
+    `SELECT p.*, c.id as cat_id, c.nome as cat_nome, c.slug as cat_slug
+     FROM posts p
+     LEFT JOIN categorias c ON p.categoria_id = c.id
+     WHERE p.status = 'publicado' AND p.id != $1 AND p.categoria_id = $2
+     ORDER BY p.criado_em DESC LIMIT 3`,
+    [postId, categoriaId]
+  )
+  return Promise.all(res.rows.map(async (row) => {
+    const tagsRes = await pool.query(
+      `SELECT t.* FROM tags t JOIN posts_tags pt ON t.id = pt.tag_id WHERE pt.post_id = $1`,
+      [row.id]
+    )
+    return rowToPost(row, tagsRes.rows)
+  }))
 }
 
 export async function getAllPublishedSlugs(): Promise<string[]> {
-  const { data } = await supabase.from('posts').select('slug').eq('status', 'publicado')
-  return (data ?? []).map(p => p.slug)
+  const res = await pool.query(`SELECT slug FROM posts WHERE status = 'publicado'`)
+  return res.rows.map((r) => r.slug)
 }
-
-/* ─── Categorias ───────────────────────────────── */
 
 export async function getCategorias(): Promise<Categoria[]> {
-  const { data } = await supabase.from('categorias').select('*').order('nome')
-  return (data ?? []) as Categoria[]
+  const res = await pool.query(`SELECT * FROM categorias ORDER BY nome`)
+  return res.rows
 }
-
-/* ─── Admin — CRUD completo (autenticado) ────────── */
-
-export async function adminGetPosts(status?: 'rascunho' | 'publicado') {
-  let q = supabase
-    .from('posts')
-    .select('*, categoria:categorias(id,nome,slug)')
-    .order('criado_em', { ascending: false })
-  if (status) q = q.eq('status', status)
-  const { data, error } = await q
-  if (error) throw error
-  return (data ?? []) as PostWithRelations[]
-}
-
-export async function adminGetPost(id: string) {
-  const { data, error } = await supabase
-    .from('posts')
-    .select('*, categoria:categorias(id,nome,slug)')
-    .eq('id', id)
-    .single()
-  if (error || !data) return null
-  // Tags
-  const { data: pt } = await supabase
-    .from('posts_tags')
-    .select('tags(id,nome,slug)')
-    .eq('post_id', id)
-  const tags = (pt ?? []).map((r: { tags: Tag | Tag[] | null }) => {
-    const t = r.tags
-    if (!t) return null
-    return Array.isArray(t) ? t[0] : t
-  }).filter(Boolean) as Tag[]
-  return { ...(data as PostWithRelations), tags }
-}
-
-export async function adminSavePost(post: Partial<PostWithRelations> & { tagIds?: string[] }) {
-  const { tagIds, tags, categoria, ...fields } = post
-
-  if (post.id) {
-    // UPDATE
-    const { data, error } = await supabase
-      .from('posts')
-      .update({ ...fields, atualizado_em: new Date().toISOString() })
-      .eq('id', post.id)
-      .select()
-      .single()
-    if (error) throw error
-    // Sync tags
-    if (tagIds !== undefined) {
-      await supabase.from('posts_tags').delete().eq('post_id', post.id)
-      if (tagIds.length) {
-        await supabase.from('posts_tags').insert(tagIds.map(tid => ({ post_id: post.id, tag_id: tid })))
-      }
-    }
-    return data
-  } else {
-    // INSERT
-    const { data, error } = await supabase
-      .from('posts')
-      .insert([fields])
-      .select()
-      .single()
-    if (error) throw error
-    if (tagIds?.length) {
-      await supabase.from('posts_tags').insert(tagIds.map(tid => ({ post_id: data.id, tag_id: tid })))
-    }
-    return data
-  }
-}
-
-export async function adminDeletePost(id: string) {
-  const { error } = await supabase.from('posts').delete().eq('id', id)
-  if (error) throw error
-}
-
-export async function adminToggleStatus(id: string, current: 'rascunho' | 'publicado') {
-  const next = current === 'publicado' ? 'rascunho' : 'publicado'
-  const { error } = await supabase.from('posts').update({ status: next }).eq('id', id)
-  if (error) throw error
-  return next
-}
-
-/* ─── Tags ─────────────────────────────────────── */
 
 export async function getTags(): Promise<Tag[]> {
-  const { data } = await supabase.from('tags').select('*').order('nome')
-  return (data ?? []) as Tag[]
+  const res = await pool.query(`SELECT * FROM tags ORDER BY nome`)
+  return res.rows
 }
 
-export async function adminSaveTag(tag: Partial<Tag>) {
-  if (tag.id) {
-    const { data, error } = await supabase.from('tags').update(tag).eq('id', tag.id).select().single()
-    if (error) throw error
-    return data
+// ─── ADMIN ─────────────────────────────────────────────────────────────────
+
+export async function adminGetPosts(): Promise<PostWithRelations[]> {
+  const res = await pool.query(
+    `SELECT p.*, c.id as cat_id, c.nome as cat_nome, c.slug as cat_slug
+     FROM posts p
+     LEFT JOIN categorias c ON p.categoria_id = c.id
+     ORDER BY p.criado_em DESC`
+  )
+  return Promise.all(res.rows.map(async (row) => {
+    const tagsRes = await pool.query(
+      `SELECT t.* FROM tags t JOIN posts_tags pt ON t.id = pt.tag_id WHERE pt.post_id = $1`,
+      [row.id]
+    )
+    return rowToPost(row, tagsRes.rows)
+  }))
+}
+
+export async function adminGetPost(id: string): Promise<PostWithRelations | null> {
+  const res = await pool.query(
+    `SELECT p.*, c.id as cat_id, c.nome as cat_nome, c.slug as cat_slug
+     FROM posts p
+     LEFT JOIN categorias c ON p.categoria_id = c.id
+     WHERE p.id = $1`,
+    [id]
+  )
+  if (!res.rows[0]) return null
+  const tagsRes = await pool.query(
+    `SELECT t.* FROM tags t JOIN posts_tags pt ON t.id = pt.tag_id WHERE pt.post_id = $1`,
+    [id]
+  )
+  return rowToPost(res.rows[0], tagsRes.rows)
+}
+
+export async function adminSavePost(data: Partial<Post> & { tagIds?: string[] }): Promise<Post> {
+  const { tagIds = [], ...post } = data
+  const now = new Date().toISOString()
+
+  if (post.id) {
+    const res = await pool.query(
+      `UPDATE posts SET titulo=$1, slug=$2, resumo=$3, conteudo=$4, imagem_destaque=$5,
+       autor=$6, categoria_id=$7, status=$8, atualizado_em=$9 WHERE id=$10 RETURNING *`,
+      [post.titulo, post.slug, post.resumo, post.conteudo, post.imagem_destaque,
+       post.autor, post.categoria_id, post.status, now, post.id]
+    )
+    await syncTags(post.id, tagIds)
+    return res.rows[0]
+  } else {
+    const res = await pool.query(
+      `INSERT INTO posts (titulo, slug, resumo, conteudo, imagem_destaque, autor, categoria_id, status, criado_em, atualizado_em)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$9) RETURNING *`,
+      [post.titulo, post.slug, post.resumo, post.conteudo, post.imagem_destaque,
+       post.autor || 'Equipe Nauta', post.categoria_id, post.status || 'rascunho', now]
+    )
+    await syncTags(res.rows[0].id, tagIds)
+    return res.rows[0]
   }
-  const { data, error } = await supabase.from('tags').insert([tag]).select().single()
-  if (error) throw error
-  return data
 }
 
-export async function adminDeleteTag(id: string) {
-  const { error } = await supabase.from('tags').delete().eq('id', id)
-  if (error) throw error
+export async function adminDeletePost(id: string): Promise<void> {
+  await pool.query(`DELETE FROM posts WHERE id = $1`, [id])
 }
 
-export async function adminSaveCategoria(cat: Partial<Categoria>) {
-  if (cat.id) {
-    const { data, error } = await supabase.from('categorias').update(cat).eq('id', cat.id).select().single()
-    if (error) throw error
-    return data
+export async function adminToggleStatus(id: string, status: 'rascunho' | 'publicado'): Promise<void> {
+  await pool.query(`UPDATE posts SET status=$1, atualizado_em=$2 WHERE id=$3`, [status, new Date().toISOString(), id])
+}
+
+export async function adminSaveTag(data: Partial<Tag>): Promise<Tag> {
+  if (data.id) {
+    const res = await pool.query(`UPDATE tags SET nome=$1, slug=$2 WHERE id=$3 RETURNING *`, [data.nome, data.slug, data.id])
+    return res.rows[0]
   }
-  const { data, error } = await supabase.from('categorias').insert([cat]).select().single()
-  if (error) throw error
-  return data
+  const res = await pool.query(`INSERT INTO tags (nome, slug) VALUES ($1,$2) RETURNING *`, [data.nome, data.slug])
+  return res.rows[0]
 }
 
-export async function adminDeleteCategoria(id: string) {
-  const { error } = await supabase.from('categorias').delete().eq('id', id)
-  if (error) throw error
+export async function adminDeleteTag(id: string): Promise<void> {
+  await pool.query(`DELETE FROM tags WHERE id = $1`, [id])
+}
+
+export async function adminSaveCategoria(data: Partial<Categoria>): Promise<Categoria> {
+  if (data.id) {
+    const res = await pool.query(`UPDATE categorias SET nome=$1, slug=$2 WHERE id=$3 RETURNING *`, [data.nome, data.slug, data.id])
+    return res.rows[0]
+  }
+  const res = await pool.query(`INSERT INTO categorias (nome, slug) VALUES ($1,$2) RETURNING *`, [data.nome, data.slug])
+  return res.rows[0]
+}
+
+export async function adminDeleteCategoria(id: string): Promise<void> {
+  await pool.query(`DELETE FROM categorias WHERE id = $1`, [id])
+}
+
+// ─── HELPERS ───────────────────────────────────────────────────────────────
+
+async function syncTags(postId: string, tagIds: string[]) {
+  await pool.query(`DELETE FROM posts_tags WHERE post_id = $1`, [postId])
+  for (const tagId of tagIds) {
+    await pool.query(`INSERT INTO posts_tags (post_id, tag_id) VALUES ($1,$2)`, [postId, tagId])
+  }
+}
+
+function rowToPost(row: any, tags: any[]): PostWithRelations {
+  return {
+    id: row.id,
+    titulo: row.titulo,
+    slug: row.slug,
+    resumo: row.resumo,
+    conteudo: row.conteudo,
+    imagem_destaque: row.imagem_destaque,
+    autor: row.autor,
+    categoria_id: row.categoria_id,
+    categoria: row.cat_id ? { id: row.cat_id, nome: row.cat_nome, slug: row.cat_slug } : null,
+    tags: tags.map(t => ({ id: t.id, nome: t.nome, slug: t.slug })),
+    status: row.status,
+    criado_em: row.criado_em,
+    atualizado_em: row.atualizado_em,
+  }
 }

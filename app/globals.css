@@ -1,0 +1,207 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary:       #3D3B8E;
+  --primary-dark:  #272561;
+  --primary-light: #5c5aae;
+  --teal:          #0BBCD4;
+  --teal-dark:     #0999ae;
+  --dark:          #0f0e1a;
+  --dark-2:        #1a1830;
+  --dark-3:        #232140;
+}
+
+html { scroll-behavior: smooth; }
+
+/* ═══════════════════════════════════════════
+   SISTEMA DE ANIMAÇÕES DE SCROLL
+   ═══════════════════════════════════════════ */
+
+/* Base: fade + sobe */
+.animate-on-scroll {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.animate-on-scroll.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Variante: entra da esquerda */
+.animate-from-left {
+  opacity: 0;
+  transform: translateX(-60px);
+  transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.animate-from-left.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Variante: entra da direita */
+.animate-from-right {
+  opacity: 0;
+  transform: translateX(60px);
+  transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.animate-from-right.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Variante: zoom in suave */
+.animate-zoom-in {
+  opacity: 0;
+  transform: scale(0.88);
+  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.animate-zoom-in.visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Variante: fade puro (sem movimento) */
+.animate-fade {
+  opacity: 0;
+  transition: opacity 0.9s ease;
+}
+.animate-fade.visible {
+  opacity: 1;
+}
+
+/* Variante: flip vertical (para cards) */
+.animate-flip {
+  opacity: 0;
+  transform: perspective(800px) rotateX(18deg) translateY(30px);
+  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.animate-flip.visible {
+  opacity: 1;
+  transform: perspective(800px) rotateX(0deg) translateY(0);
+}
+
+/* ── Delays ── */
+.delay-100 { transition-delay: 100ms; }
+.delay-150 { transition-delay: 150ms; }
+.delay-200 { transition-delay: 200ms; }
+.delay-250 { transition-delay: 250ms; }
+.delay-300 { transition-delay: 300ms; }
+.delay-400 { transition-delay: 400ms; }
+.delay-500 { transition-delay: 500ms; }
+.delay-600 { transition-delay: 600ms; }
+.delay-700 { transition-delay: 700ms; }
+.delay-800 { transition-delay: 800ms; }
+
+/* ── Header glass ── */
+.header-glass {
+  background: rgba(15, 14, 26, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(11, 188, 212, 0.15);
+}
+.header-glass-light {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(61, 59, 142, 0.1);
+}
+
+/* ── Teal accent line ── */
+.teal-line::before {
+  content: '';
+  display: block;
+  width: 48px;
+  height: 4px;
+  background: #0BBCD4;
+  border-radius: 2px;
+  margin-bottom: 16px;
+}
+
+/* ── Card hover ── */
+.card-hover {
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+.card-hover:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 24px 48px rgba(11, 188, 212, 0.12);
+  border-color: rgba(11, 188, 212, 0.4);
+}
+
+/* ── Botão primário ── */
+.btn-primary {
+  background: #0BBCD4;
+  color: white;
+  font-weight: 700;
+  padding: 14px 32px;
+  border-radius: 4px;
+  transition: all 0.25s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  letter-spacing: 0.02em;
+}
+.btn-primary:hover {
+  background: #0999ae;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(11, 188, 212, 0.35);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: white;
+  font-weight: 700;
+  padding: 13px 32px;
+  border-radius: 4px;
+  border: 2px solid rgba(255,255,255,0.4);
+  transition: all 0.25s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.btn-secondary:hover {
+  border-color: #0BBCD4;
+  color: #0BBCD4;
+}
+
+/* ── Section dark ── */
+.section-dark    { background: var(--dark-2); }
+.section-darker  { background: var(--dark); }
+
+/* ── Teal glow ── */
+.teal-glow { box-shadow: 0 0 40px rgba(11, 188, 212, 0.2); }
+
+/* ── Focus ring ── */
+*:focus-visible {
+  outline: 2px solid #0BBCD4;
+  outline-offset: 2px;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar       { width: 6px; }
+::-webkit-scrollbar-track { background: #0f0e1a; }
+::-webkit-scrollbar-thumb { background: #0BBCD4; border-radius: 3px; }
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .animate-on-scroll,
+  .animate-from-left,
+  .animate-from-right,
+  .animate-zoom-in,
+  .animate-fade,
+  .animate-flip,
+  .card-hover,
+  .btn-primary,
+  .btn-secondary {
+    transition: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+  }
+}

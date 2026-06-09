@@ -15,14 +15,16 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    if (!body.nome || !body.whatsapp || !body.email) {
-      return NextResponse.json({ error: 'Campos obrigatórios faltando' }, { status: 400 })
+    if (!body.nome) {
+      return NextResponse.json({ error: 'Nome é obrigatório' }, { status: 400 })
     }
     const lead = await insertLead({
       nome: body.nome,
-      whatsapp: body.whatsapp,
-      email: body.email,
+      whatsapp: body.whatsapp ?? '',
+      email: body.email ?? '',
       interesse: body.interesse ?? 'Não informado',
+      etapa: body.etapa,
+      classificacao: body.classificacao,
     })
     return NextResponse.json(lead)
   } catch (e) {

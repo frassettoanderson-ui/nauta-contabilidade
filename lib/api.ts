@@ -101,11 +101,74 @@ export interface LeadRow {
   whatsapp: string
   email: string
   interesse: string
+  etapa: string
+  classificacao: number
   criado_em: string
+  lembretes_pendentes?: number | string
+}
+
+export interface AtividadeRow {
+  id: string
+  lead_id: string
+  descricao: string
+  autor: string | null
+  criado_em: string
+}
+
+export interface LembreteRow {
+  id: string
+  lead_id: string
+  descricao: string
+  data: string
+  concluido: boolean
+  criado_em: string
+}
+
+export interface LeadDetail extends LeadRow {
+  atividades: AtividadeRow[]
+  lembretes: LembreteRow[]
 }
 
 export function getLeads(): Promise<LeadRow[]> {
   return fetch('/api/leads').then(r => json<LeadRow[]>(r))
+}
+
+export function getLeadDetail(id: string): Promise<LeadDetail> {
+  return fetch(`/api/leads/${id}`).then(r => json<LeadDetail>(r))
+}
+
+export function createLead(data: Partial<LeadRow>): Promise<LeadRow> {
+  return fetch('/api/leads', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data),
+  }).then(r => json<LeadRow>(r))
+}
+
+export function updateLead(id: string, fields: Partial<LeadRow>): Promise<void> {
+  return fetch(`/api/leads/${id}`, {
+    method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(fields),
+  }).then(r => json(r)).then(() => undefined)
+}
+
+export function deleteLead(id: string): Promise<void> {
+  return fetch(`/api/leads/${id}`, { method: 'DELETE' }).then(r => json(r)).then(() => undefined)
+}
+
+export function addAtividade(leadId: string, descricao: string): Promise<AtividadeRow> {
+  return fetch(`/api/leads/${leadId}/atividades`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ descricao }),
+  }).then(r => json<AtividadeRow>(r))
+}
+
+export function addLembrete(leadId: string, descricao: string, data: string): Promise<LembreteRow> {
+  return fetch(`/api/leads/${leadId}/lembretes`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ descricao, data }),
+  }).then(r => json<LembreteRow>(r))
+}
+
+export function toggleLembrete(leadId: string, lembreteId: string, concluido: boolean): Promise<void> {
+  return fetch(`/api/leads/${leadId}/lembretes`, {
+    method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ lembreteId, concluido }),
+  }).then(r => json(r)).then(() => undefined)
 }
 
 // ─── UPLOAD ────────────────────────────────────────────────────────────────

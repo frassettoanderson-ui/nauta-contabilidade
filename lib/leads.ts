@@ -6,18 +6,97 @@ export type Lead = {
   whatsapp: string
   email: string
   interesse: string
+  etapa?: string
+  classificacao?: number
   criado_em?: string
 }
 
-export async function insertLead(lead: Omit<Lead, 'id' | 'criado_em'>) {
+export interface Atividade {
+  id: string
+  lead_id: string
+  descricao: string
+  autor: string | null
+  criado_em: string
+}
+
+export interface Lembrete {
+  id: string
+  lead_id: string
+  descricao: string
+  data: string
+  concluido: boolean
+  criado_em: string
+}
+
+// ─── CRIAÇÃO / LISTAGEM ──────────────────────────────────────────────────
+
+export async function insertLead(lead: {
+  nome: string; whatsapp: string; email: string; interesse: string
+  etapa?: string; classificacao?: number
+}) {
   const res = await pool.query(
-    `INSERT INTO leads (nome, whatsapp, email, interesse) VALUES ($1, $2, $3, $4) RETURNING *`,
-    [lead.nome, lead.whatsapp, lead.email, lead.interesse]
+    `INSERT INTO leads (nome, whatsapp, email, interesse, etapa, classificacao)
+     VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+    [lead.nome, lead.whatsapp, lead.email, lead.interesse, lead.etapa ?? 'novo', lead.classificacao ?? 0]
   )
   return res.rows[0]
 }
 
-export async function getLeads(): Promise<Lead[]> {
-  const res = await pool.query(`SELECT * FROM leads ORDER BY criado_em DESC`)
+export async function getLeads() {
+  const res = await pool.query(
+    `SELECT l.*,
+      (SELECT COUNT(*) FROM lead_lembretes ll
+        WHERE ll.lead_id = l.id AND ll.concluido = false AND ll.data <= CURRENT_DATE) AS lembretes_pendentes
+     FROM leads l
+     ORDER BY l.criado_em DESC`
+  )
   return res.rows
+}
+
+export async function getLeadDetail(id: string) {
+  const lead = await pool.query(`SELECT * FROM leads WHERE id = $1`, [id])
+  if (!lead.rows[0]) return null
+  const atividades = await pool.query(
+    `SELECT * FROM lead_atividades WHERE lead_id = $1 ORDER BY criado_em DESC`, [id]
+  )
+  const lembretes = await pool.query(
+    `SELECT * FROM lead_lembretes WHERE lead_id = $1 ORDER BY concluido ASC, data ASC`, [id]
+  )
+  return { ...lead.rows[0], atividades: atividades.rows, lembretes: lembretes.rows }
+}
+
+export async function updateLead(id: string, fields: Partial<{ nome: string; whatsapp: string; email: string; interesse: string; etapa: string; classificacao: number }>) {
+  const keys = Object.keys(fields)
+  if (keys.length === 0) return
+  const sets = keys.map((k, i) => `${k} = $${i + 2}`).join(', ')
+  const values = keys.map(k => (fields as Record<string, unknown>)[k])
+  await pool.query(`UPDATE leads SET ${sets} WHERE id = $1`, [id, ...values])
+}
+
+export async function deleteLead(id: string) {
+  await pool.query(`DELETE FROM leads WHERE id = $1`, [id])
+}
+
+// ─── ATIVIDADES ──────────────────────────────────────────────────────────
+
+export async function addAtividade(leadId: string, descricao: string, autor: string | null) {
+  const res = await pool.query(
+    `INSERT INTO lead_atividades (lead_id, descricao, autor) VALUES ($1, $2, $3) RETURNING *`,
+    [leadId, descricao, autor]
+  )
+  return res.rows[0]
+}
+
+// ─── LEMBRETES ─────────────────────────────────────────────────────────────
+
+export async function addLembrete(leadId: string, descricao: string, data: string) {
+  const res = await pool.query(
+    `INSERT INTO lead_lembretes (lead_id, descricao, data) VALUES ($1, $2, $3) RETURNING *`,
+    [leadId, descricao, data]
+  )
+  return res.rows[0]
+}
+
+export async function toggleLembrete(id: string, concluido: boolean) {
+  await pool.query(`UPDATE lead_lembretes SET concluido = $1 WHERE id = $2`, [concluido, id])
 }

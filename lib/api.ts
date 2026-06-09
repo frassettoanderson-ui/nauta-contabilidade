@@ -95,6 +95,19 @@ export async function saveLead(lead: { nome: string; whatsapp: string; email: st
   return json(res)
 }
 
+export interface LeadRow {
+  id: string
+  nome: string
+  whatsapp: string
+  email: string
+  interesse: string
+  criado_em: string
+}
+
+export function getLeads(): Promise<LeadRow[]> {
+  return fetch('/api/leads').then(r => json<LeadRow[]>(r))
+}
+
 // ─── UPLOAD ────────────────────────────────────────────────────────────────
 
 export async function uploadImage(file: File): Promise<string> {

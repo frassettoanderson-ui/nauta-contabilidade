@@ -16,3 +16,8 @@ export async function insertLead(lead: Omit<Lead, 'id' | 'criado_em'>) {
   )
   return res.rows[0]
 }
+
+export async function getLeads(): Promise<Lead[]> {
+  const res = await pool.query(`SELECT * FROM leads ORDER BY criado_em DESC`)
+  return res.rows
+}

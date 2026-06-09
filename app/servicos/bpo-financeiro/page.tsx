@@ -43,7 +43,7 @@ export default function BpoFinanceiroPage() {
           breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Serviços' }, { label: 'BPO Financeiro' }]}
           stats={[{ value: '100%', label: 'interno' }, { value: 'Real-time', label: 'dashboard' }, { value: 'Zero', label: 'inadimplência' }]}
           primaryCta={{ label: 'Solicitar proposta gratuita', onClick: () => openLead('BPO Financeiro') }}
-          secondaryCta={{ label: 'Falar no WhatsApp', href: 'https://wa.me/554899245194' }}
+          secondaryCta={{ label: 'Falar no WhatsApp', href: 'https://wa.me/5548998211604' }}
           purpleOrb
         />
         <FeaturesGrid

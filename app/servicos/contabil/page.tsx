@@ -44,7 +44,7 @@ export default function ContabilPage() {
           breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Serviços' }, { label: 'Contábil' }]}
           stats={[{ value: '+10 anos', label: 'de experiência' }, { value: '100%', label: 'digital' }, { value: 'CRC-SC', label: 'registrada' }]}
           primaryCta={{ label: 'Solicitar proposta gratuita', onClick: () => openLead('Contabilidade Contábil') }}
-          secondaryCta={{ label: 'Falar no WhatsApp', href: 'https://wa.me/554899245194' }}
+          secondaryCta={{ label: 'Falar no WhatsApp', href: 'https://wa.me/5548998211604' }}
           purpleOrb
         />
         <FeaturesGrid

@@ -224,7 +224,7 @@ export default function LeadPopup({ isOpen, onClose, interest }: LeadPopupProps)
                 <p className="text-gray-500 text-sm mb-7 max-w-xs leading-relaxed">
                   Nossa equipe vai entrar em contato em breve. Ou, se preferir, fale agora pelo WhatsApp.
                 </p>
-                <a href="https://wa.me/554899245194" target="_blank" rel="noopener noreferrer"
+                <a href="https://wa.me/5548998211604" target="_blank" rel="noopener noreferrer"
                   className="inline-flex items-center gap-2.5 text-white font-bold px-7 py-3.5 rounded-xl transition-all duration-200 hover:-translate-y-0.5 text-sm"
                   style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)', boxShadow: '0 8px 24px rgba(34,197,94,0.3)' }}>
                   <svg viewBox="0 0 24 24" className="w-4 h-4 fill-white" aria-hidden="true">
@@ -260,7 +260,7 @@ export default function LeadPopup({ isOpen, onClose, interest }: LeadPopupProps)
                   Sem problema! Fale diretamente com um de nossos especialistas pelo WhatsApp. É rápido e sem burocracia.
                 </p>
 
-                <a href="https://wa.me/554899245194" target="_blank" rel="noopener noreferrer"
+                <a href="https://wa.me/5548998211604" target="_blank" rel="noopener noreferrer"
                   className="w-full inline-flex items-center justify-center gap-2.5 text-white font-bold px-7 py-4 rounded-xl transition-all duration-200 hover:-translate-y-0.5 text-sm"
                   style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)', boxShadow: '0 8px 28px rgba(34,197,94,0.35)' }}>
                   <svg viewBox="0 0 24 24" className="w-5 h-5 fill-white" aria-hidden="true">

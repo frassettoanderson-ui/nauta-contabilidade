@@ -91,7 +91,7 @@ export default function QuemAtendemos() {
           breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Quem Atendemos' }]}
           stats={[{ value: '+500', label: 'clientes ativos' }, { value: '27', label: 'estados atendidos' }, { value: '10+', label: 'anos de experiência' }]}
           primaryCta={{ label: 'Falar com um especialista', onClick: () => openLead() }}
-          secondaryCta={{ label: 'Falar no WhatsApp', href: 'https://wa.me/554899245194' }}
+          secondaryCta={{ label: 'Falar no WhatsApp', href: 'https://wa.me/5548998211604' }}
         />
 
         {/* Segmentos */}

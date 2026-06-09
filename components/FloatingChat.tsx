@@ -20,7 +20,7 @@ export default function FloatingChat() {
   function handleSend() {
     if (!message.trim()) return
     const text = encodeURIComponent(message.trim())
-    window.open(`https://wa.me/554899245194?text=${text}`, '_blank')
+    window.open(`https://wa.me/5548998211604?text=${text}`, '_blank')
     setSent(true)
     setMessage('')
   }

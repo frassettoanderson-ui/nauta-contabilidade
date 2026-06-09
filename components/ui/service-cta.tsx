@@ -99,7 +99,7 @@ export default function ServiceCTA({
           </button>
 
           <a
-            href="https://wa.me/554899245194"
+            href="https://wa.me/5548998211604"
             target="_blank" rel="noopener noreferrer"
             className="inline-flex items-center justify-center gap-2 px-8 py-4 font-semibold text-sm text-white rounded-xl transition-all duration-200 hover:-translate-y-0.5 hover:bg-white/10"
             style={{ border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.04)' }}

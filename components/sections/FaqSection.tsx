@@ -93,7 +93,7 @@ export default function FaqSection() {
           <p className="text-gray-500 mt-3">
             Não encontrou o que procura?{' '}
             <a
-              href="https://wa.me/554899245194"
+              href="https://wa.me/5548998211604"
               target="_blank"
               rel="noopener noreferrer"
               className="text-[#0BBCD4] font-semibold hover:underline"

@@ -43,7 +43,7 @@ export default function FolhaDePagamentoPage() {
           breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Serviços' }, { label: 'Folha de Pagamento' }]}
           stats={[{ value: '100%', label: 'eSocial compliant' }, { value: 'Zero', label: 'erros na folha' }, { value: 'Digital', label: 'holerites online' }]}
           primaryCta={{ label: 'Solicitar proposta gratuita', onClick: () => openLead('Folha de Pagamento') }}
-          secondaryCta={{ label: 'Falar no WhatsApp', href: 'https://wa.me/554899245194' }}
+          secondaryCta={{ label: 'Falar no WhatsApp', href: 'https://wa.me/5548998211604' }}
           purpleOrb
         />
         <FeaturesGrid

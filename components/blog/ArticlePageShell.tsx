@@ -173,7 +173,7 @@ export default function ArticlePageShell({ post, related, date }: Props) {
                 Falar com um contador
               </button>
               <a
-                href="https://wa.me/554899245194"
+                href="https://wa.me/5548998211604"
                 target="_blank" rel="noopener noreferrer"
                 className="inline-flex items-center justify-center gap-2 px-6 py-3 font-semibold text-white text-sm rounded-xl transition-all hover:-translate-y-0.5"
                 style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)' }}

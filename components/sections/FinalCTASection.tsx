@@ -124,7 +124,7 @@ export default function FinalCTASection({ onOpenLead }: Props) {
             <ArrowRight size={18} />
           </button>
           <a
-            href="https://wa.me/554899245194"
+            href="https://wa.me/5548998211604"
             target="_blank" rel="noopener noreferrer"
             className="btn-secondary text-base !py-4 !px-8"
           >

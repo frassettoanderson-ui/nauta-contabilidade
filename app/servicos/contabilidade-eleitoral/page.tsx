@@ -91,7 +91,7 @@ export default function ContabilidadeEleitoralPage() {
           breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Serviços' }, { label: 'Contabilidade Eleitoral' }]}
           stats={[{ value: '+400', label: 'prestações aprovadas' }, { value: 'Todos', label: 'os cargos' }, { value: 'Todo', label: 'o Brasil' }]}
           primaryCta={{ label: 'Solicitar proposta eleitoral', onClick: () => openLead('Contabilidade Eleitoral') }}
-          secondaryCta={{ label: 'Falar no WhatsApp', href: 'https://wa.me/554899245194' }}
+          secondaryCta={{ label: 'Falar no WhatsApp', href: 'https://wa.me/5548998211604' }}
           purpleOrb
         />
 

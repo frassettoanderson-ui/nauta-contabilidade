@@ -43,7 +43,7 @@ export default function LegalizacaoSocietarioPage() {
           breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Serviços' }, { label: 'Legalização / Societário' }]}
           stats={[{ value: 'Todo', label: 'o Brasil' }, { value: 'Rápido', label: 'sem burocracia' }, { value: 'Jurídico', label: 'segurança total' }]}
           primaryCta={{ label: 'Solicitar proposta gratuita', onClick: () => openLead('Legalização / Societário') }}
-          secondaryCta={{ label: 'Falar no WhatsApp', href: 'https://wa.me/554899245194' }}
+          secondaryCta={{ label: 'Falar no WhatsApp', href: 'https://wa.me/5548998211604' }}
         />
         <FeaturesGrid
           title="O que está incluído"

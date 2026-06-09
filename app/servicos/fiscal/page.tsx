@@ -43,7 +43,7 @@ export default function FiscalPage() {
           breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Serviços' }, { label: 'Fiscal' }]}
           stats={[{ value: '100%', label: 'no prazo' }, { value: 'Zero', label: 'multas por atraso' }, { value: '+10', label: 'obrigações gerenciadas' }]}
           primaryCta={{ label: 'Solicitar proposta gratuita', onClick: () => openLead('Gestão Fiscal') }}
-          secondaryCta={{ label: 'Falar no WhatsApp', href: 'https://wa.me/554899245194' }}
+          secondaryCta={{ label: 'Falar no WhatsApp', href: 'https://wa.me/5548998211604' }}
           purpleOrb
         />
         <FeaturesGrid

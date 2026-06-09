@@ -43,7 +43,7 @@ export default function PlanejamentoTributarioPage() {
           breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Serviços' }, { label: 'Planejamento Tributário' }]}
           stats={[{ value: 'Até 40%', label: 'de economia em impostos' }, { value: 'Legal', label: '100% elisão fiscal' }, { value: 'Anual', label: 'revisão do planejamento' }]}
           primaryCta={{ label: 'Solicitar proposta gratuita', onClick: () => openLead('Planejamento Tributário') }}
-          secondaryCta={{ label: 'Falar no WhatsApp', href: 'https://wa.me/554899245194' }}
+          secondaryCta={{ label: 'Falar no WhatsApp', href: 'https://wa.me/5548998211604' }}
           purpleOrb
         />
         <FeaturesGrid

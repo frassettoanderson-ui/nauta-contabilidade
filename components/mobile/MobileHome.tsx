@@ -1,11 +1,13 @@
 'use client'
 
+import { useState } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import Reveal from './Reveal'
 import {
   BookOpen, Calculator, Users, Building2, BarChart3, TrendingUp, Vote,
   Shield, Globe2, Clock, Users2, Smartphone, ArrowRight, MessageCircle,
-  Briefcase, Store, UserCheck, Stethoscope, Code2, ShoppingCart,
+  Briefcase, Store, UserCheck, Stethoscope, Code2, ShoppingCart, Menu, X,
 } from 'lucide-react'
 
 const WA_NUMBER = '5548998211604'
@@ -52,7 +54,26 @@ const HERO_CTAS = [
   'Deixar de ser MEI',
 ]
 
+const MENU_LINKS = [
+  { label: 'Quem atendemos', href: '/quem-atendemos' },
+  { label: 'Ferramentas',    href: '/ferramentas' },
+  { label: 'Blog',           href: '/blog' },
+  { label: 'Contato',        href: '/contato' },
+]
+
+const MENU_SERVICES = [
+  { label: 'Contábil',                 href: '/servicos/contabil' },
+  { label: 'Fiscal',                   href: '/servicos/fiscal' },
+  { label: 'Folha de Pagamento',       href: '/servicos/folha-de-pagamento' },
+  { label: 'Legalização / Societário', href: '/servicos/legalizacao-societario' },
+  { label: 'BPO Financeiro',           href: '/servicos/bpo-financeiro' },
+  { label: 'Planejamento Tributário',  href: '/servicos/planejamento-tributario' },
+  { label: 'Contabilidade Eleitoral',  href: '/servicos/contabilidade-eleitoral' },
+]
+
 export default function MobileHome() {
+  const [menuOpen, setMenuOpen] = useState(false)
+
   return (
     <div className="bg-[#0f0e1a] text-white min-h-screen">
 
@@ -60,12 +81,53 @@ export default function MobileHome() {
       <header className="fixed top-0 left-0 right-0 z-40 bg-[#0c0b18]/95 backdrop-blur-md border-b border-white/5">
         <div className="flex items-center justify-between px-4 h-14">
           <Image src="/logo-branca.png" alt="Nauta Contabilidade" width={140} height={42} className="h-9 w-auto object-contain" priority />
-          <a href={wa('Olá! Vim pelo site da Nauta e gostaria de falar com um especialista.')}
-            className="flex items-center gap-1.5 bg-[#0BBCD4] text-white text-xs font-bold px-3 py-2 rounded-full">
-            <MessageCircle size={14} /> WhatsApp
-          </a>
+          <div className="flex items-center gap-2">
+            <a href={wa('Olá! Vim pelo site da Nauta e gostaria de falar com um especialista.')}
+              className="flex items-center gap-1.5 bg-[#0BBCD4] text-white text-xs font-bold px-3 py-2 rounded-full">
+              <MessageCircle size={14} /> WhatsApp
+            </a>
+            <button onClick={() => setMenuOpen(true)} aria-label="Abrir menu" className="p-2 text-white">
+              <Menu size={24} />
+            </button>
+          </div>
         </div>
       </header>
+
+      {/* ── Menu drawer ── */}
+      {menuOpen && (
+        <div className="fixed inset-0 z-50 bg-[#0c0b18] overflow-y-auto">
+          <div className="flex items-center justify-between px-4 h-14 border-b border-white/10">
+            <Image src="/logo-branca.png" alt="Nauta Contabilidade" width={140} height={42} className="h-9 w-auto object-contain" />
+            <button onClick={() => setMenuOpen(false)} aria-label="Fechar menu" className="p-2 text-white">
+              <X size={24} />
+            </button>
+          </div>
+          <nav className="px-5 py-6">
+            <p className="text-[11px] font-bold uppercase tracking-widest text-white/30 mb-3">Serviços</p>
+            <div className="space-y-1 mb-6">
+              {MENU_SERVICES.map(s => (
+                <Link key={s.href} href={s.href} onClick={() => setMenuOpen(false)}
+                  className="block py-2.5 text-sm text-white/80 border-b border-white/5">
+                  {s.label}
+                </Link>
+              ))}
+            </div>
+            <p className="text-[11px] font-bold uppercase tracking-widest text-white/30 mb-3">Navegação</p>
+            <div className="space-y-1 mb-8">
+              {MENU_LINKS.map(l => (
+                <Link key={l.href} href={l.href} onClick={() => setMenuOpen(false)}
+                  className="block py-2.5 text-sm text-white/80 border-b border-white/5">
+                  {l.label}
+                </Link>
+              ))}
+            </div>
+            <a href={wa('Olá! Vim pelo site da Nauta e gostaria de falar com um especialista.')}
+              className="flex items-center justify-center gap-2 w-full bg-[#0BBCD4] text-white font-bold py-3.5 rounded-xl text-sm">
+              <MessageCircle size={16} /> Falar no WhatsApp
+            </a>
+          </nav>
+        </div>
+      )}
 
       {/* ── Hero ── */}
       <section className="px-5 pt-24 pb-12">

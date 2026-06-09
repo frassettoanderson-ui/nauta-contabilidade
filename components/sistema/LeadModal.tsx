@@ -53,7 +53,7 @@ export default function LeadModal({ leadId, onClose, onChanged, mode = 'view' }:
     getLeadDetail(leadId).then(d => {
       setD(d)
       if (mode === 'edit') { setEdit({ nome: d.nome, whatsapp: d.whatsapp || '', email: d.email || '', interesse: d.interesse || '' }); setEditing(true) }
-      getClienteByLead(leadId).then(c => setCadastroCompleto(isContratoPronto(c, d))).catch(() => setCadastroCompleto(false))
+      getClienteByLead(leadId).then(c => setCadastroCompleto(isContratoPronto(c, d as unknown as Record<string, unknown>))).catch(() => setCadastroCompleto(false))
     })
     getContratoByLead(leadId).then(setContrato).catch(() => {})
   }, [leadId, mode])

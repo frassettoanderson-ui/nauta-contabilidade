@@ -18,6 +18,7 @@ import FaqSection        from '@/components/sections/FaqSection'
 import FinalCTASection   from '@/components/sections/FinalCTASection'
 import Footer            from '@/components/Footer'
 import FloatingChat      from '@/components/FloatingChat'
+import MobileHome        from '@/components/mobile/MobileHome'
 
 const FIRST_DELAY  = 8_000        // 8s para a primeira exibição
 const REPEAT_DELAY = 5 * 60_000   // 5 min entre as repetições
@@ -66,32 +67,40 @@ export default function HomePage() {
 
   return (
     <>
-      <Header onOpenLead={() => openPopup()} />
+      {/* ── Versão mobile (somente em telas pequenas) ── */}
+      <div className="md:hidden">
+        <MobileHome />
+      </div>
 
-      <main>
-        <HeroSection          onOpenLead={openPopup} />
-        <PainSection          onOpenLead={() => openPopup()} />
-        <HowItWorksSection />
-        <ServicesSection      onOpenLead={openPopup} />
-        <WhoWeServeSection    onOpenLead={() => openPopup()} />
-        <DifferentialsSection onOpenLead={openPopup} />
-        <AppSection />
-        <ToolsSection />
-        <BlogSection />
-        <ReviewsSection />
-        <FaqSection />
-        <FinalCTASection      onOpenLead={() => openPopup()} />
-      </main>
+      {/* ── Versão completa (tablet/desktop) ── */}
+      <div className="hidden md:block">
+        <Header onOpenLead={() => openPopup()} />
 
-      <Footer />
+        <main>
+          <HeroSection          onOpenLead={openPopup} />
+          <PainSection          onOpenLead={() => openPopup()} />
+          <HowItWorksSection />
+          <ServicesSection      onOpenLead={openPopup} />
+          <WhoWeServeSection    onOpenLead={() => openPopup()} />
+          <DifferentialsSection onOpenLead={openPopup} />
+          <AppSection />
+          <ToolsSection />
+          <BlogSection />
+          <ReviewsSection />
+          <FaqSection />
+          <FinalCTASection      onOpenLead={() => openPopup()} />
+        </main>
 
-      <LeadPopup
-        isOpen={popupOpen}
-        onClose={closePopup}
-        interest={popupInterest}
-      />
+        <Footer />
 
-      <FloatingChat />
+        <LeadPopup
+          isOpen={popupOpen}
+          onClose={closePopup}
+          interest={popupInterest}
+        />
+
+        <FloatingChat />
+      </div>
     </>
   )
 }

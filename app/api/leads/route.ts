@@ -8,12 +8,15 @@ export const dynamic = 'force-dynamic'
 export async function GET() {
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
-  const leads = await getLeads()
+  const u = session.user as unknown as { id?: string; role?: string }
+  const leads = await getLeads({ userId: u.id, role: u.role })
   return NextResponse.json(leads)
 }
 
 export async function POST(req: NextRequest) {
   try {
+    const session = await getServerSession(authOptions)
+    const u = session?.user as unknown as { id?: string; name?: string } | undefined
     const body = await req.json()
     if (!body.nome) {
       return NextResponse.json({ error: 'Nome é obrigatório' }, { status: 400 })
@@ -25,6 +28,9 @@ export async function POST(req: NextRequest) {
       interesse: body.interesse ?? 'Não informado',
       etapa: body.etapa,
       classificacao: body.classificacao,
+      // criado manualmente (logado) -> atribui ao criador; vindo do site -> sem responsável
+      responsavel_id: u?.id ?? null,
+      responsavel_nome: u?.name ?? null,
     })
     return NextResponse.json(lead)
   } catch (e) {

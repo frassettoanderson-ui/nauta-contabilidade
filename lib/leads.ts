@@ -34,22 +34,28 @@ export interface Lembrete {
 export async function insertLead(lead: {
   nome: string; whatsapp: string; email: string; interesse: string
   etapa?: string; classificacao?: number
+  responsavel_id?: string | null; responsavel_nome?: string | null
 }) {
   const res = await pool.query(
-    `INSERT INTO leads (nome, whatsapp, email, interesse, etapa, classificacao)
-     VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-    [lead.nome, lead.whatsapp, lead.email, lead.interesse, lead.etapa ?? 'novo', lead.classificacao ?? 0]
+    `INSERT INTO leads (nome, whatsapp, email, interesse, etapa, classificacao, responsavel_id, responsavel_nome)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+    [lead.nome, lead.whatsapp, lead.email, lead.interesse, lead.etapa ?? 'novo', lead.classificacao ?? 0,
+     lead.responsavel_id ?? null, lead.responsavel_nome ?? null]
   )
   return res.rows[0]
 }
 
-export async function getLeads() {
+export async function getLeads(opts?: { userId?: string; role?: string }) {
+  // admin/gerente veem todos; comercial (e demais) veem apenas os seus
+  const verTodos = !opts || opts.role === 'admin' || opts.role === 'gerente'
   const res = await pool.query(
     `SELECT l.*,
       (SELECT COUNT(*) FROM lead_lembretes ll
         WHERE ll.lead_id = l.id AND ll.concluido = false AND ll.data <= CURRENT_DATE) AS lembretes_pendentes
      FROM leads l
-     ORDER BY l.criado_em DESC`
+     ${verTodos ? '' : 'WHERE l.responsavel_id = $1'}
+     ORDER BY l.criado_em DESC`,
+    verTodos ? [] : [opts!.userId]
   )
   const leads = res.rows
 

@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import {
@@ -10,7 +11,7 @@ import {
 } from 'lucide-react'
 import {
   getLeadDetail, updateLead, deleteLead, addAtividade, addLembrete, toggleLembrete, deleteLembrete,
-  getClienteByLead, type LeadDetail,
+  getClienteByLead, listUsuarios, type LeadDetail, type UsuarioRow,
 } from '@/lib/api'
 import { ETAPAS, INTERESSES } from '@/lib/crm-config'
 import { isCadastroCompleto } from '@/lib/cadastro'
@@ -31,6 +32,19 @@ export default function LeadModal({ leadId, onClose, onChanged, mode = 'view' }:
   const [lembHora, setLembHora] = useState('09:00')
   const [busy, setBusy] = useState(false)
   const router = useRouter()
+  const { data: session } = useSession()
+  const role = (session?.user as unknown as { role?: string })?.role
+  const podeAtribuir = role === 'admin' || role === 'gerente'
+  const [usuarios, setUsuarios] = useState<UsuarioRow[]>([])
+  useEffect(() => { if (podeAtribuir) listUsuarios().then(setUsuarios).catch(() => {}) }, [podeAtribuir])
+
+  async function setResponsavel(id: string) {
+    if (!d) return
+    const u = usuarios.find(x => x.id === id)
+    setD({ ...(d as LeadDetail & { responsavel_id?: string; responsavel_nome?: string }), responsavel_id: id || undefined, responsavel_nome: u?.username })
+    await updateLead(leadId, { responsavel_id: id || null, responsavel_nome: u?.username || null })
+    onChanged()
+  }
 
   const load = useCallback(() => {
     getLeadDetail(leadId).then(d => {
@@ -169,6 +183,20 @@ export default function LeadModal({ leadId, onClose, onChanged, mode = 'view' }:
                   <p className="text-gray-400"><span className="text-gray-600">WhatsApp:</span> {d.whatsapp || '—'}</p>
                   <p className="text-gray-400"><span className="text-gray-600">E-mail:</span> {d.email || '—'}</p>
                   <p className="text-gray-400"><span className="text-gray-600">Criado em:</span> {format(new Date(d.criado_em), 'dd/MM/yyyy', { locale: ptBR })}</p>
+                </div>
+
+                {/* Responsável */}
+                <div className="mb-4">
+                  <p className="text-xs font-semibold text-gray-400 mb-1.5">Responsável</p>
+                  {podeAtribuir ? (
+                    <select value={(d as unknown as { responsavel_id?: string }).responsavel_id || ''} onChange={e => setResponsavel(e.target.value)}
+                      className="w-full h-10 px-3 rounded-xl text-sm text-white outline-none" style={{ ...FS, colorScheme: 'dark' }}>
+                      <option value="">Sem responsável</option>
+                      {usuarios.map(u => <option key={u.id} value={u.id}>{u.username}</option>)}
+                    </select>
+                  ) : (
+                    <p className="text-sm text-gray-300">{(d as unknown as { responsavel_nome?: string }).responsavel_nome || '—'}</p>
+                  )}
                 </div>
 
                 {/* Classificação */}

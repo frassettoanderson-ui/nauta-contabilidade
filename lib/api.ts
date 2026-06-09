@@ -109,6 +109,13 @@ export interface LeadRow {
   cadastro_completo?: boolean
   valor_honorario?: number | string | null
   valor_abertura?: number | string | null
+  responsavel_id?: string | null
+  responsavel_nome?: string | null
+}
+
+export interface UsuarioRow { id: string; username: string; role: string }
+export function listUsuarios(): Promise<UsuarioRow[]> {
+  return fetch('/api/sistema/usuarios').then(r => json<UsuarioRow[]>(r))
 }
 
 export interface AtividadeRow {

@@ -118,6 +118,16 @@ export function listUsuarios(): Promise<UsuarioRow[]> {
   return fetch('/api/sistema/usuarios').then(r => json<UsuarioRow[]>(r))
 }
 
+export interface ContratoRow { id: string; lead_id: string; tipo: number; status: string; pdf_url: string | null; assinado_url: string | null; criado_em: string }
+export function getContratoByLead(leadId: string): Promise<ContratoRow | null> {
+  return fetch(`/api/contratos?lead=${leadId}`).then(r => json<ContratoRow | null>(r))
+}
+export function gerarContrato(leadId: string): Promise<ContratoRow> {
+  return fetch('/api/contratos/gerar', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ leadId }),
+  }).then(r => json<ContratoRow>(r))
+}
+
 export interface AtividadeRow {
   id: string
   lead_id: string

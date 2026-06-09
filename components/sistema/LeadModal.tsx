@@ -11,7 +11,8 @@ import {
 } from 'lucide-react'
 import {
   getLeadDetail, updateLead, deleteLead, addAtividade, addLembrete, toggleLembrete, deleteLembrete,
-  getClienteByLead, listUsuarios, type LeadDetail, type UsuarioRow,
+  getClienteByLead, listUsuarios, getContratoByLead, gerarContrato,
+  type LeadDetail, type UsuarioRow, type ContratoRow,
 } from '@/lib/api'
 import { ETAPAS, INTERESSES } from '@/lib/crm-config'
 import { isContratoPronto } from '@/lib/contratos'
@@ -24,6 +25,8 @@ const FS = { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,2
 export default function LeadModal({ leadId, onClose, onChanged, mode = 'view' }: { leadId: string; onClose: () => void; onChanged: () => void; mode?: 'view' | 'edit' | 'lembrete' }) {
   const [d, setD] = useState<LeadDetail | null>(null)
   const [cadastroCompleto, setCadastroCompleto] = useState(false)
+  const [contrato, setContrato] = useState<ContratoRow | null>(null)
+  const [gerandoContrato, setGerandoContrato] = useState(false)
   const [editing, setEditing] = useState(false)
   const [edit, setEdit] = useState({ nome: '', whatsapp: '', email: '', interesse: '' })
   const [novaAtiv, setNovaAtiv] = useState('')
@@ -52,7 +55,15 @@ export default function LeadModal({ leadId, onClose, onChanged, mode = 'view' }:
       if (mode === 'edit') { setEdit({ nome: d.nome, whatsapp: d.whatsapp || '', email: d.email || '', interesse: d.interesse || '' }); setEditing(true) }
       getClienteByLead(leadId).then(c => setCadastroCompleto(isContratoPronto(c, d))).catch(() => setCadastroCompleto(false))
     })
+    getContratoByLead(leadId).then(setContrato).catch(() => {})
   }, [leadId, mode])
+
+  async function handleGerarContrato() {
+    setGerandoContrato(true)
+    try { const c = await gerarContrato(leadId); setContrato(c); onChanged() }
+    catch (e) { alert('Erro ao gerar contrato: ' + (e instanceof Error ? e.message : '')) }
+    finally { setGerandoContrato(false) }
+  }
   useEffect(() => { load() }, [load])
 
   function startEdit() {
@@ -271,14 +282,34 @@ export default function LeadModal({ leadId, onClose, onChanged, mode = 'view' }:
                   </div>
                 </div>
 
-                {/* Gerar contrato (quando fechado) */}
+                {/* Contrato (quando fechado) */}
                 {d.etapa === 'fechado' && (
                   cadastroCompleto ? (
-                    <button onClick={() => alert('Geração de contrato será habilitada em breve.')}
-                      className="mt-5 w-full h-11 rounded-xl font-bold text-white flex items-center justify-center gap-2"
-                      style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)' }}>
-                      <FileText size={16} /> Gerar contrato
-                    </button>
+                    <div className="mt-5 space-y-2">
+                      {contrato ? (
+                        <>
+                          <a href={contrato.pdf_url || '#'} target="_blank" rel="noopener noreferrer"
+                            className="w-full h-11 rounded-xl font-bold text-white flex items-center justify-center gap-2" style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)' }}>
+                            <FileText size={16} /> Baixar contrato (PDF)
+                          </a>
+                          <div className="flex gap-2">
+                            <button onClick={handleGerarContrato} disabled={gerandoContrato}
+                              className="flex-1 h-10 rounded-xl text-sm font-semibold text-gray-300" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                              {gerandoContrato ? <Loader2 size={15} className="animate-spin mx-auto" /> : 'Gerar novamente'}
+                            </button>
+                            <button onClick={() => alert('Envio para assinatura (Autentique) entra na próxima etapa.')}
+                              className="flex-1 h-10 rounded-xl text-sm font-bold text-white" style={{ background: '#7c6fff' }}>
+                              Enviar contrato
+                            </button>
+                          </div>
+                        </>
+                      ) : (
+                        <button onClick={handleGerarContrato} disabled={gerandoContrato}
+                          className="w-full h-11 rounded-xl font-bold text-white flex items-center justify-center gap-2 disabled:opacity-70" style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)' }}>
+                          {gerandoContrato ? <><Loader2 size={16} className="animate-spin" /> Gerando contrato…</> : <><FileText size={16} /> Gerar contrato</>}
+                        </button>
+                      )}
+                    </div>
                   ) : (
                     <div className="mt-5">
                       <button disabled className="w-full h-11 rounded-xl font-bold text-gray-500 flex items-center justify-center gap-2 cursor-not-allowed" style={{ background: 'rgba(255,255,255,0.05)' }}>

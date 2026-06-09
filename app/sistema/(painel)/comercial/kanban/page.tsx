@@ -162,7 +162,7 @@ export default function KanbanPage() {
                               </p>
                             )}
                             {l.cadastro_completo ? (
-                              <button onClick={() => alert('Geração de contrato será habilitada em breve.')}
+                              <button onClick={() => abrir(l.id, 'view')}
                                 className="w-full flex items-center justify-center gap-1.5 h-8 rounded-lg text-xs font-bold text-white" style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)' }}>
                                 <FileText size={13} /> Gerar contrato
                               </button>

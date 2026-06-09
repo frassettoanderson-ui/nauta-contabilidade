@@ -10,7 +10,7 @@ function loadNotified(): Set<string> {
   try { return new Set(JSON.parse(localStorage.getItem(NOTIFIED_KEY) || '[]')) } catch { return new Set() }
 }
 function saveNotified(s: Set<string>) {
-  try { localStorage.setItem(NOTIFIED_KEY, JSON.stringify([...s])) } catch {}
+  try { localStorage.setItem(NOTIFIED_KEY, JSON.stringify(Array.from(s))) } catch {}
 }
 
 /** Verifica lembretes pendentes e dispara notificação push + som no horário. */

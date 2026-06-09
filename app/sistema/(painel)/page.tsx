@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { Inbox, LayoutGrid, Users, TrendingUp, ArrowRight } from 'lucide-react'
+import { Inbox, LayoutGrid, Users, TrendingUp, ArrowRight, type LucideIcon } from 'lucide-react'
 import { getLeads, type LeadRow } from '@/lib/api'
 
-function StatCard({ icon: Icon, label, value, href }: { icon: React.ComponentType<{ size?: number; className?: string }>; label: string; value: string; href?: string }) {
+function StatCard({ icon: Icon, label, value, href }: { icon: LucideIcon; label: string; value: string; href?: string }) {
   const inner = (
     <div className="rounded-2xl p-5 h-full transition-all hover:-translate-y-0.5"
       style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}>

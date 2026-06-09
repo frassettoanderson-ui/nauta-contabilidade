@@ -7,11 +7,11 @@ import { usePathname } from 'next/navigation'
 import { signOut } from 'next-auth/react'
 import {
   LayoutDashboard, Briefcase, LayoutGrid, Inbox,
-  Users, Settings, LogOut, ChevronDown, Menu, X,
+  Users, Settings, LogOut, ChevronDown, Menu, X, type LucideIcon,
 } from 'lucide-react'
 
-interface NavLeaf { label: string; href: string; icon: React.ComponentType<{ size?: number; className?: string }> }
-interface NavGroup { label: string; icon: React.ComponentType<{ size?: number; className?: string }>; children: NavLeaf[] }
+interface NavLeaf { label: string; href: string; icon: LucideIcon }
+interface NavGroup { label: string; icon: LucideIcon; children: NavLeaf[] }
 type NavItem = NavLeaf | NavGroup
 
 const NAV: NavItem[] = [

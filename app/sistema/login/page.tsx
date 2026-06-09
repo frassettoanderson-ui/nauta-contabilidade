@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -19,6 +19,23 @@ export default function SistemaLoginPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [focus, setFocus] = useState<string | null>(null)
+
+  // Tilt 3D suave da caixa conforme o mouse se aproxima
+  const cardRef = useRef<HTMLDivElement>(null)
+  const [tilt, setTilt] = useState('')
+
+  function handleCardMove(e: React.MouseEvent<HTMLDivElement>) {
+    const el = cardRef.current
+    if (!el) return
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const r = el.getBoundingClientRect()
+    const px = (e.clientX - r.left) / r.width - 0.5   // -0.5 → 0.5
+    const py = (e.clientY - r.top) / r.height - 0.5
+    setTilt(`perspective(900px) rotateX(${(-py * 6).toFixed(2)}deg) rotateY(${(px * 6).toFixed(2)}deg) translateY(-2px)`)
+  }
+  function handleCardLeave() {
+    setTilt('perspective(900px) rotateX(0deg) rotateY(0deg) translateY(0)')
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -63,12 +80,17 @@ export default function SistemaLoginPage() {
 
         {/* Card */}
         <div
+          ref={cardRef}
+          onMouseMove={handleCardMove}
+          onMouseLeave={handleCardLeave}
           className="rounded-2xl p-7"
           style={{
             background: 'rgba(15,14,26,0.72)',
             border: '1px solid rgba(255,255,255,0.08)',
             backdropFilter: 'blur(16px)',
             boxShadow: '0 24px 64px rgba(0,0,0,0.45)',
+            transform: tilt || 'perspective(900px)',
+            transition: 'transform 0.25s ease-out',
           }}
         >
           <form onSubmit={handleSubmit} className="space-y-4" noValidate>

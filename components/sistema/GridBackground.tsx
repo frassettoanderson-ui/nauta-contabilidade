@@ -3,34 +3,35 @@
 import { useEffect, useRef } from 'react'
 
 /**
- * Fundo em grade que reage ao mouse: uma "lanterna" teal ilumina as linhas
- * da grade ao redor do cursor. Leve (CSS mask + variáveis), respeita reduced-motion.
+ * Fundo em grade que se MOVE conforme o mouse passa: parallax + leve inclinação
+ * 3D (sem iluminação/lanterna). Leve e performático, respeita reduced-motion.
  */
 export default function GridBackground() {
-  const ref = useRef<HTMLDivElement>(null)
+  const layerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const el = ref.current
-    if (!el) return
+    const layer = layerRef.current
+    if (!layer) return
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
 
     let raf = 0
-    let tx = window.innerWidth / 2
-    let ty = window.innerHeight / 2
-    let cx = tx
-    let cy = ty
+    // alvo (-0.5 → 0.5) e atual, para easing suave
+    let txn = 0, tyn = 0, cx = 0, cy = 0
 
     const onMove = (e: MouseEvent) => {
-      tx = e.clientX
-      ty = e.clientY
+      txn = e.clientX / window.innerWidth - 0.5
+      tyn = e.clientY / window.innerHeight - 0.5
     }
 
     const loop = () => {
-      // easing suave (lerp) para um movimento "gostoso"
-      cx += (tx - cx) * 0.12
-      cy += (ty - cy) * 0.12
-      el.style.setProperty('--x', `${cx}px`)
-      el.style.setProperty('--y', `${cy}px`)
+      cx += (txn - cx) * 0.08
+      cy += (tyn - cy) * 0.08
+      const tx = -cx * 36          // desloca a grade no sentido contrário
+      const ty = -cy * 36
+      const rx = cy * 6            // inclina levemente em 3D
+      const ry = -cx * 6
+      layer.style.transform =
+        `translate3d(${tx}px, ${ty}px, 0) rotateX(${rx}deg) rotateY(${ry}deg)`
       raf = requestAnimationFrame(loop)
     }
 
@@ -44,42 +45,21 @@ export default function GridBackground() {
 
   return (
     <div
-      ref={ref}
       aria-hidden="true"
       className="absolute inset-0 overflow-hidden"
-      style={{ ['--x' as string]: '50%', ['--y' as string]: '50%', background: '#0a0918' }}
+      style={{ background: '#0a0918', perspective: '1000px' }}
     >
-      {/* Grade base sutil */}
+      {/* Camada da grade (maior que a viewport p/ não mostrar bordas ao mover) */}
       <div
-        className="absolute inset-0"
+        ref={layerRef}
+        className="absolute -inset-16 will-change-transform"
         style={{
+          transition: 'transform 0.15s ease-out',
           backgroundImage: `
-            linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)
+            linear-gradient(rgba(11,188,212,0.10) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(11,188,212,0.10) 1px, transparent 1px)
           `,
           backgroundSize: '46px 46px',
-        }}
-      />
-
-      {/* Grade iluminada (teal) revelada ao redor do cursor */}
-      <div
-        className="absolute inset-0"
-        style={{
-          backgroundImage: `
-            linear-gradient(rgba(11,188,212,0.55) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(11,188,212,0.55) 1px, transparent 1px)
-          `,
-          backgroundSize: '46px 46px',
-          WebkitMaskImage: 'radial-gradient(circle 220px at var(--x) var(--y), #000 0%, transparent 70%)',
-          maskImage: 'radial-gradient(circle 220px at var(--x) var(--y), #000 0%, transparent 70%)',
-        }}
-      />
-
-      {/* Brilho difuso acompanhando o cursor */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background: 'radial-gradient(circle 300px at var(--x) var(--y), rgba(11,188,212,0.10) 0%, transparent 70%)',
         }}
       />
 
@@ -88,11 +68,16 @@ export default function GridBackground() {
         className="absolute -bottom-32 -right-24 w-[480px] h-[420px] pointer-events-none"
         style={{ background: 'radial-gradient(ellipse, rgba(124,111,255,0.10) 0%, transparent 70%)' }}
       />
+      {/* Orb teal suave (topo) */}
+      <div
+        className="absolute -top-24 -left-16 w-[420px] h-[360px] pointer-events-none"
+        style={{ background: 'radial-gradient(ellipse, rgba(11,188,212,0.08) 0%, transparent 70%)' }}
+      />
 
       {/* Vinheta para focar no centro */}
       <div
         className="absolute inset-0"
-        style={{ background: 'radial-gradient(ellipse 70% 60% at 50% 45%, transparent 0%, rgba(10,9,24,0.85) 100%)' }}
+        style={{ background: 'radial-gradient(ellipse 70% 60% at 50% 45%, transparent 0%, rgba(10,9,24,0.88) 100%)' }}
       />
     </div>
   )

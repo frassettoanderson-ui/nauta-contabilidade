@@ -53,6 +53,10 @@ export default function LeadModal({ leadId, onClose, onChanged, mode = 'view' }:
 
   async function setEtapa(etapa: string) {
     if (!d) return
+    if (etapa === 'fechado' && !(d as unknown as { valor_honorario?: unknown }).valor_honorario) {
+      alert('Para mover para Fechado, use o botão "Fechado" no funil (em "Em negociação") e informe os valores de honorário/abertura.')
+      return
+    }
     setD({ ...d, etapa }); await updateLead(leadId, { etapa }); onChanged()
   }
   async function setClass(classificacao: number) {

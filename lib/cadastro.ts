@@ -9,7 +9,8 @@ export const CLI_FIELDS: Field[] = [
 ]
 
 export const EMP_FIELDS: Field[] = [
-  ['emp_nome', 'Nome da empresa'], ['emp_fantasia', 'Nome fantasia'], ['emp_endereco', 'Endereço da empresa'],
+  ['emp_nome', 'Nome da empresa'], ['emp_fantasia', 'Nome fantasia'], ['emp_cnpj', 'CNPJ'],
+  ['emp_endereco', 'Endereço da empresa'], ['emp_bairro', 'Bairro'], ['emp_cidade_estado', 'Cidade / Estado'], ['emp_cep', 'CEP'],
   ['emp_area_ocupada', 'Área ocupada pela empresa'], ['emp_edificacao', 'Nome e área total da edificação'],
   ['emp_proprietario', 'Nome e CPF do proprietário do imóvel'], ['emp_atividade', 'Atividade da empresa'],
   ['emp_capital_social', 'Valor do capital social'], ['emp_telefone', 'Telefone para contato'], ['emp_email', 'E-mail para contato'],

@@ -8,6 +8,7 @@ import { ETAPAS } from '@/lib/crm-config'
 import ClassBar from '@/components/sistema/ClassBar'
 import AddLeadModal from '@/components/sistema/AddLeadModal'
 import LeadModal from '@/components/sistema/LeadModal'
+import FecharNegociacaoModal from '@/components/sistema/FecharNegociacaoModal'
 
 export default function KanbanPage() {
   const router = useRouter()
@@ -17,6 +18,7 @@ export default function KanbanPage() {
   const [modalMode, setModalMode] = useState<'view' | 'edit' | 'lembrete'>('view')
   const [dragId, setDragId] = useState<string | null>(null)
   const [overCol, setOverCol] = useState<string | null>(null)
+  const [fecharLead, setFecharLead] = useState<LeadRow | null>(null)
 
   const load = () => getLeads().then(setLeads).catch(() => setLeads([]))
   useEffect(() => { load() }, [])
@@ -31,6 +33,7 @@ export default function KanbanPage() {
     if (!id || !leads) return
     const lead = leads.find(l => l.id === id)
     if (!lead || lead.etapa === etapa) return
+    if (etapa === 'fechado') { setFecharLead(lead); return } // exige valores antes de fechar
     moveLead(id, etapa)
   }
   function abrir(id: string, mode: 'view' | 'edit' | 'lembrete') { setModalMode(mode); setOpenId(id) }
@@ -132,7 +135,7 @@ export default function KanbanPage() {
                         {/* Em negociação */}
                         {col.id === 'negociacao' && (
                           <div className="flex gap-2 mt-3" onClick={e => e.stopPropagation()}>
-                            <button onClick={() => moveLead(l.id, 'fechado')} className="flex-1 flex items-center justify-center gap-1 h-8 rounded-lg text-xs font-bold text-white" style={{ background: '#22c55e' }}><Check size={13} /> Fechado</button>
+                            <button onClick={() => setFecharLead(l)} className="flex-1 flex items-center justify-center gap-1 h-8 rounded-lg text-xs font-bold text-white" style={{ background: '#22c55e' }}><Check size={13} /> Fechado</button>
                             <button onClick={() => moveLead(l.id, 'perdido')} className="flex-1 flex items-center justify-center gap-1 h-8 rounded-lg text-xs font-bold text-white" style={{ background: '#ef4444' }}><XCircle size={13} /> Perdido</button>
                           </div>
                         )}
@@ -140,6 +143,12 @@ export default function KanbanPage() {
                         {/* Fechado: gerar contrato / cadastro incompleto */}
                         {fechado && (
                           <div className="mt-3" onClick={e => e.stopPropagation()}>
+                            {l.valor_honorario != null && (
+                              <p className="text-[11px] text-gray-400 mb-2">
+                                Honorário: <span className="text-[#22c55e] font-bold">R$ {Number(l.valor_honorario).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>/mês
+                                {Number(l.valor_abertura) > 0 && <> · Abertura: <span className="text-[#22c55e] font-bold">R$ {Number(l.valor_abertura).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span></>}
+                              </p>
+                            )}
                             {l.cadastro_completo ? (
                               <button onClick={() => alert('Geração de contrato será habilitada em breve.')}
                                 className="w-full flex items-center justify-center gap-1.5 h-8 rounded-lg text-xs font-bold text-white" style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)' }}>
@@ -171,6 +180,7 @@ export default function KanbanPage() {
 
       {adding && <AddLeadModal onClose={() => setAdding(false)} onCreated={() => load()} />}
       {openId && <LeadModal leadId={openId} mode={modalMode} onClose={() => setOpenId(null)} onChanged={load} />}
+      {fecharLead && <FecharNegociacaoModal lead={fecharLead} onClose={() => setFecharLead(null)} onConfirmed={load} />}
     </div>
   )
 }

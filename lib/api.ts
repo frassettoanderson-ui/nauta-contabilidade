@@ -107,6 +107,8 @@ export interface LeadRow {
   lembretes_pendentes?: number | string
   cliente_id?: string | null
   cadastro_completo?: boolean
+  valor_honorario?: number | string | null
+  valor_abertura?: number | string | null
 }
 
 export interface AtividadeRow {

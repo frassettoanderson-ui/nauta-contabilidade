@@ -38,6 +38,15 @@ const REQ_PESSOA_T1 = ['cli_nome_completo', 'cli_cpf', 'cli_rg', 'cli_endereco',
 const REQ_EMPRESA = ['emp_nome', 'emp_cnpj', 'emp_endereco', 'emp_bairro', 'emp_cidade_estado', 'emp_cep', 'emp_email', 'emp_telefone']
 const REQ_PESSOA_EMP = ['cli_nome_completo', 'cli_cpf']
 
+/** Campos (cliente/empresa) obrigatórios para o tipo de contrato. */
+export function requiredKeysFor(tipo: number | null): string[] {
+  if (tipo === 1) return REQ_PESSOA_T1
+  if (tipo === 2 || tipo === 3 || tipo === 4) return [...REQ_EMPRESA, ...REQ_PESSOA_EMP]
+  return []
+}
+/** Campos do sócio obrigatórios (quando o sócio está ativo). */
+export const REQ_SOCIO = ['nome_completo', 'cpf']
+
 /** Verifica se o cadastro tem o mínimo para gerar o contrato do tipo do lead. */
 export function isContratoPronto(cliente: Obj | null | undefined, lead: Obj | null | undefined): boolean {
   const tipo = tipoFromInteresse(lead?.interesse as string)

@@ -4,8 +4,9 @@ import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { Loader2, Check, ArrowLeft, ArrowRight, Upload, FileText, Paperclip, Save, Trash2, Link2, Copy } from 'lucide-react'
-import { uploadDoc, saveCliente, getCliente, getClienteByLead, deleteCliente, gerarLinkCadastro } from '@/lib/api'
+import { uploadDoc, saveCliente, getCliente, getClienteByLead, deleteCliente, gerarLinkCadastro, getLeadDetail } from '@/lib/api'
 import { CLI_FIELDS, EMP_FIELDS, SOCIO_FIELDS, CLI_TO_SOCIO } from '@/lib/cadastro'
+import { tipoFromInteresse, requiredKeysFor, REQ_SOCIO, TIPO_LABEL } from '@/lib/contratos'
 
 type Obj = Record<string, unknown>
 
@@ -13,11 +14,12 @@ const FIELD = 'w-full h-11 px-4 rounded-xl text-sm text-white placeholder-gray-6
 const FS = { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.10)' }
 const PASSOS = ['Dados do cliente', 'Dados da empresa', 'Sócio 1', 'Sócio 2', 'Sócio 3']
 
-function TextField({ label, value, onChange, type = 'text', disabled }: { label: string; value: string; onChange: (v: string) => void; type?: string; disabled?: boolean }) {
+function TextField({ label, value, onChange, type = 'text', disabled, required }: { label: string; value: string; onChange: (v: string) => void; type?: string; disabled?: boolean; required?: boolean }) {
   return (
     <div>
-      <label className="block text-xs font-semibold text-gray-400 mb-1.5">{label}</label>
-      <input type={type} value={value} disabled={disabled} onChange={e => onChange(e.target.value)} className={FIELD} style={{ ...FS, ...(type === 'date' ? { colorScheme: 'dark' } : {}) }} />
+      <label className="block text-xs font-semibold text-gray-400 mb-1.5">{label}{required && <span className="text-red-400"> *</span>}</label>
+      <input type={type} value={value} disabled={disabled} onChange={e => onChange(e.target.value)}
+        className={FIELD} style={{ ...FS, ...(type === 'date' ? { colorScheme: 'dark' } : {}), ...(required && !String(value ?? '').trim() ? { borderColor: 'rgba(239,68,68,0.4)' } : {}) }} />
     </div>
   )
 }
@@ -78,6 +80,7 @@ function Wizard() {
   const [usarCliente, setUsarCliente] = useState(false)
   const [socio2Ativo, setSocio2Ativo] = useState(false)
   const [socio3Ativo, setSocio3Ativo] = useState(false)
+  const [tipo, setTipo] = useState<number | null>(null)
 
   useEffect(() => {
     async function init() {
@@ -93,6 +96,11 @@ function Wizard() {
         setSocios([0, 1, 2].map(i => ss[i] ?? {}))
         if (ss[1]?.nome_completo || ss[1]?.cpf) setSocio2Ativo(true)
         if (ss[2]?.nome_completo || ss[2]?.cpf) setSocio3Ativo(true)
+      }
+      // Determina o tipo de contrato pelo interesse do lead
+      const lid = leadId || (data?.lead_id as string | undefined)
+      if (lid) {
+        try { const lead = await getLeadDetail(lid); setTipo(tipoFromInteresse(lead.interesse)) } catch {}
       }
       setLoading(false)
     }
@@ -165,11 +173,18 @@ function Wizard() {
 
   const socioIdx = step - 2
   const socioBloqueado = (socioIdx === 1 && !socio2Ativo) || (socioIdx === 2 && !socio3Ativo)
+  const reqKeys = new Set(requiredKeysFor(tipo))
+  const socioAtivo = socioIdx === 0 || (socioIdx === 1 && socio2Ativo) || (socioIdx === 2 && socio3Ativo)
 
   return (
     <div className="p-6 lg:p-8 max-w-2xl">
       <h1 className="text-2xl font-black text-white mb-1" style={{ letterSpacing: '-0.02em' }}>Cadastro de cliente</h1>
-      <p className="text-gray-500 text-sm mb-6">{leadId ? 'Vinculado ao lead selecionado' : clienteId ? 'Editando cadastro existente' : 'Novo cadastro'}</p>
+      <p className="text-gray-500 text-sm mb-2">{leadId ? 'Vinculado ao lead selecionado' : clienteId ? 'Editando cadastro existente' : 'Novo cadastro'}</p>
+      {tipo && (
+        <p className="text-xs mb-5 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg" style={{ background: 'rgba(11,188,212,0.1)', border: '1px solid rgba(11,188,212,0.25)', color: '#0BBCD4' }}>
+          Contrato: <b>{TIPO_LABEL[tipo]}</b> · campos com <span className="text-red-400">*</span> são obrigatórios
+        </p>
+      )}
 
       {/* Stepper (quebra linha, sem corte) */}
       <div className="flex flex-wrap items-center gap-2 mb-8">
@@ -187,7 +202,7 @@ function Wizard() {
         {step === 0 && (
           <>
             <div className="grid sm:grid-cols-2 gap-3">
-              {CLI_FIELDS.map(([k, label, type]) => <TextField key={k} label={label} type={type} value={(cli[k] as string) || ''} onChange={v => setCliK(k, v)} />)}
+              {CLI_FIELDS.map(([k, label, type]) => <TextField key={k} label={label} type={type} required={reqKeys.has(k)} value={(cli[k] as string) || ''} onChange={v => setCliK(k, v)} />)}
             </div>
             <PessoaUploads docKey="cli_doc_url" certKey="cli_cert_url" senhaKey="cli_cert_senha" data={cli} set={setCliK} />
           </>
@@ -195,7 +210,7 @@ function Wizard() {
 
         {step === 1 && (
           <div className="grid sm:grid-cols-2 gap-3">
-            {EMP_FIELDS.map(([k, label, type]) => <TextField key={k} label={label} type={type} value={(emp[k] as string) || ''} onChange={v => setEmpK(k, v)} />)}
+            {EMP_FIELDS.map(([k, label, type]) => <TextField key={k} label={label} type={type} required={reqKeys.has(k)} value={(emp[k] as string) || ''} onChange={v => setEmpK(k, v)} />)}
             <div className="sm:col-span-2">
               <label className="block text-xs font-semibold text-gray-400 mb-1.5">Usa gás GLP?</label>
               <div className="flex gap-2">
@@ -237,7 +252,7 @@ function Wizard() {
             ) : (
               <>
                 <div className="grid sm:grid-cols-2 gap-3">
-                  {SOCIO_FIELDS.map(([k, label, type]) => <TextField key={k} label={label} type={type} value={(socios[socioIdx]?.[k] as string) || ''} onChange={v => setSocioK(socioIdx, k, v)} />)}
+                  {SOCIO_FIELDS.map(([k, label, type]) => <TextField key={k} label={label} type={type} required={socioAtivo && REQ_SOCIO.includes(k)} value={(socios[socioIdx]?.[k] as string) || ''} onChange={v => setSocioK(socioIdx, k, v)} />)}
                 </div>
                 <PessoaUploads docKey="doc_url" certKey="cert_url" senhaKey="cert_senha" data={socios[socioIdx] || {}} set={(k, v) => setSocioK(socioIdx, k, v)} />
                 <p className="text-xs pt-1" style={{ color: totalPart > 100 ? '#f87171' : '#6b7280' }}>

@@ -32,6 +32,10 @@ yarn-error.log*
 # vercel
 .vercel
 
+# uploads privados (documentos de clientes) — nunca versionar
+/uploads-private
+/public/uploads
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

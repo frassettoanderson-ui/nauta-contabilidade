@@ -1,0 +1,69 @@
+import pool from './db'
+
+const CLI_COLS = [
+  'cli_nome_completo', 'cli_rg', 'cli_cpf', 'cli_nascimento', 'cli_nome_pai', 'cli_nome_mae',
+  'cli_estado_civil', 'cli_recibo_irpf', 'cli_titulo_eleitor', 'cli_doc_url', 'cli_cert_url', 'cli_cert_senha',
+  'emp_nome', 'emp_fantasia', 'emp_endereco', 'emp_area_ocupada', 'emp_edificacao', 'emp_usa_glp',
+  'emp_proprietario', 'emp_atividade', 'emp_capital_social', 'emp_telefone', 'emp_email',
+]
+
+const SOCIO_COLS = [
+  'nome_completo', 'rg', 'cpf', 'nascimento', 'nome_pai', 'nome_mae', 'participacao',
+  'estado_civil', 'recibo_irpf', 'titulo_eleitor', 'doc_url', 'cert_url', 'cert_senha',
+]
+
+type AnyObj = Record<string, unknown>
+
+export async function listClientes() {
+  const res = await pool.query(
+    `SELECT id, lead_id, cli_nome_completo, emp_nome, emp_telefone, emp_email, criado_em
+     FROM clientes ORDER BY criado_em DESC`
+  )
+  return res.rows
+}
+
+export async function getClienteByLead(leadId: string) {
+  const res = await pool.query(`SELECT id FROM clientes WHERE lead_id = $1 LIMIT 1`, [leadId])
+  if (!res.rows[0]) return null
+  return getCliente(res.rows[0].id)
+}
+
+export async function getCliente(id: string) {
+  const c = await pool.query(`SELECT * FROM clientes WHERE id = $1`, [id])
+  if (!c.rows[0]) return null
+  const s = await pool.query(`SELECT * FROM cliente_socios WHERE cliente_id = $1 ORDER BY ordem ASC`, [id])
+  return { ...c.rows[0], socios: s.rows }
+}
+
+export async function saveCliente(payload: AnyObj & { id?: string; lead_id?: string; socios?: AnyObj[] }) {
+  const cliData = CLI_COLS.map(c => payload[c] ?? null)
+  let clienteId = payload.id as string | undefined
+
+  if (clienteId) {
+    const sets = CLI_COLS.map((c, i) => `${c} = $${i + 2}`).join(', ')
+    await pool.query(`UPDATE clientes SET ${sets}, atualizado_em = NOW() WHERE id = $1`, [clienteId, ...cliData])
+  } else {
+    const cols = ['lead_id', ...CLI_COLS]
+    const ph = cols.map((_, i) => `$${i + 1}`).join(', ')
+    const res = await pool.query(
+      `INSERT INTO clientes (${cols.join(', ')}) VALUES (${ph}) RETURNING id`,
+      [payload.lead_id ?? null, ...cliData]
+    )
+    clienteId = res.rows[0].id
+  }
+
+  // Regrava sócios
+  await pool.query(`DELETE FROM cliente_socios WHERE cliente_id = $1`, [clienteId])
+  const socios = payload.socios ?? []
+  for (let i = 0; i < socios.length; i++) {
+    const s = socios[i]
+    // pula sócio totalmente vazio
+    if (!s.nome_completo && !s.cpf) continue
+    const cols = ['cliente_id', 'ordem', ...SOCIO_COLS]
+    const vals = [clienteId, i + 1, ...SOCIO_COLS.map(c => s[c] ?? null)]
+    const ph = cols.map((_, j) => `$${j + 1}`).join(', ')
+    await pool.query(`INSERT INTO cliente_socios (${cols.join(', ')}) VALUES (${ph})`, vals)
+  }
+
+  return clienteId
+}

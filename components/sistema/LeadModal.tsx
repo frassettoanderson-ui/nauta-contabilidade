@@ -1,14 +1,15 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import {
   X, Loader2, MessageCircle, Mail, Trash2, Send, Bell, Check, Plus, CalendarClock,
-  Pencil, Save, FileText,
+  Pencil, Save, FileText, ClipboardCheck,
 } from 'lucide-react'
 import {
-  getLeadDetail, updateLead, deleteLead, addAtividade, addLembrete, toggleLembrete,
+  getLeadDetail, updateLead, deleteLead, addAtividade, addLembrete, toggleLembrete, deleteLembrete,
   type LeadDetail,
 } from '@/lib/api'
 import { ETAPAS, INTERESSES } from '@/lib/crm-config'
@@ -25,7 +26,9 @@ export default function LeadModal({ leadId, onClose, onChanged }: { leadId: stri
   const [novaAtiv, setNovaAtiv] = useState('')
   const [lembDesc, setLembDesc] = useState('')
   const [lembData, setLembData] = useState(todayStr())
+  const [lembHora, setLembHora] = useState('09:00')
   const [busy, setBusy] = useState(false)
+  const router = useRouter()
 
   const load = useCallback(() => { getLeadDetail(leadId).then(setD) }, [leadId])
   useEffect(() => { load() }, [load])
@@ -54,10 +57,13 @@ export default function LeadModal({ leadId, onClose, onChanged }: { leadId: stri
   }
   async function addLemb() {
     if (!lembDesc.trim() || !lembData) return
-    setBusy(true); await addLembrete(leadId, lembDesc, lembData); setLembDesc(''); setLembData(todayStr()); await load(); onChanged(); setBusy(false)
+    setBusy(true); await addLembrete(leadId, lembDesc, lembData, lembHora); setLembDesc(''); setLembData(todayStr()); setLembHora('09:00'); await load(); onChanged(); setBusy(false)
   }
   async function toggleLemb(id: string, c: boolean) {
     await toggleLembrete(leadId, id, c); await load(); onChanged()
+  }
+  async function delLemb(id: string) {
+    await deleteLembrete(leadId, id); await load(); onChanged()
   }
   async function remover() {
     if (!confirm('Excluir este lead? Esta ação não pode ser desfeita.')) return
@@ -87,6 +93,7 @@ export default function LeadModal({ leadId, onClose, onChanged }: { leadId: stri
                 {!editing && <p className="text-gray-500 text-xs mt-0.5">{d.interesse || 'Sem interesse definido'}</p>}
               </div>
               <div className="flex items-center gap-1 shrink-0">
+                {!editing && <button onClick={() => router.push(`/sistema/clientes/cadastrar?lead=${leadId}`)} className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-[#22c55e] hover:bg-white/5" title="Cadastro completo"><ClipboardCheck size={16} /></button>}
                 {!editing && <button onClick={startEdit} className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-[#0BBCD4] hover:bg-white/5" title="Editar"><Pencil size={15} /></button>}
                 <button onClick={remover} className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-500 hover:text-red-400 hover:bg-red-500/10" title="Excluir"><Trash2 size={15} /></button>
                 <button onClick={onClose} className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-white"><X size={18} /></button>
@@ -101,7 +108,7 @@ export default function LeadModal({ leadId, onClose, onChanged }: { leadId: stri
                 <input value={edit.email} onChange={e => setEdit(s => ({ ...s, email: e.target.value }))} placeholder="E-mail"
                   className="w-full h-11 px-4 rounded-xl text-sm text-white placeholder-gray-600 outline-none" style={FS} />
                 <select value={edit.interesse} onChange={e => setEdit(s => ({ ...s, interesse: e.target.value }))}
-                  className="w-full h-11 px-4 rounded-xl text-sm text-white outline-none" style={FS}>
+                  className="w-full h-11 px-4 rounded-xl text-sm text-white outline-none" style={{ ...FS, colorScheme: 'dark' }}>
                   <option value="">Selecione o interesse</option>
                   {INTERESSES.map(i => <option key={i} value={i}>{i}</option>)}
                 </select>
@@ -156,14 +163,18 @@ export default function LeadModal({ leadId, onClose, onChanged }: { leadId: stri
                 {/* Lembretes */}
                 <div className="mb-5">
                   <p className="text-sm font-bold text-white mb-3 flex items-center gap-2"><Bell size={15} className="text-[#0BBCD4]" /> Lembretes</p>
-                  <div className="flex gap-2 mb-3">
+                  <div className="space-y-2 mb-3">
                     <input value={lembDesc} onChange={e => setLembDesc(e.target.value)} placeholder="Pendência..."
-                      className="flex-1 h-10 px-3 rounded-lg text-sm text-white placeholder-gray-600 outline-none" style={FS} />
-                    <input type="date" value={lembData} onChange={e => setLembData(e.target.value)}
-                      className="h-10 px-2 rounded-lg text-xs text-white outline-none" style={{ ...FS, colorScheme: 'dark' }} />
-                    <button onClick={addLemb} disabled={busy} className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'rgba(11,188,212,0.15)', border: '1px solid rgba(11,188,212,0.25)' }}>
-                      <Plus size={16} className="text-[#0BBCD4]" />
-                    </button>
+                      className="w-full h-10 px-3 rounded-lg text-sm text-white placeholder-gray-600 outline-none" style={FS} />
+                    <div className="flex gap-2">
+                      <input type="date" value={lembData} onChange={e => setLembData(e.target.value)}
+                        className="flex-1 h-10 px-2 rounded-lg text-xs text-white outline-none" style={{ ...FS, colorScheme: 'dark' }} />
+                      <input type="time" value={lembHora} onChange={e => setLembHora(e.target.value)}
+                        className="h-10 px-2 rounded-lg text-xs text-white outline-none" style={{ ...FS, colorScheme: 'dark' }} />
+                      <button onClick={addLemb} disabled={busy} className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'rgba(11,188,212,0.15)', border: '1px solid rgba(11,188,212,0.25)' }}>
+                        <Plus size={16} className="text-[#0BBCD4]" />
+                      </button>
+                    </div>
                   </div>
                   <div className="space-y-2">
                     {d.lembretes.length === 0 && <p className="text-gray-600 text-xs">Nenhum lembrete.</p>}
@@ -178,9 +189,12 @@ export default function LeadModal({ leadId, onClose, onChanged }: { leadId: stri
                           <div className="flex-1 min-w-0">
                             <p className={`text-sm truncate ${l.concluido ? 'text-gray-600 line-through' : 'text-gray-200'}`}>{l.descricao}</p>
                             <p className="text-[11px] flex items-center gap-1" style={{ color: venceu ? '#f59e0b' : '#6b7280' }}>
-                              <CalendarClock size={11} /> {format(new Date(dOnly(l.data) + 'T12:00:00'), 'dd/MM/yyyy', { locale: ptBR })}{venceu && ' · pendente'}
+                              <CalendarClock size={11} /> {format(new Date(dOnly(l.data) + 'T12:00:00'), 'dd/MM/yyyy', { locale: ptBR })}{l.hora ? ` às ${String(l.hora).slice(0, 5)}` : ''}{venceu && ' · pendente'}
                             </p>
                           </div>
+                          <button onClick={() => delLemb(l.id)} className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-600 hover:text-red-400 shrink-0" title="Excluir lembrete">
+                            <Trash2 size={13} />
+                          </button>
                         </div>
                       )
                     })}

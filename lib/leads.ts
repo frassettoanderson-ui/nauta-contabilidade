@@ -89,14 +89,30 @@ export async function addAtividade(leadId: string, descricao: string, autor: str
 
 // ─── LEMBRETES ─────────────────────────────────────────────────────────────
 
-export async function addLembrete(leadId: string, descricao: string, data: string) {
+export async function addLembrete(leadId: string, descricao: string, data: string, hora?: string | null) {
   const res = await pool.query(
-    `INSERT INTO lead_lembretes (lead_id, descricao, data) VALUES ($1, $2, $3) RETURNING *`,
-    [leadId, descricao, data]
+    `INSERT INTO lead_lembretes (lead_id, descricao, data, hora) VALUES ($1, $2, $3, $4) RETURNING *`,
+    [leadId, descricao, data, hora || null]
   )
   return res.rows[0]
 }
 
 export async function toggleLembrete(id: string, concluido: boolean) {
   await pool.query(`UPDATE lead_lembretes SET concluido = $1 WHERE id = $2`, [concluido, id])
+}
+
+export async function deleteLembrete(id: string) {
+  await pool.query(`DELETE FROM lead_lembretes WHERE id = $1`, [id])
+}
+
+/** Lembretes pendentes (não concluídos) com nome do lead, p/ notificações. */
+export async function getPendingLembretes() {
+  const res = await pool.query(
+    `SELECT ll.id, ll.lead_id, ll.descricao, ll.data, ll.hora, l.nome AS lead_nome
+     FROM lead_lembretes ll
+     JOIN leads l ON l.id = ll.lead_id
+     WHERE ll.concluido = false
+     ORDER BY ll.data ASC`
+  )
+  return res.rows
 }

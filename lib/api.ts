@@ -120,6 +120,7 @@ export interface LembreteRow {
   lead_id: string
   descricao: string
   data: string
+  hora: string | null
   concluido: boolean
   criado_em: string
 }
@@ -159,15 +160,60 @@ export function addAtividade(leadId: string, descricao: string): Promise<Ativida
   }).then(r => json<AtividadeRow>(r))
 }
 
-export function addLembrete(leadId: string, descricao: string, data: string): Promise<LembreteRow> {
+export function addLembrete(leadId: string, descricao: string, data: string, hora?: string): Promise<LembreteRow> {
   return fetch(`/api/leads/${leadId}/lembretes`, {
-    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ descricao, data }),
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ descricao, data, hora }),
   }).then(r => json<LembreteRow>(r))
 }
 
 export function toggleLembrete(leadId: string, lembreteId: string, concluido: boolean): Promise<void> {
   return fetch(`/api/leads/${leadId}/lembretes`, {
     method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ lembreteId, concluido }),
+  }).then(r => json(r)).then(() => undefined)
+}
+
+export function deleteLembrete(leadId: string, lembreteId: string): Promise<void> {
+  return fetch(`/api/leads/${leadId}/lembretes?lembreteId=${lembreteId}`, { method: 'DELETE' })
+    .then(r => json(r)).then(() => undefined)
+}
+
+export interface PendingLembrete {
+  id: string; lead_id: string; descricao: string; data: string; hora: string | null; lead_nome: string
+}
+export function getPendingLembretes(): Promise<PendingLembrete[]> {
+  return fetch('/api/sistema/lembretes').then(r => json<PendingLembrete[]>(r))
+}
+
+// ─── CLIENTES (cadastro completo) ───────────────────────────────────────────
+
+export function uploadDoc(file: File): Promise<{ url: string; nome: string }> {
+  const fd = new FormData(); fd.append('file', file)
+  return fetch('/api/sistema/upload', { method: 'POST', body: fd }).then(r => json<{ url: string; nome: string }>(r))
+}
+
+export function saveCliente(payload: Record<string, unknown>): Promise<{ id: string }> {
+  return fetch('/api/clientes', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload),
+  }).then(r => json<{ id: string }>(r))
+}
+
+export function getClienteByLead(leadId: string): Promise<Record<string, unknown> | null> {
+  return fetch(`/api/clientes?lead=${leadId}`).then(r => json<Record<string, unknown> | null>(r))
+}
+
+export function getCliente(id: string): Promise<Record<string, unknown>> {
+  return fetch(`/api/clientes/${id}`).then(r => json<Record<string, unknown>>(r))
+}
+
+export function listClientes(): Promise<Record<string, unknown>[]> {
+  return fetch('/api/clientes').then(r => json<Record<string, unknown>[]>(r))
+}
+
+// ─── USUÁRIOS ────────────────────────────────────────────────────────────────
+
+export function createUsuario(username: string, password: string, role: string): Promise<void> {
+  return fetch('/api/sistema/usuarios', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password, role }),
   }).then(r => json(r)).then(() => undefined)
 }
 

@@ -6,6 +6,7 @@ import { useSession } from 'next-auth/react'
 import { Loader2 } from 'lucide-react'
 import Sidebar from '@/components/sistema/Sidebar'
 import ForcePasswordChange from '@/components/sistema/ForcePasswordChange'
+import ReminderWatcher from '@/components/sistema/ReminderWatcher'
 
 export default function PainelLayout({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession()
@@ -33,6 +34,7 @@ export default function PainelLayout({ children }: { children: React.ReactNode }
         {children}
       </div>
       {mustChange && <ForcePasswordChange />}
+      <ReminderWatcher />
     </div>
   )
 }

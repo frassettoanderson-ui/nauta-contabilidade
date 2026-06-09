@@ -44,7 +44,7 @@ export default function AddLeadModal({ onClose, onCreated }: { onClose: () => vo
 
           <div>
             <label className="block text-xs font-semibold text-gray-400 mb-1.5">Interesse</label>
-            <select className={FIELD} style={FS} value={form.interesse} onChange={e => set('interesse', e.target.value)}>
+            <select className={FIELD} style={{ ...FS, colorScheme: 'dark' }} value={form.interesse} onChange={e => set('interesse', e.target.value)}>
               <option value="">Selecione uma opção</option>
               {INTERESSES.map(i => <option key={i} value={i}>{i}</option>)}
             </select>

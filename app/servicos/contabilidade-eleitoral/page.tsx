@@ -119,7 +119,7 @@ export default function ContabilidadeEleitoralPage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid lg:grid-cols-2 gap-12 items-center">
               <div className="text-center lg:text-left">
-                <p className="text-7xl font-black mb-2" style={{ color: '#0BBCD4' }}>
+                <p className="text-6xl sm:text-7xl font-black mb-2" style={{ color: '#0BBCD4' }}>
                   +<AnimatedCounter target={400} />
                 </p>
                 <p className="text-gray-300 text-xl font-semibold mb-4">prestações de contas aprovadas</p>

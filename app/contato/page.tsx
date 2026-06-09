@@ -88,7 +88,7 @@ export default function ContatoPage() {
                   </div>
                 ) : (
                   <form onSubmit={handleSubmit} noValidate className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-xs font-semibold text-gray-600 mb-1.5">Nome completo <span className="text-red-500">*</span></label>
                         <input name="nome" type="text" value={form.nome} onChange={handleChange} placeholder="Seu nome"

@@ -39,7 +39,7 @@ function StatItem({
       className="flex flex-col opacity-0 animate-[fadeUp_0.6s_ease-out_forwards]"
       style={{ animationDelay: `${0.5 + delay}s` }}
     >
-      <span className="text-5xl sm:text-6xl font-black text-[#0BBCD4] leading-none tabular-nums">
+      <span className="text-4xl sm:text-6xl font-black text-[#0BBCD4] leading-none tabular-nums">
         {prefix}{count}{suffix}
       </span>
       <span className="text-gray-400 text-sm mt-1 leading-snug">{label}</span>
@@ -50,8 +50,8 @@ function StatItem({
 /* ── Bloco com todos os stats ── */
 function HeroStats() {
   return (
-    <div className="mt-14 pt-10 border-t border-white/10">
-      <div className="flex flex-wrap gap-x-12 gap-y-6">
+    <div className="mt-10 sm:mt-14 pt-8 sm:pt-10 border-t border-white/10">
+      <div className="flex flex-wrap gap-x-8 sm:gap-x-12 gap-y-6">
         <StatItem target={10}  prefix="+" suffix=" anos" label="de experiência"          delay={0}   />
         <StatItem target={400} prefix="+"               label="prestações eleitorais"    delay={0.1} />
         <StatItem target={100}             suffix="%"   label="digital e online"         delay={0.2} />
@@ -94,7 +94,7 @@ export default function HeroSection({ onOpenLead }: HeroSectionProps) {
           </div>
 
           {/* H1 com AnimatedTextCycle */}
-          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black text-white leading-[1.05] mb-6 opacity-0 animate-[fadeUp_0.6s_ease-out_0.2s_forwards]">
+          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black text-white leading-[1.1] sm:leading-[1.05] mb-6 opacity-0 animate-[fadeUp_0.6s_ease-out_0.2s_forwards]">
             Contabilidade digital para o seu negócio{' '}
             <AnimatedTextCycle
               words={CYCLE_WORDS}

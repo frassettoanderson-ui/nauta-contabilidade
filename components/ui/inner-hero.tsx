@@ -64,8 +64,8 @@ export default function InnerHero({
   return (
     <section
       ref={sectionRef}
-      className="relative overflow-hidden"
-      style={{ background: '#0a0918', paddingTop: '8rem', paddingBottom: '5rem' }}
+      className="relative overflow-hidden pt-28 pb-16 sm:pt-32 sm:pb-20"
+      style={{ background: '#0a0918' }}
     >
       {/* ── Grid de linhas sutis ── */}
       <div className="absolute inset-0 pointer-events-none" aria-hidden="true"
@@ -145,7 +145,7 @@ export default function InnerHero({
 
         {/* Title */}
         <h1
-          className="text-5xl sm:text-6xl lg:text-7xl font-black text-white leading-[1.0] mb-6 animate-[heroFadeUp_0.6s_0.1s_ease-out_both]"
+          className="text-4xl sm:text-6xl lg:text-7xl font-black text-white leading-[1.05] sm:leading-[1.0] mb-6 animate-[heroFadeUp_0.6s_0.1s_ease-out_both]"
           style={{ letterSpacing: '-0.03em' }}
         >
           {title}
@@ -153,7 +153,7 @@ export default function InnerHero({
 
         {/* Description */}
         <p
-          className="text-gray-400 text-lg leading-relaxed mb-10 max-w-2xl animate-[heroFadeUp_0.6s_0.2s_ease-out_both]"
+          className="text-gray-400 text-base sm:text-lg leading-relaxed mb-8 sm:mb-10 max-w-2xl animate-[heroFadeUp_0.6s_0.2s_ease-out_both]"
           style={{ lineHeight: '1.7' }}
         >
           {description}

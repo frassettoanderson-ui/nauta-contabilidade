@@ -8,18 +8,28 @@ export const authOptions: NextAuthOptions = {
     CredentialsProvider({
       name: 'credentials',
       credentials: {
-        email: { label: 'Email', type: 'email' },
+        email: { label: 'Usuário', type: 'text' },
         password: { label: 'Senha', type: 'password' },
       },
       async authorize(credentials) {
         try {
           if (!credentials?.email || !credentials?.password) return null
-          const res = await pool.query('SELECT * FROM admin_users WHERE email = $1', [credentials.email])
+          const ident = credentials.email.trim().toLowerCase()
+          const res = await pool.query(
+            'SELECT * FROM admin_users WHERE lower(username) = $1 OR lower(email) = $1',
+            [ident]
+          )
           const user = res.rows[0]
           if (!user) return null
           const valid = await bcrypt.compare(credentials.password, user.password_hash)
           if (!valid) return null
-          return { id: user.id, email: user.email }
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.username || user.email,
+            role: user.role || 'gerente',
+            mustChangePassword: !!user.must_change_password,
+          } as never
         } catch (e) {
           console.error('[AUTH] ERRO:', e)
           return null
@@ -27,7 +37,30 @@ export const authOptions: NextAuthOptions = {
       },
     }),
   ],
-  pages: { signIn: '/admin/login' },
+  pages: { signIn: '/sistema/login' },
   session: { strategy: 'jwt' },
   secret: process.env.NEXTAUTH_SECRET,
+  callbacks: {
+    async jwt({ token, user, trigger, session }) {
+      if (user) {
+        const u = user as unknown as { id: string; role: string; mustChangePassword: boolean }
+        token.uid = u.id
+        token.role = u.role
+        token.mustChangePassword = u.mustChangePassword
+      }
+      if (trigger === 'update' && session?.mustChangePassword === false) {
+        token.mustChangePassword = false
+      }
+      return token
+    },
+    async session({ session, token }) {
+      if (session.user) {
+        const su = session.user as unknown as { id?: string; role?: string; mustChangePassword?: boolean }
+        su.id = token.uid as string
+        su.role = token.role as string
+        su.mustChangePassword = token.mustChangePassword as boolean
+      }
+      return session
+    },
+  },
 }

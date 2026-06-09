@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { Loader2 } from 'lucide-react'
 import Sidebar from '@/components/sistema/Sidebar'
+import ForcePasswordChange from '@/components/sistema/ForcePasswordChange'
 
 export default function PainelLayout({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession()
@@ -22,6 +23,8 @@ export default function PainelLayout({ children }: { children: React.ReactNode }
     )
   }
 
+  const mustChange = (session.user as unknown as { mustChangePassword?: boolean })?.mustChangePassword
+
   return (
     <div className="min-h-screen" style={{ background: '#0a0918' }}>
       <Sidebar email={session.user?.email} />
@@ -29,6 +32,7 @@ export default function PainelLayout({ children }: { children: React.ReactNode }
       <div className="lg:pl-64 pt-14 lg:pt-0">
         {children}
       </div>
+      {mustChange && <ForcePasswordChange />}
     </div>
   )
 }

@@ -6,6 +6,7 @@ import { ptBR } from 'date-fns/locale'
 import { Loader2, Inbox, Search, MessageCircle, Mail } from 'lucide-react'
 import { getLeads, type LeadRow } from '@/lib/api'
 import { ETAPA_LABEL } from '@/lib/crm-config'
+import { useRealtime } from '@/components/sistema/useRealtime'
 
 const ETAPA_COLOR: Record<string, string> = {
   novo: '#0BBCD4', contato: '#7c6fff', negociacao: '#f59e0b', fechado: '#22c55e', perdido: '#ef4444',
@@ -18,9 +19,11 @@ export default function LeadsPage() {
   useEffect(() => {
     const fetchLeads = () => getLeads().then(setLeads).catch(() => {})
     fetchLeads()
-    const t = setInterval(fetchLeads, 7000) // atualização automática
+    const t = setInterval(fetchLeads, 30000) // reserva
     return () => clearInterval(t)
   }, [])
+  // Tempo real (SSE)
+  useRealtime(() => { getLeads().then(setLeads).catch(() => {}) })
 
   const filtered = (leads ?? []).filter(l => {
     if (!busca.trim()) return true

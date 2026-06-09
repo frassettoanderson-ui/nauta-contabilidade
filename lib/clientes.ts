@@ -1,4 +1,5 @@
 import pool from './db'
+import { emitCrmChange } from './realtime'
 
 const CLI_COLS = [
   'cli_nome_completo', 'cli_rg', 'cli_cpf', 'cli_nascimento', 'cli_nome_pai', 'cli_nome_mae',
@@ -66,11 +67,13 @@ export async function saveCliente(payload: AnyObj & { id?: string; lead_id?: str
     await pool.query(`INSERT INTO cliente_socios (${cols.join(', ')}) VALUES (${ph})`, vals)
   }
 
+  emitCrmChange()
   return clienteId
 }
 
 export async function deleteCliente(id: string) {
   await pool.query(`DELETE FROM clientes WHERE id = $1`, [id])
+  emitCrmChange()
 }
 
 export async function generateLinkToken(id: string): Promise<string> {

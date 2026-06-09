@@ -1,5 +1,6 @@
 import pool from './db'
 import { isCadastroCompleto } from './cadastro'
+import { emitCrmChange } from './realtime'
 
 export type Lead = {
   id?: string
@@ -42,6 +43,7 @@ export async function insertLead(lead: {
     [lead.nome, lead.whatsapp, lead.email, lead.interesse, lead.etapa ?? 'novo', lead.classificacao ?? 0,
      lead.responsavel_id ?? null, lead.responsavel_nome ?? null]
   )
+  emitCrmChange()
   return res.rows[0]
 }
 
@@ -97,10 +99,12 @@ export async function updateLead(id: string, fields: Partial<{ nome: string; wha
   const sets = keys.map((k, i) => `${k} = $${i + 2}`).join(', ')
   const values = keys.map(k => (fields as Record<string, unknown>)[k])
   await pool.query(`UPDATE leads SET ${sets} WHERE id = $1`, [id, ...values])
+  emitCrmChange()
 }
 
 export async function deleteLead(id: string) {
   await pool.query(`DELETE FROM leads WHERE id = $1`, [id])
+  emitCrmChange()
 }
 
 // ─── ATIVIDADES ──────────────────────────────────────────────────────────
@@ -110,6 +114,7 @@ export async function addAtividade(leadId: string, descricao: string, autor: str
     `INSERT INTO lead_atividades (lead_id, descricao, autor) VALUES ($1, $2, $3) RETURNING *`,
     [leadId, descricao, autor]
   )
+  emitCrmChange()
   return res.rows[0]
 }
 
@@ -120,15 +125,18 @@ export async function addLembrete(leadId: string, descricao: string, data: strin
     `INSERT INTO lead_lembretes (lead_id, descricao, data, hora) VALUES ($1, $2, $3, $4) RETURNING *`,
     [leadId, descricao, data, hora || null]
   )
+  emitCrmChange()
   return res.rows[0]
 }
 
 export async function toggleLembrete(id: string, concluido: boolean) {
   await pool.query(`UPDATE lead_lembretes SET concluido = $1 WHERE id = $2`, [concluido, id])
+  emitCrmChange()
 }
 
 export async function deleteLembrete(id: string) {
   await pool.query(`DELETE FROM lead_lembretes WHERE id = $1`, [id])
+  emitCrmChange()
 }
 
 /** Lembretes pendentes (não concluídos) com nome do lead, p/ notificações. */

@@ -9,6 +9,7 @@ import ClassBar from '@/components/sistema/ClassBar'
 import AddLeadModal from '@/components/sistema/AddLeadModal'
 import LeadModal from '@/components/sistema/LeadModal'
 import FecharNegociacaoModal from '@/components/sistema/FecharNegociacaoModal'
+import { useRealtime } from '@/components/sistema/useRealtime'
 
 export default function KanbanPage() {
   const router = useRouter()
@@ -28,9 +29,11 @@ export default function KanbanPage() {
   const interagindoRef = useRef(interagindo)
   interagindoRef.current = interagindo
   useEffect(() => {
-    const t = setInterval(() => { if (!interagindoRef.current) getLeads().then(setLeads).catch(() => {}) }, 7000)
+    const t = setInterval(() => { if (!interagindoRef.current) getLeads().then(setLeads).catch(() => {}) }, 30000)
     return () => clearInterval(t)
   }, [])
+  // Tempo real (SSE): atualiza na hora quando alguém mexe
+  useRealtime(() => { if (!interagindoRef.current) getLeads().then(setLeads).catch(() => {}) })
 
   function moveLead(id: string, etapa: string) {
     setLeads(prev => prev ? prev.map(l => l.id === id ? { ...l, etapa } : l) : prev)

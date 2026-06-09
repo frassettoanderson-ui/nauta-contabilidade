@@ -105,6 +105,8 @@ export interface LeadRow {
   classificacao: number
   criado_em: string
   lembretes_pendentes?: number | string
+  cliente_id?: string | null
+  cadastro_completo?: boolean
 }
 
 export interface AtividadeRow {
@@ -207,6 +209,14 @@ export function getCliente(id: string): Promise<Record<string, unknown>> {
 
 export function listClientes(): Promise<Record<string, unknown>[]> {
   return fetch('/api/clientes').then(r => json<Record<string, unknown>[]>(r))
+}
+
+export function deleteCliente(id: string): Promise<void> {
+  return fetch(`/api/clientes/${id}`, { method: 'DELETE' }).then(r => json(r)).then(() => undefined)
+}
+
+export function gerarLinkCadastro(id: string): Promise<{ token: string; url: string }> {
+  return fetch(`/api/clientes/${id}/link`, { method: 'POST' }).then(r => json<{ token: string; url: string }>(r))
 }
 
 // ─── USUÁRIOS ────────────────────────────────────────────────────────────────

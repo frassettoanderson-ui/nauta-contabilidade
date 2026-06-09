@@ -1,4 +1,5 @@
 import pool from './db'
+import { isCadastroCompleto } from './cadastro'
 
 export type Lead = {
   id?: string
@@ -50,7 +51,26 @@ export async function getLeads() {
      FROM leads l
      ORDER BY l.criado_em DESC`
   )
-  return res.rows
+  const leads = res.rows
+
+  // Anexa info de cadastro (id + completude) por lead
+  const cli = await pool.query(`SELECT * FROM clientes WHERE lead_id IS NOT NULL`)
+  const soc = await pool.query(`SELECT * FROM cliente_socios`)
+  const sociosByCliente: Record<string, unknown[]> = {}
+  for (const s of soc.rows) {
+    (sociosByCliente[s.cliente_id] ||= []).push(s)
+  }
+  const cliByLead: Record<string, Record<string, unknown>> = {}
+  for (const c of cli.rows) {
+    cliByLead[c.lead_id] = { ...c, socios: sociosByCliente[c.id] || [] }
+  }
+
+  for (const l of leads) {
+    const c = cliByLead[l.id]
+    l.cliente_id = c ? c.id : null
+    l.cadastro_completo = isCadastroCompleto(c)
+  }
+  return leads
 }
 
 export async function getLeadDetail(id: string) {

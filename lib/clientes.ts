@@ -67,3 +67,19 @@ export async function saveCliente(payload: AnyObj & { id?: string; lead_id?: str
 
   return clienteId
 }
+
+export async function deleteCliente(id: string) {
+  await pool.query(`DELETE FROM clientes WHERE id = $1`, [id])
+}
+
+export async function generateLinkToken(id: string): Promise<string> {
+  const token = `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 12)}`
+  await pool.query(`UPDATE clientes SET link_token = $1 WHERE id = $2`, [token, id])
+  return token
+}
+
+export async function getClienteByToken(token: string) {
+  const res = await pool.query(`SELECT id FROM clientes WHERE link_token = $1 LIMIT 1`, [token])
+  if (!res.rows[0]) return null
+  return getCliente(res.rows[0].id)
+}

@@ -160,7 +160,7 @@ export default function Header({ onOpenLead }: HeaderProps) {
             {/* Separador vertical */}
             <div className="w-px h-5 bg-white/10 mx-1" aria-hidden="true" />
 
-            <Link href="/login"
+            <Link href="/sistema/login"
               className="px-4 py-2 text-sm font-semibold text-white/70 hover:text-white border border-white/15 hover:border-white/30 rounded transition-all">
               Entrar
             </Link>
@@ -229,7 +229,7 @@ export default function Header({ onOpenLead }: HeaderProps) {
               </div>
             )}
             <div className="pt-4 pb-2 flex flex-col gap-2">
-              <Link href="/login" onClick={() => setMobileOpen(false)}
+              <Link href="/sistema/login" onClick={() => setMobileOpen(false)}
                 className="block text-center border border-white/15 text-white font-semibold py-3 rounded text-sm hover:border-white/30 transition-colors">
                 Entrar
               </Link>

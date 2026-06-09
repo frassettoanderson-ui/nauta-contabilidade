@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Loader2, Plus, Bell, Check, XCircle, FileText } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { Loader2, Plus, Bell, Check, XCircle, FileText, MessageCircle, Pencil, ClipboardCheck, AlertCircle } from 'lucide-react'
 import { getLeads, updateLead, type LeadRow } from '@/lib/api'
 import { ETAPAS } from '@/lib/crm-config'
 import ClassBar from '@/components/sistema/ClassBar'
@@ -9,9 +10,11 @@ import AddLeadModal from '@/components/sistema/AddLeadModal'
 import LeadModal from '@/components/sistema/LeadModal'
 
 export default function KanbanPage() {
+  const router = useRouter()
   const [leads, setLeads] = useState<LeadRow[] | null>(null)
   const [adding, setAdding] = useState(false)
   const [openId, setOpenId] = useState<string | null>(null)
+  const [modalMode, setModalMode] = useState<'view' | 'edit' | 'lembrete'>('view')
   const [dragId, setDragId] = useState<string | null>(null)
   const [overCol, setOverCol] = useState<string | null>(null)
 
@@ -22,18 +25,27 @@ export default function KanbanPage() {
     setLeads(prev => prev ? prev.map(l => l.id === id ? { ...l, etapa } : l) : prev)
     updateLead(id, { etapa }).catch(load)
   }
-
   function onDrop(etapa: string) {
     setOverCol(null)
-    const id = dragId
-    setDragId(null)
+    const id = dragId; setDragId(null)
     if (!id || !leads) return
     const lead = leads.find(l => l.id === id)
     if (!lead || lead.etapa === etapa) return
     moveLead(id, etapa)
   }
+  function abrir(id: string, mode: 'view' | 'edit' | 'lembrete') { setModalMode(mode); setOpenId(id) }
 
   const pend = (l: LeadRow) => Number(l.lembretes_pendentes ?? 0) > 0
+  const waLink = (tel: string) => `https://wa.me/55${(tel || '').replace(/\D/g, '')}`
+
+  function AcaoBtn({ title, onClick, children, color = '#9ca3af' }: { title: string; onClick: () => void; children: React.ReactNode; color?: string }) {
+    return (
+      <button title={title} onClick={e => { e.stopPropagation(); onClick() }}
+        className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors hover:bg-white/10" style={{ color }}>
+        {children}
+      </button>
+    )
+  }
 
   return (
     <div className="p-6 lg:p-8">
@@ -59,82 +71,92 @@ export default function KanbanPage() {
               .sort((a, b) => (b.classificacao ?? 0) - (a.classificacao ?? 0) || new Date(b.criado_em).getTime() - new Date(a.criado_em).getTime())
             const isOver = overCol === col.id
             return (
-              <div
-                key={col.id}
+              <div key={col.id}
                 onDragOver={e => { e.preventDefault(); setOverCol(col.id) }}
                 onDragLeave={() => setOverCol(c => c === col.id ? null : c)}
                 onDrop={() => onDrop(col.id)}
-                className="w-80 shrink-0"
-              >
+                className="w-80 shrink-0">
                 <div className="flex items-center gap-2 mb-3 px-1">
                   <span className="w-2.5 h-2.5 rounded-full" style={{ background: col.color }} />
                   <h2 className="text-sm font-bold text-white">{col.label}</h2>
                   <span className="text-xs text-gray-500 ml-auto">{cards.length}</span>
                 </div>
-                <div
-                  className="space-y-2.5 rounded-2xl p-2.5 min-h-[62vh] transition-colors duration-200"
-                  style={{
-                    background: isOver ? 'rgba(11,188,212,0.07)' : 'rgba(255,255,255,0.02)',
-                    border: `1px solid ${isOver ? 'rgba(11,188,212,0.35)' : 'rgba(255,255,255,0.06)'}`,
-                  }}
-                >
+                <div className="space-y-2.5 rounded-2xl p-2.5 min-h-[62vh] transition-colors duration-200"
+                  style={{ background: isOver ? 'rgba(11,188,212,0.07)' : 'rgba(255,255,255,0.02)', border: `1px solid ${isOver ? 'rgba(11,188,212,0.35)' : 'rgba(255,255,255,0.06)'}` }}>
                   {cards.map(l => {
                     const dragging = dragId === l.id
+                    const fechado = col.id === 'fechado'
+                    const temPend = pend(l)
                     return (
-                      <div
-                        key={l.id}
-                        draggable
+                      <div key={l.id}
+                        draggable={!fechado}
                         onDragStart={e => {
+                          if (fechado) { e.preventDefault(); return }
                           e.dataTransfer.effectAllowed = 'move'
                           try { e.dataTransfer.setDragImage(e.currentTarget, 24, 24) } catch {}
                           setDragId(l.id)
                         }}
                         onDragEnd={() => { setDragId(null); setOverCol(null) }}
-                        onClick={() => setOpenId(l.id)}
-                        className="rounded-xl p-3.5 cursor-grab active:cursor-grabbing"
+                        onClick={() => abrir(l.id, 'view')}
+                        className="rounded-xl p-3.5 cursor-pointer"
                         style={{
                           background: '#15132a',
-                          border: `1px solid ${dragging ? 'rgba(11,188,212,0.5)' : 'rgba(255,255,255,0.08)'}`,
+                          border: `1px solid ${temPend ? 'rgba(245,158,11,0.5)' : dragging ? 'rgba(11,188,212,0.5)' : 'rgba(255,255,255,0.08)'}`,
+                          borderLeft: temPend ? '3px solid #f59e0b' : undefined,
                           transform: dragging ? 'scale(1.04) rotate(-1.5deg)' : 'scale(1)',
                           boxShadow: dragging ? '0 18px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(11,188,212,0.3)' : '0 1px 2px rgba(0,0,0,0.2)',
                           transition: 'transform 0.18s cubic-bezier(0.16,1,0.3,1), box-shadow 0.18s ease, border-color 0.18s ease',
-                        }}
-                      >
+                        }}>
                         <div className="flex items-start justify-between gap-2">
                           <p className="text-white text-sm font-semibold truncate">{l.nome}</p>
-                          {pend(l) && (
-                            <span className="shrink-0 flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(245,158,11,0.15)', color: '#f59e0b' }}>
+                          {temPend && (
+                            <span className="shrink-0 flex items-center gap-0.5 text-[10px] font-bold px-2 py-0.5 rounded-full animate-pulse" style={{ background: '#f59e0b', color: '#1a1830' }}>
                               <Bell size={10} /> hoje
                             </span>
                           )}
                         </div>
                         {l.interesse && <p className="text-[#0BBCD4] text-xs mt-0.5 truncate">{l.interesse}</p>}
-                        {l.whatsapp && <p className="text-gray-500 text-xs mt-1 truncate">{l.whatsapp}</p>}
                         <div className="mt-2.5"><ClassBar value={l.classificacao ?? 0} /></div>
 
-                        {/* Ações da etapa "Em negociação" */}
+                        {/* Ações rápidas */}
+                        <div className="flex items-center gap-1 mt-3 pt-2.5 border-t" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+                          <a title="WhatsApp" href={waLink(l.whatsapp)} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}
+                            className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors hover:bg-green-500/15" style={{ color: '#25D366' }}>
+                            <MessageCircle size={15} />
+                          </a>
+                          <AcaoBtn title="Editar" onClick={() => abrir(l.id, 'edit')}><Pencil size={14} /></AcaoBtn>
+                          <AcaoBtn title="Cadastro completo" onClick={() => router.push(`/sistema/clientes/cadastrar?lead=${l.id}`)} color="#22c55e"><ClipboardCheck size={15} /></AcaoBtn>
+                          <AcaoBtn title="Cadastrar lembrete" onClick={() => abrir(l.id, 'lembrete')} color="#f59e0b"><Bell size={14} /></AcaoBtn>
+                        </div>
+
+                        {/* Em negociação */}
                         {col.id === 'negociacao' && (
                           <div className="flex gap-2 mt-3" onClick={e => e.stopPropagation()}>
-                            <button onClick={() => moveLead(l.id, 'fechado')}
-                              className="flex-1 flex items-center justify-center gap-1 h-8 rounded-lg text-xs font-bold text-white transition-colors"
-                              style={{ background: '#22c55e' }}>
-                              <Check size={13} /> Fechado
-                            </button>
-                            <button onClick={() => moveLead(l.id, 'perdido')}
-                              className="flex-1 flex items-center justify-center gap-1 h-8 rounded-lg text-xs font-bold text-white transition-colors"
-                              style={{ background: '#ef4444' }}>
-                              <XCircle size={13} /> Perdido
-                            </button>
+                            <button onClick={() => moveLead(l.id, 'fechado')} className="flex-1 flex items-center justify-center gap-1 h-8 rounded-lg text-xs font-bold text-white" style={{ background: '#22c55e' }}><Check size={13} /> Fechado</button>
+                            <button onClick={() => moveLead(l.id, 'perdido')} className="flex-1 flex items-center justify-center gap-1 h-8 rounded-lg text-xs font-bold text-white" style={{ background: '#ef4444' }}><XCircle size={13} /> Perdido</button>
                           </div>
                         )}
 
-                        {/* Gerar contrato (etapa Fechado) */}
-                        {col.id === 'fechado' && (
-                          <button onClick={e => { e.stopPropagation(); alert('Geração de contrato será habilitada em breve.') }}
-                            className="w-full flex items-center justify-center gap-1.5 h-8 mt-3 rounded-lg text-xs font-bold text-white"
-                            style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)' }}>
-                            <FileText size={13} /> Gerar contrato
-                          </button>
+                        {/* Fechado: gerar contrato / cadastro incompleto */}
+                        {fechado && (
+                          <div className="mt-3" onClick={e => e.stopPropagation()}>
+                            {l.cadastro_completo ? (
+                              <button onClick={() => alert('Geração de contrato será habilitada em breve.')}
+                                className="w-full flex items-center justify-center gap-1.5 h-8 rounded-lg text-xs font-bold text-white" style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)' }}>
+                                <FileText size={13} /> Gerar contrato
+                              </button>
+                            ) : (
+                              <>
+                                <button disabled className="w-full flex items-center justify-center gap-1.5 h-8 rounded-lg text-xs font-bold text-gray-500 cursor-not-allowed" style={{ background: 'rgba(255,255,255,0.05)' }}>
+                                  <FileText size={13} /> Gerar contrato
+                                </button>
+                                <button onClick={() => router.push(`/sistema/clientes/cadastrar?lead=${l.id}`)}
+                                  className="w-full flex items-center justify-center gap-1 mt-1.5 text-[11px] font-bold text-red-400 animate-pulse">
+                                  <AlertCircle size={11} /> Cadastro do cliente incompleto, clique aqui
+                                </button>
+                              </>
+                            )}
+                          </div>
                         )}
                       </div>
                     )
@@ -148,7 +170,7 @@ export default function KanbanPage() {
       )}
 
       {adding && <AddLeadModal onClose={() => setAdding(false)} onCreated={() => load()} />}
-      {openId && <LeadModal leadId={openId} onClose={() => setOpenId(null)} onChanged={load} />}
+      {openId && <LeadModal leadId={openId} mode={modalMode} onClose={() => setOpenId(null)} onChanged={load} />}
     </div>
   )
 }

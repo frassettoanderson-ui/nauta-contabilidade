@@ -10,17 +10,19 @@ import {
 } from 'lucide-react'
 import {
   getLeadDetail, updateLead, deleteLead, addAtividade, addLembrete, toggleLembrete, deleteLembrete,
-  type LeadDetail,
+  getClienteByLead, type LeadDetail,
 } from '@/lib/api'
 import { ETAPAS, INTERESSES } from '@/lib/crm-config'
+import { isCadastroCompleto } from '@/lib/cadastro'
 import ClassBar from './ClassBar'
 
 const todayStr = () => new Date().toISOString().slice(0, 10)
 const dOnly = (s: string) => s.slice(0, 10)
 const FS = { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.10)' }
 
-export default function LeadModal({ leadId, onClose, onChanged }: { leadId: string; onClose: () => void; onChanged: () => void }) {
+export default function LeadModal({ leadId, onClose, onChanged, mode = 'view' }: { leadId: string; onClose: () => void; onChanged: () => void; mode?: 'view' | 'edit' | 'lembrete' }) {
   const [d, setD] = useState<LeadDetail | null>(null)
+  const [cadastroCompleto, setCadastroCompleto] = useState(false)
   const [editing, setEditing] = useState(false)
   const [edit, setEdit] = useState({ nome: '', whatsapp: '', email: '', interesse: '' })
   const [novaAtiv, setNovaAtiv] = useState('')
@@ -30,7 +32,13 @@ export default function LeadModal({ leadId, onClose, onChanged }: { leadId: stri
   const [busy, setBusy] = useState(false)
   const router = useRouter()
 
-  const load = useCallback(() => { getLeadDetail(leadId).then(setD) }, [leadId])
+  const load = useCallback(() => {
+    getLeadDetail(leadId).then(d => {
+      setD(d)
+      if (mode === 'edit') { setEdit({ nome: d.nome, whatsapp: d.whatsapp || '', email: d.email || '', interesse: d.interesse || '' }); setEditing(true) }
+    })
+    getClienteByLead(leadId).then(c => setCadastroCompleto(isCadastroCompleto(c))).catch(() => setCadastroCompleto(false))
+  }, [leadId, mode])
   useEffect(() => { load() }, [load])
 
   function startEdit() {
@@ -92,11 +100,20 @@ export default function LeadModal({ leadId, onClose, onChanged }: { leadId: stri
                 )}
                 {!editing && <p className="text-gray-500 text-xs mt-0.5">{d.interesse || 'Sem interesse definido'}</p>}
               </div>
-              <div className="flex items-center gap-1 shrink-0">
-                {!editing && <button onClick={() => router.push(`/sistema/clientes/cadastrar?lead=${leadId}`)} className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-[#22c55e] hover:bg-white/5" title="Cadastro completo"><ClipboardCheck size={16} /></button>}
-                {!editing && <button onClick={startEdit} className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-[#0BBCD4] hover:bg-white/5" title="Editar"><Pencil size={15} /></button>}
-                <button onClick={remover} className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-500 hover:text-red-400 hover:bg-red-500/10" title="Excluir"><Trash2 size={15} /></button>
-                <button onClick={onClose} className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-white"><X size={18} /></button>
+              <div className="flex items-center gap-1.5 shrink-0">
+                {!editing && (() => {
+                  const piscando = d.etapa === 'fechado' && !cadastroCompleto
+                  return (
+                    <button onClick={() => router.push(`/sistema/clientes/cadastrar?lead=${leadId}`)} title="Cadastro completo"
+                      className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${piscando ? 'animate-pulse' : 'hover:bg-white/5'}`}
+                      style={piscando ? { background: 'rgba(239,68,68,0.18)', color: '#f87171', border: '1px solid rgba(239,68,68,0.4)' } : { background: 'rgba(34,197,94,0.12)', color: '#22c55e', border: '1px solid rgba(34,197,94,0.25)' }}>
+                      <ClipboardCheck size={19} />
+                    </button>
+                  )
+                })()}
+                {!editing && <button onClick={startEdit} className="w-10 h-10 rounded-xl flex items-center justify-center text-gray-300 hover:text-[#0BBCD4] hover:bg-white/5" title="Editar"><Pencil size={18} /></button>}
+                <button onClick={remover} className="w-10 h-10 rounded-xl flex items-center justify-center text-gray-400 hover:text-red-400 hover:bg-red-500/10" title="Excluir"><Trash2 size={18} /></button>
+                <button onClick={onClose} className="w-10 h-10 rounded-xl flex items-center justify-center text-gray-400 hover:text-white"><X size={20} /></button>
               </div>
             </div>
 
@@ -224,11 +241,23 @@ export default function LeadModal({ leadId, onClose, onChanged }: { leadId: stri
 
                 {/* Gerar contrato (quando fechado) */}
                 {d.etapa === 'fechado' && (
-                  <button onClick={() => alert('Geração de contrato será habilitada em breve.')}
-                    className="mt-5 w-full h-11 rounded-xl font-bold text-white flex items-center justify-center gap-2"
-                    style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)' }}>
-                    <FileText size={16} /> Gerar contrato
-                  </button>
+                  cadastroCompleto ? (
+                    <button onClick={() => alert('Geração de contrato será habilitada em breve.')}
+                      className="mt-5 w-full h-11 rounded-xl font-bold text-white flex items-center justify-center gap-2"
+                      style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)' }}>
+                      <FileText size={16} /> Gerar contrato
+                    </button>
+                  ) : (
+                    <div className="mt-5">
+                      <button disabled className="w-full h-11 rounded-xl font-bold text-gray-500 flex items-center justify-center gap-2 cursor-not-allowed" style={{ background: 'rgba(255,255,255,0.05)' }}>
+                        <FileText size={16} /> Gerar contrato
+                      </button>
+                      <button onClick={() => router.push(`/sistema/clientes/cadastrar?lead=${leadId}`)}
+                        className="w-full mt-2 text-xs font-bold text-red-400 animate-pulse">
+                        Cadastro do cliente incompleto, clique aqui
+                      </button>
+                    </div>
+                  )
                 )}
               </>
             )}

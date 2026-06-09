@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from "react"
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect } from "react"
 import { motion, AnimatePresence, type Variants } from "framer-motion"
 
 interface AnimatedTextCycleProps {
@@ -16,18 +16,6 @@ export default function AnimatedTextCycle({
   className = "",
 }: AnimatedTextCycleProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
-  const [width, setWidth]               = useState("auto")
-  const measureRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (measureRef.current) {
-      const elements = measureRef.current.children
-      if (elements.length > currentIndex) {
-        const newWidth = elements[currentIndex].getBoundingClientRect().width
-        setWidth(`${newWidth}px`)
-      }
-    }
-  }, [currentIndex])
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -46,26 +34,8 @@ export default function AnimatedTextCycle({
 
   return (
     <>
-      {/* Div oculta para medir largura de cada palavra */}
-      <div
-        ref={measureRef}
-        aria-hidden="true"
-        className="absolute opacity-0 pointer-events-none"
-        style={{ visibility: "hidden" }}
-      >
-        {words.map((word, i) => (
-          <span key={i} className={`font-black ${className}`}>{word}</span>
-        ))}
-      </div>
-
       {/* Palavra animada */}
-      <motion.span
-        className="relative inline-block"
-        animate={{
-          width,
-          transition: { type: "spring", stiffness: 150, damping: 15, mass: 1.2 },
-        }}
-      >
+      <span className="relative inline-block max-w-full align-top">
         <AnimatePresence mode="wait" initial={false}>
           <motion.span
             key={currentIndex}
@@ -74,12 +44,11 @@ export default function AnimatedTextCycle({
             initial="hidden"
             animate="visible"
             exit="exit"
-            style={{ whiteSpace: "nowrap" }}
           >
             {words[currentIndex]}
           </motion.span>
         </AnimatePresence>
-      </motion.span>
+      </span>
     </>
   )
 }

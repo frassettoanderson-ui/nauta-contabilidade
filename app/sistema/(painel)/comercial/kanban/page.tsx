@@ -1,12 +1,12 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Loader2, Plus, Bell } from 'lucide-react'
+import { Loader2, Plus, Bell, Check, XCircle, FileText } from 'lucide-react'
 import { getLeads, updateLead, type LeadRow } from '@/lib/api'
 import { ETAPAS } from '@/lib/crm-config'
 import ClassBar from '@/components/sistema/ClassBar'
 import AddLeadModal from '@/components/sistema/AddLeadModal'
-import LeadDrawer from '@/components/sistema/LeadDrawer'
+import LeadModal from '@/components/sistema/LeadModal'
 
 export default function KanbanPage() {
   const [leads, setLeads] = useState<LeadRow[] | null>(null)
@@ -18,6 +18,11 @@ export default function KanbanPage() {
   const load = () => getLeads().then(setLeads).catch(() => setLeads([]))
   useEffect(() => { load() }, [])
 
+  function moveLead(id: string, etapa: string) {
+    setLeads(prev => prev ? prev.map(l => l.id === id ? { ...l, etapa } : l) : prev)
+    updateLead(id, { etapa }).catch(load)
+  }
+
   function onDrop(etapa: string) {
     setOverCol(null)
     const id = dragId
@@ -25,8 +30,7 @@ export default function KanbanPage() {
     if (!id || !leads) return
     const lead = leads.find(l => l.id === id)
     if (!lead || lead.etapa === etapa) return
-    setLeads(leads.map(l => l.id === id ? { ...l, etapa } : l))
-    updateLead(id, { etapa }).catch(load)
+    moveLead(id, etapa)
   }
 
   const pend = (l: LeadRow) => Number(l.lembretes_pendentes ?? 0) > 0
@@ -50,7 +54,9 @@ export default function KanbanPage() {
       ) : (
         <div className="flex gap-5 overflow-x-auto pb-4">
           {ETAPAS.map(col => {
-            const cards = leads.filter(l => (l.etapa || 'novo') === col.id)
+            const cards = leads
+              .filter(l => (l.etapa || 'novo') === col.id)
+              .sort((a, b) => (b.classificacao ?? 0) - (a.classificacao ?? 0) || new Date(b.criado_em).getTime() - new Date(a.criado_em).getTime())
             const isOver = overCol === col.id
             return (
               <div
@@ -66,35 +72,73 @@ export default function KanbanPage() {
                   <span className="text-xs text-gray-500 ml-auto">{cards.length}</span>
                 </div>
                 <div
-                  className="space-y-2.5 rounded-2xl p-2.5 min-h-[60vh] transition-colors"
+                  className="space-y-2.5 rounded-2xl p-2.5 min-h-[62vh] transition-colors duration-200"
                   style={{
-                    background: isOver ? 'rgba(11,188,212,0.06)' : 'rgba(255,255,255,0.02)',
-                    border: `1px solid ${isOver ? 'rgba(11,188,212,0.3)' : 'rgba(255,255,255,0.06)'}`,
+                    background: isOver ? 'rgba(11,188,212,0.07)' : 'rgba(255,255,255,0.02)',
+                    border: `1px solid ${isOver ? 'rgba(11,188,212,0.35)' : 'rgba(255,255,255,0.06)'}`,
                   }}
                 >
-                  {cards.map(l => (
-                    <div
-                      key={l.id}
-                      draggable
-                      onDragStart={() => setDragId(l.id)}
-                      onDragEnd={() => { setDragId(null); setOverCol(null) }}
-                      onClick={() => setOpenId(l.id)}
-                      className="rounded-xl p-3.5 cursor-pointer transition-all hover:-translate-y-0.5"
-                      style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', opacity: dragId === l.id ? 0.4 : 1 }}
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <p className="text-white text-sm font-semibold truncate">{l.nome}</p>
-                        {pend(l) && (
-                          <span className="shrink-0 flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(245,158,11,0.15)', color: '#f59e0b' }}>
-                            <Bell size={10} /> hoje
-                          </span>
+                  {cards.map(l => {
+                    const dragging = dragId === l.id
+                    return (
+                      <div
+                        key={l.id}
+                        draggable
+                        onDragStart={e => {
+                          e.dataTransfer.effectAllowed = 'move'
+                          try { e.dataTransfer.setDragImage(e.currentTarget, 24, 24) } catch {}
+                          setDragId(l.id)
+                        }}
+                        onDragEnd={() => { setDragId(null); setOverCol(null) }}
+                        onClick={() => setOpenId(l.id)}
+                        className="rounded-xl p-3.5 cursor-grab active:cursor-grabbing"
+                        style={{
+                          background: '#15132a',
+                          border: `1px solid ${dragging ? 'rgba(11,188,212,0.5)' : 'rgba(255,255,255,0.08)'}`,
+                          transform: dragging ? 'scale(1.04) rotate(-1.5deg)' : 'scale(1)',
+                          boxShadow: dragging ? '0 18px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(11,188,212,0.3)' : '0 1px 2px rgba(0,0,0,0.2)',
+                          transition: 'transform 0.18s cubic-bezier(0.16,1,0.3,1), box-shadow 0.18s ease, border-color 0.18s ease',
+                        }}
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <p className="text-white text-sm font-semibold truncate">{l.nome}</p>
+                          {pend(l) && (
+                            <span className="shrink-0 flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(245,158,11,0.15)', color: '#f59e0b' }}>
+                              <Bell size={10} /> hoje
+                            </span>
+                          )}
+                        </div>
+                        {l.interesse && <p className="text-[#0BBCD4] text-xs mt-0.5 truncate">{l.interesse}</p>}
+                        {l.whatsapp && <p className="text-gray-500 text-xs mt-1 truncate">{l.whatsapp}</p>}
+                        <div className="mt-2.5"><ClassBar value={l.classificacao ?? 0} /></div>
+
+                        {/* Ações da etapa "Em negociação" */}
+                        {col.id === 'negociacao' && (
+                          <div className="flex gap-2 mt-3" onClick={e => e.stopPropagation()}>
+                            <button onClick={() => moveLead(l.id, 'fechado')}
+                              className="flex-1 flex items-center justify-center gap-1 h-8 rounded-lg text-xs font-bold text-white transition-colors"
+                              style={{ background: '#22c55e' }}>
+                              <Check size={13} /> Fechado
+                            </button>
+                            <button onClick={() => moveLead(l.id, 'perdido')}
+                              className="flex-1 flex items-center justify-center gap-1 h-8 rounded-lg text-xs font-bold text-white transition-colors"
+                              style={{ background: '#ef4444' }}>
+                              <XCircle size={13} /> Perdido
+                            </button>
+                          </div>
+                        )}
+
+                        {/* Gerar contrato (etapa Fechado) */}
+                        {col.id === 'fechado' && (
+                          <button onClick={e => { e.stopPropagation(); alert('Geração de contrato será habilitada em breve.') }}
+                            className="w-full flex items-center justify-center gap-1.5 h-8 mt-3 rounded-lg text-xs font-bold text-white"
+                            style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)' }}>
+                            <FileText size={13} /> Gerar contrato
+                          </button>
                         )}
                       </div>
-                      {l.interesse && <p className="text-[#0BBCD4] text-xs mt-0.5 truncate">{l.interesse}</p>}
-                      {l.whatsapp && <p className="text-gray-500 text-xs mt-1 truncate">{l.whatsapp}</p>}
-                      <div className="mt-2.5"><ClassBar value={l.classificacao ?? 0} /></div>
-                    </div>
-                  ))}
+                    )
+                  })}
                   {cards.length === 0 && <p className="text-gray-700 text-xs text-center py-8">Arraste leads para cá</p>}
                 </div>
               </div>
@@ -104,7 +148,7 @@ export default function KanbanPage() {
       )}
 
       {adding && <AddLeadModal onClose={() => setAdding(false)} onCreated={() => load()} />}
-      {openId && <LeadDrawer leadId={openId} onClose={() => setOpenId(null)} onChanged={load} />}
+      {openId && <LeadModal leadId={openId} onClose={() => setOpenId(null)} onChanged={load} />}
     </div>
   )
 }

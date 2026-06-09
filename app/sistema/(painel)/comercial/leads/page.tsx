@@ -5,6 +5,11 @@ import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { Loader2, Inbox, Search, MessageCircle, Mail } from 'lucide-react'
 import { getLeads, type LeadRow } from '@/lib/api'
+import { ETAPA_LABEL } from '@/lib/crm-config'
+
+const ETAPA_COLOR: Record<string, string> = {
+  novo: '#0BBCD4', contato: '#7c6fff', negociacao: '#f59e0b', fechado: '#22c55e', perdido: '#ef4444',
+}
 
 export default function LeadsPage() {
   const [leads, setLeads] = useState<LeadRow[] | null>(null)
@@ -57,7 +62,13 @@ export default function LeadsPage() {
               className="grid grid-cols-1 md:grid-cols-[1.4fr_1.4fr_1fr_130px_120px] items-center gap-2 px-5 py-4 border-b last:border-0 hover:bg-white/[0.02] transition-colors"
               style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
               <div className="min-w-0">
-                <p className="text-white text-sm font-semibold truncate">{l.nome}</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-white text-sm font-semibold truncate">{l.nome}</p>
+                  <span className="shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                    style={{ background: `${ETAPA_COLOR[l.etapa] ?? '#64748b'}22`, color: ETAPA_COLOR[l.etapa] ?? '#94a3b8' }}>
+                    {ETAPA_LABEL[l.etapa] ?? l.etapa}
+                  </span>
+                </div>
                 <p className="text-gray-600 text-xs md:hidden">{l.interesse}</p>
               </div>
               <div className="min-w-0 text-xs text-gray-400">

@@ -1,6 +1,6 @@
 'use client'
 
-import { classColor } from '@/lib/crm-config'
+import { classColor, classEmoji } from '@/lib/crm-config'
 
 interface Props {
   value: number
@@ -8,7 +8,7 @@ interface Props {
   size?: 'sm' | 'md'
 }
 
-/** Barra de classificação 0→5 (vermelho → verde). Interativa se onChange. */
+/** Barra de classificação 0→5 (vermelho → verde) com emoji ❄️→🔥. */
 export default function ClassBar({ value, onChange, size = 'sm' }: Props) {
   const h = size === 'md' ? 'h-2.5' : 'h-1.5'
   const color = classColor(value)
@@ -29,6 +29,7 @@ export default function ClassBar({ value, onChange, size = 'sm' }: Props) {
           />
         ))}
       </div>
+      <span className={size === 'md' ? 'text-base' : 'text-sm'} title={`${value}/5`}>{classEmoji(value)}</span>
       {size === 'md' && <span className="text-xs font-bold" style={{ color }}>{value}/5</span>}
     </div>
   )

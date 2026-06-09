@@ -3,14 +3,13 @@
 import { useState } from 'react'
 import { X, Loader2, UserPlus } from 'lucide-react'
 import { createLead, type LeadRow } from '@/lib/api'
-import { ETAPAS } from '@/lib/crm-config'
-import ClassBar from './ClassBar'
+import { INTERESSES } from '@/lib/crm-config'
 
 const FIELD = 'w-full h-11 px-4 rounded-xl text-sm text-white placeholder-gray-600 outline-none'
 const FS = { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.10)' }
 
 export default function AddLeadModal({ onClose, onCreated }: { onClose: () => void; onCreated: (l: LeadRow) => void }) {
-  const [form, setForm] = useState({ nome: '', whatsapp: '', email: '', interesse: '', etapa: 'novo', classificacao: 0 })
+  const [form, setForm] = useState({ nome: '', whatsapp: '', email: '', interesse: '' })
   const [saving, setSaving] = useState(false)
   const set = (k: string, v: unknown) => setForm(f => ({ ...f, [k]: v }))
 
@@ -19,7 +18,7 @@ export default function AddLeadModal({ onClose, onCreated }: { onClose: () => vo
     if (!form.nome.trim()) return
     setSaving(true)
     try {
-      const lead = await createLead(form)
+      const lead = await createLead({ ...form, interesse: form.interesse || 'Não informado' })
       onCreated(lead)
       onClose()
     } catch {
@@ -42,18 +41,13 @@ export default function AddLeadModal({ onClose, onCreated }: { onClose: () => vo
           <input className={FIELD} style={FS} placeholder="Nome *" value={form.nome} onChange={e => set('nome', e.target.value)} autoFocus required />
           <input className={FIELD} style={FS} placeholder="WhatsApp" value={form.whatsapp} onChange={e => set('whatsapp', e.target.value)} />
           <input className={FIELD} style={FS} placeholder="E-mail" value={form.email} onChange={e => set('email', e.target.value)} />
-          <input className={FIELD} style={FS} placeholder="Interesse / origem" value={form.interesse} onChange={e => set('interesse', e.target.value)} />
 
           <div>
-            <label className="block text-xs font-semibold text-gray-400 mb-1.5">Etapa</label>
-            <select className={FIELD} style={FS} value={form.etapa} onChange={e => set('etapa', e.target.value)}>
-              {ETAPAS.map(et => <option key={et.id} value={et.id}>{et.label}</option>)}
+            <label className="block text-xs font-semibold text-gray-400 mb-1.5">Interesse</label>
+            <select className={FIELD} style={FS} value={form.interesse} onChange={e => set('interesse', e.target.value)}>
+              <option value="">Selecione uma opção</option>
+              {INTERESSES.map(i => <option key={i} value={i}>{i}</option>)}
             </select>
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-gray-400 mb-2">Nível de interesse</label>
-            <ClassBar value={form.classificacao} onChange={v => set('classificacao', v)} size="md" />
           </div>
 
           <button type="submit" disabled={saving || !form.nome.trim()}

@@ -8,7 +8,7 @@ import {
   Briefcase, Store, UserCheck, Stethoscope, Code2, ShoppingCart,
 } from 'lucide-react'
 
-const WA_NUMBER = '5548999245194'
+const WA_NUMBER = '5548998211604'
 function wa(msg: string) {
   return `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg)}`
 }

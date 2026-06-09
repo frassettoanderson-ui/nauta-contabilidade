@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Loader2, Plus, Bell, Check, XCircle, FileText, MessageCircle, Pencil, ClipboardCheck, AlertCircle } from 'lucide-react'
 import { getLeads, updateLead, type LeadRow } from '@/lib/api'
@@ -22,6 +22,15 @@ export default function KanbanPage() {
 
   const load = () => getLeads().then(setLeads).catch(() => setLeads([]))
   useEffect(() => { load() }, [])
+
+  // Atualização automática (não atualiza enquanto o usuário interage)
+  const interagindo = !!(dragId || openId || fecharLead || adding)
+  const interagindoRef = useRef(interagindo)
+  interagindoRef.current = interagindo
+  useEffect(() => {
+    const t = setInterval(() => { if (!interagindoRef.current) getLeads().then(setLeads).catch(() => {}) }, 7000)
+    return () => clearInterval(t)
+  }, [])
 
   function moveLead(id: string, etapa: string) {
     setLeads(prev => prev ? prev.map(l => l.id === id ? { ...l, etapa } : l) : prev)

@@ -15,7 +15,12 @@ export default function LeadsPage() {
   const [leads, setLeads] = useState<LeadRow[] | null>(null)
   const [busca, setBusca] = useState('')
 
-  useEffect(() => { getLeads().then(setLeads).catch(() => setLeads([])) }, [])
+  useEffect(() => {
+    const fetchLeads = () => getLeads().then(setLeads).catch(() => {})
+    fetchLeads()
+    const t = setInterval(fetchLeads, 7000) // atualização automática
+    return () => clearInterval(t)
+  }, [])
 
   const filtered = (leads ?? []).filter(l => {
     if (!busca.trim()) return true

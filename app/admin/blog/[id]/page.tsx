@@ -4,8 +4,7 @@ import dynamic from 'next/dynamic'
 import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
-import { supabase } from '@/lib/supabase'
-import { getCategorias, getTags, adminGetPost, adminSavePost, adminSaveTag } from '@/lib/blog'
+import { getCategorias, getTags, adminGetPost, adminSavePost, adminSaveTag, uploadImage } from '@/lib/api'
 import type { Categoria, Tag } from '@/types/blog'
 import { ArrowLeft, Loader2, Save, Send, Plus, X, ImageIcon } from 'lucide-react'
 
@@ -81,11 +80,11 @@ export default function EditPostPage() {
   async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]; if (!file) return
     setUploading(true)
-    const path = `blog/${Date.now()}.${file.name.split('.').pop()}`
-    const { error } = await supabase.storage.from('blog-images').upload(path, file, { upsert: true })
-    if (!error) {
-      const { data: { publicUrl } } = supabase.storage.from('blog-images').getPublicUrl(path)
-      set('imagem_destaque', publicUrl)
+    try {
+      const url = await uploadImage(file)
+      set('imagem_destaque', url)
+    } catch (err) {
+      alert('Erro ao enviar imagem: ' + (err instanceof Error ? err.message : String(err)))
     }
     setUploading(false)
   }

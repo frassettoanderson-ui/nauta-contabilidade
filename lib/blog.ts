@@ -72,7 +72,7 @@ export async function getPostBySlug(slug: string): Promise<PostWithRelations | n
   return rowToPost(res.rows[0], tagsRes.rows)
 }
 
-export async function getRelatedPosts(postId: string, categoriaId: string | null): Promise<PostWithRelations[]> {
+export async function getRelatedPosts(categoriaId: string | null, postId: string): Promise<PostWithRelations[]> {
   const res = await pool.query(
     `SELECT p.*, c.id as cat_id, c.nome as cat_nome, c.slug as cat_slug
      FROM posts p
@@ -107,12 +107,14 @@ export async function getTags(): Promise<Tag[]> {
 
 // ─── ADMIN ─────────────────────────────────────────────────────────────────
 
-export async function adminGetPosts(): Promise<PostWithRelations[]> {
+export async function adminGetPosts(status?: 'rascunho' | 'publicado'): Promise<PostWithRelations[]> {
   const res = await pool.query(
     `SELECT p.*, c.id as cat_id, c.nome as cat_nome, c.slug as cat_slug
      FROM posts p
      LEFT JOIN categorias c ON p.categoria_id = c.id
-     ORDER BY p.criado_em DESC`
+     ${status ? 'WHERE p.status = $1' : ''}
+     ORDER BY p.criado_em DESC`,
+    status ? [status] : []
   )
   return Promise.all(res.rows.map(async (row) => {
     const tagsRes = await pool.query(

@@ -6,7 +6,7 @@ import Footer from '@/components/Footer'
 import LeadPopup from '@/components/LeadPopup'
 import InnerHero from '@/components/ui/inner-hero'
 import { MapPin, Phone, Mail, Clock, Instagram, Facebook, Linkedin, Send, ArrowRight } from 'lucide-react'
-import { saveLead } from '@/lib/supabase'
+import { saveLead } from '@/lib/api'
 
 type Status = 'idle' | 'loading' | 'success' | 'error'
 

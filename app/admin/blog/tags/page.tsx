@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { getTags, adminSaveTag, adminDeleteTag } from '@/lib/blog'
+import { getTags, adminSaveTag, adminDeleteTag } from '@/lib/api'
 import type { Tag } from '@/types/blog'
 import { Plus, Pencil, Trash2, Loader2, Check, X } from 'lucide-react'
 

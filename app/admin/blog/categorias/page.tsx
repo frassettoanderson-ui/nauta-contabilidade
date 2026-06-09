@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { getCategorias, adminSaveCategoria, adminDeleteCategoria } from '@/lib/blog'
+import { getCategorias, adminSaveCategoria, adminDeleteCategoria } from '@/lib/api'
 import type { Categoria } from '@/types/blog'
 import { Plus, Pencil, Trash2, Loader2, Check, X } from 'lucide-react'
 

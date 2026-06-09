@@ -8,7 +8,7 @@ import LeadPopup from '@/components/LeadPopup'
 import PostCard from '@/components/blog/PostCard'
 import InnerHero from '@/components/ui/inner-hero'
 import { Search, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react'
-import { getPosts, getCategorias } from '@/lib/blog'
+import { getPosts, getCategorias } from '@/lib/api'
 import type { PostWithRelations, Categoria, PaginatedPosts } from '@/types/blog'
 
 function BlogContent() {

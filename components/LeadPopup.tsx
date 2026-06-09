@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import Image from 'next/image'
 import { X, CheckCircle, Loader2, ArrowRight, MessageCircle, ChevronRight } from 'lucide-react'
-import { saveLead } from '@/lib/supabase'
+import { saveLead } from '@/lib/api'
 
 const INTERESTS = [
   'Trocar de contador',

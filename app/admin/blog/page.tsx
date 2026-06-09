@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { Plus, Edit2, Trash2, Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react'
-import { adminGetPosts, adminDeletePost, adminToggleStatus } from '@/lib/blog'
+import { adminGetPosts, adminDeletePost, adminToggleStatus } from '@/lib/api'
 import type { PostWithRelations } from '@/types/blog'
 
 export default function AdminBlogPage() {

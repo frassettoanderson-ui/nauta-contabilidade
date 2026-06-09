@@ -4,8 +4,7 @@ import dynamic from 'next/dynamic'
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { supabase } from '@/lib/supabase'
-import { getCategorias, getTags, adminSavePost, adminSaveTag } from '@/lib/blog'
+import { getCategorias, getTags, adminSavePost, adminSaveTag, uploadImage } from '@/lib/api'
 import type { Categoria, Tag } from '@/types/blog'
 import { ArrowLeft, Loader2, Save, Send, Plus, X, ImageIcon } from 'lucide-react'
 
@@ -108,12 +107,11 @@ export default function NovoPostPage() {
     const file = e.target.files?.[0]
     if (!file) return
     setUploading(true)
-    const ext = file.name.split('.').pop()
-    const path = `blog/${Date.now()}.${ext}`
-    const { error } = await supabase.storage.from('blog-images').upload(path, file, { upsert: true })
-    if (!error) {
-      const { data: { publicUrl } } = supabase.storage.from('blog-images').getPublicUrl(path)
-      set('imagem_destaque', publicUrl)
+    try {
+      const url = await uploadImage(file)
+      set('imagem_destaque', url)
+    } catch (err) {
+      alert('Erro ao enviar imagem: ' + (err instanceof Error ? err.message : String(err)))
     }
     setUploading(false)
   }

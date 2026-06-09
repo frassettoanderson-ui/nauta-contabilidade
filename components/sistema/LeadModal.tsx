@@ -14,7 +14,7 @@ import {
   getClienteByLead, listUsuarios, type LeadDetail, type UsuarioRow,
 } from '@/lib/api'
 import { ETAPAS, INTERESSES } from '@/lib/crm-config'
-import { isCadastroCompleto } from '@/lib/cadastro'
+import { isContratoPronto } from '@/lib/contratos'
 import ClassBar from './ClassBar'
 
 const todayStr = () => new Date().toISOString().slice(0, 10)
@@ -50,8 +50,8 @@ export default function LeadModal({ leadId, onClose, onChanged, mode = 'view' }:
     getLeadDetail(leadId).then(d => {
       setD(d)
       if (mode === 'edit') { setEdit({ nome: d.nome, whatsapp: d.whatsapp || '', email: d.email || '', interesse: d.interesse || '' }); setEditing(true) }
+      getClienteByLead(leadId).then(c => setCadastroCompleto(isContratoPronto(c, d))).catch(() => setCadastroCompleto(false))
     })
-    getClienteByLead(leadId).then(c => setCadastroCompleto(isCadastroCompleto(c))).catch(() => setCadastroCompleto(false))
   }, [leadId, mode])
   useEffect(() => { load() }, [load])
 

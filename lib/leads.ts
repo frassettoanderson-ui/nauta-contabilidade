@@ -1,5 +1,5 @@
 import pool from './db'
-import { isCadastroCompleto } from './cadastro'
+import { isContratoPronto } from './contratos'
 import { emitCrmChange } from './realtime'
 
 export type Lead = {
@@ -76,7 +76,7 @@ export async function getLeads(opts?: { userId?: string; role?: string }) {
   for (const l of leads) {
     const c = cliByLead[l.id]
     l.cliente_id = c ? c.id : null
-    l.cadastro_completo = isCadastroCompleto(c)
+    l.cadastro_completo = isContratoPronto(c, l)
   }
   return leads
 }

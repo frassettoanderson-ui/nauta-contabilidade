@@ -3,7 +3,8 @@ import { emitCrmChange } from './realtime'
 
 const CLI_COLS = [
   'cli_nome_completo', 'cli_rg', 'cli_cpf', 'cli_nascimento', 'cli_nome_pai', 'cli_nome_mae',
-  'cli_estado_civil', 'cli_recibo_irpf', 'cli_titulo_eleitor', 'cli_doc_url', 'cli_cert_url', 'cli_cert_senha',
+  'cli_estado_civil', 'cli_recibo_irpf', 'cli_titulo_eleitor', 'cli_endereco', 'cli_bairro', 'cli_cidade_estado', 'cli_cep',
+  'cli_doc_url', 'cli_cert_url', 'cli_cert_senha',
   'emp_nome', 'emp_fantasia', 'emp_cnpj', 'emp_endereco', 'emp_bairro', 'emp_cidade_estado', 'emp_cep',
   'emp_area_ocupada', 'emp_edificacao', 'emp_usa_glp',
   'emp_proprietario', 'emp_atividade', 'emp_capital_social', 'emp_telefone', 'emp_email',

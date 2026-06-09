@@ -6,6 +6,7 @@ export const CLI_FIELDS: Field[] = [
   ['cli_nome_completo', 'Nome completo'], ['cli_rg', 'RG'], ['cli_cpf', 'CPF'],
   ['cli_nascimento', 'Data de nascimento', 'date'], ['cli_nome_pai', 'Nome do pai'], ['cli_nome_mae', 'Nome da mãe'],
   ['cli_estado_civil', 'Estado civil'], ['cli_recibo_irpf', 'Nº recibo de IRPF'], ['cli_titulo_eleitor', 'Nº título de eleitor'],
+  ['cli_endereco', 'Endereço'], ['cli_bairro', 'Bairro'], ['cli_cidade_estado', 'Cidade / Estado'], ['cli_cep', 'CEP'],
 ]
 
 export const EMP_FIELDS: Field[] = [

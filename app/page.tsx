@@ -43,6 +43,11 @@ export default function HomePage() {
    * - Não abre se o popup já estiver aberto
    */
   useEffect(() => {
+    // Não roda o popup automático no mobile (lá usamos a MobileHome com WhatsApp)
+    if (typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches) {
+      return
+    }
+
     let interval: ReturnType<typeof setInterval>
 
     // Primeira exibição após 8s

@@ -38,8 +38,11 @@ export async function getCliente(id: string) {
   return { ...c.rows[0], socios: s.rows }
 }
 
+// Converte string vazia/undefined em null (evita erro em colunas numéricas/boolean)
+const norm = (v: unknown) => (v === '' || v === undefined ? null : v)
+
 export async function saveCliente(payload: AnyObj & { id?: string; lead_id?: string; socios?: AnyObj[] }) {
-  const cliData = CLI_COLS.map(c => payload[c] ?? null)
+  const cliData = CLI_COLS.map(c => norm(payload[c]))
   let clienteId = payload.id as string | undefined
 
   if (clienteId) {
@@ -63,7 +66,7 @@ export async function saveCliente(payload: AnyObj & { id?: string; lead_id?: str
     // pula sócio totalmente vazio
     if (!s.nome_completo && !s.cpf) continue
     const cols = ['cliente_id', 'ordem', ...SOCIO_COLS]
-    const vals = [clienteId, i + 1, ...SOCIO_COLS.map(c => s[c] ?? null)]
+    const vals = [clienteId, i + 1, ...SOCIO_COLS.map(c => norm(s[c]))]
     const ph = cols.map((_, j) => `$${j + 1}`).join(', ')
     await pool.query(`INSERT INTO cliente_socios (${cols.join(', ')}) VALUES (${ph})`, vals)
   }

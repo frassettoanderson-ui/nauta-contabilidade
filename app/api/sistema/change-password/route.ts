@@ -6,7 +6,7 @@ import pool from '@/lib/db'
 
 export const dynamic = 'force-dynamic'
 
-export function validatePassword(pw: string): string | null {
+function validatePassword(pw: string): string | null {
   if (pw.length < 8) return 'A senha deve ter no mínimo 8 caracteres.'
   if (!/[A-Za-z]/.test(pw)) return 'A senha deve conter letras.'
   if (!/[0-9]/.test(pw)) return 'A senha deve conter números.'

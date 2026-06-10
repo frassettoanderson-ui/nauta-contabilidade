@@ -1,3 +1,5 @@
+import NodeFormData from 'form-data'
+
 const ENDPOINT = 'https://api.autentique.com.br/2/graphql'
 const TOKEN = process.env.AUTENTIQUE_TOKEN!
 
@@ -12,7 +14,7 @@ async function gql(query: string, variables?: Record<string, unknown>) {
   console.log('[AUTENTIQUE GQL body]', text.slice(0, 500))
   let json: Record<string, unknown>
   try { json = JSON.parse(text) } catch { throw new Error(`Autentique retornou não-JSON (${res.status}): ${text.slice(0, 200)}`) }
-  if (json.errors) throw new Error((json.errors as Array<{message:string}>)[0]?.message ?? 'Erro Autentique')
+  if (json.errors) throw new Error((json.errors as Array<{ message: string }>)[0]?.message ?? 'Erro Autentique')
   return json.data
 }
 
@@ -25,10 +27,10 @@ export interface AutentiqueSignatory {
 export interface AutentiqueDocument {
   id: string
   name: string
-  signatures: { public_id: string; link?: { short_link: string } }[]
+  signatures: { public_id: string; email?: { email?: string }; link?: { short_link: string } }[]
 }
 
-/** Cria documento no Autentique e retorna o objeto criado */
+/** Cria documento no Autentique via multipart upload (form-data Node.js) */
 export async function criarDocumento(
   nome: string,
   pdfBase64: string,
@@ -50,8 +52,6 @@ export async function criarDocumento(
     }
   `
 
-  // Autentique aceita upload via multipart (arquivo como base64 em variável Upload)
-  const formData = new FormData()
   const operations = JSON.stringify({
     query: mutation,
     variables: {
@@ -61,26 +61,31 @@ export async function criarDocumento(
     },
   })
   const map = JSON.stringify({ '0': ['variables.file'] })
+  const pdfBuffer = Buffer.from(pdfBase64, 'base64')
 
-  // Converte base64 para Blob
-  const binary = Buffer.from(pdfBase64, 'base64')
-  const blob = new Blob([binary], { type: 'application/pdf' })
+  const form = new NodeFormData()
+  form.append('operations', operations)
+  form.append('map', map)
+  form.append('0', pdfBuffer, { filename: `${nome}.pdf`, contentType: 'application/pdf' })
 
-  formData.append('operations', operations)
-  formData.append('map', map)
-  formData.append('0', blob, `${nome}.pdf`)
+  // NodeFormData gera os headers corretos com boundary
+  const headers = {
+    Authorization: `Bearer ${TOKEN}`,
+    ...form.getHeaders(),
+  }
 
   const res = await fetch(ENDPOINT, {
     method: 'POST',
-    headers: { Authorization: `Bearer ${TOKEN}` },
-    body: formData,
+    headers,
+    body: form as unknown as BodyInit,
   })
+
   const text = await res.text()
   console.log('[AUTENTIQUE CREATE status]', res.status)
-  console.log('[AUTENTIQUE CREATE body]', text.slice(0, 500))
+  console.log('[AUTENTIQUE CREATE body]', text.slice(0, 600))
   let json: Record<string, unknown>
   try { json = JSON.parse(text) } catch { throw new Error(`Autentique createDocument retornou não-JSON (${res.status}): ${text.slice(0, 200)}`) }
-  if (json.errors) throw new Error((json.errors as Array<{message:string}>)[0]?.message ?? 'Erro ao criar documento Autentique')
+  if (json.errors) throw new Error((json.errors as Array<{ message: string }>)[0]?.message ?? 'Erro ao criar documento Autentique')
   return (json.data as Record<string, unknown>).createDocument as AutentiqueDocument
 }
 
@@ -104,7 +109,7 @@ export async function consultarDocumento(documentId: string) {
         signatures {
           public_id
           name
-          email
+          email { email }
           signed { created_at }
           link { short_link }
         }

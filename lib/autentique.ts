@@ -35,8 +35,8 @@ export async function criarDocumento(
   signatarios: AutentiqueSignatory[],
 ): Promise<AutentiqueDocument> {
   const mutation = `
-    mutation CreateDocument($document: DocumentInput!, $signatories: [SignatoryInput!]!, $file: Upload!) {
-      createDocument(document: $document, signatories: $signatories, file: $file) {
+    mutation CreateDocument($document: DocumentInput!, $signers: [SignerInput!]!, $file: Upload!) {
+      createDocument(document: $document, signers: $signers, file: $file) {
         id
         name
         signatures {
@@ -53,8 +53,8 @@ export async function criarDocumento(
   const operations = JSON.stringify({
     query: mutation,
     variables: {
-      document: { name: nome, reminder: false, sortable: false },
-      signatories: signatarios.map(s => ({ name: s.name, email: s.email, action: s.action })),
+      document: { name: nome },
+      signers: signatarios.map(s => ({ name: s.name, email: s.email, action: s.action })),
       file: null,
     },
   })

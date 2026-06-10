@@ -112,5 +112,5 @@ export async function consultarDocumento(documentId: string) {
       }
     }
   `)
-  return data.document
+  return (data as Record<string, unknown>).document
 }

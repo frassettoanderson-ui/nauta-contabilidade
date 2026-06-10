@@ -36,9 +36,13 @@ export async function POST(req: NextRequest) {
 
     const socios: Array<{ nome_completo?: string; email?: string }> = (cliente.socios as Array<{ nome_completo?: string; email?: string }>) || []
     const socio1 = socios[0]
-    const emailSocio = socio1?.email || cliente.emp_email
-    if (!emailSocio) throw new Error('E-mail do Sócio 1 não encontrado no cadastro')
+    // Busca e-mail na ordem: e-mail do sócio → e-mail do cliente (cli_email) → e-mail da empresa
+    const emailSocio = (socio1?.email as string)
+      || (cliente.cli_email as string)
+      || (cliente.emp_email as string)
+    if (!emailSocio) throw new Error('E-mail não encontrado no cadastro. Preencha o e-mail na aba Dados do Cliente.')
 
+    const nomeSocio = (socio1?.nome_completo as string) || (cliente.cli_nome_completo as string) || 'Sócio 1'
     const nomeEmpresa = (cliente.emp_nome as string) || 'Cliente'
 
     // 4. Cria documento no Autentique com 2 signatários: Nauta + Sócio 1
@@ -47,7 +51,7 @@ export async function POST(req: NextRequest) {
       pdfBase64,
       [
         { name: 'Nauta Contabilidade', email: 'contato@nautacontabilidade.com.br', action: 'SIGN' },
-        { name: (socio1?.nome_completo as string) || nomeEmpresa, email: emailSocio, action: 'SIGN' },
+        { name: nomeSocio, email: emailSocio, action: 'SIGN' },
       ]
     )
 

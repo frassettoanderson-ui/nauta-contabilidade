@@ -1,5 +1,3 @@
-import NodeFormData from 'form-data'
-
 const ENDPOINT = 'https://api.autentique.com.br/v2/graphql'
 const TOKEN = process.env.AUTENTIQUE_TOKEN!
 
@@ -61,30 +59,20 @@ export async function criarDocumento(
     },
   })
   const map = JSON.stringify({ '0': ['variables.file'] })
-  const pdfBuffer = Buffer.from(pdfBase64, 'base64')
 
-  const form = new NodeFormData()
+  // FormData/Blob nativos (Node 18+) — o fetch do undici monta o multipart corretamente
+  const form = new FormData()
   form.append('operations', operations)
   form.append('map', map)
-  form.append('0', pdfBuffer, { filename: `${nome}.pdf`, contentType: 'application/pdf' })
+  const pdfBlob = new Blob([Buffer.from(pdfBase64, 'base64')], { type: 'application/pdf' })
+  form.append('0', pdfBlob, `${nome}.pdf`)
 
-  // Converte stream do form-data para Buffer (compatível com fetch nativo do Node 18)
-  const formBuffer = await new Promise<Buffer>((resolve, reject) => {
-    const chunks: Buffer[] = []
-    form.on('data', (chunk: Buffer) => chunks.push(chunk))
-    form.on('end', () => resolve(Buffer.concat(chunks)))
-    form.on('error', reject)
-  })
-
-  const headers: Record<string, string> = {
-    Authorization: `Bearer ${TOKEN}`,
-    ...form.getHeaders(),
-  }
-
+  console.log('[AUTENTIQUE CREATE] enviando documento...')
   const res = await fetch(ENDPOINT, {
     method: 'POST',
-    headers,
-    body: formBuffer as unknown as BodyInit,
+    headers: { Authorization: `Bearer ${TOKEN}` },
+    body: form,
+    signal: AbortSignal.timeout(45000),
   })
 
   const text = await res.text()

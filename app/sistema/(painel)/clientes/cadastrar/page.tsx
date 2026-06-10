@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
-import { Loader2, Check, ArrowLeft, ArrowRight, Upload, FileText, Paperclip, Save, Trash2, Link2, Copy } from 'lucide-react'
+import { Loader2, Check, ArrowLeft, ArrowRight, Upload, FileText, Paperclip, Save, Trash2, Link2, Copy, X } from 'lucide-react'
 import { uploadDoc, saveCliente, getCliente, getClienteByLead, deleteCliente, gerarLinkCadastro, getLeadDetail } from '@/lib/api'
 import { CLI_FIELDS, EMP_FIELDS, SOCIO_FIELDS, CLI_TO_SOCIO } from '@/lib/cadastro'
 import { tipoFromInteresse, requiredKeysFor, REQ_SOCIO, TIPO_LABEL } from '@/lib/contratos'
@@ -190,7 +190,7 @@ function Wizard() {
   const socioAtivo = socioIdx === 0 || (socioIdx === 1 && socio2Ativo) || (socioIdx === 2 && socio3Ativo)
 
   return (
-    <div className="p-6 lg:p-8 max-w-5xl">
+    <div className="p-6 lg:p-8 max-w-6xl">
       <h1 className="text-2xl font-black text-white mb-1" style={{ letterSpacing: '-0.02em' }}>Cadastro de cliente</h1>
       <p className="text-gray-500 text-sm mb-2">{leadId ? 'Vinculado ao lead selecionado' : clienteId ? 'Editando cadastro existente' : 'Novo cadastro'}</p>
       {tipo && (
@@ -299,55 +299,58 @@ function Wizard() {
         )}
       </div>
 
-      {/* Link de cadastro */}
-      <div className="mb-4">
+      {savedMsg && <p className="text-sm text-[#22c55e] mb-4 flex items-center gap-2"><Check size={15} /> {savedMsg}</p>}
+
+      {/* Barra de ações — todos na mesma linha */}
+      <div className="flex items-center gap-2 flex-wrap">
         <button onClick={handleEnviarLink} disabled={saving}
-          className="inline-flex items-center gap-2 px-4 h-10 rounded-xl text-sm font-bold text-white disabled:opacity-60" style={{ background: 'rgba(124,111,255,0.9)' }}>
+          className="inline-flex items-center gap-2 px-4 h-11 rounded-xl text-sm font-bold text-white disabled:opacity-60" style={{ background: 'rgba(124,111,255,0.9)' }}>
           <Link2 size={15} /> Enviar link de cadastro
         </button>
-        {linkUrl && (
-          <div className="mt-2 flex items-center gap-2 p-2.5 rounded-xl" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)' }}>
-            <span className="text-xs text-gray-300 truncate flex-1">{linkUrl}</span>
-            <button onClick={() => navigator.clipboard?.writeText(linkUrl)} className="text-[#0BBCD4] hover:text-white" title="Copiar"><Copy size={14} /></button>
-          </div>
+
+        <button onClick={() => router.push('/sistema/clientes/consultar')}
+          className="inline-flex items-center gap-2 px-4 h-11 rounded-xl text-sm text-gray-300" style={FS}>
+          <X size={15} /> Cancelar
+        </button>
+
+        <button onClick={() => handleSalvar(false)} disabled={saving}
+          className="inline-flex items-center gap-2 px-4 h-11 rounded-xl text-sm font-bold text-white disabled:opacity-60" style={FS}>
+          {saving ? <Loader2 size={15} className="animate-spin" /> : <><Save size={15} /> Salvar</>}
+        </button>
+
+        {clienteId && (
+          <button onClick={handleExcluir}
+            className="inline-flex items-center gap-2 px-4 h-11 rounded-xl text-sm font-semibold"
+            style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)', color: '#f87171' }}>
+            <Trash2 size={15} /> Excluir
+          </button>
+        )}
+
+        <button onClick={() => setStep(s => Math.max(0, s - 1))} disabled={step === 0}
+          className="inline-flex items-center gap-2 px-4 h-11 rounded-xl text-sm text-gray-300 disabled:opacity-40" style={FS}>
+          <ArrowLeft size={15} /> Voltar
+        </button>
+
+        {step < PASSOS.length - 1 ? (
+          <button onClick={() => setStep(s => Math.min(PASSOS.length - 1, s + 1))}
+            className="inline-flex items-center gap-2 px-5 h-11 rounded-xl text-sm font-bold text-white" style={{ background: 'linear-gradient(135deg, #0BBCD4, #0999ae)' }}>
+            Próximo <ArrowRight size={15} />
+          </button>
+        ) : (
+          <button onClick={() => handleSalvar(true)} disabled={saving}
+            className="inline-flex items-center gap-2 px-6 h-11 rounded-xl text-sm font-bold text-white disabled:opacity-60" style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)' }}>
+            {saving ? <Loader2 size={16} className="animate-spin" /> : <><Check size={16} /> Salvar e concluir</>}
+          </button>
         )}
       </div>
 
-      {savedMsg && <p className="text-sm text-[#22c55e] mb-4 flex items-center gap-2"><Check size={15} /> {savedMsg}</p>}
-
-      {/* Navegação + ações */}
-      <div className="flex items-center justify-between gap-2 flex-wrap">
-        <div className="flex gap-2">
-          <button onClick={() => setStep(s => Math.max(0, s - 1))} disabled={step === 0}
-            className="inline-flex items-center gap-2 px-4 h-11 rounded-xl text-sm text-gray-300 disabled:opacity-40" style={FS}>
-            <ArrowLeft size={15} /> Voltar
-          </button>
-          {clienteId && (
-            <button onClick={handleExcluir}
-              className="inline-flex items-center gap-2 px-4 h-11 rounded-xl text-sm font-semibold"
-              style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)', color: '#f87171' }}>
-              <Trash2 size={15} /> Excluir
-            </button>
-          )}
+      {/* Link gerado */}
+      {linkUrl && (
+        <div className="mt-3 flex items-center gap-2 p-2.5 rounded-xl max-w-xl" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)' }}>
+          <span className="text-xs text-gray-300 truncate flex-1">{linkUrl}</span>
+          <button onClick={() => navigator.clipboard?.writeText(linkUrl)} className="text-[#0BBCD4] hover:text-white" title="Copiar"><Copy size={14} /></button>
         </div>
-        <div className="flex gap-2">
-          <button onClick={() => handleSalvar(false)} disabled={saving}
-            className="inline-flex items-center gap-2 px-4 h-11 rounded-xl text-sm font-bold text-white disabled:opacity-60" style={FS}>
-            {saving ? <Loader2 size={15} className="animate-spin" /> : <><Save size={15} /> Salvar</>}
-          </button>
-          {step < PASSOS.length - 1 ? (
-            <button onClick={() => setStep(s => Math.min(PASSOS.length - 1, s + 1))}
-              className="inline-flex items-center gap-2 px-5 h-11 rounded-xl text-sm font-bold text-white" style={{ background: 'linear-gradient(135deg, #0BBCD4, #0999ae)' }}>
-              Próximo <ArrowRight size={15} />
-            </button>
-          ) : (
-            <button onClick={() => handleSalvar(true)} disabled={saving}
-              className="inline-flex items-center gap-2 px-6 h-11 rounded-xl text-sm font-bold text-white disabled:opacity-60" style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)' }}>
-              {saving ? <Loader2 size={16} className="animate-spin" /> : <><Check size={16} /> Salvar e concluir</>}
-            </button>
-          )}
-        </div>
-      </div>
+      )}
     </div>
   )
 }

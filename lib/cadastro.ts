@@ -12,6 +12,7 @@ export const CLI_FIELDS: Field[] = [
   ['cli_estado_civil', 'Estado civil',         'estado_civil'],
   ['cli_recibo_irpf',  'Nº recibo de IRPF',    'numero'],
   ['cli_titulo_eleitor','Nº título de eleitor','numero'],
+  ['cli_email',        'E-mail'],
   ['cli_cep',          'CEP',                  'cep'],
   ['cli_endereco',     'Endereço'],
   ['cli_bairro',       'Bairro'],

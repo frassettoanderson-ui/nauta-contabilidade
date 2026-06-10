@@ -204,8 +204,9 @@ export default function KanbanPage() {
                             )}
                             {l.cadastro_completo ? (
                               <button onClick={() => abrir(l.id, 'view')}
-                                className="w-full flex items-center justify-center gap-1.5 h-8 rounded-lg text-xs font-bold text-white" style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)' }}>
-                                <FileText size={13} /> Gerar contrato
+                                className="w-full flex items-center justify-center gap-1.5 h-8 rounded-lg text-xs font-bold text-white"
+                                style={{ background: l.contrato_autentique_status === 'assinado' ? 'linear-gradient(135deg, #22c55e, #16a34a)' : l.contrato_autentique_status === 'pendente' ? 'rgba(251,191,36,0.2)' : l.contrato_status ? 'linear-gradient(135deg, #7c6fff, #6355e0)' : 'linear-gradient(135deg, #22c55e, #16a34a)' }}>
+                                {l.contrato_autentique_status === 'assinado' ? <><ClipboardCheck size={13} /> Contrato assinado</> : l.contrato_autentique_status === 'pendente' ? <><Loader2 size={13} className="animate-spin" /> Aguardando assinatura</> : l.contrato_status ? <><FileText size={13} /> Enviar para assinatura</> : <><FileText size={13} /> Gerar contrato</>}
                               </button>
                             ) : (
                               <>

@@ -112,6 +112,8 @@ export interface LeadRow {
   responsavel_id?: string | null
   responsavel_nome?: string | null
   origem?: string | null
+  contrato_status?: string | null
+  contrato_autentique_status?: string | null
 }
 
 export interface UsuarioRow { id: string; username: string; role: string }

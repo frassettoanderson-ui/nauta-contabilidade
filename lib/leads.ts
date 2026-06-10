@@ -54,7 +54,9 @@ export async function getLeads(opts?: { userId?: string; role?: string }) {
   const res = await pool.query(
     `SELECT l.*,
       (SELECT COUNT(*) FROM lead_lembretes ll
-        WHERE ll.lead_id = l.id AND ll.concluido = false AND ll.data <= CURRENT_DATE) AS lembretes_pendentes
+        WHERE ll.lead_id = l.id AND ll.concluido = false AND ll.data <= CURRENT_DATE) AS lembretes_pendentes,
+      (SELECT autentique_status FROM contratos c WHERE c.lead_id = l.id ORDER BY c.criado_em DESC LIMIT 1) AS contrato_autentique_status,
+      (SELECT status FROM contratos c WHERE c.lead_id = l.id ORDER BY c.criado_em DESC LIMIT 1) AS contrato_status
      FROM leads l
      ${verTodos ? '' : 'WHERE l.responsavel_id = $1'}
      ORDER BY l.criado_em DESC`,

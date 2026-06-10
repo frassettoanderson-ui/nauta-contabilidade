@@ -8,8 +8,6 @@ async function gql(query: string, variables?: Record<string, unknown>) {
     body: JSON.stringify({ query, variables }),
   })
   const text = await res.text()
-  console.log('[AUTENTIQUE GQL status]', res.status)
-  console.log('[AUTENTIQUE GQL body]', text.slice(0, 500))
   let json: Record<string, unknown>
   try { json = JSON.parse(text) } catch { throw new Error(`Autentique retornou não-JSON (${res.status}): ${text.slice(0, 200)}`) }
   if (json.errors) throw new Error((json.errors as Array<{ message: string }>)[0]?.message ?? 'Erro Autentique')
@@ -67,7 +65,6 @@ export async function criarDocumento(
   const pdfBlob = new Blob([Buffer.from(pdfBase64, 'base64')], { type: 'application/pdf' })
   form.append('0', pdfBlob, `${nome}.pdf`)
 
-  console.log('[AUTENTIQUE CREATE] enviando documento...')
   const res = await fetch(ENDPOINT, {
     method: 'POST',
     headers: { Authorization: `Bearer ${TOKEN}` },
@@ -76,8 +73,6 @@ export async function criarDocumento(
   })
 
   const text = await res.text()
-  console.log('[AUTENTIQUE CREATE status]', res.status)
-  console.log('[AUTENTIQUE CREATE body]', text.slice(0, 600))
   let json: Record<string, unknown>
   try { json = JSON.parse(text) } catch { throw new Error(`Autentique createDocument retornou não-JSON (${res.status}): ${text.slice(0, 200)}`) }
   if (json.errors) throw new Error((json.errors as Array<{ message: string }>)[0]?.message ?? 'Erro ao criar documento Autentique')

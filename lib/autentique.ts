@@ -84,11 +84,11 @@ export async function criarDocumento(
   return (json.data as Record<string, unknown>).createDocument as AutentiqueDocument
 }
 
-/** Assina usando o public_id da assinatura (retornado em createDocument) */
+/** Assina usando o public_id da assinatura (retornado em createDocument). Retorna Boolean. */
 export async function assinarDocumento(publicId: string): Promise<void> {
   await gql(`
     mutation {
-      signDocument(public_id: "${publicId}") { id }
+      signDocument(id: "${publicId}")
     }
   `)
 }

@@ -318,20 +318,12 @@ export default function LeadModal({ leadId, onClose, onChanged, mode = 'view' }:
                               <FileText size={16} /> Baixar contrato (PDF)
                             </a>
                           )}
-                          {/* Ações secundárias */}
-                          {contrato.autentique_status !== 'assinado' && (
-                            <div className="flex gap-2">
-                              <button onClick={handleGerarContrato} disabled={gerandoContrato}
-                                className="flex-1 h-10 rounded-xl text-sm font-semibold text-gray-300" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
-                                {gerandoContrato ? <Loader2 size={15} className="animate-spin mx-auto" /> : 'Gerar novamente'}
-                              </button>
-                              {contrato.autentique_status !== 'pendente' && (
-                                <button onClick={handleEnviarAssinatura} disabled={enviandoAssinatura}
-                                  className="flex-1 h-10 rounded-xl text-sm font-bold text-white disabled:opacity-70" style={{ background: '#7c6fff' }}>
-                                  {enviandoAssinatura ? <Loader2 size={15} className="animate-spin mx-auto" /> : 'Enviar para assinatura'}
-                                </button>
-                              )}
-                            </div>
+                          {/* Ação secundária */}
+                          {!contrato.autentique_status && (
+                            <button onClick={handleEnviarAssinatura} disabled={enviandoAssinatura}
+                              className="w-full h-10 rounded-xl text-sm font-bold text-white disabled:opacity-70" style={{ background: '#7c6fff' }}>
+                              {enviandoAssinatura ? <Loader2 size={15} className="animate-spin mx-auto" /> : 'Enviar para assinatura'}
+                            </button>
                           )}
                         </>
                       ) : (

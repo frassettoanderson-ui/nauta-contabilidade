@@ -234,7 +234,6 @@ function Wizard() {
                 value={(emp[k] as string) || ''}
                 onChange={v => setEmpK(k, v)}
                 onCEPFill={type === 'cep' ? makeCEPFill(setEmpK, 'emp_') : undefined}
-                disabled={readOnly}
               />
             ))}
             {/* Usa gás GLP — ocupa a coluna vazia ao lado do e-mail */}

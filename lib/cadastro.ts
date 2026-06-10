@@ -4,20 +4,22 @@ export type Field = [key: string, label: string, type?: string]
 
 export const CLI_FIELDS: Field[] = [
   ['cli_nome_completo', 'Nome completo',       'nome'],
-  ['cli_rg',           'RG'],
+  ['cli_rg',           'RG',                   'numero'],
   ['cli_cpf',          'CPF',                  'cpf'],
   ['cli_nascimento',   'Data de nascimento',   'date'],
   ['cli_nome_pai',     'Nome do pai',          'nome'],
   ['cli_nome_mae',     'Nome da mãe',          'nome'],
   ['cli_estado_civil', 'Estado civil',         'estado_civil'],
-  ['cli_recibo_irpf',  'Nº recibo de IRPF'],
-  ['cli_titulo_eleitor','Nº título de eleitor'],
+  ['cli_recibo_irpf',  'Nº recibo de IRPF',    'numero'],
+  ['cli_titulo_eleitor','Nº título de eleitor','numero'],
   ['cli_cep',          'CEP',                  'cep'],
   ['cli_endereco',     'Endereço'],
   ['cli_bairro',       'Bairro'],
   ['cli_cidade_estado','Cidade / Estado',      'cidade_estado'],
 ]
 
+// Campos da empresa. O proprietário do imóvel agora é separado em nome + CPF;
+// a tela de cadastro adiciona um flag "é o Sócio 1" que preenche esses dois campos.
 export const EMP_FIELDS: Field[] = [
   ['emp_nome',         'Nome da empresa'],
   ['emp_fantasia',     'Nome fantasia'],
@@ -26,26 +28,27 @@ export const EMP_FIELDS: Field[] = [
   ['emp_endereco',     'Endereço da empresa'],
   ['emp_bairro',       'Bairro'],
   ['emp_cidade_estado','Cidade / Estado',      'cidade_estado'],
-  ['emp_area_ocupada', 'Área ocupada (m²)'],
-  ['emp_edificacao',   'Nome e área total da edificação'],
-  ['emp_proprietario', 'Nome e CPF do proprietário do imóvel'],
+  ['emp_area_ocupada', 'Área ocupada (m²)',    'numero'],
+  ['emp_edificacao',   'Área total da edificação (m²)', 'numero'],
+  ['emp_proprietario_nome', 'Nome do proprietário do imóvel', 'nome'],
+  ['emp_proprietario_cpf',  'CPF do proprietário do imóvel',  'cpf'],
   ['emp_atividade',    'Atividade da empresa'],
-  ['emp_capital_social','Valor do capital social'],
+  ['emp_capital_social','Valor do capital social', 'dinheiro'],
   ['emp_telefone',     'Telefone para contato','phone'],
   ['emp_email',        'E-mail para contato'],
 ]
 
 export const SOCIO_FIELDS: Field[] = [
   ['nome_completo', 'Nome completo',       'nome'],
-  ['rg',            'RG'],
+  ['rg',            'RG',                  'numero'],
   ['cpf',           'CPF',                 'cpf'],
   ['nascimento',    'Data de nascimento',  'date'],
   ['nome_pai',      'Nome do pai',         'nome'],
   ['nome_mae',      'Nome da mãe',         'nome'],
   ['participacao',  'Participação (%)',    'number'],
   ['estado_civil',  'Estado civil',        'estado_civil'],
-  ['recibo_irpf',   'Nº recibo de IRPF'],
-  ['titulo_eleitor','Nº título de eleitor'],
+  ['recibo_irpf',   'Nº recibo de IRPF',   'numero'],
+  ['titulo_eleitor','Nº título de eleitor','numero'],
 ]
 
 export const CLI_TO_SOCIO: [string, string][] = [

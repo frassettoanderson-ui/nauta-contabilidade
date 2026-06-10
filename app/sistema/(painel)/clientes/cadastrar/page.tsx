@@ -78,6 +78,7 @@ function Wizard() {
   const [emp, setEmp] = useState<Obj>({ emp_usa_glp: false })
   const [socios, setSocios] = useState<Obj[]>([{}, {}, {}])
   const [usarCliente, setUsarCliente] = useState(false)
+  const [propEhSocio1, setPropEhSocio1] = useState(false)
   const [socio2Ativo, setSocio2Ativo] = useState(false)
   const [socio3Ativo, setSocio3Ativo] = useState(false)
   const [tipo, setTipo] = useState<number | null>(null)
@@ -119,6 +120,18 @@ function Wizard() {
         const novo: Obj = { ...x }
         CLI_TO_SOCIO.forEach(([ck, sk]) => { novo[sk] = cli[ck] ?? '' })
         return novo
+      }))
+    }
+  }
+
+  function togglePropSocio1(checked: boolean) {
+    setPropEhSocio1(checked)
+    if (checked) {
+      const s1 = socios[0] || {}
+      setEmp(e => ({
+        ...e,
+        emp_proprietario_nome: (s1.nome_completo as string) || (cli.cli_nome_completo as string) || '',
+        emp_proprietario_cpf:  (s1.cpf as string) || (cli.cli_cpf as string) || '',
       }))
     }
   }
@@ -177,7 +190,7 @@ function Wizard() {
   const socioAtivo = socioIdx === 0 || (socioIdx === 1 && socio2Ativo) || (socioIdx === 2 && socio3Ativo)
 
   return (
-    <div className="p-6 lg:p-8 max-w-2xl">
+    <div className="p-6 lg:p-8 max-w-5xl">
       <h1 className="text-2xl font-black text-white mb-1" style={{ letterSpacing: '-0.02em' }}>Cadastro de cliente</h1>
       <p className="text-gray-500 text-sm mb-2">{leadId ? 'Vinculado ao lead selecionado' : clienteId ? 'Editando cadastro existente' : 'Novo cadastro'}</p>
       {tipo && (
@@ -201,7 +214,7 @@ function Wizard() {
       <div className="rounded-2xl p-6 mb-6 space-y-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}>
         {step === 0 && (
           <>
-            <div className="grid sm:grid-cols-2 gap-3">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {CLI_FIELDS.map(([k, label, type]) => (
                 <SmartField key={k} label={label} type={type} required={reqKeys.has(k)}
                   value={(cli[k] as string) || ''}
@@ -215,7 +228,7 @@ function Wizard() {
         )}
 
         {step === 1 && (
-          <div className="grid sm:grid-cols-2 gap-3">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {EMP_FIELDS.map(([k, label, type]) => (
               <SmartField key={k} label={label} type={type} required={reqKeys.has(k)}
                 value={(emp[k] as string) || ''}
@@ -223,7 +236,11 @@ function Wizard() {
                 onCEPFill={type === 'cep' ? makeCEPFill(setEmpK, 'emp_') : undefined}
               />
             ))}
-            <div className="sm:col-span-2">
+            <label className="sm:col-span-2 lg:col-span-3 flex items-center gap-2 cursor-pointer p-3 rounded-xl" style={{ background: 'rgba(11,188,212,0.06)', border: '1px solid rgba(11,188,212,0.2)' }}>
+              <input type="checkbox" checked={propEhSocio1} onChange={e => togglePropSocio1(e.target.checked)} className="w-4 h-4 accent-[#0BBCD4]" />
+              <span className="text-sm text-gray-300">O proprietário do imóvel é o Sócio 1 (preenche nome e CPF automaticamente)</span>
+            </label>
+            <div className="sm:col-span-2 lg:col-span-1">
               <label className="block text-xs font-semibold text-gray-400 mb-1.5">Usa gás GLP?</label>
               <div className="flex gap-2">
                 {[['Sim', true], ['Não', false]].map(([l, val]) => (
@@ -263,7 +280,7 @@ function Wizard() {
               <p className="text-gray-600 text-sm py-6 text-center">Marque a opção acima para preencher os dados deste sócio.</p>
             ) : (
               <>
-                <div className="grid sm:grid-cols-2 gap-3">
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   {SOCIO_FIELDS.map(([k, label, type]) => (
                     <SmartField key={k} label={label} type={type}
                       required={socioAtivo && REQ_SOCIO.includes(k)}

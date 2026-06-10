@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Loader2 } from 'lucide-react'
 import {
-  maskCPF, validateCPF, maskCNPJ, maskCEP, maskPhone, onlyLetters,
+  maskCPF, validateCPF, maskCNPJ, maskCEP, maskPhone, onlyLetters, onlyNumbers, maskMoney,
   ESTADOS_BR, ESTADO_CIVIL_OPS, fetchCEP, parseCidadeEstado,
   type CEPData,
 } from '@/lib/form-masks'
@@ -89,6 +89,30 @@ export default function SmartField({
           onBlur={() => { if (full) setCpfInvalid(!validateCPF(value)) }}
           className={BASE} style={invalid || errBorder ? FSE : FS} />
         {invalid && <p className="text-red-400 text-[10px] mt-1">CPF inválido</p>}
+      </div>
+    )
+  }
+
+  // ── SOMENTE NÚMEROS ───────────────────────────────────────────────────
+  if (type === 'numero') {
+    return (
+      <div>
+        <Label text={label} />
+        <input type="text" inputMode="numeric" value={value} disabled={disabled}
+          onChange={e => onChange(onlyNumbers(e.target.value))}
+          className={BASE} style={errBorder ? FSE : FS} />
+      </div>
+    )
+  }
+
+  // ── VALOR MONETÁRIO ───────────────────────────────────────────────────
+  if (type === 'dinheiro') {
+    return (
+      <div>
+        <Label text={label} />
+        <input type="text" inputMode="numeric" value={value} disabled={disabled} placeholder="R$ 0,00"
+          onChange={e => onChange(maskMoney(e.target.value))}
+          className={BASE} style={errBorder ? FSE : FS} />
       </div>
     )
   }

@@ -58,6 +58,19 @@ export function onlyLetters(v: string): string {
   return v.replace(/[^a-zA-ZÀ-ÿ\s'-]/g, '')
 }
 
+/** Mantém apenas dígitos */
+export function onlyNumbers(v: string): string {
+  return v.replace(/\D/g, '')
+}
+
+/** Formata valor monetário em BRL a partir dos dígitos (centavos). Ex.: "123456" → "R$ 1.234,56" */
+export function maskMoney(v: string): string {
+  const digits = v.replace(/\D/g, '')
+  if (!digits) return ''
+  const n = parseInt(digits, 10)
+  return (n / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+}
+
 // ─── Validadores ──────────────────────────────────────────────────────────
 
 export function validateCPF(cpf: string): boolean {

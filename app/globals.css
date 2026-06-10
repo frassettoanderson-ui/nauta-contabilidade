@@ -178,6 +178,38 @@ html { scroll-behavior: smooth; }
 /* ── Teal glow ── */
 .teal-glow { box-shadow: 0 0 40px rgba(11, 188, 212, 0.2); }
 
+/* ── Card "em chamas" (lead 5/5) ── */
+.card-flame {
+  border-color: rgba(249, 115, 22, 0.85) !important;
+  animation: flameFlicker 1.6s ease-in-out infinite;
+}
+@keyframes flameFlicker {
+  0%, 100% {
+    box-shadow:
+      0 0 6px rgba(249, 115, 22, 0.55),
+      0 0 14px rgba(239, 68, 68, 0.40),
+      0 4px 12px rgba(0, 0, 0, 0.4),
+      inset 0 0 8px rgba(249, 115, 22, 0.18);
+    border-color: rgba(249, 115, 22, 0.85);
+  }
+  35% {
+    box-shadow:
+      0 0 10px rgba(251, 146, 60, 0.75),
+      0 0 22px rgba(239, 68, 68, 0.55),
+      0 4px 14px rgba(0, 0, 0, 0.4),
+      inset 0 0 12px rgba(251, 146, 60, 0.28);
+    border-color: rgba(251, 191, 36, 0.95);
+  }
+  65% {
+    box-shadow:
+      0 0 8px rgba(239, 68, 68, 0.70),
+      0 0 18px rgba(249, 115, 22, 0.50),
+      0 4px 12px rgba(0, 0, 0, 0.4),
+      inset 0 0 10px rgba(239, 68, 68, 0.22);
+    border-color: rgba(249, 115, 22, 0.90);
+  }
+}
+
 /* ── Focus ring ── */
 *:focus-visible {
   outline: 2px solid #0BBCD4;
@@ -204,4 +236,5 @@ html { scroll-behavior: smooth; }
     transform: none !important;
     opacity: 1 !important;
   }
+  .card-flame { animation: none !important; }
 }

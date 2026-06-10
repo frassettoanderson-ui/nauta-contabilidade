@@ -124,6 +124,7 @@ export default function KanbanPage() {
                     const dragging = dragId === l.id
                     const fechado = col.id === 'fechado'
                     const temPend = pend(l)
+                    const emChamas = (l.classificacao ?? 0) >= 5 && !dragging
                     return (
                       <div key={l.id}
                         draggable={!fechado}
@@ -135,7 +136,7 @@ export default function KanbanPage() {
                         }}
                         onDragEnd={() => { setDragId(null); setOverCol(null) }}
                         onClick={() => abrir(l.id, 'view')}
-                        className="relative rounded-lg p-4 pt-5 cursor-pointer"
+                        className={`relative rounded-lg p-4 pt-5 cursor-pointer${emChamas ? ' card-flame' : ''}`}
                         style={{
                           background: temPend
                             ? 'linear-gradient(160deg, #2a2238 0%, #1d1733 100%)'
@@ -145,6 +146,8 @@ export default function KanbanPage() {
                           transform: dragging ? 'scale(1.04) rotate(-1.5deg)' : 'scale(1)',
                           boxShadow: dragging
                             ? '0 18px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(11,188,212,0.3)'
+                            : emChamas
+                            ? undefined
                             : '0 4px 10px rgba(0,0,0,0.35), 0 1px 2px rgba(0,0,0,0.3)',
                           transition: 'transform 0.18s cubic-bezier(0.16,1,0.3,1), box-shadow 0.18s ease, border-color 0.18s ease',
                         }}>

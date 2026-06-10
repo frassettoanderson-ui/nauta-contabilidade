@@ -81,7 +81,7 @@ export async function criarDocumento(
   let json: Record<string, unknown>
   try { json = JSON.parse(text) } catch { throw new Error(`Autentique createDocument retornou não-JSON (${res.status}): ${text.slice(0, 200)}`) }
   if (json.errors) throw new Error((json.errors as Array<{message:string}>)[0]?.message ?? 'Erro ao criar documento Autentique')
-  return (json.data as Record<string, unknown>).createDocument
+  return (json.data as Record<string, unknown>).createDocument as AutentiqueDocument
 }
 
 /** Assina usando o public_id da assinatura (retornado em createDocument) */

@@ -25,7 +25,7 @@ export interface AutentiqueSignatory {
 export interface AutentiqueDocument {
   id: string
   name: string
-  signatures: { public_id: string; email?: { email?: string }; link?: { short_link: string } }[]
+  signatures: { public_id: string; email?: string; link?: { short_link: string } }[]
 }
 
 /** Cria documento no Autentique via multipart upload (form-data Node.js) */
@@ -42,7 +42,7 @@ export async function criarDocumento(
         signatures {
           public_id
           name
-          email { email }
+          email
           action { name }
           link { short_link }
         }
@@ -104,7 +104,7 @@ export async function consultarDocumento(documentId: string) {
         signatures {
           public_id
           name
-          email { email }
+          email
           signed { created_at }
           link { short_link }
         }

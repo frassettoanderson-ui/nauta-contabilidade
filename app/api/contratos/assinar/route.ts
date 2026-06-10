@@ -57,8 +57,8 @@ export async function POST(req: NextRequest) {
 
     // 5. Assina imediatamente como Nauta via API usando o public_id da assinatura
     const nautaSig = doc.signatures?.find(
-      (s: { email?: { email?: string }; public_id: string }) =>
-        s.email?.email === 'contato@nautacontabilidade.com.br'
+      (s: { email?: string; public_id: string }) =>
+        s.email === 'contato@nautacontabilidade.com.br'
     )
     if (nautaSig?.public_id) {
       await assinarDocumento(nautaSig.public_id)

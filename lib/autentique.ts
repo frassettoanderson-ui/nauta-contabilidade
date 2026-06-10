@@ -1,6 +1,6 @@
 import NodeFormData from 'form-data'
 
-const ENDPOINT = 'https://api.autentique.com.br/2/graphql'
+const ENDPOINT = 'https://api.autentique.com.br/v2/graphql'
 const TOKEN = process.env.AUTENTIQUE_TOKEN!
 
 async function gql(query: string, variables?: Record<string, unknown>) {

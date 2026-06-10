@@ -11,7 +11,7 @@ import {
 } from 'lucide-react'
 import {
   getLeadDetail, updateLead, deleteLead, addAtividade, addLembrete, toggleLembrete, deleteLembrete,
-  getClienteByLead, listUsuarios, getContratoByLead, gerarContrato,
+  getClienteByLead, listUsuarios, getContratoByLead, gerarContrato, enviarParaAssinatura,
   type LeadDetail, type UsuarioRow, type ContratoRow,
 } from '@/lib/api'
 import { ETAPAS, INTERESSES } from '@/lib/crm-config'
@@ -27,6 +27,7 @@ export default function LeadModal({ leadId, onClose, onChanged, mode = 'view' }:
   const [cadastroCompleto, setCadastroCompleto] = useState(false)
   const [contrato, setContrato] = useState<ContratoRow | null>(null)
   const [gerandoContrato, setGerandoContrato] = useState(false)
+  const [enviandoAssinatura, setEnviandoAssinatura] = useState(false)
   const [editing, setEditing] = useState(false)
   const [edit, setEdit] = useState({ nome: '', whatsapp: '', email: '', interesse: '' })
   const [novaAtiv, setNovaAtiv] = useState('')
@@ -63,6 +64,18 @@ export default function LeadModal({ leadId, onClose, onChanged, mode = 'view' }:
     try { const c = await gerarContrato(leadId); setContrato(c); onChanged() }
     catch (e) { alert('Erro ao gerar contrato: ' + (e instanceof Error ? e.message : '')) }
     finally { setGerandoContrato(false) }
+  }
+
+  async function handleEnviarAssinatura() {
+    setEnviandoAssinatura(true)
+    try {
+      await enviarParaAssinatura(leadId)
+      const c = await getContratoByLead(leadId)
+      setContrato(c)
+      onChanged()
+      alert('Contrato enviado! A Nauta já assinou e o sócio receberá o e-mail para assinar.')
+    } catch (e) { alert('Erro ao enviar: ' + (e instanceof Error ? e.message : '')) }
+    finally { setEnviandoAssinatura(false) }
   }
   useEffect(() => { load() }, [load])
 
@@ -288,25 +301,43 @@ export default function LeadModal({ leadId, onClose, onChanged, mode = 'view' }:
                     <div className="mt-5 space-y-2">
                       {contrato ? (
                         <>
-                          <a href={contrato.pdf_url || '#'} target="_blank" rel="noopener noreferrer"
-                            className="w-full h-11 rounded-xl font-bold text-white flex items-center justify-center gap-2" style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)' }}>
-                            <FileText size={16} /> Baixar contrato (PDF)
-                          </a>
-                          <div className="flex gap-2">
-                            <button onClick={handleGerarContrato} disabled={gerandoContrato}
-                              className="flex-1 h-10 rounded-xl text-sm font-semibold text-gray-300" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
-                              {gerandoContrato ? <Loader2 size={15} className="animate-spin mx-auto" /> : 'Gerar novamente'}
-                            </button>
-                            <button onClick={() => alert('Envio para assinatura (Autentique) entra na próxima etapa.')}
-                              className="flex-1 h-10 rounded-xl text-sm font-bold text-white" style={{ background: '#7c6fff' }}>
-                              Enviar contrato
-                            </button>
-                          </div>
+                          {/* Contrato assinado por todos */}
+                          {contrato.autentique_status === 'assinado' && contrato.autentique_url ? (
+                            <a href={contrato.autentique_url} target="_blank" rel="noopener noreferrer"
+                              className="w-full h-11 rounded-xl font-bold text-white flex items-center justify-center gap-2" style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)' }}>
+                              <ClipboardCheck size={16} /> Baixar contrato assinado
+                            </a>
+                          ) : contrato.autentique_status === 'pendente' ? (
+                            <div className="w-full h-11 rounded-xl font-bold flex items-center justify-center gap-2 text-sm"
+                              style={{ background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.3)', color: '#fbbf24' }}>
+                              <Loader2 size={15} className="animate-spin" /> Aguardando assinatura do sócio…
+                            </div>
+                          ) : (
+                            <a href={contrato.pdf_url || '#'} target="_blank" rel="noopener noreferrer"
+                              className="w-full h-11 rounded-xl font-bold text-white flex items-center justify-center gap-2" style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)' }}>
+                              <FileText size={16} /> Baixar contrato (PDF)
+                            </a>
+                          )}
+                          {/* Ações secundárias */}
+                          {contrato.autentique_status !== 'assinado' && (
+                            <div className="flex gap-2">
+                              <button onClick={handleGerarContrato} disabled={gerandoContrato}
+                                className="flex-1 h-10 rounded-xl text-sm font-semibold text-gray-300" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                {gerandoContrato ? <Loader2 size={15} className="animate-spin mx-auto" /> : 'Gerar novamente'}
+                              </button>
+                              {contrato.autentique_status !== 'pendente' && (
+                                <button onClick={handleEnviarAssinatura} disabled={enviandoAssinatura}
+                                  className="flex-1 h-10 rounded-xl text-sm font-bold text-white disabled:opacity-70" style={{ background: '#7c6fff' }}>
+                                  {enviandoAssinatura ? <Loader2 size={15} className="animate-spin mx-auto" /> : 'Enviar para assinatura'}
+                                </button>
+                              )}
+                            </div>
+                          )}
                         </>
                       ) : (
-                        <button onClick={handleGerarContrato} disabled={gerandoContrato}
-                          className="w-full h-11 rounded-xl font-bold text-white flex items-center justify-center gap-2 disabled:opacity-70" style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)' }}>
-                          {gerandoContrato ? <><Loader2 size={16} className="animate-spin" /> Gerando contrato…</> : <><FileText size={16} /> Gerar contrato</>}
+                        <button onClick={handleEnviarAssinatura} disabled={enviandoAssinatura}
+                          className="w-full h-11 rounded-xl font-bold text-white flex items-center justify-center gap-2 disabled:opacity-70" style={{ background: 'linear-gradient(135deg, #7c6fff, #6355e0)' }}>
+                          {enviandoAssinatura ? <><Loader2 size={16} className="animate-spin" /> Enviando…</> : <><FileText size={16} /> Enviar para assinatura</>}
                         </button>
                       )}
                     </div>

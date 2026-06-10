@@ -3,8 +3,8 @@
 import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
-import { Loader2, Check, ArrowLeft, ArrowRight, Upload, FileText, Paperclip, Save, Trash2, Link2, Copy, X } from 'lucide-react'
-import { uploadDoc, saveCliente, getCliente, getClienteByLead, deleteCliente, gerarLinkCadastro, getLeadDetail } from '@/lib/api'
+import { Loader2, Check, ArrowLeft, ArrowRight, Upload, FileText, Paperclip, Save, Trash2, Link2, Copy, X, Send } from 'lucide-react'
+import { uploadDoc, saveCliente, getCliente, getClienteByLead, deleteCliente, gerarLinkCadastro, getLeadDetail, enviarParaAssinatura, getContratoByLead, type ContratoRow } from '@/lib/api'
 import { CLI_FIELDS, EMP_FIELDS, SOCIO_FIELDS, CLI_TO_SOCIO } from '@/lib/cadastro'
 import { tipoFromInteresse, requiredKeysFor, REQ_SOCIO, TIPO_LABEL } from '@/lib/contratos'
 import SmartField from '@/components/cadastro/SmartField'
@@ -73,6 +73,8 @@ function Wizard() {
   const [savedMsg, setSavedMsg] = useState('')
   const [clienteId, setClienteId] = useState<string | undefined>(clienteParam)
   const [linkUrl, setLinkUrl] = useState('')
+  const [contrato, setContrato] = useState<ContratoRow | null>(null)
+  const [enviandoAssinatura, setEnviandoAssinatura] = useState(false)
 
   const [cli, setCli] = useState<Obj>({})
   const [emp, setEmp] = useState<Obj>({ emp_usa_glp: false })
@@ -102,6 +104,7 @@ function Wizard() {
       const lid = leadId || (data?.lead_id as string | undefined)
       if (lid) {
         try { const lead = await getLeadDetail(lid); setTipo(tipoFromInteresse(lead.interesse)) } catch {}
+        try { const c = await getContratoByLead(lid); setContrato(c) } catch {}
       }
       setLoading(false)
     }
@@ -169,6 +172,18 @@ function Wizard() {
     if (!confirm('Excluir este cliente? Esta ação não pode ser desfeita.')) return
     try { await deleteCliente(clienteId); router.push('/sistema/clientes/consultar') }
     catch { alert('Erro ao excluir.') }
+  }
+
+  async function handleEnviarAssinatura() {
+    if (!leadId) { alert('Este cadastro não está vinculado a um lead.'); return }
+    setEnviandoAssinatura(true)
+    try {
+      await enviarParaAssinatura(leadId)
+      const c = await getContratoByLead(leadId)
+      setContrato(c)
+      alert('Contrato enviado! A Nauta já assinou e o sócio receberá o e-mail para assinar.')
+    } catch (e) { alert('Erro: ' + (e instanceof Error ? e.message : '')) }
+    finally { setEnviandoAssinatura(false) }
   }
 
   async function handleEnviarLink() {
@@ -308,6 +323,24 @@ function Wizard() {
           className="inline-flex items-center gap-2 px-4 h-11 rounded-xl text-sm font-bold text-white disabled:opacity-60" style={{ background: 'rgba(124,111,255,0.9)' }}>
           <Link2 size={15} /> Enviar link de cadastro
         </button>
+
+        {leadId && contrato?.autentique_status === 'assinado' ? (
+          <a href={contrato.autentique_url!} target="_blank" rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-4 h-11 rounded-xl text-sm font-bold text-white" style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)' }}>
+            <FileText size={15} /> Baixar contrato assinado
+          </a>
+        ) : leadId && contrato?.autentique_status === 'pendente' ? (
+          <span className="inline-flex items-center gap-2 px-4 h-11 rounded-xl text-sm font-semibold"
+            style={{ background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.3)', color: '#fbbf24' }}>
+            <Loader2 size={15} className="animate-spin" /> Aguardando assinatura…
+          </span>
+        ) : leadId ? (
+          <button onClick={handleEnviarAssinatura} disabled={enviandoAssinatura}
+            className="inline-flex items-center gap-2 px-4 h-11 rounded-xl text-sm font-bold text-white disabled:opacity-60"
+            style={{ background: 'linear-gradient(135deg, #7c6fff, #6355e0)' }}>
+            {enviandoAssinatura ? <Loader2 size={15} className="animate-spin" /> : <><Send size={15} /> Enviar contrato para assinatura</>}
+          </button>
+        ) : null}
 
         <button onClick={() => router.push('/sistema/clientes/consultar')}
           className="inline-flex items-center gap-2 px-4 h-11 rounded-xl text-sm text-gray-300" style={FS}>

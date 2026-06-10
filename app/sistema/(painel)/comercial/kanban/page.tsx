@@ -11,6 +11,27 @@ import LeadModal from '@/components/sistema/LeadModal'
 import FecharNegociacaoModal from '@/components/sistema/FecharNegociacaoModal'
 import { useRealtime } from '@/components/sistema/useRealtime'
 
+const ORIGEM_COR: Record<string, { bg: string; color: string }> = {
+  'Site':        { bg: 'rgba(11,188,212,0.15)',  color: '#0BBCD4' },
+  'WhatsApp':    { bg: 'rgba(37,211,102,0.15)',  color: '#25D366' },
+  'Facebook':    { bg: 'rgba(24,119,242,0.15)',  color: '#1877F2' },
+  'Instagram':   { bg: 'rgba(225,48,108,0.15)',  color: '#E1306C' },
+  'Anúncio':     { bg: 'rgba(251,191,36,0.15)',  color: '#FBBF24' },
+  'Google':      { bg: 'rgba(234,67,53,0.15)',   color: '#EA4335' },
+  'Espontâneo':  { bg: 'rgba(168,85,247,0.15)',  color: '#A855F7' },
+  'Outro':       { bg: 'rgba(156,163,175,0.15)', color: '#9CA3AF' },
+}
+
+function OrigemTag({ origem }: { origem: string }) {
+  const cor = ORIGEM_COR[origem] ?? { bg: 'rgba(156,163,175,0.15)', color: '#9CA3AF' }
+  return (
+    <span className="inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded-full"
+      style={{ background: cor.bg, color: cor.color }}>
+      {origem}
+    </span>
+  )
+}
+
 export default function KanbanPage() {
   const router = useRouter()
   const [leads, setLeads] = useState<LeadRow[] | null>(null)
@@ -131,6 +152,7 @@ export default function KanbanPage() {
                           )}
                         </div>
                         {l.interesse && <p className="text-[#0BBCD4] text-xs mt-0.5 truncate">{l.interesse}</p>}
+                        {l.origem && <OrigemTag origem={l.origem} />}
                         <div className="mt-2.5"><ClassBar value={l.classificacao ?? 0} /></div>
 
                         {/* Ações rápidas */}

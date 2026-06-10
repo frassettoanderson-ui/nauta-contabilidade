@@ -84,7 +84,7 @@ export default function HomePage() {
         <main>
           <HeroSection          onOpenLead={openPopup} />
           <PainSection          onOpenLead={() => openPopup()} />
-          <HowItWorksSection />
+          <HowItWorksSection    onOpenLead={openPopup} />
           <ServicesSection      onOpenLead={openPopup} />
           <WhoWeServeSection    onOpenLead={() => openPopup()} />
           <DifferentialsSection onOpenLead={openPopup} />

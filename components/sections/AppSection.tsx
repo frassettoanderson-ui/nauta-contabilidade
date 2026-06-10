@@ -69,7 +69,7 @@ export default function AppSection() {
 
             {/* Store buttons */}
             <div className="flex flex-col sm:flex-row gap-3 animate-from-left delay-600">
-              <a href="#" aria-label="Baixar na App Store"
+              <a href="https://vip.acessorias.com/nautacontabilidade" target="_blank" rel="noopener noreferrer" aria-label="Baixar na App Store"
                 className="group flex items-center gap-3 px-5 py-3.5 rounded-xl transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
                 style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)' }}
                 onMouseEnter={e => { e.currentTarget.style.background='rgba(11,188,212,0.08)'; e.currentTarget.style.border='1px solid rgba(11,188,212,0.25)' }}
@@ -84,7 +84,7 @@ export default function AppSection() {
                 </div>
               </a>
 
-              <a href="#" aria-label="Baixar no Google Play"
+              <a href="https://play.google.com/store/apps/details?id=com.nautacontabilidade&pcampaignid=web_share" target="_blank" rel="noopener noreferrer" aria-label="Baixar no Google Play"
                 className="group flex items-center gap-3 px-5 py-3.5 rounded-xl transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
                 style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)' }}
                 onMouseEnter={e => { e.currentTarget.style.background='rgba(11,188,212,0.08)'; e.currentTarget.style.border='1px solid rgba(11,188,212,0.25)' }}

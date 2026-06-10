@@ -28,7 +28,9 @@ const steps = [
   },
 ]
 
-export default function HowItWorksSection() {
+interface Props { onOpenLead?: (interest?: string) => void }
+
+export default function HowItWorksSection({ onOpenLead }: Props) {
   const ref        = useScrollAnimation()
   const sectionRef = useRef<HTMLElement>(null)
   const [active, setActive] = useState<number | null>(null)
@@ -180,7 +182,7 @@ export default function HowItWorksSection() {
 
         {/* CTA */}
         <div className="text-center mt-16 animate-on-scroll delay-200">
-          <button className="btn-primary inline-flex items-center gap-2 group">
+          <button onClick={() => onOpenLead?.('trocar de contador')} className="btn-primary inline-flex items-center gap-2 group">
             Trocar de contador agora
             <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
           </button>

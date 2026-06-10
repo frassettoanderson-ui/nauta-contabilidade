@@ -43,6 +43,7 @@ export default function ContatoPage() {
         whatsapp: form.whatsapp,
         email: form.email,
         interesse: form.interesse || 'Contato pelo site',
+        mensagem: form.mensagem,
       })
       setStatus('success')
       setForm({ nome: '', email: '', whatsapp: '', mensagem: '', interesse: '' })

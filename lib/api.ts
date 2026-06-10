@@ -86,11 +86,11 @@ export function adminDeleteTag(id: string): Promise<void> {
 
 // ─── LEADS ─────────────────────────────────────────────────────────────────
 
-export async function saveLead(lead: { nome: string; whatsapp: string; email: string; interesse: string }) {
+export async function saveLead(lead: { nome: string; whatsapp: string; email: string; interesse: string; mensagem?: string }) {
   const res = await fetch('/api/leads', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(lead),
+    body: JSON.stringify({ ...lead, origem: 'Site' }),
   })
   return json(res)
 }
@@ -111,6 +111,7 @@ export interface LeadRow {
   valor_abertura?: number | string | null
   responsavel_id?: string | null
   responsavel_nome?: string | null
+  origem?: string | null
 }
 
 export interface UsuarioRow { id: string; username: string; role: string }

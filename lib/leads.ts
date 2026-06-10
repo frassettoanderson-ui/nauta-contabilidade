@@ -36,12 +36,13 @@ export async function insertLead(lead: {
   nome: string; whatsapp: string; email: string; interesse: string
   etapa?: string; classificacao?: number
   responsavel_id?: string | null; responsavel_nome?: string | null
+  origem?: string | null
 }) {
   const res = await pool.query(
-    `INSERT INTO leads (nome, whatsapp, email, interesse, etapa, classificacao, responsavel_id, responsavel_nome)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+    `INSERT INTO leads (nome, whatsapp, email, interesse, etapa, classificacao, responsavel_id, responsavel_nome, origem)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
     [lead.nome, lead.whatsapp, lead.email, lead.interesse, lead.etapa ?? 'novo', lead.classificacao ?? 0,
-     lead.responsavel_id ?? null, lead.responsavel_nome ?? null]
+     lead.responsavel_id ?? null, lead.responsavel_nome ?? null, lead.origem ?? null]
   )
   emitCrmChange()
   return res.rows[0]

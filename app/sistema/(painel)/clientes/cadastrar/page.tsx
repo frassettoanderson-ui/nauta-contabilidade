@@ -7,6 +7,8 @@ import { Loader2, Check, ArrowLeft, ArrowRight, Upload, FileText, Paperclip, Sav
 import { uploadDoc, saveCliente, getCliente, getClienteByLead, deleteCliente, gerarLinkCadastro, getLeadDetail } from '@/lib/api'
 import { CLI_FIELDS, EMP_FIELDS, SOCIO_FIELDS, CLI_TO_SOCIO } from '@/lib/cadastro'
 import { tipoFromInteresse, requiredKeysFor, REQ_SOCIO, TIPO_LABEL } from '@/lib/contratos'
+import SmartField from '@/components/cadastro/SmartField'
+import type { CEPData } from '@/lib/form-masks'
 
 type Obj = Record<string, unknown>
 
@@ -14,14 +16,12 @@ const FIELD = 'w-full h-11 px-4 rounded-xl text-sm text-white placeholder-gray-6
 const FS = { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.10)' }
 const PASSOS = ['Dados do cliente', 'Dados da empresa', 'Sócio 1', 'Sócio 2', 'Sócio 3']
 
-function TextField({ label, value, onChange, type = 'text', disabled, required }: { label: string; value: string; onChange: (v: string) => void; type?: string; disabled?: boolean; required?: boolean }) {
-  return (
-    <div>
-      <label className="block text-xs font-semibold text-gray-400 mb-1.5">{label}{required && <span className="text-red-400"> *</span>}</label>
-      <input type={type} value={value} disabled={disabled} onChange={e => onChange(e.target.value)}
-        className={FIELD} style={{ ...FS, ...(type === 'date' ? { colorScheme: 'dark' } : {}), ...(required && !String(value ?? '').trim() ? { borderColor: 'rgba(239,68,68,0.4)' } : {}) }} />
-    </div>
-  )
+function makeCEPFill(setter: (k: string, v: unknown) => void, prefix: string) {
+  return (data: CEPData) => {
+    setter(`${prefix}endereco`, data.logradouro)
+    setter(`${prefix}bairro`, data.bairro)
+    setter(`${prefix}cidade_estado`, `${data.localidade}/${data.uf}`)
+  }
 }
 
 function FileField({ label, url, onUpload, disabled }: { label: string; url?: string; onUpload: (url: string) => void; disabled?: boolean }) {
@@ -202,7 +202,13 @@ function Wizard() {
         {step === 0 && (
           <>
             <div className="grid sm:grid-cols-2 gap-3">
-              {CLI_FIELDS.map(([k, label, type]) => <TextField key={k} label={label} type={type} required={reqKeys.has(k)} value={(cli[k] as string) || ''} onChange={v => setCliK(k, v)} />)}
+              {CLI_FIELDS.map(([k, label, type]) => (
+                <SmartField key={k} label={label} type={type} required={reqKeys.has(k)}
+                  value={(cli[k] as string) || ''}
+                  onChange={v => setCliK(k, v)}
+                  onCEPFill={type === 'cep' ? makeCEPFill(setCliK, 'cli_') : undefined}
+                />
+              ))}
             </div>
             <PessoaUploads docKey="cli_doc_url" certKey="cli_cert_url" senhaKey="cli_cert_senha" data={cli} set={setCliK} />
           </>
@@ -210,7 +216,13 @@ function Wizard() {
 
         {step === 1 && (
           <div className="grid sm:grid-cols-2 gap-3">
-            {EMP_FIELDS.map(([k, label, type]) => <TextField key={k} label={label} type={type} required={reqKeys.has(k)} value={(emp[k] as string) || ''} onChange={v => setEmpK(k, v)} />)}
+            {EMP_FIELDS.map(([k, label, type]) => (
+              <SmartField key={k} label={label} type={type} required={reqKeys.has(k)}
+                value={(emp[k] as string) || ''}
+                onChange={v => setEmpK(k, v)}
+                onCEPFill={type === 'cep' ? makeCEPFill(setEmpK, 'emp_') : undefined}
+              />
+            ))}
             <div className="sm:col-span-2">
               <label className="block text-xs font-semibold text-gray-400 mb-1.5">Usa gás GLP?</label>
               <div className="flex gap-2">
@@ -252,7 +264,13 @@ function Wizard() {
             ) : (
               <>
                 <div className="grid sm:grid-cols-2 gap-3">
-                  {SOCIO_FIELDS.map(([k, label, type]) => <TextField key={k} label={label} type={type} required={socioAtivo && REQ_SOCIO.includes(k)} value={(socios[socioIdx]?.[k] as string) || ''} onChange={v => setSocioK(socioIdx, k, v)} />)}
+                  {SOCIO_FIELDS.map(([k, label, type]) => (
+                    <SmartField key={k} label={label} type={type}
+                      required={socioAtivo && REQ_SOCIO.includes(k)}
+                      value={(socios[socioIdx]?.[k] as string) || ''}
+                      onChange={v => setSocioK(socioIdx, k, v)}
+                    />
+                  ))}
                 </div>
                 <PessoaUploads docKey="doc_url" certKey="cert_url" senhaKey="cert_senha" data={socios[socioIdx] || {}} set={(k, v) => setSocioK(socioIdx, k, v)} />
                 <p className="text-xs pt-1" style={{ color: totalPart > 100 ? '#f87171' : '#6b7280' }}>

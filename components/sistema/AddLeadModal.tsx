@@ -9,7 +9,9 @@ const FIELD = 'w-full h-11 px-4 rounded-xl text-sm text-white placeholder-gray-6
 const FS = { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.10)' }
 
 export default function AddLeadModal({ onClose, onCreated }: { onClose: () => void; onCreated: (l: LeadRow) => void }) {
-  const [form, setForm] = useState({ nome: '', whatsapp: '', email: '', interesse: '' })
+  const ORIGENS = ['Site', 'WhatsApp', 'Facebook', 'Instagram', 'Anúncio', 'Google', 'Espontâneo', 'Outro']
+
+  const [form, setForm] = useState({ nome: '', whatsapp: '', email: '', interesse: '', origem: '' })
   const [saving, setSaving] = useState(false)
   const set = (k: string, v: unknown) => setForm(f => ({ ...f, [k]: v }))
 
@@ -18,7 +20,7 @@ export default function AddLeadModal({ onClose, onCreated }: { onClose: () => vo
     if (!form.nome.trim()) return
     setSaving(true)
     try {
-      const lead = await createLead({ ...form, interesse: form.interesse || 'Não informado' })
+      const lead = await createLead({ ...form, interesse: form.interesse || 'Não informado', origem: form.origem || null })
       onCreated(lead)
       onClose()
     } catch {
@@ -47,6 +49,14 @@ export default function AddLeadModal({ onClose, onCreated }: { onClose: () => vo
             <select className={FIELD} style={{ ...FS, colorScheme: 'dark' }} value={form.interesse} onChange={e => set('interesse', e.target.value)}>
               <option value="">Selecione uma opção</option>
               {INTERESSES.map(i => <option key={i} value={i}>{i}</option>)}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-gray-400 mb-1.5">Origem</label>
+            <select className={FIELD} style={{ ...FS, colorScheme: 'dark' }} value={form.origem} onChange={e => set('origem', e.target.value)}>
+              <option value="">Selecione a origem</option>
+              {ORIGENS.map(o => <option key={o} value={o}>{o}</option>)}
             </select>
           </div>
 

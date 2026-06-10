@@ -5,18 +5,17 @@ import { useParams } from 'next/navigation'
 import Image from 'next/image'
 import { Loader2, Check, AlertCircle } from 'lucide-react'
 import { CLI_FIELDS, EMP_FIELDS, SOCIO_FIELDS } from '@/lib/cadastro'
+import SmartField from '@/components/cadastro/SmartField'
+import type { CEPData } from '@/lib/form-masks'
 
 type Obj = Record<string, unknown>
-const FIELD = 'w-full h-12 px-4 rounded-xl text-sm text-white placeholder-gray-600 outline-none'
-const FS = { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.10)' }
 
-function Campo({ label, value, onChange, type = 'text' }: { label: string; value: string; onChange: (v: string) => void; type?: string }) {
-  return (
-    <div>
-      <label className="block text-xs font-semibold text-gray-400 mb-1.5">{label}</label>
-      <input type={type} value={value} onChange={e => onChange(e.target.value)} className={FIELD} style={{ ...FS, ...(type === 'date' ? { colorScheme: 'dark' } : {}) }} />
-    </div>
-  )
+function makeCEPFill(setter: (k: string, v: unknown) => void, prefix: string) {
+  return (data: CEPData) => {
+    setter(`${prefix}endereco`, data.logradouro)
+    setter(`${prefix}bairro`, data.bairro)
+    setter(`${prefix}cidade_estado`, `${data.localidade}/${data.uf}`)
+  }
 }
 
 export default function CadastroPublicoPage() {
@@ -100,13 +99,25 @@ export default function CadastroPublicoPage() {
 
         <Secao titulo="Seus dados">
           <div className="grid sm:grid-cols-2 gap-3">
-            {CLI_FIELDS.map(([k, label, type]) => <Campo key={k} label={label} type={type} value={(cli[k] as string) || ''} onChange={v => setCliK(k, v)} />)}
+            {CLI_FIELDS.map(([k, label, type]) => (
+              <SmartField key={k} label={label} type={type}
+                value={(cli[k] as string) || ''}
+                onChange={v => setCliK(k, v)}
+                onCEPFill={type === 'cep' ? makeCEPFill(setCliK, 'cli_') : undefined}
+              />
+            ))}
           </div>
         </Secao>
 
         <Secao titulo="Dados da empresa">
           <div className="grid sm:grid-cols-2 gap-3">
-            {EMP_FIELDS.map(([k, label, type]) => <Campo key={k} label={label} type={type} value={(emp[k] as string) || ''} onChange={v => setEmpK(k, v)} />)}
+            {EMP_FIELDS.map(([k, label, type]) => (
+              <SmartField key={k} label={label} type={type}
+                value={(emp[k] as string) || ''}
+                onChange={v => setEmpK(k, v)}
+                onCEPFill={type === 'cep' ? makeCEPFill(setEmpK, 'emp_') : undefined}
+              />
+            ))}
             <div className="sm:col-span-2">
               <label className="block text-xs font-semibold text-gray-400 mb-1.5">Usa gás GLP?</label>
               <div className="flex gap-2">
@@ -121,15 +132,20 @@ export default function CadastroPublicoPage() {
 
         <Secao titulo="Sócio 1">
           <div className="grid sm:grid-cols-2 gap-3">
-            {SOCIO_FIELDS.map(([k, label, type]) => <Campo key={k} label={label} type={type} value={(socios[0]?.[k] as string) || ''} onChange={v => setSocioK(0, k, v)} />)}
+            {SOCIO_FIELDS.map(([k, label, type]) => (
+              <SmartField key={k} label={label} type={type}
+                value={(socios[0]?.[k] as string) || ''}
+                onChange={v => setSocioK(0, k, v)}
+              />
+            ))}
           </div>
         </Secao>
 
         <label className="flex items-center gap-2 mb-4 cursor-pointer"><input type="checkbox" checked={s2} onChange={e => setS2(e.target.checked)} className="w-4 h-4 accent-[#0BBCD4]" /><span className="text-sm text-gray-300">Adicionar Sócio 2</span></label>
-        {s2 && <Secao titulo="Sócio 2"><div className="grid sm:grid-cols-2 gap-3">{SOCIO_FIELDS.map(([k, label, type]) => <Campo key={k} label={label} type={type} value={(socios[1]?.[k] as string) || ''} onChange={v => setSocioK(1, k, v)} />)}</div></Secao>}
+        {s2 && <Secao titulo="Sócio 2"><div className="grid sm:grid-cols-2 gap-3">{SOCIO_FIELDS.map(([k, label, type]) => <SmartField key={k} label={label} type={type} value={(socios[1]?.[k] as string) || ''} onChange={v => setSocioK(1, k, v)} />)}</div></Secao>}
 
         <label className="flex items-center gap-2 mb-4 cursor-pointer"><input type="checkbox" checked={s3} onChange={e => setS3(e.target.checked)} className="w-4 h-4 accent-[#0BBCD4]" /><span className="text-sm text-gray-300">Adicionar Sócio 3</span></label>
-        {s3 && <Secao titulo="Sócio 3"><div className="grid sm:grid-cols-2 gap-3">{SOCIO_FIELDS.map(([k, label, type]) => <Campo key={k} label={label} type={type} value={(socios[2]?.[k] as string) || ''} onChange={v => setSocioK(2, k, v)} />)}</div></Secao>}
+        {s3 && <Secao titulo="Sócio 3"><div className="grid sm:grid-cols-2 gap-3">{SOCIO_FIELDS.map(([k, label, type]) => <SmartField key={k} label={label} type={type} value={(socios[2]?.[k] as string) || ''} onChange={v => setSocioK(2, k, v)} />)}</div></Secao>}
 
         <button onClick={enviar} disabled={saving}
           className="w-full h-12 font-bold text-white rounded-xl flex items-center justify-center gap-2 disabled:opacity-60 mt-2"

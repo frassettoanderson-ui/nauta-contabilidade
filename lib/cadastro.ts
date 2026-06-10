@@ -3,24 +3,49 @@
 export type Field = [key: string, label: string, type?: string]
 
 export const CLI_FIELDS: Field[] = [
-  ['cli_nome_completo', 'Nome completo'], ['cli_rg', 'RG'], ['cli_cpf', 'CPF'],
-  ['cli_nascimento', 'Data de nascimento', 'date'], ['cli_nome_pai', 'Nome do pai'], ['cli_nome_mae', 'Nome da mãe'],
-  ['cli_estado_civil', 'Estado civil'], ['cli_recibo_irpf', 'Nº recibo de IRPF'], ['cli_titulo_eleitor', 'Nº título de eleitor'],
-  ['cli_endereco', 'Endereço'], ['cli_bairro', 'Bairro'], ['cli_cidade_estado', 'Cidade / Estado'], ['cli_cep', 'CEP'],
+  ['cli_nome_completo', 'Nome completo',       'nome'],
+  ['cli_rg',           'RG'],
+  ['cli_cpf',          'CPF',                  'cpf'],
+  ['cli_nascimento',   'Data de nascimento',   'date'],
+  ['cli_nome_pai',     'Nome do pai',          'nome'],
+  ['cli_nome_mae',     'Nome da mãe',          'nome'],
+  ['cli_estado_civil', 'Estado civil',         'estado_civil'],
+  ['cli_recibo_irpf',  'Nº recibo de IRPF'],
+  ['cli_titulo_eleitor','Nº título de eleitor'],
+  ['cli_cep',          'CEP',                  'cep'],
+  ['cli_endereco',     'Endereço'],
+  ['cli_bairro',       'Bairro'],
+  ['cli_cidade_estado','Cidade / Estado',      'cidade_estado'],
 ]
 
 export const EMP_FIELDS: Field[] = [
-  ['emp_nome', 'Nome da empresa'], ['emp_fantasia', 'Nome fantasia'], ['emp_cnpj', 'CNPJ'],
-  ['emp_endereco', 'Endereço da empresa'], ['emp_bairro', 'Bairro'], ['emp_cidade_estado', 'Cidade / Estado'], ['emp_cep', 'CEP'],
-  ['emp_area_ocupada', 'Área ocupada pela empresa'], ['emp_edificacao', 'Nome e área total da edificação'],
-  ['emp_proprietario', 'Nome e CPF do proprietário do imóvel'], ['emp_atividade', 'Atividade da empresa'],
-  ['emp_capital_social', 'Valor do capital social'], ['emp_telefone', 'Telefone para contato'], ['emp_email', 'E-mail para contato'],
+  ['emp_nome',         'Nome da empresa'],
+  ['emp_fantasia',     'Nome fantasia'],
+  ['emp_cnpj',         'CNPJ',                 'cnpj'],
+  ['emp_cep',          'CEP',                  'cep'],
+  ['emp_endereco',     'Endereço da empresa'],
+  ['emp_bairro',       'Bairro'],
+  ['emp_cidade_estado','Cidade / Estado',      'cidade_estado'],
+  ['emp_area_ocupada', 'Área ocupada (m²)'],
+  ['emp_edificacao',   'Nome e área total da edificação'],
+  ['emp_proprietario', 'Nome e CPF do proprietário do imóvel'],
+  ['emp_atividade',    'Atividade da empresa'],
+  ['emp_capital_social','Valor do capital social'],
+  ['emp_telefone',     'Telefone para contato','phone'],
+  ['emp_email',        'E-mail para contato'],
 ]
 
 export const SOCIO_FIELDS: Field[] = [
-  ['nome_completo', 'Nome completo'], ['rg', 'RG'], ['cpf', 'CPF'], ['nascimento', 'Data de nascimento', 'date'],
-  ['nome_pai', 'Nome do pai'], ['nome_mae', 'Nome da mãe'], ['participacao', 'Participação (%)', 'number'],
-  ['estado_civil', 'Estado civil'], ['recibo_irpf', 'Nº recibo de IRPF'], ['titulo_eleitor', 'Nº título de eleitor'],
+  ['nome_completo', 'Nome completo',       'nome'],
+  ['rg',            'RG'],
+  ['cpf',           'CPF',                 'cpf'],
+  ['nascimento',    'Data de nascimento',  'date'],
+  ['nome_pai',      'Nome do pai',         'nome'],
+  ['nome_mae',      'Nome da mãe',         'nome'],
+  ['participacao',  'Participação (%)',    'number'],
+  ['estado_civil',  'Estado civil',        'estado_civil'],
+  ['recibo_irpf',   'Nº recibo de IRPF'],
+  ['titulo_eleitor','Nº título de eleitor'],
 ]
 
 export const CLI_TO_SOCIO: [string, string][] = [

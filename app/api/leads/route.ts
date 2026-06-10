@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { insertLead, getLeads } from '@/lib/leads'
+import { insertLead, getLeads, addAtividade } from '@/lib/leads'
 
 export const dynamic = 'force-dynamic'
 
@@ -31,7 +31,14 @@ export async function POST(req: NextRequest) {
       // criado manualmente (logado) -> atribui ao criador; vindo do site -> sem responsável
       responsavel_id: u?.id ?? null,
       responsavel_nome: u?.name ?? null,
+      origem: body.origem ?? null,
     })
+
+    // Mensagem enviada pelo formulário de contato → registrada como atividade
+    if (body.mensagem?.trim()) {
+      await addAtividade(lead.id, `Mensagem do site: ${body.mensagem.trim()}`, 'Site')
+    }
+
     return NextResponse.json(lead)
   } catch (e) {
     console.error('[LEADS] ERRO:', e)

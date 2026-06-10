@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 interface DisplayCardProps {
@@ -11,6 +12,7 @@ interface DisplayCardProps {
   iconClassName?: string;
   titleClassName?: string;
   onClick?: () => void;
+  href?: string;
 }
 
 export function DisplayCard({
@@ -21,10 +23,18 @@ export function DisplayCard({
   badge,
   titleClassName = "text-[#0BBCD4]",
   onClick,
+  href,
 }: DisplayCardProps) {
+  const Wrapper = href
+    ? ({ children, className: cls }: { children: React.ReactNode; className?: string }) => (
+        <Link href={href} className={cls}>{children}</Link>
+      )
+    : ({ children, className: cls }: { children: React.ReactNode; className?: string }) => (
+        <div onClick={onClick} className={cls}>{children}</div>
+      )
+
   return (
-    <div
-      onClick={onClick}
+    <Wrapper
       className={cn(
         "relative flex h-44 w-[22rem] -skew-y-[6deg] select-none flex-col justify-between rounded-2xl border px-5 py-4 transition-all duration-500",
         "after:absolute after:-right-1 after:top-[-5%] after:h-[110%] after:w-[20rem] after:bg-gradient-to-l after:from-[#0f0e1a] after:to-transparent after:content-['']",
@@ -51,7 +61,7 @@ export function DisplayCard({
       <p className="text-xs font-semibold" style={{ color: '#0BBCD4' }}>
         <span>Saiba mais →</span>
       </p>
-    </div>
+    </Wrapper>
   );
 }
 

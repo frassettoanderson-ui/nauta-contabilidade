@@ -53,7 +53,13 @@ export default function LeadPopup({ isOpen, onClose, interest }: LeadPopupProps)
   }, [isOpen, handleKeyDown])
 
   function handleFormClose() {
-    realClose()
+    // Se o formulário ainda não foi enviado, mostra a tela de WhatsApp antes de fechar
+    const preenchido = form.nome.trim() || form.whatsapp.trim() || form.email.trim()
+    if (!preenchido) {
+      setView('whatsapp')
+    } else {
+      realClose()
+    }
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
@@ -131,12 +137,12 @@ export default function LeadPopup({ isOpen, onClose, interest }: LeadPopupProps)
             style={{ background: 'radial-gradient(circle, rgba(11,188,212,0.04) 0%, transparent 70%)' }} />
 
           {/* Logo */}
-          <div className="relative z-10">
+          <div className="relative z-10 flex justify-center">
             <Image
               src="/logo-vertical-branca.png"
               alt="Nauta Contabilidade"
-              width={160} height={128}
-              className="w-32 h-auto object-contain"
+              width={200} height={160}
+              className="w-44 h-auto object-contain"
               style={{ filter: 'drop-shadow(0 4px 16px rgba(0,0,0,0.4))' }}
             />
           </div>

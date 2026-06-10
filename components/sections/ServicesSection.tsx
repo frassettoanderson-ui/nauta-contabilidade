@@ -13,45 +13,45 @@ const services = [
     icon: <BookOpen className="text-[#0BBCD4]" size={20} />,
     title: 'Contábil',
     description: 'Escrituração contábil completa, balanços e demonstrações financeiras com precisão.',
-    interest: undefined,
+    href: '/servicos/contabil',
   },
   {
     icon: <Calculator className="text-[#0BBCD4]" size={20} />,
     title: 'Fiscal',
     description: 'Apuração de impostos, entrega de obrigações acessórias e gestão tributária.',
-    interest: undefined,
+    href: '/servicos/fiscal',
   },
   {
     icon: <Users className="text-[#0BBCD4]" size={20} />,
     title: 'Folha de Pagamento',
     description: 'Processamento da folha, eSocial, férias, 13º e encargos com total conformidade.',
-    interest: undefined,
+    href: '/servicos/folha-de-pagamento',
   },
   {
     icon: <Building2 className="text-[#0BBCD4]" size={20} />,
     title: 'Legalização / Societário',
     description: 'Abertura, alteração e encerramento de empresas com agilidade e segurança.',
-    interest: undefined,
+    href: '/servicos/legalizacao-societario',
   },
   {
     icon: <BarChart3 className="text-[#0BBCD4]" size={20} />,
     title: 'BPO Financeiro',
     description: 'Gestão financeira 100% interna: contas a pagar/receber, fluxo de caixa e conciliação.',
-    interest: 'BPO Financeiro',
+    href: '/servicos/bpo-financeiro',
   },
   {
     icon: <TrendingUp className="text-[#0BBCD4]" size={20} />,
     title: 'Planejamento Tributário',
     description: 'Estratégias legais para reduzir a carga tributária e maximizar os resultados.',
-    interest: undefined,
+    href: '/servicos/planejamento-tributario',
   },
   {
     icon: <Vote className="text-white" size={20} />,
     title: 'Contabilidade Eleitoral',
     description: '+400 prestações aprovadas junto à Justiça Eleitoral. Nossa especialidade.',
     badge: 'Especialidade',
-    interest: 'Contabilidade Eleitoral',
     highlight: true,
+    href: '/servicos/contabilidade-eleitoral',
   },
 ]
 
@@ -120,6 +120,7 @@ export default function ServicesSection({ onOpenLead }: Props) {
                     title={svc.title}
                     description={svc.description}
                     badge={(svc as typeof services[0]).badge}
+                    href={(svc as typeof services[0]).href}
                     className={cn(
                       stackOffsets[si] ?? stackOffsets[2],
                       'cursor-pointer',
@@ -128,7 +129,6 @@ export default function ServicesSection({ onOpenLead }: Props) {
                         : 'border-white/8 bg-[#13112a]',
                     )}
                     titleClassName={isHighlight ? 'text-white' : 'text-white'}
-                    onClick={() => onOpenLead((svc as typeof services[0]).interest)}
                   />
                 )
               })}
@@ -138,7 +138,7 @@ export default function ServicesSection({ onOpenLead }: Props) {
 
         {/* Legenda */}
         <p className="text-center text-white/15 text-xs tracking-widest uppercase mt-20 select-none animate-on-scroll">
-          clique em qualquer serviço para falar com um especialista
+          clique em qualquer serviço para saber mais
         </p>
 
       </div>

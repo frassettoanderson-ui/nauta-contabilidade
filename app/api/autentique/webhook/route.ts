@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
     if (!documentId) return NextResponse.json({ ok: true })
 
     // Consulta o status atual no Autentique
-    const doc = await consultarDocumento(documentId)
+    const doc = await consultarDocumento(documentId) as { signatures?: { signed?: unknown }[]; files?: { signed?: string } }
     const allSigned = doc.signatures?.every((s: { signed?: unknown }) => !!s.signed)
     const signedUrl: string | null = doc.files?.signed || null
 

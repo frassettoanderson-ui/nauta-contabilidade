@@ -7,8 +7,12 @@ async function gql(query: string, variables?: Record<string, unknown>) {
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${TOKEN}` },
     body: JSON.stringify({ query, variables }),
   })
-  const json = await res.json()
-  if (json.errors) throw new Error(json.errors[0]?.message ?? 'Erro Autentique')
+  const text = await res.text()
+  console.log('[AUTENTIQUE GQL status]', res.status)
+  console.log('[AUTENTIQUE GQL body]', text.slice(0, 500))
+  let json: Record<string, unknown>
+  try { json = JSON.parse(text) } catch { throw new Error(`Autentique retornou não-JSON (${res.status}): ${text.slice(0, 200)}`) }
+  if (json.errors) throw new Error((json.errors as Array<{message:string}>)[0]?.message ?? 'Erro Autentique')
   return json.data
 }
 
@@ -71,9 +75,13 @@ export async function criarDocumento(
     headers: { Authorization: `Bearer ${TOKEN}` },
     body: formData,
   })
-  const json = await res.json()
-  if (json.errors) throw new Error(json.errors[0]?.message ?? 'Erro ao criar documento Autentique')
-  return json.data.createDocument
+  const text = await res.text()
+  console.log('[AUTENTIQUE CREATE status]', res.status)
+  console.log('[AUTENTIQUE CREATE body]', text.slice(0, 500))
+  let json: Record<string, unknown>
+  try { json = JSON.parse(text) } catch { throw new Error(`Autentique createDocument retornou não-JSON (${res.status}): ${text.slice(0, 200)}`) }
+  if (json.errors) throw new Error((json.errors as Array<{message:string}>)[0]?.message ?? 'Erro ao criar documento Autentique')
+  return (json.data as Record<string, unknown>).createDocument
 }
 
 /** Assina usando o public_id da assinatura (retornado em createDocument) */

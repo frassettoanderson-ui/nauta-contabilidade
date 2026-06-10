@@ -287,7 +287,6 @@ function Wizard() {
                       required={socioAtivo && REQ_SOCIO.includes(k)}
                       value={(socios[socioIdx]?.[k] as string) || ''}
                       onChange={v => setSocioK(socioIdx, k, v)}
-                      disabled={readOnly}
                     />
                   ))}
                 </div>

@@ -38,7 +38,7 @@ export async function criarDocumento(
         signatures {
           public_id
           name
-          email
+          email { email }
           action { name }
           link { short_link }
         }
@@ -76,11 +76,11 @@ export async function criarDocumento(
   return json.data.createDocument
 }
 
-/** Assina um documento como o dono do token (Nauta) */
-export async function assinarDocumento(documentId: string): Promise<void> {
+/** Assina usando o public_id da assinatura (retornado em createDocument) */
+export async function assinarDocumento(publicId: string): Promise<void> {
   await gql(`
     mutation {
-      signDocument(document_id: "${documentId}") { id }
+      signDocument(public_id: "${publicId}") { id }
     }
   `)
 }

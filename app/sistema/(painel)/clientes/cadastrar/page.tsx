@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
-import { Loader2, Check, ArrowLeft, ArrowRight, Upload, FileText, Paperclip, Save, Trash2, Link2, Copy, X } from 'lucide-react'
+import { Loader2, Check, ArrowLeft, ArrowRight, Upload, FileText, Paperclip, Save, Trash2, Link2, Copy, X, Pencil } from 'lucide-react'
 import { uploadDoc, saveCliente, getCliente, getClienteByLead, deleteCliente, gerarLinkCadastro, getLeadDetail } from '@/lib/api'
 import { CLI_FIELDS, EMP_FIELDS, SOCIO_FIELDS, CLI_TO_SOCIO } from '@/lib/cadastro'
 import { tipoFromInteresse, requiredKeysFor, REQ_SOCIO, TIPO_LABEL } from '@/lib/contratos'
@@ -73,6 +73,7 @@ function Wizard() {
   const [savedMsg, setSavedMsg] = useState('')
   const [clienteId, setClienteId] = useState<string | undefined>(clienteParam)
   const [linkUrl, setLinkUrl] = useState('')
+  const [readOnly, setReadOnly] = useState(false)
 
   const [cli, setCli] = useState<Obj>({})
   const [emp, setEmp] = useState<Obj>({ emp_usa_glp: false })
@@ -90,6 +91,7 @@ function Wizard() {
       else if (leadId) data = await getClienteByLead(leadId)
       if (data) {
         setClienteId(data.id as string)
+        setReadOnly(true)
         const c: Obj = {}, e: Obj = {}
         Object.entries(data).forEach(([k, v]) => { if (k.startsWith('cli_')) c[k] = v; if (k.startsWith('emp_')) e[k] = v })
         setCli(c); setEmp({ emp_usa_glp: false, ...e })
@@ -220,6 +222,7 @@ function Wizard() {
                   value={(cli[k] as string) || ''}
                   onChange={v => setCliK(k, v)}
                   onCEPFill={type === 'cep' ? makeCEPFill(setCliK, 'cli_') : undefined}
+                  disabled={readOnly}
                 />
               ))}
             </div>
@@ -234,6 +237,7 @@ function Wizard() {
                 value={(emp[k] as string) || ''}
                 onChange={v => setEmpK(k, v)}
                 onCEPFill={type === 'cep' ? makeCEPFill(setEmpK, 'emp_') : undefined}
+                disabled={readOnly}
               />
             ))}
             <label className="sm:col-span-2 lg:col-span-3 flex items-center gap-2 cursor-pointer p-3 rounded-xl" style={{ background: 'rgba(11,188,212,0.06)', border: '1px solid rgba(11,188,212,0.2)' }}>
@@ -286,6 +290,7 @@ function Wizard() {
                       required={socioAtivo && REQ_SOCIO.includes(k)}
                       value={(socios[socioIdx]?.[k] as string) || ''}
                       onChange={v => setSocioK(socioIdx, k, v)}
+                      disabled={readOnly}
                     />
                   ))}
                 </div>
@@ -308,17 +313,27 @@ function Wizard() {
           <Link2 size={15} /> Enviar link de cadastro
         </button>
 
-        <button onClick={() => router.push('/sistema/clientes/consultar')}
-          className="inline-flex items-center gap-2 px-4 h-11 rounded-xl text-sm text-gray-300" style={FS}>
-          <X size={15} /> Cancelar
-        </button>
+        {readOnly ? (
+          <button onClick={() => setReadOnly(false)}
+            className="inline-flex items-center gap-2 px-4 h-11 rounded-xl text-sm font-bold text-white"
+            style={{ background: 'linear-gradient(135deg, #0BBCD4, #0999ae)' }}>
+            <Pencil size={15} /> Editar
+          </button>
+        ) : (
+          <>
+            <button onClick={() => router.push('/sistema/clientes/consultar')}
+              className="inline-flex items-center gap-2 px-4 h-11 rounded-xl text-sm text-gray-300" style={FS}>
+              <X size={15} /> Cancelar
+            </button>
 
-        <button onClick={() => handleSalvar(false)} disabled={saving}
-          className="inline-flex items-center gap-2 px-4 h-11 rounded-xl text-sm font-bold text-white disabled:opacity-60" style={FS}>
-          {saving ? <Loader2 size={15} className="animate-spin" /> : <><Save size={15} /> Salvar</>}
-        </button>
+            <button onClick={() => handleSalvar(false)} disabled={saving}
+              className="inline-flex items-center gap-2 px-4 h-11 rounded-xl text-sm font-bold text-white disabled:opacity-60" style={FS}>
+              {saving ? <Loader2 size={15} className="animate-spin" /> : <><Save size={15} /> Salvar</>}
+            </button>
+          </>
+        )}
 
-        {clienteId && (
+        {clienteId && !savedMsg && (
           <button onClick={handleExcluir}
             className="inline-flex items-center gap-2 px-4 h-11 rounded-xl text-sm font-semibold"
             style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)', color: '#f87171' }}>
@@ -331,7 +346,7 @@ function Wizard() {
           <ArrowLeft size={15} /> Voltar
         </button>
 
-        {step < PASSOS.length - 1 ? (
+        {!readOnly && (step < PASSOS.length - 1 ? (
           <button onClick={() => setStep(s => Math.min(PASSOS.length - 1, s + 1))}
             className="inline-flex items-center gap-2 px-5 h-11 rounded-xl text-sm font-bold text-white" style={{ background: 'linear-gradient(135deg, #0BBCD4, #0999ae)' }}>
             Próximo <ArrowRight size={15} />
@@ -341,7 +356,7 @@ function Wizard() {
             className="inline-flex items-center gap-2 px-6 h-11 rounded-xl text-sm font-bold text-white disabled:opacity-60" style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)' }}>
             {saving ? <Loader2 size={16} className="animate-spin" /> : <><Check size={16} /> Salvar e concluir</>}
           </button>
-        )}
+        ))}
       </div>
 
       {/* Link gerado */}

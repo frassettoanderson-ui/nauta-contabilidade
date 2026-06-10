@@ -240,22 +240,23 @@ function Wizard() {
                 disabled={readOnly}
               />
             ))}
-            <label className="sm:col-span-2 lg:col-span-3 flex items-center gap-2 cursor-pointer p-3 rounded-xl" style={{ background: 'rgba(11,188,212,0.06)', border: '1px solid rgba(11,188,212,0.2)' }}>
-              <input type="checkbox" checked={propEhSocio1} onChange={e => togglePropSocio1(e.target.checked)} className="w-4 h-4 accent-[#0BBCD4]" />
-              <span className="text-sm text-gray-300">O proprietário do imóvel é o Sócio 1 (preenche nome e CPF automaticamente)</span>
-            </label>
-            <div className="sm:col-span-2 lg:col-span-1">
+            {/* Usa gás GLP — ocupa a coluna vazia ao lado do e-mail */}
+            <div>
               <label className="block text-xs font-semibold text-gray-400 mb-1.5">Usa gás GLP?</label>
               <div className="flex gap-2">
                 {[['Sim', true], ['Não', false]].map(([l, val]) => (
-                  <button key={String(l)} type="button" onClick={() => setEmpK('emp_usa_glp', val)}
-                    className="flex-1 h-11 rounded-xl text-sm font-bold transition-all"
+                  <button key={String(l)} type="button" disabled={readOnly} onClick={() => setEmpK('emp_usa_glp', val)}
+                    className="flex-1 h-11 rounded-xl text-sm font-bold transition-all disabled:opacity-40"
                     style={{ background: emp.emp_usa_glp === val ? '#0BBCD4' : 'rgba(255,255,255,0.05)', color: emp.emp_usa_glp === val ? '#fff' : '#9ca3af', border: '1px solid rgba(255,255,255,0.10)' }}>
                     {l as string}
                   </button>
                 ))}
               </div>
             </div>
+            <label className="sm:col-span-2 lg:col-span-3 flex items-center gap-2 cursor-pointer p-3 rounded-xl" style={{ background: 'rgba(11,188,212,0.06)', border: '1px solid rgba(11,188,212,0.2)' }}>
+              <input type="checkbox" checked={propEhSocio1} onChange={e => togglePropSocio1(e.target.checked)} className="w-4 h-4 accent-[#0BBCD4]" />
+              <span className="text-sm text-gray-300">O proprietário do imóvel é o Sócio 1 (preenche nome e CPF automaticamente)</span>
+            </label>
           </div>
         )}
 

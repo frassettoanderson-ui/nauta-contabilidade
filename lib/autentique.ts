@@ -68,8 +68,15 @@ export async function criarDocumento(
   form.append('map', map)
   form.append('0', pdfBuffer, { filename: `${nome}.pdf`, contentType: 'application/pdf' })
 
-  // NodeFormData gera os headers corretos com boundary
-  const headers = {
+  // Converte stream do form-data para Buffer (compatível com fetch nativo do Node 18)
+  const formBuffer = await new Promise<Buffer>((resolve, reject) => {
+    const chunks: Buffer[] = []
+    form.on('data', (chunk: Buffer) => chunks.push(chunk))
+    form.on('end', () => resolve(Buffer.concat(chunks)))
+    form.on('error', reject)
+  })
+
+  const headers: Record<string, string> = {
     Authorization: `Bearer ${TOKEN}`,
     ...form.getHeaders(),
   }
@@ -77,7 +84,7 @@ export async function criarDocumento(
   const res = await fetch(ENDPOINT, {
     method: 'POST',
     headers,
-    body: form as unknown as BodyInit,
+    body: formBuffer as unknown as BodyInit,
   })
 
   const text = await res.text()

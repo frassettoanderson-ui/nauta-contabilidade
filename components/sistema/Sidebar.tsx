@@ -8,6 +8,7 @@ import { signOut } from 'next-auth/react'
 import {
   Users, UserPlus, Search, FileText, FilePlus, FileClock, FileSearch,
   Briefcase, LayoutGrid, Inbox, BarChart3, TrendingUp, Calculator, UserCog,
+  Rocket, LayoutDashboard, Repeat, Building2, BadgeMinus, Wallet, Vote,
   LogOut, ChevronDown, Menu, X, type LucideIcon,
 } from 'lucide-react'
 
@@ -28,6 +29,14 @@ const NAV: NavItem[] = [
   { label: 'Comercial', icon: Briefcase, children: [
     { label: 'Kanban', href: '/sistema/comercial/kanban', icon: LayoutGrid },
     { label: 'Leads',  href: '/sistema/comercial/leads',  icon: Inbox },
+  ] },
+  { label: 'Onboarding', icon: Rocket, children: [
+    { label: 'Dashboard',               href: '/sistema/onboarding',                          icon: LayoutDashboard },
+    { label: 'Trocar de contador',      href: '/sistema/onboarding/trocar-de-contador',       icon: Repeat },
+    { label: 'Abrir minha empresa',     href: '/sistema/onboarding/abrir-empresa',            icon: Building2 },
+    { label: 'Deixar de ser MEI',       href: '/sistema/onboarding/deixar-mei',               icon: BadgeMinus },
+    { label: 'BPO Financeiro',          href: '/sistema/onboarding/bpo-financeiro',           icon: Wallet },
+    { label: 'Contabilidade Eleitoral', href: '/sistema/onboarding/contabilidade-eleitoral',  icon: Vote },
   ] },
   { label: 'Relatórios', icon: BarChart3, children: [
     { label: 'Conversão', href: '/sistema/relatorios/conversao', icon: TrendingUp },

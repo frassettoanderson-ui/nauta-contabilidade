@@ -95,7 +95,6 @@ export async function consultarDocumento(documentId: string) {
       document(id: "${documentId}") {
         id
         name
-        status { name }
         signatures {
           public_id
           name

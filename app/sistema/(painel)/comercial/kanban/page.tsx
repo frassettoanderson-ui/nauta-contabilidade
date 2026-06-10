@@ -25,8 +25,9 @@ const ORIGEM_COR: Record<string, { bg: string; color: string }> = {
 function OrigemTag({ origem }: { origem: string }) {
   const cor = ORIGEM_COR[origem] ?? { bg: 'rgba(156,163,175,0.15)', color: '#9CA3AF' }
   return (
-    <span className="inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded-full"
-      style={{ background: cor.bg, color: cor.color }}>
+    <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full"
+      style={{ background: cor.bg, color: cor.color, border: `1px solid ${cor.color}33` }}>
+      <span className="w-1.5 h-1.5 rounded-full" style={{ background: cor.color }} />
       {origem}
     </span>
   )
@@ -134,36 +135,51 @@ export default function KanbanPage() {
                         }}
                         onDragEnd={() => { setDragId(null); setOverCol(null) }}
                         onClick={() => abrir(l.id, 'view')}
-                        className="rounded-xl p-3.5 cursor-pointer"
+                        className="relative rounded-lg p-4 pt-5 cursor-pointer"
                         style={{
-                          background: '#15132a',
+                          background: temPend
+                            ? 'linear-gradient(160deg, #2a2238 0%, #1d1733 100%)'
+                            : 'linear-gradient(160deg, #1d1a3a 0%, #16142b 100%)',
                           border: `1px solid ${temPend ? 'rgba(245,158,11,0.5)' : dragging ? 'rgba(11,188,212,0.5)' : 'rgba(255,255,255,0.08)'}`,
                           borderLeft: temPend ? '3px solid #f59e0b' : undefined,
                           transform: dragging ? 'scale(1.04) rotate(-1.5deg)' : 'scale(1)',
-                          boxShadow: dragging ? '0 18px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(11,188,212,0.3)' : '0 1px 2px rgba(0,0,0,0.2)',
+                          boxShadow: dragging
+                            ? '0 18px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(11,188,212,0.3)'
+                            : '0 4px 10px rgba(0,0,0,0.35), 0 1px 2px rgba(0,0,0,0.3)',
                           transition: 'transform 0.18s cubic-bezier(0.16,1,0.3,1), box-shadow 0.18s ease, border-color 0.18s ease',
                         }}>
-                        <div className="flex items-start justify-between gap-2">
-                          <p className="text-white text-sm font-semibold truncate">{l.nome}</p>
+                        {/* Fita adesiva (post-it) */}
+                        <span className="absolute -top-2 left-1/2 w-14 h-4 rounded-[2px] pointer-events-none"
+                          style={{
+                            background: 'linear-gradient(180deg, rgba(255,255,255,0.14), rgba(255,255,255,0.05))',
+                            border: '1px solid rgba(255,255,255,0.10)',
+                            transform: 'translateX(-50%) rotate(-2.5deg)',
+                            boxShadow: '0 1px 3px rgba(0,0,0,0.25)',
+                          }} />
+
+                        {/* Topo: tag origem + alerta */}
+                        <div className="flex items-center justify-between gap-2 mb-1.5 min-h-[18px]">
+                          {l.origem ? <OrigemTag origem={l.origem} /> : <span />}
                           {temPend && (
                             <span className="shrink-0 flex items-center gap-0.5 text-[10px] font-bold px-2 py-0.5 rounded-full animate-pulse" style={{ background: '#f59e0b', color: '#1a1830' }}>
                               <Bell size={10} /> hoje
                             </span>
                           )}
                         </div>
-                        {l.interesse && <p className="text-[#0BBCD4] text-xs mt-0.5 truncate">{l.interesse}</p>}
-                        {l.origem && <OrigemTag origem={l.origem} />}
-                        <div className="mt-2.5"><ClassBar value={l.classificacao ?? 0} /></div>
+
+                        <p className="text-white text-base font-bold leading-tight truncate">{l.nome}</p>
+                        {l.interesse && <p className="text-[#0BBCD4] text-xs mt-1 truncate">{l.interesse}</p>}
+                        <div className="mt-3"><ClassBar value={l.classificacao ?? 0} size="md" /></div>
 
                         {/* Ações rápidas */}
-                        <div className="flex items-center gap-1 mt-3 pt-2.5 border-t" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+                        <div className="flex items-center gap-1.5 mt-3.5 pt-3 border-t" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
                           <a title="WhatsApp" href={waLink(l.whatsapp)} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}
-                            className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors hover:bg-green-500/15" style={{ color: '#25D366' }}>
-                            <MessageCircle size={15} />
+                            className="w-10 h-10 rounded-xl flex items-center justify-center transition-colors hover:bg-green-500/15" style={{ color: '#25D366' }}>
+                            <MessageCircle size={19} />
                           </a>
-                          <AcaoBtn title="Editar" onClick={() => abrir(l.id, 'edit')}><Pencil size={14} /></AcaoBtn>
-                          <AcaoBtn title="Cadastro completo" onClick={() => router.push(`/sistema/clientes/cadastrar?lead=${l.id}`)} color="#22c55e"><ClipboardCheck size={15} /></AcaoBtn>
-                          <AcaoBtn title="Cadastrar lembrete" onClick={() => abrir(l.id, 'lembrete')} color="#f59e0b"><Bell size={14} /></AcaoBtn>
+                          <AcaoBtn title="Editar" onClick={() => abrir(l.id, 'edit')}><Pencil size={18} /></AcaoBtn>
+                          <AcaoBtn title="Cadastro completo" onClick={() => router.push(`/sistema/clientes/cadastrar?lead=${l.id}`)} color="#22c55e"><ClipboardCheck size={19} /></AcaoBtn>
+                          <AcaoBtn title="Cadastrar lembrete" onClick={() => abrir(l.id, 'lembrete')} color="#f59e0b"><Bell size={18} /></AcaoBtn>
                         </div>
 
                         {/* Em negociação */}

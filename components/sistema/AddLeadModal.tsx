@@ -5,7 +5,8 @@ import { X, Loader2, UserPlus } from 'lucide-react'
 import { createLead, type LeadRow } from '@/lib/api'
 import { INTERESSES } from '@/lib/crm-config'
 
-const FIELD = 'w-full h-11 px-4 rounded-xl text-sm text-white placeholder-gray-600 outline-none'
+const FIELD     = 'w-full h-11 px-4 rounded-xl text-sm text-white placeholder-gray-600 outline-none'
+const FIELD_SEL = 'w-full h-11 px-4 rounded-xl text-sm text-white placeholder-gray-600 outline-none [&>option]:text-gray-900 [&>option]:bg-white'
 const FS = { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.10)' }
 
 export default function AddLeadModal({ onClose, onCreated }: { onClose: () => void; onCreated: (l: LeadRow) => void }) {
@@ -46,7 +47,7 @@ export default function AddLeadModal({ onClose, onCreated }: { onClose: () => vo
 
           <div>
             <label className="block text-xs font-semibold text-gray-400 mb-1.5">Interesse</label>
-            <select className={FIELD} style={{ ...FS, colorScheme: 'dark' }} value={form.interesse} onChange={e => set('interesse', e.target.value)}>
+            <select className={FIELD_SEL} style={FS} value={form.interesse} onChange={e => set('interesse', e.target.value)}>
               <option value="">Selecione uma opção</option>
               {INTERESSES.map(i => <option key={i} value={i}>{i}</option>)}
             </select>
@@ -54,7 +55,7 @@ export default function AddLeadModal({ onClose, onCreated }: { onClose: () => vo
 
           <div>
             <label className="block text-xs font-semibold text-gray-400 mb-1.5">Origem</label>
-            <select className={FIELD} style={{ ...FS, colorScheme: 'dark' }} value={form.origem} onChange={e => set('origem', e.target.value)}>
+            <select className={FIELD_SEL} style={FS} value={form.origem} onChange={e => set('origem', e.target.value)}>
               <option value="">Selecione a origem</option>
               {ORIGENS.map(o => <option key={o} value={o}>{o}</option>)}
             </select>

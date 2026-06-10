@@ -8,10 +8,11 @@ import {
   type CEPData,
 } from '@/lib/form-masks'
 
-const BASE = 'w-full h-11 px-4 rounded-xl text-sm text-white placeholder-gray-600 outline-none disabled:opacity-40'
+const BASE    = 'w-full h-11 px-4 rounded-xl text-sm text-white placeholder-gray-600 outline-none disabled:opacity-40'
+const BASE_SEL = 'w-full h-11 px-4 rounded-xl text-sm text-white placeholder-gray-600 outline-none disabled:opacity-40 [&>option]:text-gray-900 [&>option]:bg-white'
 const FS   = { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.10)' }
 const FSE  = { ...FS, borderColor: 'rgba(239,68,68,0.6)' }
-const FSS  = { ...FS, colorScheme: 'dark' as const }
+const FSS  = { ...FS } // removido colorScheme:'dark' — causava texto branco nas options
 const FSSE = { ...FSS, borderColor: 'rgba(239,68,68,0.6)' }
 
 /**
@@ -153,7 +154,7 @@ export default function SmartField({
         <Label text={label} />
         <select value={value} disabled={disabled}
           onChange={e => onChange(e.target.value)}
-          className={BASE} style={errBorder && !value ? FSSE : FSS}>
+          className={BASE_SEL} style={errBorder && !value ? FSSE : FSS}>
           <option value="">Selecione</option>
           {ESTADO_CIVIL_OPS.map(o => <option key={o} value={o}>{o}</option>)}
         </select>
@@ -179,7 +180,7 @@ export default function SmartField({
           </label>
           <select value={csUF} disabled={disabled}
             onChange={e => handleUF(e.target.value)}
-            className={BASE} style={required && !csUF ? FSSE : FSS}>
+            className={BASE_SEL} style={required && !csUF ? FSSE : FSS}>
             <option value="">Selecione o estado</option>
             {ESTADOS_BR.map(e => (
               <option key={e.uf} value={e.uf}>{e.nome} ({e.uf})</option>
@@ -199,7 +200,7 @@ export default function SmartField({
           ) : (
             <select value={csCidade} disabled={disabled || !csUF}
               onChange={e => handleCidade(e.target.value)}
-              className={BASE} style={required && !csCidade ? FSSE : FSS}>
+              className={BASE_SEL} style={required && !csCidade ? FSSE : FSS}>
               <option value="">{csUF ? 'Selecione a cidade' : 'Selecione o estado primeiro'}</option>
               {cidades.map(c => <option key={c} value={c}>{c}</option>)}
             </select>

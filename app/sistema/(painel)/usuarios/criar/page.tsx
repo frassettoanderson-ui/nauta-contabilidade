@@ -55,7 +55,7 @@ export default function CriarUsuarioPage() {
         </div>
         <div>
           <label className="block text-xs font-semibold text-gray-400 mb-1.5">Cargo</label>
-          <select className={FIELD} style={{ ...FS, colorScheme: 'dark' }} value={role} onChange={e => setRole(e.target.value)}>
+          <select className={`${FIELD} [&>option]:text-gray-900 [&>option]:bg-white`} style={FS} value={role} onChange={e => setRole(e.target.value)}>
             {CARGOS.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
           </select>
         </div>

@@ -154,7 +154,7 @@ export default function LeadModal({ leadId, onClose, onChanged, mode = 'view' }:
                 <input value={edit.email} onChange={e => setEdit(s => ({ ...s, email: e.target.value }))} placeholder="E-mail"
                   className="w-full h-11 px-4 rounded-xl text-sm text-white placeholder-gray-600 outline-none" style={FS} />
                 <select value={edit.interesse} onChange={e => setEdit(s => ({ ...s, interesse: e.target.value }))}
-                  className="w-full h-11 px-4 rounded-xl text-sm text-white outline-none" style={{ ...FS, colorScheme: 'dark' }}>
+                  className="w-full h-11 px-4 rounded-xl text-sm text-white outline-none [&>option]:text-gray-900 [&>option]:bg-white" style={FS}>
                   <option value="">Selecione o interesse</option>
                   {INTERESSES.map(i => <option key={i} value={i}>{i}</option>)}
                 </select>
@@ -201,7 +201,7 @@ export default function LeadModal({ leadId, onClose, onChanged, mode = 'view' }:
                   <p className="text-xs font-semibold text-gray-400 mb-1.5">Responsável</p>
                   {podeAtribuir ? (
                     <select value={(d as unknown as { responsavel_id?: string }).responsavel_id || ''} onChange={e => setResponsavel(e.target.value)}
-                      className="w-full h-10 px-3 rounded-xl text-sm text-white outline-none" style={{ ...FS, colorScheme: 'dark' }}>
+                      className="w-full h-10 px-3 rounded-xl text-sm text-white outline-none [&>option]:text-gray-900 [&>option]:bg-white" style={FS}>
                       <option value="">Sem responsável</option>
                       {usuarios.map(u => <option key={u.id} value={u.id}>{u.username}</option>)}
                     </select>

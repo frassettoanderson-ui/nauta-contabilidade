@@ -335,9 +335,9 @@ export default function LeadModal({ leadId, onClose, onChanged, mode = 'view' }:
                           )}
                         </>
                       ) : (
-                        <button onClick={handleEnviarAssinatura} disabled={enviandoAssinatura}
-                          className="w-full h-11 rounded-xl font-bold text-white flex items-center justify-center gap-2 disabled:opacity-70" style={{ background: 'linear-gradient(135deg, #7c6fff, #6355e0)' }}>
-                          {enviandoAssinatura ? <><Loader2 size={16} className="animate-spin" /> Enviando…</> : <><FileText size={16} /> Enviar para assinatura</>}
+                        <button onClick={handleGerarContrato} disabled={gerandoContrato}
+                          className="w-full h-11 rounded-xl font-bold text-white flex items-center justify-center gap-2 disabled:opacity-70" style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)' }}>
+                          {gerandoContrato ? <><Loader2 size={16} className="animate-spin" /> Gerando…</> : <><FileText size={16} /> Gerar contrato</>}
                         </button>
                       )}
                     </div>

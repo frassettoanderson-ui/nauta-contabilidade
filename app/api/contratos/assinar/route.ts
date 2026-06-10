@@ -55,16 +55,8 @@ export async function POST(req: NextRequest) {
       ]
     )
 
-    // 5. Assina imediatamente como Nauta via API usando o public_id da assinatura
-    const nautaSig = doc.signatures?.find(
-      (s: { email?: string; public_id: string }) =>
-        s.email === 'contato@nautacontabilidade.com.br'
-    )
-    if (nautaSig?.public_id) {
-      await assinarDocumento(nautaSig.public_id)
-    } else {
-      console.warn('[ASSINAR] Assinatura da Nauta não encontrada no documento, pulando auto-sign')
-    }
+    // 5. Assina imediatamente como Nauta via API (usa o id do documento)
+    await assinarDocumento(doc.id)
 
     // 6. Salva autentique_id e status no DB
     await pool.query(

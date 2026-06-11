@@ -224,6 +224,19 @@ export function uploadDoc(file: File): Promise<{ url: string; nome: string }> {
   return fetch('/api/sistema/upload', { method: 'POST', body: fd }).then(r => json<{ url: string; nome: string }>(r))
 }
 
+export interface ArquivoRow { id: string; nome: string; url: string; criado_em: string }
+export function listArquivos(clienteId: string): Promise<ArquivoRow[]> {
+  return fetch(`/api/clientes/${clienteId}/arquivos`).then(r => json<ArquivoRow[]>(r))
+}
+export function addArquivoCliente(clienteId: string, nome: string, url: string): Promise<ArquivoRow> {
+  return fetch(`/api/clientes/${clienteId}/arquivos`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nome, url }),
+  }).then(r => json<ArquivoRow>(r))
+}
+export function deleteArquivoCliente(clienteId: string, arqId: string): Promise<void> {
+  return fetch(`/api/clientes/${clienteId}/arquivos?arq=${arqId}`, { method: 'DELETE' }).then(r => json(r)).then(() => undefined)
+}
+
 export function saveCliente(payload: Record<string, unknown>): Promise<{ id: string }> {
   return fetch('/api/clientes', {
     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload),

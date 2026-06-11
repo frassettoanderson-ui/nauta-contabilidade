@@ -3,8 +3,8 @@
 import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
-import { Loader2, Check, ArrowLeft, ArrowRight, Upload, FileText, Paperclip, Save, Trash2, Link2, Copy, X, Send, Pencil } from 'lucide-react'
-import { uploadDoc, saveCliente, getCliente, getClienteByLead, deleteCliente, gerarLinkCadastro, getLeadDetail, enviarParaAssinatura, getContratoByLead, type ContratoRow } from '@/lib/api'
+import { Loader2, Check, ArrowLeft, ArrowRight, Upload, FileText, Paperclip, Save, Trash2, Link2, Copy, X, Send, Pencil, Folder, Download } from 'lucide-react'
+import { uploadDoc, saveCliente, getCliente, getClienteByLead, deleteCliente, gerarLinkCadastro, getLeadDetail, enviarParaAssinatura, getContratoByLead, listArquivos, addArquivoCliente, deleteArquivoCliente, type ContratoRow, type ArquivoRow } from '@/lib/api'
 import { CLI_FIELDS, EMP_FIELDS, SOCIO_FIELDS, CLI_TO_SOCIO } from '@/lib/cadastro'
 import { tipoFromInteresse, requiredKeysFor, REQ_SOCIO, TIPO_LABEL } from '@/lib/contratos'
 import SmartField from '@/components/cadastro/SmartField'
@@ -14,7 +14,7 @@ type Obj = Record<string, unknown>
 
 const FIELD = 'w-full h-10 px-3.5 rounded-lg text-sm text-white placeholder-gray-600 outline-none disabled:opacity-40'
 const FS = { background: 'var(--sys-surface-3)', border: '1px solid var(--sys-border-2)' }
-const PASSOS = ['Dados do cliente', 'Dados da empresa', 'Sócio 1', 'Sócio 2', 'Sócio 3']
+const PASSOS = ['Dados do cliente', 'Dados da empresa', 'Sócio 1', 'Sócio 2', 'Sócio 3', 'Arquivos']
 
 // Largura do campo no grid de 12 colunas
 const SPAN_CLS: Record<number, string> = {
@@ -51,6 +51,17 @@ function FileField({ label, url, onUpload, disabled }: { label: string; url?: st
   )
 }
 
+function FileRow({ nome, url, onDelete }: { nome: string; url: string; onDelete?: () => void }) {
+  return (
+    <div className="flex items-center gap-3 p-2.5 rounded-lg" style={{ background: 'var(--sys-surface-3)', border: '1px solid var(--sys-border)' }}>
+      <FileText size={16} className="text-[#0BBCD4] shrink-0" />
+      <span className="text-sm text-gray-200 truncate flex-1">{nome}</span>
+      <a href={url} target="_blank" rel="noopener noreferrer" download title="Baixar" className="text-gray-400 hover:text-white"><Download size={16} /></a>
+      {onDelete && <button onClick={onDelete} title="Excluir" className="text-red-400 hover:text-red-300"><Trash2 size={16} /></button>}
+    </div>
+  )
+}
+
 function PessoaUploads({ docKey, certKey, senhaKey, data, set, disabled }: { docKey: string; certKey: string; senhaKey: string; data: Obj; set: (k: string, v: unknown) => void; disabled?: boolean }) {
   return (
     <div className="grid sm:grid-cols-2 gap-3 pt-2">
@@ -83,6 +94,8 @@ function Wizard() {
   const [contrato, setContrato] = useState<ContratoRow | null>(null)
   const [enviandoAssinatura, setEnviandoAssinatura] = useState(false)
   const [readOnly, setReadOnly] = useState(false)
+  const [arquivos, setArquivos] = useState<ArquivoRow[]>([])
+  const [uploadingArq, setUploadingArq] = useState(false)
 
   const [cli, setCli] = useState<Obj>({})
   const [emp, setEmp] = useState<Obj>({ emp_usa_glp: false })
@@ -119,6 +132,28 @@ function Wizard() {
     }
     init()
   }, [clienteParam, leadId])
+
+  // Carrega os arquivos avulsos quando há cliente salvo
+  useEffect(() => {
+    if (clienteId) listArquivos(clienteId).then(setArquivos).catch(() => setArquivos([]))
+  }, [clienteId])
+
+  async function handleUploadArquivo(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0]; if (!f || !clienteId) return
+    setUploadingArq(true)
+    try {
+      const r = await uploadDoc(f)
+      const novo = await addArquivoCliente(clienteId, f.name, r.url)
+      setArquivos(a => [novo, ...a])
+    } catch { alert('Erro ao enviar o arquivo.') }
+    finally { setUploadingArq(false); e.target.value = '' }
+  }
+
+  async function handleExcluirArquivo(arqId: string) {
+    if (!clienteId || !confirm('Excluir este arquivo?')) return
+    try { await deleteArquivoCliente(clienteId, arqId); setArquivos(a => a.filter(x => x.id !== arqId)) }
+    catch { alert('Erro ao excluir.') }
+  }
 
   const setCliK = (k: string, v: unknown) => setCli(s => ({ ...s, [k]: v }))
   const setEmpK = (k: string, v: unknown) => setEmp(s => ({ ...s, [k]: v }))
@@ -229,7 +264,9 @@ function Wizard() {
           <button key={p} onClick={() => setStep(i)}
             className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
             style={{ background: step === i ? 'rgba(11,188,212,0.15)' : 'var(--sys-surface-2)', color: step === i ? '#0BBCD4' : '#6b7280', border: step === i ? '1px solid rgba(11,188,212,0.3)' : '1px solid transparent' }}>
-            <span className="w-5 h-5 rounded-full flex items-center justify-center text-[10px]" style={{ background: step >= i ? '#0BBCD4' : 'var(--sys-border-2)', color: step >= i ? '#fff' : '#9ca3af' }}>{i + 1}</span>
+            <span className="w-5 h-5 rounded-full flex items-center justify-center text-[10px]" style={{ background: step >= i ? '#0BBCD4' : 'var(--sys-border-2)', color: step >= i ? '#fff' : '#9ca3af' }}>
+              {p === 'Arquivos' ? <Folder size={11} /> : i + 1}
+            </span>
             {p}
           </button>
         ))}
@@ -286,7 +323,7 @@ function Wizard() {
           </div>
         )}
 
-        {step >= 2 && (
+        {step >= 2 && step <= 4 && (
           <>
             {socioIdx === 0 && (
               <label className="flex items-center gap-2 mb-2 cursor-pointer p-3 rounded-xl" style={{ background: 'rgba(11,188,212,0.06)', border: '1px solid rgba(11,188,212,0.2)' }}>
@@ -330,6 +367,53 @@ function Wizard() {
               </>
             )}
           </>
+        )}
+
+        {step === 5 && (
+          <div className="space-y-5">
+            {!clienteId ? (
+              <p className="text-gray-500 text-sm py-8 text-center">Salve o cadastro primeiro para gerenciar os arquivos do cliente.</p>
+            ) : (
+              <>
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-wide text-gray-400 mb-2">Documentos do cadastro</p>
+                  <div className="space-y-2">
+                    {(() => {
+                      const docs: { nome: string; url: string }[] = []
+                      if (contrato) {
+                        const u = contrato.autentique_status === 'assinado' && contrato.autentique_url ? contrato.autentique_url : contrato.pdf_url
+                        if (u) docs.push({ nome: 'Contrato', url: u })
+                      }
+                      if (cli.cli_doc_url) docs.push({ nome: 'Documento pessoal do cliente', url: cli.cli_doc_url as string })
+                      if (cli.cli_cert_url) docs.push({ nome: 'Certificado digital do cliente', url: cli.cli_cert_url as string })
+                      socios.forEach((sx, i) => {
+                        if (sx.doc_url) docs.push({ nome: `Documento Sócio ${i + 1}`, url: sx.doc_url as string })
+                        if (sx.cert_url) docs.push({ nome: `Certificado Sócio ${i + 1}`, url: sx.cert_url as string })
+                      })
+                      return docs.length
+                        ? docs.map((d, idx) => <FileRow key={idx} nome={d.nome} url={d.url} />)
+                        : <p className="text-gray-600 text-xs">Nenhum documento do cadastro ainda.</p>
+                    })()}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-xs font-bold uppercase tracking-wide text-gray-400">Arquivos enviados</p>
+                    <label className="inline-flex items-center gap-1.5 text-xs font-bold px-3 h-9 rounded-lg cursor-pointer text-white" style={{ background: 'linear-gradient(135deg, #0BBCD4, #0999ae)' }}>
+                      {uploadingArq ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />} Enviar arquivo
+                      <input type="file" className="hidden" onChange={handleUploadArquivo} disabled={uploadingArq} />
+                    </label>
+                  </div>
+                  <div className="space-y-2">
+                    {arquivos.length === 0
+                      ? <p className="text-gray-600 text-xs">Nenhum arquivo enviado.</p>
+                      : arquivos.map(a => <FileRow key={a.id} nome={a.nome} url={a.url} onDelete={() => handleExcluirArquivo(a.id)} />)}
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
         )}
       </div>
 
@@ -392,17 +476,12 @@ function Wizard() {
           <ArrowLeft size={15} /> Voltar
         </button>
 
-        {step < PASSOS.length - 1 ? (
+        {step < PASSOS.length - 1 && (
           <button onClick={() => setStep(s => Math.min(PASSOS.length - 1, s + 1))}
             className="inline-flex items-center gap-2 px-5 h-11 rounded-xl text-sm font-bold text-white" style={{ background: 'linear-gradient(135deg, #0BBCD4, #0999ae)' }}>
             Próximo <ArrowRight size={15} />
           </button>
-        ) : !readOnly ? (
-          <button onClick={() => handleSalvar(true)} disabled={saving}
-            className="inline-flex items-center gap-2 px-6 h-11 rounded-xl text-sm font-bold text-white disabled:opacity-60" style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)' }}>
-            {saving ? <Loader2 size={16} className="animate-spin" /> : <><Check size={16} /> Salvar e concluir</>}
-          </button>
-        ) : null}
+        )}
       </div>
 
       {/* Link gerado */}

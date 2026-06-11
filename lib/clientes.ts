@@ -90,6 +90,28 @@ export async function deleteCliente(id: string) {
   emitCrmChange()
 }
 
+// ─── Arquivos do cliente (Drive) ────────────────────────────────────────────
+
+export async function listArquivos(clienteId: string) {
+  const res = await pool.query(
+    `SELECT id, nome, url, criado_em FROM cliente_arquivos WHERE cliente_id = $1 ORDER BY criado_em DESC`,
+    [clienteId]
+  )
+  return res.rows
+}
+
+export async function addArquivo(clienteId: string, nome: string, url: string) {
+  const res = await pool.query(
+    `INSERT INTO cliente_arquivos (cliente_id, nome, url) VALUES ($1, $2, $3) RETURNING id, nome, url, criado_em`,
+    [clienteId, nome, url]
+  )
+  return res.rows[0]
+}
+
+export async function deleteArquivo(id: string) {
+  await pool.query(`DELETE FROM cliente_arquivos WHERE id = $1`, [id])
+}
+
 export async function generateLinkToken(id: string): Promise<string> {
   const token = `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 12)}`
   await pool.query(`UPDATE clientes SET link_token = $1 WHERE id = $2`, [token, id])

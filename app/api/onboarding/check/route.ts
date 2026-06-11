@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { setOnboardingCheck, getOnboardingBoard } from '@/lib/leads'
-import { podeEditarSetor, gerenteConcluido, checksEfetivos, ITEM_CADASTRO, type SetorId } from '@/lib/onboarding-checklist'
+import { podeEditarSetor, gerenteConcluido, checksEfetivos, setorItensCompletos, doneKey, ITEM_CADASTRO, type SetorId } from '@/lib/onboarding-checklist'
 
 export const dynamic = 'force-dynamic'
 
@@ -27,6 +27,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Sem permissão para este setor' }, { status: 403 })
   }
 
+  const ehMarcadorDone = itemKey === doneKey(setor)
+
   // Gating: setores não-gerente só liberam após o gerente concluir
   if (setor !== 'gerente') {
     const board = await getOnboardingBoard()
@@ -34,6 +36,16 @@ export async function POST(req: NextRequest) {
     const efetivos = cli ? checksEfetivos(cli.checks, cli.cadastro_completo) : []
     if (!cli || !gerenteConcluido(cli.onboarding_categoria ?? '', efetivos)) {
       return NextResponse.json({ error: 'Aguardando o gerente concluir a etapa dele' }, { status: 409 })
+    }
+  }
+
+  // Para concluir um setor, todos os itens dele precisam estar marcados
+  if (ehMarcadorDone && done) {
+    const board = await getOnboardingBoard()
+    const cli = board.find(c => c.id === leadId)
+    const efetivos = cli ? checksEfetivos(cli.checks, cli.cadastro_completo) : []
+    if (!cli || !setorItensCompletos(setor, cli.onboarding_categoria ?? '', efetivos)) {
+      return NextResponse.json({ error: 'Conclua todos os itens do setor antes de finalizar' }, { status: 409 })
     }
   }
 

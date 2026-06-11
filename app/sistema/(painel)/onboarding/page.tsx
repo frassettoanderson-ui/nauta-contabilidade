@@ -5,7 +5,7 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { Loader2, Lock, Check, CheckCircle2, Link2, Rocket, MessageCircle, Pencil, ClipboardCheck } from 'lucide-react'
 import { getOnboardingBoard, setOnboardingCheck, concluirOnboarding, gerarLinkCadastro, type OnboardingCliente } from '@/lib/api'
-import { SETORES, itensDoSetor, gerenteConcluido, podeEditarSetor, todosItens, checksEfetivos, ITEM_CADASTRO, type SetorId } from '@/lib/onboarding-checklist'
+import { SETORES, itensDoSetor, gerenteConcluido, podeEditarSetor, todosItens, checksEfetivos, setorConcluido, setorItensCompletos, tudoConcluido, doneKey, ITEM_CADASTRO, type SetorId } from '@/lib/onboarding-checklist'
 import { ONBOARDING_CATEGORIAS } from '@/lib/onboarding'
 import { useRealtime } from '@/components/sistema/useRealtime'
 import LeadModal from '@/components/sistema/LeadModal'
@@ -36,6 +36,17 @@ export default function OnboardingPage() {
       : x) ?? b)
     try { await setOnboardingCheck(c.id, itemKey, done) }
     catch { alert('Não foi possível atualizar. Recarregando.'); load() }
+    finally { setBusy(null) }
+  }
+
+  async function toggleSetor(c: OnboardingCliente, setor: SetorId, done: boolean) {
+    const key = doneKey(setor)
+    setBusy(key + c.id)
+    setBoard(b => b?.map(x => x.id === c.id
+      ? { ...x, checks: done ? [...x.checks, key] : x.checks.filter(k => k !== key) }
+      : x) ?? b)
+    try { await setOnboardingCheck(c.id, key, done) }
+    catch (e) { alert(e instanceof Error ? e.message : 'Erro ao concluir setor.'); load() }
     finally { setBusy(null) }
   }
 
@@ -84,9 +95,14 @@ export default function OnboardingPage() {
             const gerOk = gerenteConcluido(cat, checks)
             const itens = todosItens(cat)
             const feitos = itens.filter(i => checks.includes(i.key)).length
+            const prontoConcluir = tudoConcluido(cat, checks)
             return (
-              <div key={c.id} className="w-80 shrink-0 rounded-2xl p-4"
-                style={{ background: 'var(--sys-surface)', border: '1px solid var(--sys-border)' }}>
+              <div key={c.id} className="w-80 shrink-0 rounded-2xl p-4 transition-all"
+                style={{
+                  background: prontoConcluir ? 'rgba(34,197,94,0.06)' : 'var(--sys-surface)',
+                  border: prontoConcluir ? '1.5px solid #22c55e' : '1px solid var(--sys-border)',
+                  boxShadow: prontoConcluir ? '0 0 14px rgba(34,197,94,0.25)' : undefined,
+                }}>
                 {/* Cabeçalho do cliente */}
                 <div className="mb-3 pb-3 border-b" style={{ borderColor: 'var(--sys-surface-4)' }}>
                   <div className="flex items-start justify-between gap-2">
@@ -106,6 +122,15 @@ export default function OnboardingPage() {
                   </div>
                 </div>
 
+                {/* Concluir onboarding — só quando todos os setores concluíram */}
+                {ehGestor && prontoConcluir && (
+                  <button onClick={() => concluir(c)}
+                    className="w-full mb-4 inline-flex items-center justify-center gap-1.5 h-10 rounded-lg text-sm font-bold text-white"
+                    style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)', boxShadow: '0 0 12px rgba(34,197,94,0.4)' }}>
+                    <CheckCircle2 size={16} /> Concluir onboarding
+                  </button>
+                )}
+
                 {/* Seções por setor */}
                 <div className="space-y-4">
                   {SETORES.map(s => {
@@ -113,10 +138,13 @@ export default function OnboardingPage() {
                     const setorItens = itensDoSetor(setor, cat)
                     const bloqueado = setor !== 'gerente' && !gerOk
                     const editavel = !bloqueado && podeEditarSetor(role, setor)
+                    const concluido = setorConcluido(setor, checks)
+                    const podeConcluir = editavel && setorItensCompletos(setor, cat, checks)
                     return (
                       <div key={setor}>
                         <div className="flex items-center gap-1.5 mb-1.5">
                           <span className="text-[11px] font-bold uppercase tracking-wide text-gray-400">{s.label}</span>
+                          {concluido && <CheckCircle2 size={12} className="text-[#22c55e]" />}
                           {bloqueado && <Lock size={11} className="text-gray-600" />}
                           {bloqueado && <span className="text-[10px] text-gray-600">aguardando gerente</span>}
                         </div>
@@ -148,28 +176,37 @@ export default function OnboardingPage() {
                           </div>
                         )}
 
-                        {/* Enviar link de cadastro (gerente) — centralizado */}
-                        {setor === 'gerente' && ehGestor && (
-                          <div className="flex justify-center mt-2.5">
-                            <button onClick={() => enviarLink(c)}
-                              className="inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-lg"
-                              style={{ background: 'rgba(124,111,255,0.12)', border: '1px solid rgba(124,111,255,0.3)', color: '#a99bff' }}>
-                              <Link2 size={12} /> Enviar link de cadastro
-                            </button>
+                        {/* Ações do setor */}
+                        {setorItens.length > 0 && (editavel || (setor === 'gerente' && ehGestor)) && (
+                          <div className="flex items-center justify-center flex-wrap gap-2 mt-2.5">
+                            {setor === 'gerente' && ehGestor && (
+                              <button onClick={() => enviarLink(c)}
+                                className="inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-lg"
+                                style={{ background: 'rgba(124,111,255,0.12)', border: '1px solid rgba(124,111,255,0.3)', color: '#a99bff' }}>
+                                <Link2 size={12} /> Enviar link de cadastro
+                              </button>
+                            )}
+                            {editavel && (
+                              concluido ? (
+                                <button onClick={() => toggleSetor(c, setor, false)}
+                                  className="inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-lg text-white"
+                                  style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)' }}>
+                                  <CheckCircle2 size={12} /> Concluído
+                                </button>
+                              ) : (
+                                <button onClick={() => toggleSetor(c, setor, true)} disabled={!podeConcluir}
+                                  className="inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-lg disabled:opacity-40"
+                                  style={{ background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.35)', color: '#22c55e' }}>
+                                  <Check size={12} /> Concluir
+                                </button>
+                              )
+                            )}
                           </div>
                         )}
                       </div>
                     )
                   })}
                 </div>
-
-                {ehGestor && (
-                  <button onClick={() => concluir(c)}
-                    className="w-full mt-4 inline-flex items-center justify-center gap-1.5 h-9 rounded-lg text-xs font-bold text-white"
-                    style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)' }}>
-                    <CheckCircle2 size={14} /> Concluir onboarding
-                  </button>
-                )}
               </div>
             )
           })}

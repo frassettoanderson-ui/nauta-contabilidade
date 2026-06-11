@@ -84,10 +84,33 @@ export function checksEfetivos(checks: string[], cadastroCompleto: boolean): str
   return checks
 }
 
+// Marcador de "setor concluído" (guardado junto dos checks, fora da lista de itens).
+export const doneKey = (setor: SetorId) => `${setor}:__done`
+
+export function setorConcluido(setor: SetorId, checks: string[]): boolean {
+  return checks.includes(doneKey(setor))
+}
+
+/** Todos os itens do setor estão marcados? (habilita o botão Concluir) */
+export function setorItensCompletos(setor: SetorId, categoria: string, checks: string[]): boolean {
+  const itens = itensDoSetor(setor, categoria)
+  return itens.length > 0 && itens.every(i => checks.includes(i.key))
+}
+
 /** Gerente concluiu sua parte? (libera os demais setores) */
 export function gerenteConcluido(categoria: string, checks: string[]): boolean {
-  const keys = itensDoSetor('gerente', categoria).map(i => i.key)
-  return keys.length > 0 && keys.every(k => checks.includes(k))
+  return setorConcluido('gerente', checks)
+}
+
+/** Setores que têm itens nesta categoria. */
+export function setoresComItens(categoria: string) {
+  return SETORES.filter(s => itensDoSetor(s.id, categoria).length > 0)
+}
+
+/** Todos os setores concluíram? (libera o "Concluir onboarding") */
+export function tudoConcluido(categoria: string, checks: string[]): boolean {
+  const setores = setoresComItens(categoria)
+  return setores.length > 0 && setores.every(s => setorConcluido(s.id, checks))
 }
 
 /** O cargo pode editar este setor? gerente/admin = todos; demais = só o próprio. */

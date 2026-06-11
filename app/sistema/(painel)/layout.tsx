@@ -8,6 +8,7 @@ import Sidebar from '@/components/sistema/Sidebar'
 import ForcePasswordChange from '@/components/sistema/ForcePasswordChange'
 import ReminderWatcher from '@/components/sistema/ReminderWatcher'
 import ChatButton from '@/components/sistema/ChatButton'
+import ProfileButton from '@/components/sistema/ProfileButton'
 import { getTema, onPrefsChange, type Tema } from '@/lib/sys-prefs'
 
 export default function PainelLayout({ children }: { children: React.ReactNode }) {
@@ -39,6 +40,7 @@ export default function PainelLayout({ children }: { children: React.ReactNode }
   return (
     <div className={`${themeClass} min-h-screen`} style={{ background: 'var(--sys-bg)' }}>
       <Sidebar email={session.user?.email} />
+      <ProfileButton />
       <ChatButton />
       {/* Conteúdo: deslocado pela sidebar no desktop; topbar no mobile */}
       <div className="lg:pl-64 pt-14 lg:pt-0">

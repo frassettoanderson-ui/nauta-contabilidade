@@ -294,6 +294,21 @@ export function iniciarOnboarding(leadId: string, categoria?: string): Promise<{
   }).then(r => json(r))
 }
 
+// ─── PERFIL ──────────────────────────────────────────────────────────────────
+
+export interface PerfilRow {
+  id: string; username: string; email: string | null; role: string
+  nome_completo: string | null; telefone: string | null; foto_url: string | null
+}
+export function getPerfil(): Promise<PerfilRow | null> {
+  return fetch('/api/sistema/perfil').then(r => json<PerfilRow | null>(r))
+}
+export function updatePerfil(data: { nome_completo?: string; telefone?: string; email?: string; foto_url?: string | null }): Promise<void> {
+  return fetch('/api/sistema/perfil', {
+    method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data),
+  }).then(r => json(r)).then(() => undefined)
+}
+
 // ─── UPLOAD ────────────────────────────────────────────────────────────────
 
 export async function uploadImage(file: File): Promise<string> {

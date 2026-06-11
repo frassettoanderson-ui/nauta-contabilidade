@@ -243,10 +243,7 @@ export default function KanbanPage() {
 
           {/* Coluna estreita: adicionar lead */}
           <div className="w-44 shrink-0">
-            <div className="flex items-center gap-2 mb-3 px-1">
-              <span className="w-2.5 h-2.5 rounded-full" style={{ background: '#0BBCD4' }} />
-              <h2 className="text-sm font-bold text-gray-400">Novo</h2>
-            </div>
+            <div className="flex items-center gap-2 mb-3 px-1 h-[18px]" />
             <button onClick={() => setAdding(true)}
               className="w-full min-h-[62vh] rounded-2xl flex flex-col items-center justify-center gap-3 text-sm font-bold transition-all hover:bg-[rgba(11,188,212,0.05)]"
               style={{ border: '2px dashed var(--sys-border-2)', color: '#0BBCD4', background: 'transparent' }}>

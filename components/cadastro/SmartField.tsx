@@ -10,6 +10,9 @@ import {
 
 const BASE    = 'w-full h-11 px-4 rounded-xl text-sm text-white placeholder-gray-600 outline-none disabled:opacity-40'
 const BASE_SEL = 'w-full h-11 px-4 rounded-xl text-sm text-white placeholder-gray-600 outline-none disabled:opacity-40 [&>option]:text-gray-900 [&>option]:bg-white'
+// Caixas estreitas para campos curtos (RG, CPF, datas, CNPJ, CEP, telefone, valores…)
+const BASE_NARROW = BASE + ' max-w-[190px]'
+const SEL_NARROW  = BASE_SEL + ' max-w-[210px]'
 const FS   = { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.10)' }
 const FSE  = { ...FS, borderColor: 'rgba(239,68,68,0.6)' }
 const FSS  = { ...FS } // removido colorScheme:'dark' — causava texto branco nas options
@@ -87,7 +90,7 @@ export default function SmartField({
         <input type="text" value={value} disabled={disabled} placeholder="000.000.000-00"
           onChange={e => { onChange(maskCPF(e.target.value)); setCpfInvalid(false) }}
           onBlur={() => { if (full) setCpfInvalid(!validateCPF(value)) }}
-          className={BASE} style={invalid || errBorder ? FSE : FS} />
+          className={BASE_NARROW} style={invalid || errBorder ? FSE : FS} />
         {invalid && <p className="text-red-400 text-[10px] mt-1">CPF inválido</p>}
       </div>
     )
@@ -100,7 +103,7 @@ export default function SmartField({
         <Label text={label} />
         <input type="text" inputMode="numeric" value={value} disabled={disabled}
           onChange={e => onChange(onlyNumbers(e.target.value))}
-          className={BASE} style={errBorder ? FSE : FS} />
+          className={BASE_NARROW} style={errBorder ? FSE : FS} />
       </div>
     )
   }
@@ -112,7 +115,7 @@ export default function SmartField({
         <Label text={label} />
         <input type="text" inputMode="numeric" value={value} disabled={disabled} placeholder="R$ 0,00"
           onChange={e => onChange(maskMoney(e.target.value))}
-          className={BASE} style={errBorder ? FSE : FS} />
+          className={BASE_NARROW} style={errBorder ? FSE : FS} />
       </div>
     )
   }
@@ -124,7 +127,7 @@ export default function SmartField({
         <Label text={label} />
         <input type="text" value={value} disabled={disabled} placeholder="00.000.000/0001-00"
           onChange={e => onChange(maskCNPJ(e.target.value))}
-          className={BASE} style={errBorder ? FSE : FS} />
+          className={BASE_NARROW} style={errBorder ? FSE : FS} />
       </div>
     )
   }
@@ -136,7 +139,7 @@ export default function SmartField({
         <Label text={label} />
         <input type="tel" value={value} disabled={disabled} placeholder="(00) 00000-0000"
           onChange={e => onChange(maskPhone(e.target.value))}
-          className={BASE} style={errBorder ? FSE : FS} />
+          className={BASE_NARROW} style={errBorder ? FSE : FS} />
       </div>
     )
   }
@@ -159,7 +162,7 @@ export default function SmartField({
         <div className="relative">
           <input type="text" value={value} disabled={disabled} placeholder="00000-000"
             onChange={e => handleCEP(e.target.value)}
-            className={BASE} style={errBorder ? FSE : FS} />
+            className={BASE_NARROW} style={errBorder ? FSE : FS} />
           {loadingCep && (
             <Loader2 size={14} className="animate-spin text-[#0BBCD4] absolute right-3 top-3.5 pointer-events-none" />
           )}
@@ -178,7 +181,7 @@ export default function SmartField({
         <Label text={label} />
         <select value={value} disabled={disabled}
           onChange={e => onChange(e.target.value)}
-          className={BASE_SEL} style={errBorder && !value ? FSSE : FSS}>
+          className={SEL_NARROW} style={errBorder && !value ? FSSE : FSS}>
           <option value="">Selecione</option>
           {ESTADO_CIVIL_OPS.map(o => <option key={o} value={o}>{o}</option>)}
         </select>
@@ -192,7 +195,7 @@ export default function SmartField({
         <Label text={label} />
         <select value={value} disabled={disabled}
           onChange={e => onChange(e.target.value)}
-          className={BASE_SEL} style={errBorder && !value ? FSSE : FSS}>
+          className={SEL_NARROW} style={errBorder && !value ? FSSE : FSS}>
           <option value="">Selecione</option>
           {REGIME_OPS.map(o => <option key={o} value={o}>{o}</option>)}
         </select>
@@ -218,10 +221,10 @@ export default function SmartField({
           </label>
           <select value={csUF} disabled={disabled}
             onChange={e => handleUF(e.target.value)}
-            className={BASE_SEL} style={required && !csUF ? FSSE : FSS}>
-            <option value="">Selecione o estado</option>
+            className={`${BASE_SEL} max-w-[110px]`} style={required && !csUF ? FSSE : FSS}>
+            <option value="">UF</option>
             {ESTADOS_BR.map(e => (
-              <option key={e.uf} value={e.uf}>{e.nome} ({e.uf})</option>
+              <option key={e.uf} value={e.uf}>{e.uf}</option>
             ))}
           </select>
         </div>
@@ -254,7 +257,7 @@ export default function SmartField({
       <Label text={label} />
       <input type={type} value={value} disabled={disabled}
         onChange={e => onChange(e.target.value)}
-        className={BASE}
+        className={type === 'date' ? BASE_NARROW : BASE}
         style={{
           ...FS,
           ...(type === 'date' ? { colorScheme: 'dark' } : {}),

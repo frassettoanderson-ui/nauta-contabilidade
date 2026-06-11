@@ -30,6 +30,7 @@ export const EMP_FIELDS: Field[] = [
   ['emp_endereco',     'Endereço da empresa'],
   ['emp_bairro',       'Bairro'],
   ['emp_cidade_estado','Cidade / Estado',      'cidade_estado'],
+  ['emp_inscricao_imobiliaria', 'Inscrição imobiliária', 'numero'],
   ['emp_area_ocupada', 'Área ocupada (m²)',    'numero'],
   ['emp_edificacao',   'Área total da edificação (m²)', 'numero'],
   ['emp_proprietario_nome', 'Nome do proprietário do imóvel', 'nome'],

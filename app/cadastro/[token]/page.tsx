@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import Image from 'next/image'
-import { Loader2, Check, AlertCircle } from 'lucide-react'
+import { Loader2, Check, AlertCircle, Pencil } from 'lucide-react'
 import { CLI_FIELDS, EMP_FIELDS, SOCIO_FIELDS } from '@/lib/cadastro'
 import SmartField from '@/components/cadastro/SmartField'
 import type { CEPData } from '@/lib/form-masks'
@@ -24,6 +24,7 @@ export default function CadastroPublicoPage() {
   const [erro, setErro] = useState('')
   const [enviado, setEnviado] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [readOnly, setReadOnly] = useState(false)
 
   const [cli, setCli] = useState<Obj>({})
   const [emp, setEmp] = useState<Obj>({ emp_usa_glp: false })
@@ -42,6 +43,8 @@ export default function CadastroPublicoPage() {
       setSocios([0, 1, 2].map(i => ss[i] ?? {}))
       if (ss[1]?.nome_completo || ss[1]?.cpf) setS2(true)
       if (ss[2]?.nome_completo || ss[2]?.cpf) setS3(true)
+      // Já preenchido antes? Abre travado, com botão Editar.
+      if (c.cli_nome_completo || c.cli_cpf) setReadOnly(true)
       setLoading(false)
     }).catch(() => { setErro('Erro ao carregar o cadastro.'); setLoading(false) })
   }, [token])
@@ -104,6 +107,7 @@ export default function CadastroPublicoPage() {
                 value={(cli[k] as string) || ''}
                 onChange={v => setCliK(k, v)}
                 onCEPFill={type === 'cep' ? makeCEPFill(setCliK, 'cli_') : undefined}
+                disabled={readOnly}
               />
             ))}
           </div>
@@ -116,13 +120,14 @@ export default function CadastroPublicoPage() {
                 value={(emp[k] as string) || ''}
                 onChange={v => setEmpK(k, v)}
                 onCEPFill={type === 'cep' ? makeCEPFill(setEmpK, 'emp_') : undefined}
+                disabled={readOnly}
               />
             ))}
             <div className="sm:col-span-2">
               <label className="block text-xs font-semibold text-gray-400 mb-1.5">Usa gás GLP?</label>
               <div className="flex gap-2">
                 {[['Sim', true], ['Não', false]].map(([l, val]) => (
-                  <button key={String(l)} type="button" onClick={() => setEmpK('emp_usa_glp', val)} className="flex-1 h-11 rounded-xl text-sm font-bold"
+                  <button key={String(l)} type="button" disabled={readOnly} onClick={() => setEmpK('emp_usa_glp', val)} className="flex-1 h-11 rounded-xl text-sm font-bold"
                     style={{ background: emp.emp_usa_glp === val ? '#0BBCD4' : 'rgba(255,255,255,0.05)', color: emp.emp_usa_glp === val ? '#fff' : '#9ca3af', border: '1px solid rgba(255,255,255,0.10)' }}>{l as string}</button>
                 ))}
               </div>
@@ -136,22 +141,31 @@ export default function CadastroPublicoPage() {
               <SmartField key={k} label={label} type={type}
                 value={(socios[0]?.[k] as string) || ''}
                 onChange={v => setSocioK(0, k, v)}
+                disabled={readOnly}
               />
             ))}
           </div>
         </Secao>
 
-        <label className="flex items-center gap-2 mb-4 cursor-pointer"><input type="checkbox" checked={s2} onChange={e => setS2(e.target.checked)} className="w-4 h-4 accent-[#0BBCD4]" /><span className="text-sm text-gray-300">Adicionar Sócio 2</span></label>
-        {s2 && <Secao titulo="Sócio 2"><div className="grid sm:grid-cols-2 gap-3">{SOCIO_FIELDS.map(([k, label, type]) => <SmartField key={k} label={label} type={type} value={(socios[1]?.[k] as string) || ''} onChange={v => setSocioK(1, k, v)} />)}</div></Secao>}
+        <label className="flex items-center gap-2 mb-4 cursor-pointer"><input type="checkbox" checked={s2} disabled={readOnly} onChange={e => setS2(e.target.checked)} className="w-4 h-4 accent-[#0BBCD4]" /><span className="text-sm text-gray-300">Adicionar Sócio 2</span></label>
+        {s2 && <Secao titulo="Sócio 2"><div className="grid sm:grid-cols-2 gap-3">{SOCIO_FIELDS.map(([k, label, type]) => <SmartField key={k} label={label} type={type} value={(socios[1]?.[k] as string) || ''} onChange={v => setSocioK(1, k, v)} disabled={readOnly} />)}</div></Secao>}
 
-        <label className="flex items-center gap-2 mb-4 cursor-pointer"><input type="checkbox" checked={s3} onChange={e => setS3(e.target.checked)} className="w-4 h-4 accent-[#0BBCD4]" /><span className="text-sm text-gray-300">Adicionar Sócio 3</span></label>
-        {s3 && <Secao titulo="Sócio 3"><div className="grid sm:grid-cols-2 gap-3">{SOCIO_FIELDS.map(([k, label, type]) => <SmartField key={k} label={label} type={type} value={(socios[2]?.[k] as string) || ''} onChange={v => setSocioK(2, k, v)} />)}</div></Secao>}
+        <label className="flex items-center gap-2 mb-4 cursor-pointer"><input type="checkbox" checked={s3} disabled={readOnly} onChange={e => setS3(e.target.checked)} className="w-4 h-4 accent-[#0BBCD4]" /><span className="text-sm text-gray-300">Adicionar Sócio 3</span></label>
+        {s3 && <Secao titulo="Sócio 3"><div className="grid sm:grid-cols-2 gap-3">{SOCIO_FIELDS.map(([k, label, type]) => <SmartField key={k} label={label} type={type} value={(socios[2]?.[k] as string) || ''} onChange={v => setSocioK(2, k, v)} disabled={readOnly} />)}</div></Secao>}
 
-        <button onClick={enviar} disabled={saving}
-          className="w-full h-12 font-bold text-white rounded-xl flex items-center justify-center gap-2 disabled:opacity-60 mt-2"
-          style={{ background: 'linear-gradient(135deg, #0BBCD4, #0999ae)' }}>
-          {saving ? <Loader2 size={18} className="animate-spin" /> : 'Enviar cadastro'}
-        </button>
+        {readOnly ? (
+          <button onClick={() => setReadOnly(false)}
+            className="w-full h-12 font-bold text-white rounded-xl flex items-center justify-center gap-2 mt-2"
+            style={{ background: 'linear-gradient(135deg, #0BBCD4, #0999ae)' }}>
+            <Pencil size={16} /> Editar meus dados
+          </button>
+        ) : (
+          <button onClick={enviar} disabled={saving}
+            className="w-full h-12 font-bold text-white rounded-xl flex items-center justify-center gap-2 disabled:opacity-60 mt-2"
+            style={{ background: 'linear-gradient(135deg, #0BBCD4, #0999ae)' }}>
+            {saving ? <Loader2 size={18} className="animate-spin" /> : 'Enviar cadastro'}
+          </button>
+        )}
       </div>
     </div>
   )

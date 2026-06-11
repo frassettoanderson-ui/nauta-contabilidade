@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
-import { Loader2, Check, ArrowLeft, ArrowRight, Upload, FileText, Paperclip, Save, Trash2, Link2, Copy, X, Send } from 'lucide-react'
+import { Loader2, Check, ArrowLeft, ArrowRight, Upload, FileText, Paperclip, Save, Trash2, Link2, Copy, X, Send, Pencil } from 'lucide-react'
 import { uploadDoc, saveCliente, getCliente, getClienteByLead, deleteCliente, gerarLinkCadastro, getLeadDetail, enviarParaAssinatura, getContratoByLead, type ContratoRow } from '@/lib/api'
 import { CLI_FIELDS, EMP_FIELDS, SOCIO_FIELDS, CLI_TO_SOCIO } from '@/lib/cadastro'
 import { tipoFromInteresse, requiredKeysFor, REQ_SOCIO, TIPO_LABEL } from '@/lib/contratos'
@@ -75,6 +75,7 @@ function Wizard() {
   const [linkUrl, setLinkUrl] = useState('')
   const [contrato, setContrato] = useState<ContratoRow | null>(null)
   const [enviandoAssinatura, setEnviandoAssinatura] = useState(false)
+  const [readOnly, setReadOnly] = useState(false)
 
   const [cli, setCli] = useState<Obj>({})
   const [emp, setEmp] = useState<Obj>({ emp_usa_glp: false })
@@ -92,6 +93,7 @@ function Wizard() {
       else if (leadId) data = await getClienteByLead(leadId)
       if (data) {
         setClienteId(data.id as string)
+        setReadOnly(true) // cadastro existente abre travado; "Editar" libera
         const c: Obj = {}, e: Obj = {}
         Object.entries(data).forEach(([k, v]) => { if (k.startsWith('cli_')) c[k] = v; if (k.startsWith('emp_')) e[k] = v })
         setCli(c); setEmp({ emp_usa_glp: false, ...e })
@@ -235,10 +237,11 @@ function Wizard() {
                   value={(cli[k] as string) || ''}
                   onChange={v => setCliK(k, v)}
                   onCEPFill={type === 'cep' ? makeCEPFill(setCliK, 'cli_') : undefined}
+                  disabled={readOnly}
                 />
               ))}
             </div>
-            <PessoaUploads docKey="cli_doc_url" certKey="cli_cert_url" senhaKey="cli_cert_senha" data={cli} set={setCliK} />
+            <PessoaUploads docKey="cli_doc_url" certKey="cli_cert_url" senhaKey="cli_cert_senha" data={cli} set={setCliK} disabled={readOnly} />
           </>
         )}
 
@@ -249,6 +252,7 @@ function Wizard() {
                 value={(emp[k] as string) || ''}
                 onChange={v => setEmpK(k, v)}
                 onCEPFill={type === 'cep' ? makeCEPFill(setEmpK, 'emp_') : undefined}
+                disabled={readOnly}
               />
             ))}
             {/* Usa gás GLP — ocupa a coluna vazia ao lado do e-mail */}
@@ -256,7 +260,7 @@ function Wizard() {
               <label className="block text-xs font-semibold text-gray-400 mb-1.5">Usa gás GLP?</label>
               <div className="flex gap-2">
                 {[['Sim', true], ['Não', false]].map(([l, val]) => (
-                  <button key={String(l)} type="button" onClick={() => setEmpK('emp_usa_glp', val)}
+                  <button key={String(l)} type="button" disabled={readOnly} onClick={() => setEmpK('emp_usa_glp', val)}
                     className="flex-1 h-11 rounded-xl text-sm font-bold transition-all"
                     style={{ background: emp.emp_usa_glp === val ? '#0BBCD4' : 'var(--sys-surface-3)', color: emp.emp_usa_glp === val ? '#fff' : '#9ca3af', border: '1px solid var(--sys-border-2)' }}>
                     {l as string}
@@ -265,7 +269,7 @@ function Wizard() {
               </div>
             </div>
             <label className="sm:col-span-2 lg:col-span-3 flex items-center gap-2 cursor-pointer p-3 rounded-xl" style={{ background: 'rgba(11,188,212,0.06)', border: '1px solid rgba(11,188,212,0.2)' }}>
-              <input type="checkbox" checked={propEhSocio1} onChange={e => togglePropSocio1(e.target.checked)} className="w-4 h-4 accent-[#0BBCD4]" />
+              <input type="checkbox" checked={propEhSocio1} disabled={readOnly} onChange={e => togglePropSocio1(e.target.checked)} className="w-4 h-4 accent-[#0BBCD4]" />
               <span className="text-sm text-gray-300">O proprietário do imóvel é o Sócio 1 (preenche nome e CPF automaticamente)</span>
             </label>
           </div>
@@ -275,19 +279,19 @@ function Wizard() {
           <>
             {socioIdx === 0 && (
               <label className="flex items-center gap-2 mb-2 cursor-pointer p-3 rounded-xl" style={{ background: 'rgba(11,188,212,0.06)', border: '1px solid rgba(11,188,212,0.2)' }}>
-                <input type="checkbox" checked={usarCliente} onChange={e => toggleUsarCliente(e.target.checked)} className="w-4 h-4 accent-[#0BBCD4]" />
+                <input type="checkbox" checked={usarCliente} disabled={readOnly} onChange={e => toggleUsarCliente(e.target.checked)} className="w-4 h-4 accent-[#0BBCD4]" />
                 <span className="text-sm text-gray-300">Usar os dados do cliente como Sócio 1</span>
               </label>
             )}
             {socioIdx === 1 && (
               <label className="flex items-center gap-2 mb-2 cursor-pointer p-3 rounded-xl" style={{ background: 'var(--sys-surface-2)', border: '1px solid var(--sys-border-2)' }}>
-                <input type="checkbox" checked={socio2Ativo} onChange={e => setSocio2Ativo(e.target.checked)} className="w-4 h-4 accent-[#0BBCD4]" />
+                <input type="checkbox" checked={socio2Ativo} disabled={readOnly} onChange={e => setSocio2Ativo(e.target.checked)} className="w-4 h-4 accent-[#0BBCD4]" />
                 <span className="text-sm text-gray-300">Adicionar Sócio 2</span>
               </label>
             )}
             {socioIdx === 2 && (
               <label className="flex items-center gap-2 mb-2 cursor-pointer p-3 rounded-xl" style={{ background: 'var(--sys-surface-2)', border: '1px solid var(--sys-border-2)' }}>
-                <input type="checkbox" checked={socio3Ativo} onChange={e => setSocio3Ativo(e.target.checked)} className="w-4 h-4 accent-[#0BBCD4]" />
+                <input type="checkbox" checked={socio3Ativo} disabled={readOnly} onChange={e => setSocio3Ativo(e.target.checked)} className="w-4 h-4 accent-[#0BBCD4]" />
                 <span className="text-sm text-gray-300">Adicionar Sócio 3</span>
               </label>
             )}
@@ -302,10 +306,11 @@ function Wizard() {
                       required={socioAtivo && REQ_SOCIO.includes(k)}
                       value={(socios[socioIdx]?.[k] as string) || ''}
                       onChange={v => setSocioK(socioIdx, k, v)}
+                      disabled={readOnly}
                     />
                   ))}
                 </div>
-                <PessoaUploads docKey="doc_url" certKey="cert_url" senhaKey="cert_senha" data={socios[socioIdx] || {}} set={(k, v) => setSocioK(socioIdx, k, v)} />
+                <PessoaUploads docKey="doc_url" certKey="cert_url" senhaKey="cert_senha" data={socios[socioIdx] || {}} set={(k, v) => setSocioK(socioIdx, k, v)} disabled={readOnly} />
                 <p className="text-xs pt-1" style={{ color: totalPart > 100 ? '#f87171' : '#6b7280' }}>
                   Soma da participação dos sócios: <b>{totalPart}%</b>{totalPart > 100 ? ' — excede 100%!' : ` (faltam ${Math.max(0, 100 - totalPart)}%)`}
                 </p>
@@ -347,10 +352,19 @@ function Wizard() {
           <X size={15} /> Cancelar
         </button>
 
-        <button onClick={() => handleSalvar(false)} disabled={saving}
-          className="inline-flex items-center gap-2 px-4 h-11 rounded-xl text-sm font-bold text-white disabled:opacity-60" style={FS}>
-          {saving ? <Loader2 size={15} className="animate-spin" /> : <><Save size={15} /> Salvar</>}
-        </button>
+        {readOnly ? (
+          <button onClick={() => setReadOnly(false)}
+            className="inline-flex items-center gap-2 px-4 h-11 rounded-xl text-sm font-bold text-white"
+            style={{ background: 'linear-gradient(135deg, #0BBCD4, #0999ae)' }}>
+            <Pencil size={15} /> Editar
+          </button>
+        ) : (
+          <button onClick={async () => { await handleSalvar(false); if (!saving) setReadOnly(true) }} disabled={saving}
+            className="inline-flex items-center gap-2 px-4 h-11 rounded-xl text-sm font-bold text-white disabled:opacity-60"
+            style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)' }}>
+            {saving ? <Loader2 size={15} className="animate-spin" /> : <><Save size={15} /> Salvar</>}
+          </button>
+        )}
 
         {clienteId && !savedMsg && (
           <button onClick={handleExcluir}
@@ -370,12 +384,12 @@ function Wizard() {
             className="inline-flex items-center gap-2 px-5 h-11 rounded-xl text-sm font-bold text-white" style={{ background: 'linear-gradient(135deg, #0BBCD4, #0999ae)' }}>
             Próximo <ArrowRight size={15} />
           </button>
-        ) : (
+        ) : !readOnly ? (
           <button onClick={() => handleSalvar(true)} disabled={saving}
             className="inline-flex items-center gap-2 px-6 h-11 rounded-xl text-sm font-bold text-white disabled:opacity-60" style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)' }}>
             {saving ? <Loader2 size={16} className="animate-spin" /> : <><Check size={16} /> Salvar e concluir</>}
           </button>
-        )}
+        ) : null}
       </div>
 
       {/* Link gerado */}

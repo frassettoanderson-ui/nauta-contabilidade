@@ -20,7 +20,7 @@ export default function ChatButton() {
       </button>
       {hint && (
         <div className="absolute right-0 mt-2 px-3 py-1.5 rounded-lg text-xs text-gray-300 whitespace-nowrap"
-          style={{ background: '#13111f', border: '1px solid rgba(255,255,255,0.1)' }}>
+          style={{ background: 'var(--sys-modal)', border: '1px solid var(--sys-border-2)' }}>
           Chat em breve
         </div>
       )}

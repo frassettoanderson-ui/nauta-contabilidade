@@ -7,6 +7,7 @@ import { usePathname } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
 import { effectivePerms, podeVer } from '@/lib/menu-perms'
 import { getOnboardingStatus } from '@/lib/api'
+import { getSomAtivo, getTema, onPrefsChange } from '@/lib/sys-prefs'
 import RocketIcon from './RocketIcon'
 import {
   Users, UserPlus, Search, FileText, FilePlus, FileClock, FileSearch,
@@ -76,6 +77,7 @@ export default function Sidebar({ email }: { email?: string | null }) {
 
   const [mobileOpen, setMobileOpen] = useState(false)
   const [onbNovos, setOnbNovos] = useState(false)
+  const [temaLight, setTemaLight] = useState(false)
   const [openGroups, setOpenGroups] = useState<string[]>(
     NAV.filter(isGroup).filter(g => g.children.some(c => pathname.startsWith(c.href))).map(g => g.label)
   )
@@ -84,8 +86,17 @@ export default function Sidebar({ email }: { email?: string | null }) {
     getOnboardingStatus().then(s => setOnbNovos(!!s.temNovos)).catch(() => {})
   }, [pathname])
 
+  useEffect(() => {
+    const sync = () => setTemaLight(getTema() === 'light')
+    sync()
+    return onPrefsChange(sync)
+  }, [])
+
+  const logoSrc = temaLight ? '/logo.png' : '/logo-branca.png'
+
   // Som de clique curto via Web Audio (sem asset)
   const playClick = () => {
+    if (!getSomAtivo()) return
     try {
       const AC = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
       const ctx = new AC()
@@ -111,7 +122,7 @@ export default function Sidebar({ email }: { email?: string | null }) {
   const content = (
     <div className="flex flex-col h-full">
       <div className="flex items-center justify-between px-5 h-16 border-b border-white/8 shrink-0">
-        <Link href="/sistema"><Image src="/logo-branca.png" alt="Nauta" width={130} height={40} className="h-8 w-auto object-contain" /></Link>
+        <Link href="/sistema"><Image src={logoSrc} alt="Nauta" width={130} height={40} className="h-8 w-auto object-contain" /></Link>
         <button onClick={() => setMobileOpen(false)} className="lg:hidden p-1 text-gray-400" aria-label="Fechar menu"><X size={20} /></button>
       </div>
 
@@ -192,19 +203,19 @@ export default function Sidebar({ email }: { email?: string | null }) {
 
   return (
     <>
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-30 flex items-center justify-between px-4 h-14 bg-[#0c0b18] border-b border-white/8">
-        <Image src="/logo-branca.png" alt="Nauta" width={120} height={36} className="h-7 w-auto object-contain" />
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-30 flex items-center justify-between px-4 h-14 bg-[var(--sys-sidebar)] border-b border-white/8">
+        <Image src={logoSrc} alt="Nauta" width={120} height={36} className="h-7 w-auto object-contain" />
         <button onClick={() => setMobileOpen(true)} className="p-2 text-gray-300" aria-label="Abrir menu"><Menu size={22} /></button>
       </div>
 
-      <aside className="hidden lg:flex fixed top-0 left-0 bottom-0 w-64 z-30 flex-col" style={{ background: '#0c0b18', borderRight: '1px solid rgba(255,255,255,0.08)' }}>
+      <aside className="hidden lg:flex fixed top-0 left-0 bottom-0 w-64 z-30 flex-col" style={{ background: 'var(--sys-sidebar)', borderRight: '1px solid var(--sys-border)' }}>
         {content}
       </aside>
 
       {mobileOpen && (
         <div className="lg:hidden fixed inset-0 z-40">
           <div className="absolute inset-0 bg-black/60" onClick={() => setMobileOpen(false)} />
-          <div className="absolute top-0 left-0 bottom-0 w-72" style={{ background: '#0c0b18', borderRight: '1px solid rgba(255,255,255,0.08)' }}>
+          <div className="absolute top-0 left-0 bottom-0 w-72" style={{ background: 'var(--sys-sidebar)', borderRight: '1px solid var(--sys-border)' }}>
             {content}
           </div>
         </div>

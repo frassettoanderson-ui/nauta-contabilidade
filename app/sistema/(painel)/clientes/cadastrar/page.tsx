@@ -13,7 +13,7 @@ import type { CEPData } from '@/lib/form-masks'
 type Obj = Record<string, unknown>
 
 const FIELD = 'w-full h-11 px-4 rounded-xl text-sm text-white placeholder-gray-600 outline-none disabled:opacity-40'
-const FS = { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.10)' }
+const FS = { background: 'var(--sys-surface-3)', border: '1px solid var(--sys-border-2)' }
 const PASSOS = ['Dados do cliente', 'Dados da empresa', 'Sócio 1', 'Sócio 2', 'Sócio 3']
 
 function makeCEPFill(setter: (k: string, v: unknown) => void, prefix: string) {
@@ -219,14 +219,14 @@ function Wizard() {
         {PASSOS.map((p, i) => (
           <button key={p} onClick={() => setStep(i)}
             className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
-            style={{ background: step === i ? 'rgba(11,188,212,0.15)' : 'rgba(255,255,255,0.04)', color: step === i ? '#0BBCD4' : '#6b7280', border: step === i ? '1px solid rgba(11,188,212,0.3)' : '1px solid transparent' }}>
-            <span className="w-5 h-5 rounded-full flex items-center justify-center text-[10px]" style={{ background: step >= i ? '#0BBCD4' : 'rgba(255,255,255,0.1)', color: step >= i ? '#fff' : '#9ca3af' }}>{i + 1}</span>
+            style={{ background: step === i ? 'rgba(11,188,212,0.15)' : 'var(--sys-surface-2)', color: step === i ? '#0BBCD4' : '#6b7280', border: step === i ? '1px solid rgba(11,188,212,0.3)' : '1px solid transparent' }}>
+            <span className="w-5 h-5 rounded-full flex items-center justify-center text-[10px]" style={{ background: step >= i ? '#0BBCD4' : 'var(--sys-border-2)', color: step >= i ? '#fff' : '#9ca3af' }}>{i + 1}</span>
             {p}
           </button>
         ))}
       </div>
 
-      <div className="rounded-2xl p-6 mb-6 space-y-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}>
+      <div className="rounded-2xl p-6 mb-6 space-y-3" style={{ background: 'var(--sys-surface)', border: '1px solid var(--sys-border)' }}>
         {step === 0 && (
           <>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -258,7 +258,7 @@ function Wizard() {
                 {[['Sim', true], ['Não', false]].map(([l, val]) => (
                   <button key={String(l)} type="button" onClick={() => setEmpK('emp_usa_glp', val)}
                     className="flex-1 h-11 rounded-xl text-sm font-bold transition-all"
-                    style={{ background: emp.emp_usa_glp === val ? '#0BBCD4' : 'rgba(255,255,255,0.05)', color: emp.emp_usa_glp === val ? '#fff' : '#9ca3af', border: '1px solid rgba(255,255,255,0.10)' }}>
+                    style={{ background: emp.emp_usa_glp === val ? '#0BBCD4' : 'var(--sys-surface-3)', color: emp.emp_usa_glp === val ? '#fff' : '#9ca3af', border: '1px solid var(--sys-border-2)' }}>
                     {l as string}
                   </button>
                 ))}
@@ -280,13 +280,13 @@ function Wizard() {
               </label>
             )}
             {socioIdx === 1 && (
-              <label className="flex items-center gap-2 mb-2 cursor-pointer p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)' }}>
+              <label className="flex items-center gap-2 mb-2 cursor-pointer p-3 rounded-xl" style={{ background: 'var(--sys-surface-2)', border: '1px solid var(--sys-border-2)' }}>
                 <input type="checkbox" checked={socio2Ativo} onChange={e => setSocio2Ativo(e.target.checked)} className="w-4 h-4 accent-[#0BBCD4]" />
                 <span className="text-sm text-gray-300">Adicionar Sócio 2</span>
               </label>
             )}
             {socioIdx === 2 && (
-              <label className="flex items-center gap-2 mb-2 cursor-pointer p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)' }}>
+              <label className="flex items-center gap-2 mb-2 cursor-pointer p-3 rounded-xl" style={{ background: 'var(--sys-surface-2)', border: '1px solid var(--sys-border-2)' }}>
                 <input type="checkbox" checked={socio3Ativo} onChange={e => setSocio3Ativo(e.target.checked)} className="w-4 h-4 accent-[#0BBCD4]" />
                 <span className="text-sm text-gray-300">Adicionar Sócio 3</span>
               </label>
@@ -380,7 +380,7 @@ function Wizard() {
 
       {/* Link gerado */}
       {linkUrl && (
-        <div className="mt-3 flex items-center gap-2 p-2.5 rounded-xl max-w-xl" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)' }}>
+        <div className="mt-3 flex items-center gap-2 p-2.5 rounded-xl max-w-xl" style={{ background: 'var(--sys-surface-2)', border: '1px solid var(--sys-border-2)' }}>
           <span className="text-xs text-gray-300 truncate flex-1">{linkUrl}</span>
           <button onClick={() => navigator.clipboard?.writeText(linkUrl)} className="text-[#0BBCD4] hover:text-white" title="Copiar"><Copy size={14} /></button>
         </div>

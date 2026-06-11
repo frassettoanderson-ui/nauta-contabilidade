@@ -20,7 +20,7 @@ import ClassBar from './ClassBar'
 
 const todayStr = () => new Date().toISOString().slice(0, 10)
 const dOnly = (s: string) => s.slice(0, 10)
-const FS = { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.10)' }
+const FS = { background: 'var(--sys-surface-3)', border: '1px solid var(--sys-border-2)' }
 
 export default function LeadModal({ leadId, onClose, onChanged, mode = 'view' }: { leadId: string; onClose: () => void; onChanged: () => void; mode?: 'view' | 'edit' | 'lembrete' }) {
   const [d, setD] = useState<LeadDetail | null>(null)
@@ -126,7 +126,7 @@ export default function LeadModal({ leadId, onClose, onChanged, mode = 'view' }:
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 backdrop-blur-md" style={{ background: 'rgba(5,4,20,0.8)' }} onClick={onClose} />
       <div className="relative z-10 w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl"
-        style={{ background: '#0f0e1a', border: '1px solid rgba(255,255,255,0.10)', boxShadow: '0 24px 64px rgba(0,0,0,0.5)' }}>
+        style={{ background: '#0f0e1a', border: '1px solid var(--sys-border-2)', boxShadow: '0 24px 64px rgba(0,0,0,0.5)' }}>
         {!d ? (
           <div className="flex justify-center py-20"><Loader2 size={24} className="animate-spin text-[#0BBCD4]" /></div>
         ) : (
@@ -185,7 +185,7 @@ export default function LeadModal({ leadId, onClose, onChanged, mode = 'view' }:
                   {ETAPAS.map(et => (
                     <button key={et.id} onClick={() => setEtapa(et.id)}
                       className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
-                      style={{ background: d.etapa === et.id ? et.color : 'rgba(255,255,255,0.05)', color: d.etapa === et.id ? '#fff' : '#9ca3af' }}>
+                      style={{ background: d.etapa === et.id ? et.color : 'var(--sys-surface-3)', color: d.etapa === et.id ? '#fff' : '#9ca3af' }}>
                       {et.label}
                     </button>
                   ))}
@@ -203,7 +203,7 @@ export default function LeadModal({ leadId, onClose, onChanged, mode = 'view' }:
                   </a>
                 </div>
 
-                <div className="rounded-xl p-4 mb-4 space-y-1.5 text-sm" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                <div className="rounded-xl p-4 mb-4 space-y-1.5 text-sm" style={{ background: 'var(--sys-surface)', border: '1px solid var(--sys-surface-4)' }}>
                   <p className="text-gray-400"><span className="text-gray-600">WhatsApp:</span> {d.whatsapp || '—'}</p>
                   <p className="text-gray-400"><span className="text-gray-600">E-mail:</span> {d.email || '—'}</p>
                   <p className="text-gray-400"><span className="text-gray-600">Criado em:</span> {format(new Date(d.criado_em), 'dd/MM/yyyy', { locale: ptBR })}</p>
@@ -254,7 +254,7 @@ export default function LeadModal({ leadId, onClose, onChanged, mode = 'view' }:
                     {d.lembretes.map(l => {
                       const venceu = !l.concluido && dOnly(l.data) <= todayStr()
                       return (
-                        <div key={l.id} className="flex items-center gap-2 p-2.5 rounded-lg" style={{ background: venceu ? 'rgba(245,158,11,0.08)' : 'rgba(255,255,255,0.03)', border: `1px solid ${venceu ? 'rgba(245,158,11,0.25)' : 'rgba(255,255,255,0.07)'}` }}>
+                        <div key={l.id} className="flex items-center gap-2 p-2.5 rounded-lg" style={{ background: venceu ? 'rgba(245,158,11,0.08)' : 'var(--sys-surface)', border: `1px solid ${venceu ? 'rgba(245,158,11,0.25)' : 'var(--sys-surface-4)'}` }}>
                           <button onClick={() => toggleLemb(l.id, !l.concluido)} className="w-5 h-5 rounded-md flex items-center justify-center shrink-0"
                             style={{ background: l.concluido ? '#22c55e' : 'transparent', border: `1px solid ${l.concluido ? '#22c55e' : 'rgba(255,255,255,0.2)'}` }}>
                             {l.concluido && <Check size={12} className="text-white" />}
@@ -287,7 +287,7 @@ export default function LeadModal({ leadId, onClose, onChanged, mode = 'view' }:
                   <div className="space-y-2.5">
                     {d.atividades.length === 0 && <p className="text-gray-600 text-xs">Nenhuma atividade registrada.</p>}
                     {d.atividades.map(a => (
-                      <div key={a.id} className="p-3 rounded-lg" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                      <div key={a.id} className="p-3 rounded-lg" style={{ background: 'var(--sys-surface)', border: '1px solid var(--sys-surface-4)' }}>
                         <p className="text-sm text-gray-200 whitespace-pre-wrap">{a.descricao}</p>
                         <p className="text-[11px] text-gray-600 mt-1.5">{a.autor ? `${a.autor} · ` : ''}{format(new Date(a.criado_em), "dd/MM/yy 'às' HH:mm", { locale: ptBR })}</p>
                       </div>
@@ -335,7 +335,7 @@ export default function LeadModal({ leadId, onClose, onChanged, mode = 'view' }:
                     </div>
                   ) : (
                     <div className="mt-5">
-                      <button disabled className="w-full h-11 rounded-xl font-bold text-gray-500 flex items-center justify-center gap-2 cursor-not-allowed" style={{ background: 'rgba(255,255,255,0.05)' }}>
+                      <button disabled className="w-full h-11 rounded-xl font-bold text-gray-500 flex items-center justify-center gap-2 cursor-not-allowed" style={{ background: 'var(--sys-surface-3)' }}>
                         <FileText size={16} /> Gerar contrato
                       </button>
                       <button onClick={() => router.push(`/sistema/clientes/cadastrar?lead=${leadId}`)}

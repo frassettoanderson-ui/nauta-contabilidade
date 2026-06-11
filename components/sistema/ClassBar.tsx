@@ -25,7 +25,7 @@ export default function ClassBar({ value, onChange, size = 'sm' }: Props) {
             onClick={() => onChange?.(value === n ? n - 1 : n)}
             aria-label={`Classificar ${n}`}
             className={`${h} ${size === 'md' ? 'w-8' : 'w-5'} rounded-full transition-all`}
-            style={{ background: n <= value ? color : 'rgba(255,255,255,0.10)' }}
+            style={{ background: n <= value ? color : 'var(--sys-border-2)' }}
           />
         ))}
       </div>

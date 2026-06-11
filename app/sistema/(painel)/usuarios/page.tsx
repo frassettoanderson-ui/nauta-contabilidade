@@ -12,7 +12,7 @@ export default function UsuariosPage() {
         <p className="text-gray-500 text-sm mt-0.5">Gerencie os acessos do escritório por setor e permissão</p>
       </div>
 
-      <div className="rounded-2xl p-8 text-center" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}>
+      <div className="rounded-2xl p-8 text-center" style={{ background: 'var(--sys-surface)', border: '1px solid var(--sys-border)' }}>
         <Construction size={28} className="text-[#0BBCD4] mx-auto mb-3" />
         <p className="text-white font-bold mb-1">Em construção</p>
         <p className="text-gray-500 text-sm max-w-md mx-auto">

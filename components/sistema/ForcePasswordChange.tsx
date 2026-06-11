@@ -48,7 +48,7 @@ export default function ForcePasswordChange() {
       <div className="absolute inset-0 backdrop-blur-md" style={{ background: 'rgba(5,4,20,0.85)' }} />
 
       <div className="relative z-10 w-full max-w-md rounded-2xl p-7"
-        style={{ background: 'rgba(15,14,26,0.95)', border: '1px solid rgba(255,255,255,0.10)', boxShadow: '0 24px 64px rgba(0,0,0,0.5)' }}>
+        style={{ background: 'rgba(15,14,26,0.95)', border: '1px solid var(--sys-border-2)', boxShadow: '0 24px 64px rgba(0,0,0,0.5)' }}>
         <div className="flex flex-col items-center text-center mb-6">
           <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-3" style={{ background: 'rgba(11,188,212,0.12)', border: '1px solid rgba(11,188,212,0.25)' }}>
             <ShieldCheck size={22} className="text-[#0BBCD4]" />
@@ -64,7 +64,7 @@ export default function ForcePasswordChange() {
               type={show ? 'text' : 'password'} value={pw} onChange={e => setPw(e.target.value)}
               placeholder="Nova senha" autoFocus
               className="w-full h-12 pl-11 pr-11 rounded-xl text-sm text-white placeholder-gray-500 outline-none"
-              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.10)' }} />
+              style={{ background: 'var(--sys-surface-3)', border: '1px solid var(--sys-border-2)' }} />
             <button type="button" onClick={() => setShow(s => !s)} aria-label="Mostrar senha"
               className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-gray-500 hover:text-gray-300">
               {show ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -77,7 +77,7 @@ export default function ForcePasswordChange() {
               type={show ? 'text' : 'password'} value={pw2} onChange={e => setPw2(e.target.value)}
               placeholder="Confirmar nova senha"
               className="w-full h-12 pl-11 pr-4 rounded-xl text-sm text-white placeholder-gray-500 outline-none"
-              style={{ background: 'rgba(255,255,255,0.05)', border: `1px solid ${pw2 && !match ? 'rgba(239,68,68,0.5)' : 'rgba(255,255,255,0.10)'}` }} />
+              style={{ background: 'var(--sys-surface-3)', border: `1px solid ${pw2 && !match ? 'rgba(239,68,68,0.5)' : 'var(--sys-border-2)'}` }} />
           </div>
 
           {/* Checklist de regras */}

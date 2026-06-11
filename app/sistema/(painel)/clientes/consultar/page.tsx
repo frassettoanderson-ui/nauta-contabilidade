@@ -30,7 +30,7 @@ export default function ConsultarClientesPage() {
         <div className="relative">
           <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" />
           <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar..."
-            className="h-10 pl-9 pr-4 rounded-xl text-sm text-white placeholder-gray-600 outline-none w-56" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.10)' }} />
+            className="h-10 pl-9 pr-4 rounded-xl text-sm text-white placeholder-gray-600 outline-none w-56" style={{ background: 'var(--sys-surface-3)', border: '1px solid var(--sys-border-2)' }} />
         </div>
       </div>
 
@@ -42,10 +42,10 @@ export default function ConsultarClientesPage() {
           <p className="text-sm">Nenhum cliente cadastrado ainda.</p>
         </div>
       ) : (
-        <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.02)' }}>
+        <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid var(--sys-surface-4)', background: 'rgba(255,255,255,0.02)' }}>
           {filtered.map(c => (
             <button key={String(c.id)} onClick={() => router.push(`/sistema/clientes/cadastrar?cliente=${c.id}`)}
-              className="w-full text-left flex items-center gap-4 px-5 py-4 border-b last:border-0 hover:bg-white/[0.02] transition-colors" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
+              className="w-full text-left flex items-center gap-4 px-5 py-4 border-b last:border-0 hover:bg-white/[0.02] transition-colors" style={{ borderColor: 'var(--sys-surface-3)' }}>
               <div className="flex-1 min-w-0">
                 <p className="text-white text-sm font-semibold truncate">{String(c.emp_nome || c.cli_nome_completo || 'Sem nome')}</p>
                 <p className="text-gray-600 text-xs truncate">{String(c.cli_nome_completo || '')} {c.emp_telefone ? `· ${c.emp_telefone}` : ''}</p>

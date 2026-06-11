@@ -11,7 +11,7 @@ export default function OnboardingKanban({ titulo }: { titulo: string }) {
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
         {ETAPAS.map((etapa, i) => (
           <div key={etapa} className="rounded-2xl p-4 min-h-[60vh]"
-            style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}>
+            style={{ background: 'var(--sys-surface)', border: '1px solid var(--sys-border)' }}>
             <div className="flex items-center justify-between mb-4 px-1">
               <div className="flex items-center gap-2">
                 <span className="w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold text-white"

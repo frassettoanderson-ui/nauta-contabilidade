@@ -37,14 +37,14 @@ export default function ConversaoPage() {
               { label: 'Fechados', value: fechados },
               { label: 'Taxa de conversão', value: `${taxa}%` },
             ].map(s => (
-              <div key={s.label} className="rounded-2xl p-5" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <div key={s.label} className="rounded-2xl p-5" style={{ background: 'var(--sys-surface)', border: '1px solid var(--sys-border)' }}>
                 <p className="text-3xl font-black text-white">{s.value}</p>
                 <p className="text-gray-500 text-sm mt-1">{s.label}</p>
               </div>
             ))}
           </div>
 
-          <div className="rounded-2xl p-6" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}>
+          <div className="rounded-2xl p-6" style={{ background: 'var(--sys-surface)', border: '1px solid var(--sys-border)' }}>
             <h2 className="text-white font-bold mb-4 text-sm">Leads por etapa</h2>
             <div className="space-y-3">
               {ORDEM.map(e => {
@@ -55,7 +55,7 @@ export default function ConversaoPage() {
                       <span className="text-gray-300">{ETAPA_LABEL[e]}</span>
                       <span className="text-gray-500">{n}</span>
                     </div>
-                    <div className="h-2.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                    <div className="h-2.5 rounded-full overflow-hidden" style={{ background: 'var(--sys-surface-4)' }}>
                       <div className="h-full rounded-full transition-all" style={{ width: `${(n / max) * 100}%`, background: COR[e] }} />
                     </div>
                   </div>

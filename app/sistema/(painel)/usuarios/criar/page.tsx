@@ -5,7 +5,7 @@ import { UserPlus, Loader2, Check } from 'lucide-react'
 import { createUsuario } from '@/lib/api'
 
 const FIELD = 'w-full h-11 px-4 rounded-xl text-sm text-white placeholder-gray-600 outline-none'
-const FS = { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.10)' }
+const FS = { background: 'var(--sys-surface-3)', border: '1px solid var(--sys-border-2)' }
 
 const CARGOS = [
   { id: 'gerente', label: 'Gerente (acesso total)' },
@@ -44,7 +44,7 @@ export default function CriarUsuarioPage() {
         <p className="text-gray-500 text-sm mt-0.5">O usuário definirá a senha definitiva no primeiro acesso</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-3 rounded-2xl p-6" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}>
+      <form onSubmit={handleSubmit} className="space-y-3 rounded-2xl p-6" style={{ background: 'var(--sys-surface)', border: '1px solid var(--sys-border)' }}>
         <div>
           <label className="block text-xs font-semibold text-gray-400 mb-1.5">Login (usuário)</label>
           <input className={FIELD} style={FS} placeholder="nome.sobrenome" value={username} onChange={e => setUsername(e.target.value)} required />

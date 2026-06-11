@@ -119,7 +119,7 @@ export default function KanbanPage() {
                   <span className="text-xs text-gray-500 ml-auto">{cards.length}</span>
                 </div>
                 <div className="space-y-2.5 rounded-2xl p-2.5 min-h-[62vh] transition-colors duration-200"
-                  style={{ background: isOver ? 'rgba(11,188,212,0.07)' : 'rgba(255,255,255,0.02)', border: `1px solid ${isOver ? 'rgba(11,188,212,0.35)' : 'rgba(255,255,255,0.06)'}` }}>
+                  style={{ background: isOver ? 'rgba(11,188,212,0.07)' : 'rgba(255,255,255,0.02)', border: `1px solid ${isOver ? 'rgba(11,188,212,0.35)' : 'var(--sys-surface-4)'}` }}>
                   {cards.map(l => {
                     const dragging = dragId === l.id
                     const fechado = col.id === 'fechado'
@@ -141,7 +141,7 @@ export default function KanbanPage() {
                           background: temPend
                             ? 'linear-gradient(160deg, #2a2238 0%, #1d1733 100%)'
                             : 'linear-gradient(160deg, #1d1a3a 0%, #16142b 100%)',
-                          border: `1px solid ${temPend ? 'rgba(245,158,11,0.5)' : dragging ? 'rgba(11,188,212,0.5)' : 'rgba(255,255,255,0.08)'}`,
+                          border: `1px solid ${temPend ? 'rgba(245,158,11,0.5)' : dragging ? 'rgba(11,188,212,0.5)' : 'var(--sys-border)'}`,
                           borderLeft: temPend ? '3px solid #f59e0b' : undefined,
                           transform: dragging ? 'scale(1.04) rotate(-1.5deg)' : 'scale(1)',
                           boxShadow: dragging
@@ -154,8 +154,8 @@ export default function KanbanPage() {
                         {/* Fita adesiva (post-it) */}
                         <span className="absolute -top-2 left-1/2 w-14 h-4 rounded-[2px] pointer-events-none"
                           style={{
-                            background: 'linear-gradient(180deg, rgba(255,255,255,0.14), rgba(255,255,255,0.05))',
-                            border: '1px solid rgba(255,255,255,0.10)',
+                            background: 'linear-gradient(180deg, rgba(255,255,255,0.14), var(--sys-surface-3))',
+                            border: '1px solid var(--sys-border-2)',
                             transform: 'translateX(-50%) rotate(-2.5deg)',
                             boxShadow: '0 1px 3px rgba(0,0,0,0.25)',
                           }} />
@@ -175,7 +175,7 @@ export default function KanbanPage() {
                         <div className="mt-3"><ClassBar value={l.classificacao ?? 0} size="md" /></div>
 
                         {/* Ações rápidas */}
-                        <div className="flex items-center gap-1.5 mt-3.5 pt-3 border-t" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
+                        <div className="flex items-center gap-1.5 mt-3.5 pt-3 border-t" style={{ borderColor: 'var(--sys-surface-4)' }}>
                           <a title="WhatsApp" href={waLink(l.whatsapp)} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}
                             className="w-10 h-10 rounded-xl flex items-center justify-center transition-colors hover:bg-green-500/15" style={{ color: '#25D366' }}>
                             <MessageCircle size={19} />
@@ -210,7 +210,7 @@ export default function KanbanPage() {
                               </button>
                             ) : (
                               <>
-                                <button disabled className="w-full flex items-center justify-center gap-1.5 h-8 rounded-lg text-xs font-bold text-gray-500 cursor-not-allowed" style={{ background: 'rgba(255,255,255,0.05)' }}>
+                                <button disabled className="w-full flex items-center justify-center gap-1.5 h-8 rounded-lg text-xs font-bold text-gray-500 cursor-not-allowed" style={{ background: 'var(--sys-surface-3)' }}>
                                   <FileText size={13} /> Gerar contrato
                                 </button>
                                 <button onClick={() => router.push(`/sistema/clientes/cadastrar?lead=${l.id}`)}

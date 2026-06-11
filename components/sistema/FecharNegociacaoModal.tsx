@@ -5,7 +5,7 @@ import { X, Loader2, Check } from 'lucide-react'
 import { updateLead, type LeadRow } from '@/lib/api'
 
 const FIELD = 'w-full h-11 pl-9 pr-4 rounded-xl text-sm text-white placeholder-gray-600 outline-none'
-const FS = { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.10)' }
+const FS = { background: 'var(--sys-surface-3)', border: '1px solid var(--sys-border-2)' }
 
 export default function FecharNegociacaoModal({ lead, onClose, onConfirmed }: { lead: LeadRow; onClose: () => void; onConfirmed: () => void }) {
   const [honorario, setHonorario] = useState(lead.valor_honorario != null ? String(lead.valor_honorario) : '')
@@ -28,7 +28,7 @@ export default function FecharNegociacaoModal({ lead, onClose, onConfirmed }: { 
   return (
     <div className="fixed inset-0 z-[55] flex items-center justify-center p-4">
       <div className="absolute inset-0 backdrop-blur-md" style={{ background: 'rgba(5,4,20,0.8)' }} onClick={onClose} />
-      <div className="relative z-10 w-full max-w-sm rounded-2xl p-6" style={{ background: 'rgba(15,14,26,0.97)', border: '1px solid rgba(255,255,255,0.10)' }}>
+      <div className="relative z-10 w-full max-w-sm rounded-2xl p-6" style={{ background: 'rgba(15,14,26,0.97)', border: '1px solid var(--sys-border-2)' }}>
         <div className="flex items-center justify-between mb-1">
           <h2 className="text-lg font-black text-white">Fechar negociação</h2>
           <button onClick={onClose} className="text-gray-500 hover:text-white"><X size={20} /></button>

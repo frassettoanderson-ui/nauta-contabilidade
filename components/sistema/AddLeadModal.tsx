@@ -7,7 +7,7 @@ import { INTERESSES } from '@/lib/crm-config'
 
 const FIELD     = 'w-full h-11 px-4 rounded-xl text-sm text-white placeholder-gray-600 outline-none'
 const FIELD_SEL = 'w-full h-11 px-4 rounded-xl text-sm text-white placeholder-gray-600 outline-none [&>option]:text-gray-900 [&>option]:bg-white'
-const FS = { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.10)' }
+const FS = { background: 'var(--sys-surface-3)', border: '1px solid var(--sys-border-2)' }
 
 export default function AddLeadModal({ onClose, onCreated }: { onClose: () => void; onCreated: (l: LeadRow) => void }) {
   const ORIGENS = ['Site', 'WhatsApp', 'Facebook', 'Instagram', 'Anúncio', 'Google', 'Espontâneo', 'Outro']
@@ -34,7 +34,7 @@ export default function AddLeadModal({ onClose, onCreated }: { onClose: () => vo
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 backdrop-blur-md" style={{ background: 'rgba(5,4,20,0.8)' }} onClick={onClose} />
       <div className="relative z-10 w-full max-w-md rounded-2xl p-6"
-        style={{ background: 'rgba(15,14,26,0.97)', border: '1px solid rgba(255,255,255,0.10)' }}>
+        style={{ background: 'rgba(15,14,26,0.97)', border: '1px solid var(--sys-border-2)' }}>
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-lg font-black text-white flex items-center gap-2"><UserPlus size={18} className="text-[#0BBCD4]" /> Adicionar lead</h2>
           <button onClick={onClose} className="text-gray-500 hover:text-white"><X size={20} /></button>

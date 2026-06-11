@@ -48,10 +48,10 @@ export default function ConsultarUsuariosPage() {
       {loading ? (
         <div className="flex justify-center py-20"><Loader2 size={24} className="animate-spin text-[#0BBCD4]" /></div>
       ) : (
-        <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}>
+        <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--sys-surface)', border: '1px solid var(--sys-border)' }}>
           {users.map((u, i) => (
             <div key={u.id} className="flex items-center justify-between gap-3 px-5 py-3.5"
-              style={{ borderTop: i ? '1px solid rgba(255,255,255,0.06)' : 'none' }}>
+              style={{ borderTop: i ? '1px solid var(--sys-surface-4)' : 'none' }}>
               <div className="min-w-0">
                 <p className="text-sm font-bold text-white truncate">{u.username}</p>
                 <div className="flex items-center gap-2 mt-0.5">
@@ -63,7 +63,7 @@ export default function ConsultarUsuariosPage() {
               </div>
               <div className="flex items-center gap-1.5 shrink-0">
                 <button onClick={() => setEditing(u)} title="Editar"
-                  className="inline-flex items-center gap-1.5 px-3 h-9 rounded-lg text-xs font-semibold text-gray-300" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                  className="inline-flex items-center gap-1.5 px-3 h-9 rounded-lg text-xs font-semibold text-gray-300" style={{ background: 'var(--sys-surface-3)', border: '1px solid var(--sys-border-2)' }}>
                   <Pencil size={14} /> Editar
                 </button>
                 <button onClick={() => handleReset(u)} disabled={busyId === u.id} title="Resetar senha"

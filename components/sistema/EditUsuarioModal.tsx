@@ -13,7 +13,7 @@ const CARGOS = [
   { id: 'atendente', label: 'Atendente' },
 ]
 
-const FS = { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.10)' }
+const FS = { background: 'var(--sys-surface-3)', border: '1px solid var(--sys-border-2)' }
 
 export default function EditUsuarioModal({ user, onClose, onSaved }: { user: UsuarioFull; onClose: () => void; onSaved: () => void }) {
   const [role, setRole] = useState(user.role)
@@ -50,7 +50,7 @@ export default function EditUsuarioModal({ user, onClose, onSaved }: { user: Usu
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/60" onClick={onClose} />
       <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl p-6"
-        style={{ background: '#13111f', border: '1px solid rgba(255,255,255,0.1)' }}>
+        style={{ background: 'var(--sys-modal)', border: '1px solid var(--sys-border-2)' }}>
         <div className="flex items-center justify-between mb-5">
           <div>
             <h2 className="text-lg font-black text-white">Editar usuário</h2>
@@ -79,7 +79,7 @@ export default function EditUsuarioModal({ user, onClose, onSaved }: { user: Usu
                 const hrefs = g.itens.map(i => i.href)
                 const todosMarcados = hrefs.every(h => perms.includes(h))
                 return (
-                  <div key={g.grupo} className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                  <div key={g.grupo} className="rounded-xl p-3" style={{ background: 'var(--sys-surface)', border: '1px solid var(--sys-surface-4)' }}>
                     <label className="flex items-center gap-2 cursor-pointer mb-2">
                       <input type="checkbox" checked={todosMarcados} onChange={() => toggleGrupo(hrefs, todosMarcados)} className="w-4 h-4 accent-[#0BBCD4]" />
                       <span className="text-sm font-bold text-gray-200">{g.grupo}</span>

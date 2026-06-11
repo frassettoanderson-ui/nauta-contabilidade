@@ -8,7 +8,7 @@ import { getLeads, type LeadRow } from '@/lib/api'
 function StatCard({ icon: Icon, label, value, href }: { icon: LucideIcon; label: string; value: string; href?: string }) {
   const inner = (
     <div className="rounded-2xl p-5 h-full transition-all hover:-translate-y-0.5"
-      style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}>
+      style={{ background: 'var(--sys-surface)', border: '1px solid var(--sys-border)' }}>
       <div className="flex items-center justify-between mb-4">
         <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(11,188,212,0.12)' }}>
           <Icon size={18} className="text-[#0BBCD4]" />
@@ -44,7 +44,7 @@ export default function DashboardPage() {
         <StatCard icon={Users}      label="Usuários do sistema" value="Gerenciar" href="/sistema/usuarios" />
       </div>
 
-      <div className="mt-8 rounded-2xl p-6" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}>
+      <div className="mt-8 rounded-2xl p-6" style={{ background: 'var(--sys-surface)', border: '1px solid var(--sys-border)' }}>
         <h2 className="text-white font-bold mb-1">Bem-vindo ao Sistema Nauta 👋</h2>
         <p className="text-gray-500 text-sm">
           Este é o painel de gestão do escritório. Comece pelo módulo <Link href="/sistema/comercial/leads" className="text-[#0BBCD4] hover:underline">Comercial</Link> para acompanhar os leads que chegam pelo site.

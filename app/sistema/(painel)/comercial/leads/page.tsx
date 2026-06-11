@@ -46,7 +46,7 @@ export default function LeadsPage() {
           <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" />
           <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar..."
             className="h-10 pl-9 pr-4 rounded-xl text-sm text-white placeholder-gray-600 outline-none w-56"
-            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.10)' }} />
+            style={{ background: 'var(--sys-surface-3)', border: '1px solid var(--sys-border-2)' }} />
         </div>
       </div>
 
@@ -58,17 +58,17 @@ export default function LeadsPage() {
           <p className="text-sm">Nenhum lead {busca ? 'encontrado' : 'ainda'}.</p>
         </div>
       ) : (
-        <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.02)' }}>
+        <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid var(--sys-surface-4)', background: 'rgba(255,255,255,0.02)' }}>
           {/* Cabeçalho (desktop) */}
           <div className="hidden md:grid text-xs font-bold text-gray-500 uppercase tracking-wider px-5 py-3 border-b"
-            style={{ gridTemplateColumns: '1.4fr 1.4fr 1fr 130px 120px', borderColor: 'rgba(255,255,255,0.06)' }}>
+            style={{ gridTemplateColumns: '1.4fr 1.4fr 1fr 130px 120px', borderColor: 'var(--sys-surface-4)' }}>
             <span>Nome</span><span>Contato</span><span>Interesse</span><span>Data</span><span className="text-right">Ações</span>
           </div>
 
           {filtered.map(l => (
             <div key={l.id}
               className="grid grid-cols-1 md:grid-cols-[1.4fr_1.4fr_1fr_130px_120px] items-center gap-2 px-5 py-4 border-b last:border-0 hover:bg-white/[0.02] transition-colors"
-              style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
+              style={{ borderColor: 'var(--sys-surface-3)' }}>
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
                   <p className="text-white text-sm font-semibold truncate">{l.nome}</p>

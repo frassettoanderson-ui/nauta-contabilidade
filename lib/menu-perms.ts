@@ -26,12 +26,7 @@ export const MENU_GRUPOS: MenuGrupo[] = [
     { href: '/sistema/comercial/leads', label: 'Leads' },
   ] },
   { grupo: 'Onboarding', itens: [
-    { href: '/sistema/onboarding', label: 'Dashboard' },
-    { href: '/sistema/onboarding/trocar-de-contador', label: 'Trocar de contador' },
-    { href: '/sistema/onboarding/abrir-empresa', label: 'Abrir minha empresa' },
-    { href: '/sistema/onboarding/deixar-mei', label: 'Deixar de ser MEI' },
-    { href: '/sistema/onboarding/bpo-financeiro', label: 'BPO Financeiro' },
-    { href: '/sistema/onboarding/contabilidade-eleitoral', label: 'Contabilidade Eleitoral' },
+    { href: '/sistema/onboarding', label: 'Onboarding' },
   ] },
   { grupo: 'Relatórios', itens: [
     { href: '/sistema/relatorios/conversao', label: 'Conversão' },
@@ -47,14 +42,7 @@ export const MENU_GRUPOS: MenuGrupo[] = [
   ] },
 ]
 
-const ONBOARDING = [
-  '/sistema/onboarding',
-  '/sistema/onboarding/trocar-de-contador',
-  '/sistema/onboarding/abrir-empresa',
-  '/sistema/onboarding/deixar-mei',
-  '/sistema/onboarding/bpo-financeiro',
-  '/sistema/onboarding/contabilidade-eleitoral',
-]
+const ONBOARDING = ['/sistema/onboarding']
 
 /** Permissões padrão de cada cargo. null = vê tudo. */
 export function defaultPermsForRole(role: string): string[] | null {

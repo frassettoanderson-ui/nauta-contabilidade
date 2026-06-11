@@ -142,7 +142,7 @@ export async function countOnboardingEtapa1(): Promise<number> {
   return r.rows[0]?.n ?? 0
 }
 
-/** Contagem de leads na Etapa 1 por categoria (para a bolinha vermelha no menu). */
+/** Contagem de leads na Etapa 1 por categoria (legado — não mais usado no menu). */
 export async function countOnboardingEtapa1PorCategoria(): Promise<Record<string, number>> {
   const r = await pool.query(
     `SELECT onboarding_categoria AS cat, COUNT(*)::int AS n
@@ -153,6 +153,54 @@ export async function countOnboardingEtapa1PorCategoria(): Promise<Record<string
   const out: Record<string, number> = {}
   for (const row of r.rows) out[row.cat] = row.n
   return out
+}
+
+// ─── ONBOARDING (checklist) ──────────────────────────────────────────────
+
+export interface OnboardingCliente {
+  id: string
+  nome: string
+  whatsapp: string
+  interesse: string
+  onboarding_categoria: string | null
+  cliente_id: string | null
+  checks: string[]
+}
+
+/** Clientes no onboarding (não concluídos) com os itens já marcados. */
+export async function getOnboardingBoard(): Promise<OnboardingCliente[]> {
+  const res = await pool.query(
+    `SELECT l.id, l.nome, l.whatsapp, l.interesse, l.onboarding_categoria,
+            (SELECT c.id FROM clientes c WHERE c.lead_id = l.id LIMIT 1) AS cliente_id
+       FROM leads l
+      WHERE l.em_onboarding = true AND COALESCE(l.onboarding_concluido, false) = false
+      ORDER BY l.criado_em ASC`
+  )
+  const ids = res.rows.map(r => r.id)
+  const checksByLead: Record<string, string[]> = {}
+  if (ids.length) {
+    const ch = await pool.query(`SELECT lead_id, item_key FROM onboarding_checks WHERE lead_id = ANY($1)`, [ids])
+    for (const r of ch.rows) (checksByLead[r.lead_id] ||= []).push(r.item_key)
+  }
+  return res.rows.map(r => ({ ...r, checks: checksByLead[r.id] || [] }))
+}
+
+export async function setOnboardingCheck(leadId: string, itemKey: string, done: boolean, byUser: string | null) {
+  if (done) {
+    await pool.query(
+      `INSERT INTO onboarding_checks (lead_id, item_key, done_by) VALUES ($1, $2, $3)
+       ON CONFLICT (lead_id, item_key) DO UPDATE SET done_by = $3, done_at = NOW()`,
+      [leadId, itemKey, byUser]
+    )
+  } else {
+    await pool.query(`DELETE FROM onboarding_checks WHERE lead_id = $1 AND item_key = $2`, [leadId, itemKey])
+  }
+  emitCrmChange()
+}
+
+export async function concluirOnboarding(leadId: string) {
+  await pool.query(`UPDATE leads SET onboarding_concluido = true WHERE id = $1`, [leadId])
+  emitCrmChange()
 }
 
 // ─── ATIVIDADES ──────────────────────────────────────────────────────────

@@ -277,8 +277,26 @@ export function resetSenhaUsuario(id: string): Promise<void> {
   return fetch(`/api/sistema/usuarios/${id}/reset-password`, { method: 'POST' }).then(r => json(r)).then(() => undefined)
 }
 
-export function getOnboardingStatus(): Promise<{ temNovos: boolean; total?: number; categorias?: Record<string, number> }> {
+export function getOnboardingStatus(): Promise<{ temNovos: boolean; total?: number }> {
   return fetch('/api/onboarding/status').then(r => json(r))
+}
+
+export interface OnboardingCliente {
+  id: string; nome: string; whatsapp: string; interesse: string
+  onboarding_categoria: string | null; cliente_id: string | null; checks: string[]
+}
+export function getOnboardingBoard(): Promise<OnboardingCliente[]> {
+  return fetch('/api/onboarding/board').then(r => json<OnboardingCliente[]>(r))
+}
+export function setOnboardingCheck(leadId: string, itemKey: string, done: boolean): Promise<void> {
+  return fetch('/api/onboarding/check', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ leadId, itemKey, done }),
+  }).then(r => json(r)).then(() => undefined)
+}
+export function concluirOnboarding(leadId: string): Promise<void> {
+  return fetch('/api/onboarding/concluir', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ leadId }),
+  }).then(r => json(r)).then(() => undefined)
 }
 
 export interface OnboardingLead {

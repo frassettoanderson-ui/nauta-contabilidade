@@ -12,23 +12,16 @@ import RocketIcon from './RocketIcon'
 import {
   Users, UserPlus, Search, FileText, FilePlus, FileClock, FileSearch,
   Briefcase, LayoutGrid, Inbox, BarChart3, TrendingUp, Calculator, UserCog,
-  Rocket, LayoutDashboard, Repeat, Building2, BadgeMinus, Wallet, Vote, Settings,
+  Rocket, Settings,
   LogOut, ChevronDown, Menu, X, type LucideIcon,
 } from 'lucide-react'
 
-interface NavLeaf { label: string; href: string; icon: LucideIcon }
+interface NavLeaf { label: string; href: string; icon: LucideIcon; highlight?: boolean }
 interface NavGroup { label: string; icon: LucideIcon; children: NavLeaf[]; highlight?: boolean }
 type NavItem = NavLeaf | NavGroup
 
 const NAV: NavItem[] = [
-  { label: 'Onboarding', icon: Rocket, highlight: true, children: [
-    { label: 'Dashboard',               href: '/sistema/onboarding',                          icon: LayoutDashboard },
-    { label: 'Trocar de contador',      href: '/sistema/onboarding/trocar-de-contador',       icon: Repeat },
-    { label: 'Abrir minha empresa',     href: '/sistema/onboarding/abrir-empresa',            icon: Building2 },
-    { label: 'Deixar de ser MEI',       href: '/sistema/onboarding/deixar-mei',               icon: BadgeMinus },
-    { label: 'BPO Financeiro',          href: '/sistema/onboarding/bpo-financeiro',           icon: Wallet },
-    { label: 'Contabilidade Eleitoral', href: '/sistema/onboarding/contabilidade-eleitoral',  icon: Vote },
-  ] },
+  { label: 'Onboarding', href: '/sistema/onboarding', icon: Rocket, highlight: true },
   { label: 'Clientes', icon: Users, children: [
     { label: 'Cadastrar', href: '/sistema/clientes/cadastrar', icon: UserPlus },
     { label: 'Consultar', href: '/sistema/clientes/consultar', icon: Search },
@@ -77,17 +70,13 @@ export default function Sidebar({ email }: { email?: string | null }) {
 
   const [mobileOpen, setMobileOpen] = useState(false)
   const [onbNovos, setOnbNovos] = useState(false)
-  const [onbCategorias, setOnbCategorias] = useState<Record<string, number>>({})
   const [temaLight, setTemaLight] = useState(false)
   const [openGroups, setOpenGroups] = useState<string[]>(
     NAV.filter(isGroup).filter(g => g.children.some(c => pathname.startsWith(c.href))).map(g => g.label)
   )
 
   useEffect(() => {
-    getOnboardingStatus().then(s => {
-      setOnbNovos(!!s.temNovos)
-      setOnbCategorias(s.categorias ?? {})
-    }).catch(() => {})
+    getOnboardingStatus().then(s => setOnbNovos(!!s.temNovos)).catch(() => {})
   }, [pathname])
 
   useEffect(() => {
@@ -135,35 +124,6 @@ export default function Sidebar({ email }: { email?: string | null }) {
           if (isGroup(item)) {
             const open = openGroups.includes(item.label)
             const activeChild = item.children.some(c => pathname === c.href)
-            if (item.highlight) {
-              return (
-                <div key={item.label} className="mb-2">
-                  <button onClick={() => toggleGroup(item.label)} className={`${itemBase} nav-onboarding w-full justify-between`}>
-                    <span className="flex items-center gap-3 nav-onboarding-text">
-                      <RocketIcon size={19} className="nav-onboarding-icon" /> {item.label}
-                      {onbNovos && <span className="onb-badge">Novo</span>}
-                    </span>
-                    <ChevronDown size={14} className={`nav-onboarding-text transition-transform ${open ? 'rotate-180' : ''}`} />
-                  </button>
-                  {open && (
-                    <div className="mt-1 ml-3 pl-3 space-y-1 border-l border-[#0BBCD4]/20">
-                      {item.children.map(c => {
-                        const active = pathname === c.href
-                        const slug = c.href.split('/').pop() ?? ''
-                        const temNovo = (onbCategorias[slug] ?? 0) > 0
-                        return (
-                          <Link key={c.href} href={c.href} onClick={() => setMobileOpen(false)} className={`${itemBase} justify-between`}
-                            style={{ background: active ? 'rgba(11,188,212,0.12)' : 'transparent', color: active ? '#0BBCD4' : '#9ca3af', border: active ? '1px solid rgba(11,188,212,0.2)' : '1px solid transparent' }}>
-                            <span className="flex items-center gap-3"><c.icon size={16} /> {c.label}</span>
-                            {temNovo && <span className="onb-dot" title="Cliente novo nesta categoria" />}
-                          </Link>
-                        )
-                      })}
-                    </div>
-                  )}
-                </div>
-              )
-            }
             return (
               <div key={item.label}>
                 <button onClick={() => toggleGroup(item.label)} className={`${itemBase} w-full justify-between`} style={{ color: activeChild ? '#0BBCD4' : '#9ca3af' }}>
@@ -187,6 +147,17 @@ export default function Sidebar({ email }: { email?: string | null }) {
             )
           }
           const active = pathname === item.href
+          if (item.highlight) {
+            return (
+              <Link key={item.href} href={item.href} onClick={() => { playClick(); setMobileOpen(false) }}
+                className={`${itemBase} nav-onboarding justify-between mb-2`}>
+                <span className="flex items-center gap-3 nav-onboarding-text">
+                  <RocketIcon size={19} className="nav-onboarding-icon" /> {item.label}
+                  {onbNovos && <span className="onb-badge">Novo</span>}
+                </span>
+              </Link>
+            )
+          }
           return (
             <Link key={item.href} href={item.href} onClick={() => { playClick(); setMobileOpen(false) }} className={itemBase}
               style={{ background: active ? 'rgba(11,188,212,0.12)' : 'transparent', color: active ? '#0BBCD4' : '#9ca3af', border: active ? '1px solid rgba(11,188,212,0.2)' : '1px solid transparent' }}>

@@ -210,6 +210,47 @@ html { scroll-behavior: smooth; }
   }
 }
 
+/* ── Menu Onboarding (destaque) ── */
+.nav-onboarding {
+  position: relative;
+  background: linear-gradient(110deg, rgba(11,188,212,0.16), rgba(124,111,255,0.16), rgba(11,188,212,0.16));
+  background-size: 200% 100%;
+  border: 1px solid rgba(11,188,212,0.35);
+  box-shadow: 0 0 10px rgba(11,188,212,0.25), inset 0 0 12px rgba(124,111,255,0.08);
+  animation: onbShimmer 5s ease-in-out infinite, onbGlow 2.6s ease-in-out infinite;
+}
+.nav-onboarding:hover {
+  border-color: rgba(11,188,212,0.6);
+  box-shadow: 0 0 16px rgba(11,188,212,0.4), inset 0 0 14px rgba(124,111,255,0.14);
+}
+.nav-onboarding-text {
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  background: linear-gradient(100deg, #0BBCD4, #6ee7f5, #a99bff, #0BBCD4);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  animation: onbShimmer 5s ease-in-out infinite;
+  filter: drop-shadow(0 0 6px rgba(11,188,212,0.45));
+}
+.nav-onboarding-icon {
+  color: #0BBCD4;
+  filter: drop-shadow(0 0 5px rgba(11,188,212,0.7));
+}
+@keyframes onbShimmer {
+  0%, 100% { background-position: 0% 50%; }
+  50%      { background-position: 100% 50%; }
+}
+@keyframes onbGlow {
+  0%, 100% { box-shadow: 0 0 8px rgba(11,188,212,0.22),  inset 0 0 10px rgba(124,111,255,0.06); }
+  50%      { box-shadow: 0 0 18px rgba(11,188,212,0.45), inset 0 0 16px rgba(124,111,255,0.14); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nav-onboarding, .nav-onboarding-text { animation: none !important; }
+}
+
 /* ── Focus ring ── */
 *:focus-visible {
   outline: 2px solid #0BBCD4;

@@ -14,10 +14,18 @@ import {
 } from 'lucide-react'
 
 interface NavLeaf { label: string; href: string; icon: LucideIcon }
-interface NavGroup { label: string; icon: LucideIcon; children: NavLeaf[] }
+interface NavGroup { label: string; icon: LucideIcon; children: NavLeaf[]; highlight?: boolean }
 type NavItem = NavLeaf | NavGroup
 
 const NAV: NavItem[] = [
+  { label: 'Onboarding', icon: Rocket, highlight: true, children: [
+    { label: 'Dashboard',               href: '/sistema/onboarding',                          icon: LayoutDashboard },
+    { label: 'Trocar de contador',      href: '/sistema/onboarding/trocar-de-contador',       icon: Repeat },
+    { label: 'Abrir minha empresa',     href: '/sistema/onboarding/abrir-empresa',            icon: Building2 },
+    { label: 'Deixar de ser MEI',       href: '/sistema/onboarding/deixar-mei',               icon: BadgeMinus },
+    { label: 'BPO Financeiro',          href: '/sistema/onboarding/bpo-financeiro',           icon: Wallet },
+    { label: 'Contabilidade Eleitoral', href: '/sistema/onboarding/contabilidade-eleitoral',  icon: Vote },
+  ] },
   { label: 'Clientes', icon: Users, children: [
     { label: 'Cadastrar', href: '/sistema/clientes/cadastrar', icon: UserPlus },
     { label: 'Consultar', href: '/sistema/clientes/consultar', icon: Search },
@@ -30,14 +38,6 @@ const NAV: NavItem[] = [
   { label: 'Comercial', icon: Briefcase, children: [
     { label: 'Kanban', href: '/sistema/comercial/kanban', icon: LayoutGrid },
     { label: 'Leads',  href: '/sistema/comercial/leads',  icon: Inbox },
-  ] },
-  { label: 'Onboarding', icon: Rocket, children: [
-    { label: 'Dashboard',               href: '/sistema/onboarding',                          icon: LayoutDashboard },
-    { label: 'Trocar de contador',      href: '/sistema/onboarding/trocar-de-contador',       icon: Repeat },
-    { label: 'Abrir minha empresa',     href: '/sistema/onboarding/abrir-empresa',            icon: Building2 },
-    { label: 'Deixar de ser MEI',       href: '/sistema/onboarding/deixar-mei',               icon: BadgeMinus },
-    { label: 'BPO Financeiro',          href: '/sistema/onboarding/bpo-financeiro',           icon: Wallet },
-    { label: 'Contabilidade Eleitoral', href: '/sistema/onboarding/contabilidade-eleitoral',  icon: Vote },
   ] },
   { label: 'Relatórios', icon: BarChart3, children: [
     { label: 'Conversão', href: '/sistema/relatorios/conversao', icon: TrendingUp },
@@ -93,6 +93,31 @@ export default function Sidebar({ email }: { email?: string | null }) {
           if (isGroup(item)) {
             const open = openGroups.includes(item.label)
             const activeChild = item.children.some(c => pathname === c.href)
+            if (item.highlight) {
+              return (
+                <div key={item.label} className="mb-2">
+                  <button onClick={() => toggleGroup(item.label)} className={`${itemBase} nav-onboarding w-full justify-between`}>
+                    <span className="flex items-center gap-3 nav-onboarding-text">
+                      <item.icon size={18} className="nav-onboarding-icon" /> {item.label}
+                    </span>
+                    <ChevronDown size={14} className={`nav-onboarding-text transition-transform ${open ? 'rotate-180' : ''}`} />
+                  </button>
+                  {open && (
+                    <div className="mt-1 ml-3 pl-3 space-y-1 border-l border-[#0BBCD4]/20">
+                      {item.children.map(c => {
+                        const active = pathname === c.href
+                        return (
+                          <Link key={c.href} href={c.href} onClick={() => setMobileOpen(false)} className={itemBase}
+                            style={{ background: active ? 'rgba(11,188,212,0.12)' : 'transparent', color: active ? '#0BBCD4' : '#9ca3af', border: active ? '1px solid rgba(11,188,212,0.2)' : '1px solid transparent' }}>
+                            <c.icon size={16} /> {c.label}
+                          </Link>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
+              )
+            }
             return (
               <div key={item.label}>
                 <button onClick={() => toggleGroup(item.label)} className={`${itemBase} w-full justify-between`} style={{ color: activeChild ? '#0BBCD4' : '#9ca3af' }}>

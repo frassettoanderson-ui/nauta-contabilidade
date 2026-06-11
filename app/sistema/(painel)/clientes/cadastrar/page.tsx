@@ -63,17 +63,19 @@ function FileTile({ nome, url, onDelete }: { nome: string; url: string; onDelete
   const Icon = kind === 'img' ? FileImage : FileText
   const color = kind === 'pdf' ? '#ef4444' : kind === 'img' ? '#22c55e' : '#0BBCD4'
   return (
-    <div className="group relative flex flex-col items-center text-center p-3 rounded-xl transition-colors hover:bg-white/[0.04]">
+    <div className="relative flex flex-col items-center text-center p-3 pt-7 rounded-xl transition-colors hover:bg-white/[0.04]">
+      <div className="absolute top-1.5 right-1.5 flex gap-1">
+        <a href={url} target="_blank" rel="noopener noreferrer" download title="Baixar"
+          className="w-6 h-6 rounded-md flex items-center justify-center text-gray-300 hover:text-white"
+          style={{ background: 'var(--sys-surface-3)', border: '1px solid var(--sys-border-2)' }}><Download size={13} /></a>
+        {onDelete && <button onClick={onDelete} title="Excluir"
+          className="w-6 h-6 rounded-md flex items-center justify-center text-red-400 hover:text-red-300"
+          style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)' }}><Trash2 size={13} /></button>}
+      </div>
       <a href={url} target="_blank" rel="noopener noreferrer" download className="flex flex-col items-center gap-2 w-full">
         <Icon size={44} style={{ color }} strokeWidth={1.5} />
         <span className="text-[11px] text-gray-300 leading-tight line-clamp-2 w-full break-all" title={nome}>{nome}</span>
       </a>
-      <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-        <a href={url} target="_blank" rel="noopener noreferrer" download title="Baixar"
-          className="w-6 h-6 rounded flex items-center justify-center text-gray-200 hover:text-white" style={{ background: 'rgba(0,0,0,0.45)' }}><Download size={12} /></a>
-        {onDelete && <button onClick={onDelete} title="Excluir"
-          className="w-6 h-6 rounded flex items-center justify-center text-red-400 hover:text-red-300" style={{ background: 'rgba(0,0,0,0.45)' }}><Trash2 size={12} /></button>}
-      </div>
     </div>
   )
 }
@@ -165,8 +167,9 @@ function Wizard() {
     finally { setUploadingArq(false); e.target.value = '' }
   }
 
-  async function handleExcluirArquivo(arqId: string) {
-    if (!clienteId || !confirm('Excluir este arquivo?')) return
+  async function handleExcluirArquivo(arqId: string, nome: string) {
+    if (!clienteId) return
+    if (!confirm(`Excluir o arquivo "${nome}"?\n\n⚠️ Esta ação não pode ser desfeita.`)) return
     try { await deleteArquivoCliente(clienteId, arqId); setArquivos(a => a.filter(x => x.id !== arqId)) }
     catch { alert('Erro ao excluir.') }
   }
@@ -425,7 +428,7 @@ function Wizard() {
                     <p className="text-gray-600 text-xs">Nenhum arquivo enviado.</p>
                   ) : (
                     <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-1">
-                      {arquivos.map(a => <FileTile key={a.id} nome={a.nome} url={a.url} onDelete={() => handleExcluirArquivo(a.id)} />)}
+                      {arquivos.map(a => <FileTile key={a.id} nome={a.nome} url={a.url} onDelete={() => handleExcluirArquivo(a.id, a.nome)} />)}
                     </div>
                   )}
                 </div>

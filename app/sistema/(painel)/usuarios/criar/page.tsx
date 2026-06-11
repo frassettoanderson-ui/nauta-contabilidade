@@ -12,7 +12,7 @@ const CARGOS = [
   { id: 'comercial', label: 'Comercial' },
   { id: 'fiscal', label: 'Fiscal' },
   { id: 'pessoal', label: 'Pessoal' },
-  { id: 'secretaria', label: 'Secretaria' },
+  { id: 'atendente', label: 'Atendente' },
 ]
 
 export default function CriarUsuarioPage() {

@@ -4,7 +4,8 @@ import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { signOut } from 'next-auth/react'
+import { signOut, useSession } from 'next-auth/react'
+import { effectivePerms, podeVer } from '@/lib/menu-perms'
 import {
   Users, UserPlus, Search, FileText, FilePlus, FileClock, FileSearch,
   Briefcase, LayoutGrid, Inbox, BarChart3, TrendingUp, Calculator, UserCog,
@@ -45,6 +46,7 @@ const NAV: NavItem[] = [
   { label: 'Pessoal', href: '/sistema/pessoal', icon: Users },
   { label: 'Usuários', icon: UserCog, children: [
     { label: 'Criar Usuário', href: '/sistema/usuarios/criar', icon: UserPlus },
+    { label: 'Consultar',     href: '/sistema/usuarios/consultar', icon: Search },
   ] },
 ]
 
@@ -54,6 +56,21 @@ function isGroup(i: NavItem): i is NavGroup {
 
 export default function Sidebar({ email }: { email?: string | null }) {
   const pathname = usePathname()
+  const { data: session } = useSession()
+  const su = session?.user as unknown as { role?: string; menuPerms?: string[] | null } | undefined
+  const perms = effectivePerms(su?.role ?? '', su?.menuPerms ?? null)
+
+  // Filtra o menu pelas permissões do usuário (grupos somem se nenhum filho for visível)
+  const nav: NavItem[] = NAV
+    .map(item => {
+      if (isGroup(item)) {
+        const children = item.children.filter(c => podeVer(perms, c.href))
+        return children.length ? { ...item, children } : null
+      }
+      return podeVer(perms, item.href) ? item : null
+    })
+    .filter((i): i is NavItem => i !== null)
+
   const [mobileOpen, setMobileOpen] = useState(false)
   const [openGroups, setOpenGroups] = useState<string[]>(
     NAV.filter(isGroup).filter(g => g.children.some(c => pathname.startsWith(c.href))).map(g => g.label)
@@ -72,7 +89,7 @@ export default function Sidebar({ email }: { email?: string | null }) {
       </div>
 
       <nav className="flex-1 overflow-y-auto p-3 space-y-1">
-        {NAV.map(item => {
+        {nav.map(item => {
           if (isGroup(item)) {
             const open = openGroups.includes(item.label)
             const activeChild = item.children.some(c => pathname === c.href)

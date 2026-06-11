@@ -29,6 +29,7 @@ export const authOptions: NextAuthOptions = {
             name: user.username || user.email,
             role: user.role || 'gerente',
             mustChangePassword: !!user.must_change_password,
+            menuPerms: user.menu_perms ?? null,
           } as never
         } catch (e) {
           console.error('[AUTH] ERRO:', e)
@@ -43,10 +44,11 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user, trigger, session }) {
       if (user) {
-        const u = user as unknown as { id: string; role: string; mustChangePassword: boolean }
+        const u = user as unknown as { id: string; role: string; mustChangePassword: boolean; menuPerms: string[] | null }
         token.uid = u.id
         token.role = u.role
         token.mustChangePassword = u.mustChangePassword
+        token.menuPerms = u.menuPerms
       }
       if (trigger === 'update' && session?.mustChangePassword === false) {
         token.mustChangePassword = false
@@ -55,10 +57,11 @@ export const authOptions: NextAuthOptions = {
     },
     async session({ session, token }) {
       if (session.user) {
-        const su = session.user as unknown as { id?: string; role?: string; mustChangePassword?: boolean }
+        const su = session.user as unknown as { id?: string; role?: string; mustChangePassword?: boolean; menuPerms?: string[] | null }
         su.id = token.uid as string
         su.role = token.role as string
         su.mustChangePassword = token.mustChangePassword as boolean
+        su.menuPerms = (token.menuPerms ?? null) as string[] | null
       }
       return session
     },

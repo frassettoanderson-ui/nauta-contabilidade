@@ -258,6 +258,25 @@ export function createUsuario(username: string, password: string, role: string):
   }).then(r => json(r)).then(() => undefined)
 }
 
+export interface UsuarioFull {
+  id: string; username: string; role: string
+  must_change_password?: boolean; menu_perms?: string[] | null; criado_em?: string
+}
+export function listUsuariosFull(): Promise<UsuarioFull[]> {
+  return fetch('/api/sistema/usuarios').then(r => json<UsuarioFull[]>(r))
+}
+export function updateUsuario(id: string, data: { role?: string; menu_perms?: string[] | null }): Promise<void> {
+  return fetch(`/api/sistema/usuarios/${id}`, {
+    method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data),
+  }).then(r => json(r)).then(() => undefined)
+}
+export function deleteUsuario(id: string): Promise<void> {
+  return fetch(`/api/sistema/usuarios/${id}`, { method: 'DELETE' }).then(r => json(r)).then(() => undefined)
+}
+export function resetSenhaUsuario(id: string): Promise<void> {
+  return fetch(`/api/sistema/usuarios/${id}/reset-password`, { method: 'POST' }).then(r => json(r)).then(() => undefined)
+}
+
 // ─── UPLOAD ────────────────────────────────────────────────────────────────
 
 export async function uploadImage(file: File): Promise<string> {

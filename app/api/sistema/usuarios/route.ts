@@ -6,7 +6,7 @@ import pool from '@/lib/db'
 
 export const dynamic = 'force-dynamic'
 
-const ROLES = ['admin', 'gerente', 'comercial', 'fiscal', 'pessoal', 'secretaria']
+const ROLES = ['admin', 'gerente', 'comercial', 'fiscal', 'pessoal', 'atendente']
 
 export async function GET() {
   const session = await getServerSession(authOptions)
@@ -14,7 +14,7 @@ export async function GET() {
   if (!session || (role !== 'admin' && role !== 'gerente')) {
     return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
   }
-  const res = await pool.query(`SELECT id, username, role, must_change_password, criado_em FROM admin_users ORDER BY criado_em DESC`)
+  const res = await pool.query(`SELECT id, username, role, must_change_password, menu_perms, criado_em FROM admin_users ORDER BY criado_em DESC`)
   return NextResponse.json(res.rows)
 }
 

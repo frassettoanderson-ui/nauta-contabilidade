@@ -8,11 +8,11 @@ import {
   type CEPData,
 } from '@/lib/form-masks'
 
-const BASE    = 'w-full h-11 px-4 rounded-xl text-sm text-white placeholder-gray-600 outline-none disabled:opacity-40'
-const BASE_SEL = 'w-full h-11 px-4 rounded-xl text-sm text-white placeholder-gray-600 outline-none disabled:opacity-40 [&>option]:text-gray-900 [&>option]:bg-white'
-// Caixas estreitas para campos curtos (RG, CPF, datas, CNPJ, CEP, telefone, valores…)
-const BASE_NARROW = BASE + ' max-w-[190px]'
-const SEL_NARROW  = BASE_SEL + ' max-w-[210px]'
+const BASE    = 'w-full h-10 px-3.5 rounded-lg text-sm text-white placeholder-gray-600 outline-none disabled:opacity-40'
+const BASE_SEL = 'w-full h-10 px-3.5 rounded-lg text-sm text-white placeholder-gray-600 outline-none disabled:opacity-40 [&>option]:text-gray-900 [&>option]:bg-white'
+// Largura agora é controlada pelo span do grid; estes mantêm a compatibilidade.
+const BASE_NARROW = BASE
+const SEL_NARROW  = BASE_SEL
 const FS   = { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.10)' }
 const FSE  = { ...FS, borderColor: 'rgba(239,68,68,0.6)' }
 const FSS  = { ...FS } // removido colorScheme:'dark' — causava texto branco nas options
@@ -61,7 +61,7 @@ export default function SmartField({
   }, [type, csUF])
 
   const Label = ({ text }: { text: string }) => (
-    <label className="block text-xs font-semibold text-gray-400 mb-1.5">
+    <label className="block text-[11px] font-semibold text-gray-400 mb-1 truncate">
       {text}{required && <span className="text-red-400"> *</span>}
     </label>
   )
@@ -213,15 +213,15 @@ export default function SmartField({
       onChange(csUF ? `${cidade}/${csUF}` : cidade)
     }
     return (
-      <div className="sm:col-span-2 grid sm:grid-cols-2 gap-3">
-        {/* Estado */}
-        <div>
-          <label className="block text-xs font-semibold text-gray-400 mb-1.5">
-            Estado{required && <span className="text-red-400"> *</span>}
+      <div className="grid grid-cols-3 gap-2">
+        {/* Estado (UF) */}
+        <div className="col-span-1">
+          <label className="block text-[11px] font-semibold text-gray-400 mb-1">
+            UF{required && <span className="text-red-400"> *</span>}
           </label>
           <select value={csUF} disabled={disabled}
             onChange={e => handleUF(e.target.value)}
-            className={`${BASE_SEL} max-w-[110px]`} style={required && !csUF ? FSSE : FSS}>
+            className={BASE_SEL} style={required && !csUF ? FSSE : FSS}>
             <option value="">UF</option>
             {ESTADOS_BR.map(e => (
               <option key={e.uf} value={e.uf}>{e.uf}</option>
@@ -229,8 +229,8 @@ export default function SmartField({
           </select>
         </div>
         {/* Cidade */}
-        <div>
-          <label className="block text-xs font-semibold text-gray-400 mb-1.5">
+        <div className="col-span-2">
+          <label className="block text-[11px] font-semibold text-gray-400 mb-1">
             Cidade{required && <span className="text-red-400"> *</span>}
           </label>
           {loadingCities ? (

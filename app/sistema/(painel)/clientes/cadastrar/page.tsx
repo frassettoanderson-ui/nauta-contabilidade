@@ -12,9 +12,16 @@ import type { CEPData } from '@/lib/form-masks'
 
 type Obj = Record<string, unknown>
 
-const FIELD = 'w-full h-11 px-4 rounded-xl text-sm text-white placeholder-gray-600 outline-none disabled:opacity-40'
+const FIELD = 'w-full h-10 px-3.5 rounded-lg text-sm text-white placeholder-gray-600 outline-none disabled:opacity-40'
 const FS = { background: 'var(--sys-surface-3)', border: '1px solid var(--sys-border-2)' }
 const PASSOS = ['Dados do cliente', 'Dados da empresa', 'Sócio 1', 'Sócio 2', 'Sócio 3']
+
+// Largura do campo no grid de 12 colunas
+const SPAN_CLS: Record<number, string> = {
+  2: 'lg:col-span-2', 3: 'lg:col-span-3', 4: 'lg:col-span-4', 5: 'lg:col-span-5',
+  6: 'lg:col-span-6', 8: 'lg:col-span-8', 12: 'lg:col-span-12',
+}
+const colSpan = (n = 4) => `col-span-12 sm:col-span-6 ${SPAN_CLS[n] ?? 'lg:col-span-4'}`
 
 function makeCEPFill(setter: (k: string, v: unknown) => void, prefix: string) {
   return (data: CEPData) => {
@@ -35,7 +42,7 @@ function FileField({ label, url, onUpload, disabled }: { label: string; url?: st
   return (
     <div>
       <label className="block text-xs font-semibold text-gray-400 mb-1.5">{label}</label>
-      <label className={`flex items-center gap-2 h-11 px-4 rounded-xl text-sm ${disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`} style={FS}>
+      <label className={`flex items-center gap-2 h-10 px-3.5 rounded-lg text-sm ${disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`} style={FS}>
         {busy ? <Loader2 size={15} className="animate-spin text-[#0BBCD4]" /> : url ? <FileText size={15} className="text-[#22c55e]" /> : <Upload size={15} className="text-gray-500" />}
         <span className={url ? 'text-[#22c55e]' : 'text-gray-500'}>{busy ? 'Enviando...' : url ? 'Arquivo enviado ✓' : 'Selecionar arquivo'}</span>
         <input type="file" className="hidden" disabled={disabled} onChange={handle} />
@@ -217,7 +224,7 @@ function Wizard() {
       )}
 
       {/* Stepper (quebra linha, sem corte) */}
-      <div className="flex flex-wrap items-center gap-2 mb-8">
+      <div className="flex flex-wrap items-center gap-2 mb-5">
         {PASSOS.map((p, i) => (
           <button key={p} onClick={() => setStep(i)}
             className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
@@ -228,17 +235,19 @@ function Wizard() {
         ))}
       </div>
 
-      <div className="rounded-2xl p-6 mb-6 space-y-3" style={{ background: 'var(--sys-surface)', border: '1px solid var(--sys-border)' }}>
+      <div className="rounded-2xl p-4 mb-4 space-y-2.5" style={{ background: 'var(--sys-surface)', border: '1px solid var(--sys-border)' }}>
         {step === 0 && (
           <>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {CLI_FIELDS.map(([k, label, type]) => (
-                <SmartField key={k} label={label} type={type} required={reqKeys.has(k)}
-                  value={(cli[k] as string) || ''}
-                  onChange={v => setCliK(k, v)}
-                  onCEPFill={type === 'cep' ? makeCEPFill(setCliK, 'cli_') : undefined}
-                  disabled={readOnly}
-                />
+            <div className="grid grid-cols-12 gap-x-3 gap-y-2.5">
+              {CLI_FIELDS.map(([k, label, type, span]) => (
+                <div key={k} className={colSpan(span)}>
+                  <SmartField label={label} type={type} required={reqKeys.has(k)}
+                    value={(cli[k] as string) || ''}
+                    onChange={v => setCliK(k, v)}
+                    onCEPFill={type === 'cep' ? makeCEPFill(setCliK, 'cli_') : undefined}
+                    disabled={readOnly}
+                  />
+                </div>
               ))}
             </div>
             <PessoaUploads docKey="cli_doc_url" certKey="cli_cert_url" senhaKey="cli_cert_senha" data={cli} set={setCliK} disabled={readOnly} />
@@ -246,29 +255,31 @@ function Wizard() {
         )}
 
         {step === 1 && (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {EMP_FIELDS.map(([k, label, type]) => (
-              <SmartField key={k} label={label} type={type} required={reqKeys.has(k)}
-                value={(emp[k] as string) || ''}
-                onChange={v => setEmpK(k, v)}
-                onCEPFill={type === 'cep' ? makeCEPFill(setEmpK, 'emp_') : undefined}
-                disabled={readOnly}
-              />
+          <div className="grid grid-cols-12 gap-x-3 gap-y-2.5">
+            {EMP_FIELDS.map(([k, label, type, span]) => (
+              <div key={k} className={colSpan(span)}>
+                <SmartField label={label} type={type} required={reqKeys.has(k)}
+                  value={(emp[k] as string) || ''}
+                  onChange={v => setEmpK(k, v)}
+                  onCEPFill={type === 'cep' ? makeCEPFill(setEmpK, 'emp_') : undefined}
+                  disabled={readOnly}
+                />
+              </div>
             ))}
-            {/* Usa gás GLP — ocupa a coluna vazia ao lado do e-mail */}
-            <div>
-              <label className="block text-xs font-semibold text-gray-400 mb-1.5">Usa gás GLP?</label>
+            {/* Usa gás GLP */}
+            <div className="col-span-12 sm:col-span-6 lg:col-span-3">
+              <label className="block text-[11px] font-semibold text-gray-400 mb-1">Usa gás GLP?</label>
               <div className="flex gap-2">
                 {[['Sim', true], ['Não', false]].map(([l, val]) => (
                   <button key={String(l)} type="button" disabled={readOnly} onClick={() => setEmpK('emp_usa_glp', val)}
-                    className="flex-1 h-11 rounded-xl text-sm font-bold transition-all"
+                    className="flex-1 h-10 rounded-lg text-sm font-bold transition-all"
                     style={{ background: emp.emp_usa_glp === val ? '#0BBCD4' : 'var(--sys-surface-3)', color: emp.emp_usa_glp === val ? '#fff' : '#9ca3af', border: '1px solid var(--sys-border-2)' }}>
                     {l as string}
                   </button>
                 ))}
               </div>
             </div>
-            <label className="sm:col-span-2 lg:col-span-3 flex items-center gap-2 cursor-pointer p-3 rounded-xl" style={{ background: 'rgba(11,188,212,0.06)', border: '1px solid rgba(11,188,212,0.2)' }}>
+            <label className="col-span-12 flex items-center gap-2 cursor-pointer p-2.5 rounded-xl" style={{ background: 'rgba(11,188,212,0.06)', border: '1px solid rgba(11,188,212,0.2)' }}>
               <input type="checkbox" checked={propEhSocio1} disabled={readOnly} onChange={e => togglePropSocio1(e.target.checked)} className="w-4 h-4 accent-[#0BBCD4]" />
               <span className="text-sm text-gray-300">O proprietário do imóvel é o Sócio 1 (preenche nome e CPF automaticamente)</span>
             </label>
@@ -300,14 +311,16 @@ function Wizard() {
               <p className="text-gray-600 text-sm py-6 text-center">Marque a opção acima para preencher os dados deste sócio.</p>
             ) : (
               <>
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {SOCIO_FIELDS.map(([k, label, type]) => (
-                    <SmartField key={k} label={label} type={type}
-                      required={socioAtivo && REQ_SOCIO.includes(k)}
-                      value={(socios[socioIdx]?.[k] as string) || ''}
-                      onChange={v => setSocioK(socioIdx, k, v)}
-                      disabled={readOnly}
-                    />
+                <div className="grid grid-cols-12 gap-x-3 gap-y-2.5">
+                  {SOCIO_FIELDS.map(([k, label, type, span]) => (
+                    <div key={k} className={colSpan(span)}>
+                      <SmartField label={label} type={type}
+                        required={socioAtivo && REQ_SOCIO.includes(k)}
+                        value={(socios[socioIdx]?.[k] as string) || ''}
+                        onChange={v => setSocioK(socioIdx, k, v)}
+                        disabled={readOnly}
+                      />
+                    </div>
                   ))}
                 </div>
                 <PessoaUploads docKey="doc_url" certKey="cert_url" senhaKey="cert_senha" data={socios[socioIdx] || {}} set={(k, v) => setSocioK(socioIdx, k, v)} disabled={readOnly} />

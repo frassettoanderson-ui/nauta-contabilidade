@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Loader2, Plus, Bell, Check, XCircle, FileText, MessageCircle, Pencil, ClipboardCheck, AlertCircle, Rocket } from 'lucide-react'
 import { getLeads, updateLead, iniciarOnboarding, type LeadRow } from '@/lib/api'
 import { ETAPAS } from '@/lib/crm-config'
+import { versiculoAleatorio, type Versiculo } from '@/lib/versiculos'
 import ClassBar from '@/components/sistema/ClassBar'
 import AddLeadModal from '@/components/sistema/AddLeadModal'
 import LeadModal from '@/components/sistema/LeadModal'
@@ -43,8 +44,11 @@ export default function KanbanPage() {
   const [overCol, setOverCol] = useState<string | null>(null)
   const [fecharLead, setFecharLead] = useState<LeadRow | null>(null)
 
+  const [versiculo, setVersiculo] = useState<Versiculo | null>(null)
+
   const load = () => getLeads().then(setLeads).catch(() => setLeads([]))
   useEffect(() => { load() }, [])
+  useEffect(() => { setVersiculo(versiculoAleatorio()) }, [])
 
   // Atualização automática (não atualiza enquanto o usuário interage)
   const interagindo = !!(dragId || openId || fecharLead || adding)
@@ -96,9 +100,15 @@ export default function KanbanPage() {
 
   return (
     <div className="p-6 lg:p-8">
-      <div className="mb-6">
-        <h1 className="text-2xl font-black text-white" style={{ letterSpacing: '-0.02em' }}>Funil comercial</h1>
-        <p className="text-gray-500 text-sm mt-0.5">Arraste os cards entre as etapas. Clique para ver detalhes.</p>
+      <div className="mb-6 min-h-[3.5rem]">
+        {versiculo && (
+          <>
+            <h1 className="text-xl lg:text-2xl font-black text-white leading-snug" style={{ letterSpacing: '-0.02em' }}>
+              &ldquo;{versiculo.texto}&rdquo;
+            </h1>
+            <p className="text-[#0BBCD4] text-sm font-semibold mt-1">{versiculo.ref}</p>
+          </>
+        )}
       </div>
 
       {leads === null ? (

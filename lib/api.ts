@@ -283,7 +283,8 @@ export function getOnboardingStatus(): Promise<{ temNovos: boolean; total?: numb
 
 export interface OnboardingCliente {
   id: string; nome: string; whatsapp: string; interesse: string
-  onboarding_categoria: string | null; cliente_id: string | null; checks: string[]
+  onboarding_categoria: string | null; cliente_id: string | null
+  cadastro_completo: boolean; checks: string[]
 }
 export function getOnboardingBoard(): Promise<OnboardingCliente[]> {
   return fetch('/api/onboarding/board').then(r => json<OnboardingCliente[]>(r))

@@ -2,22 +2,28 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
-import { Loader2, Lock, Check, CheckCircle2, Link2, Rocket } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { Loader2, Lock, Check, CheckCircle2, Link2, Rocket, MessageCircle, Pencil, ClipboardCheck } from 'lucide-react'
 import { getOnboardingBoard, setOnboardingCheck, concluirOnboarding, gerarLinkCadastro, type OnboardingCliente } from '@/lib/api'
-import { SETORES, itensDoSetor, gerenteConcluido, podeEditarSetor, todosItens, type SetorId } from '@/lib/onboarding-checklist'
+import { SETORES, itensDoSetor, gerenteConcluido, podeEditarSetor, todosItens, checksEfetivos, ITEM_CADASTRO, type SetorId } from '@/lib/onboarding-checklist'
 import { ONBOARDING_CATEGORIAS } from '@/lib/onboarding'
 import { useRealtime } from '@/components/sistema/useRealtime'
+import LeadModal from '@/components/sistema/LeadModal'
 
 const catLabel = (slug: string | null) =>
   ONBOARDING_CATEGORIAS.find(c => c.slug === slug)?.label ?? '—'
 
+const waLink = (tel: string) => `https://wa.me/55${(tel || '').replace(/\D/g, '')}`
+
 export default function OnboardingPage() {
   const { data: session } = useSession()
+  const router = useRouter()
   const role = (session?.user as unknown as { role?: string })?.role ?? ''
   const ehGestor = role === 'admin' || role === 'gerente'
 
   const [board, setBoard] = useState<OnboardingCliente[] | null>(null)
   const [busy, setBusy] = useState<string | null>(null)
+  const [editId, setEditId] = useState<string | null>(null)
 
   const load = useCallback(() => { getOnboardingBoard().then(setBoard).catch(() => setBoard([])) }, [])
   useEffect(() => { load() }, [load])
@@ -25,7 +31,6 @@ export default function OnboardingPage() {
 
   async function toggle(c: OnboardingCliente, itemKey: string, done: boolean) {
     setBusy(itemKey + c.id)
-    // otimista
     setBoard(b => b?.map(x => x.id === c.id
       ? { ...x, checks: done ? [...x.checks, itemKey] : x.checks.filter(k => k !== itemKey) }
       : x) ?? b)
@@ -49,6 +54,15 @@ export default function OnboardingPage() {
     } catch { alert('Erro ao gerar o link.') }
   }
 
+  function MiniBtn({ title, onClick, color = '#9ca3af', children }: { title: string; onClick: () => void; color?: string; children: React.ReactNode }) {
+    return (
+      <button title={title} onClick={onClick}
+        className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors hover:bg-white/10" style={{ color }}>
+        {children}
+      </button>
+    )
+  }
+
   return (
     <div className="p-6 lg:p-8">
       <h1 className="text-2xl font-black text-white mb-1 flex items-center gap-2" style={{ letterSpacing: '-0.02em' }}>
@@ -66,18 +80,29 @@ export default function OnboardingPage() {
         <div className="flex gap-5 overflow-x-auto pb-4">
           {board.map(c => {
             const cat = c.onboarding_categoria ?? ''
-            const gerOk = gerenteConcluido(cat, c.checks)
+            const checks = checksEfetivos(c.checks, c.cadastro_completo)
+            const gerOk = gerenteConcluido(cat, checks)
             const itens = todosItens(cat)
-            const feitos = itens.filter(i => c.checks.includes(i.key)).length
+            const feitos = itens.filter(i => checks.includes(i.key)).length
             return (
               <div key={c.id} className="w-80 shrink-0 rounded-2xl p-4"
                 style={{ background: 'var(--sys-surface)', border: '1px solid var(--sys-border)' }}>
                 {/* Cabeçalho do cliente */}
                 <div className="mb-3 pb-3 border-b" style={{ borderColor: 'var(--sys-surface-4)' }}>
-                  <p className="text-white font-bold leading-tight truncate">{c.nome}</p>
-                  <div className="flex items-center justify-between mt-1">
-                    <span className="text-[#0BBCD4] text-xs">{catLabel(c.onboarding_categoria)}</span>
-                    <span className="text-[11px] text-gray-500 font-bold">{feitos}/{itens.length}</span>
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="text-white font-bold leading-tight truncate">{c.nome}</p>
+                    <span className="text-[11px] text-gray-500 font-bold shrink-0 mt-0.5">{feitos}/{itens.length}</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-2 mt-1.5">
+                    <span className="text-[#0BBCD4] text-xs truncate">{catLabel(c.onboarding_categoria)}</span>
+                    <div className="flex items-center gap-0.5 shrink-0">
+                      <a title="WhatsApp" href={waLink(c.whatsapp)} target="_blank" rel="noopener noreferrer"
+                        className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors hover:bg-green-500/15" style={{ color: '#25D366' }}>
+                        <MessageCircle size={15} />
+                      </a>
+                      <MiniBtn title="Editar lead" onClick={() => setEditId(c.id)}><Pencil size={14} /></MiniBtn>
+                      <MiniBtn title="Cadastro" onClick={() => router.push(`/sistema/clientes/cadastrar?lead=${c.id}`)} color="#22c55e"><ClipboardCheck size={15} /></MiniBtn>
+                    </div>
                   </div>
                 </div>
 
@@ -97,17 +122,18 @@ export default function OnboardingPage() {
                         </div>
 
                         {setorItens.length === 0 ? (
-                          <p className="text-[11px] text-gray-600 italic pl-0.5">
-                            {bloqueado ? '—' : 'Itens a definir.'}
-                          </p>
+                          <p className="text-[11px] text-gray-600 italic pl-0.5">{bloqueado ? '—' : 'Itens a definir.'}</p>
                         ) : (
                           <div className="space-y-1">
                             {setorItens.map(it => {
-                              const done = c.checks.includes(it.key)
+                              const done = checks.includes(it.key)
+                              const auto = it.key === ITEM_CADASTRO
                               const loading = busy === it.key + c.id
+                              const podeClicar = editavel && !auto
                               return (
-                                <button key={it.key} disabled={!editavel || loading}
+                                <button key={it.key} disabled={!podeClicar || loading}
                                   onClick={() => toggle(c, it.key, !done)}
+                                  title={auto ? 'Marca sozinho quando o cadastro fica completo' : undefined}
                                   className="w-full flex items-center gap-2 text-left text-sm rounded-lg px-2 py-1.5 transition-colors disabled:cursor-default"
                                   style={{ background: done ? 'rgba(34,197,94,0.10)' : 'transparent' }}>
                                   <span className="w-4 h-4 rounded flex items-center justify-center shrink-0"
@@ -115,26 +141,28 @@ export default function OnboardingPage() {
                                     {loading ? <Loader2 size={11} className="animate-spin text-gray-400" /> : done ? <Check size={12} className="text-white" /> : null}
                                   </span>
                                   <span className={done ? 'text-gray-500 line-through' : 'text-gray-200'}>{it.label}</span>
+                                  {auto && <span className="ml-auto text-[9px] uppercase font-bold text-gray-600 shrink-0">auto</span>}
                                 </button>
                               )
                             })}
                           </div>
                         )}
 
-                        {/* Ação extra: enviar link de cadastro (gerente) */}
+                        {/* Enviar link de cadastro (gerente) — centralizado */}
                         {setor === 'gerente' && ehGestor && (
-                          <button onClick={() => enviarLink(c)}
-                            className="mt-2 inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-lg"
-                            style={{ background: 'rgba(124,111,255,0.12)', border: '1px solid rgba(124,111,255,0.3)', color: '#a99bff' }}>
-                            <Link2 size={12} /> Enviar link de cadastro
-                          </button>
+                          <div className="flex justify-center mt-2.5">
+                            <button onClick={() => enviarLink(c)}
+                              className="inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-lg"
+                              style={{ background: 'rgba(124,111,255,0.12)', border: '1px solid rgba(124,111,255,0.3)', color: '#a99bff' }}>
+                              <Link2 size={12} /> Enviar link de cadastro
+                            </button>
+                          </div>
                         )}
                       </div>
                     )
                   })}
                 </div>
 
-                {/* Concluir (gerente/admin) */}
                 {ehGestor && (
                   <button onClick={() => concluir(c)}
                     className="w-full mt-4 inline-flex items-center justify-center gap-1.5 h-9 rounded-lg text-xs font-bold text-white"
@@ -147,6 +175,8 @@ export default function OnboardingPage() {
           })}
         </div>
       )}
+
+      {editId && <LeadModal leadId={editId} mode="edit" onClose={() => setEditId(null)} onChanged={load} />}
     </div>
   )
 }

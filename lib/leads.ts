@@ -164,25 +164,47 @@ export interface OnboardingCliente {
   interesse: string
   onboarding_categoria: string | null
   cliente_id: string | null
+  cadastro_completo: boolean
   checks: string[]
 }
 
 /** Clientes no onboarding (não concluídos) com os itens já marcados. */
 export async function getOnboardingBoard(): Promise<OnboardingCliente[]> {
   const res = await pool.query(
-    `SELECT l.id, l.nome, l.whatsapp, l.interesse, l.onboarding_categoria,
-            (SELECT c.id FROM clientes c WHERE c.lead_id = l.id LIMIT 1) AS cliente_id
-       FROM leads l
+    `SELECT l.* FROM leads l
       WHERE l.em_onboarding = true AND COALESCE(l.onboarding_concluido, false) = false
       ORDER BY l.criado_em ASC`
   )
-  const ids = res.rows.map(r => r.id)
+  const leads = res.rows
+  const ids = leads.map(r => r.id)
+  if (ids.length === 0) return []
+
+  // Itens já marcados
   const checksByLead: Record<string, string[]> = {}
-  if (ids.length) {
-    const ch = await pool.query(`SELECT lead_id, item_key FROM onboarding_checks WHERE lead_id = ANY($1)`, [ids])
-    for (const r of ch.rows) (checksByLead[r.lead_id] ||= []).push(r.item_key)
-  }
-  return res.rows.map(r => ({ ...r, checks: checksByLead[r.id] || [] }))
+  const ch = await pool.query(`SELECT lead_id, item_key FROM onboarding_checks WHERE lead_id = ANY($1)`, [ids])
+  for (const r of ch.rows) (checksByLead[r.lead_id] ||= []).push(r.item_key)
+
+  // Cadastro do cliente (id + completude)
+  const cli = await pool.query(`SELECT * FROM clientes WHERE lead_id = ANY($1)`, [ids])
+  const soc = await pool.query(`SELECT * FROM cliente_socios`)
+  const sociosByCliente: Record<string, unknown[]> = {}
+  for (const s of soc.rows) (sociosByCliente[s.cliente_id] ||= []).push(s)
+  const cliByLead: Record<string, Record<string, unknown>> = {}
+  for (const c of cli.rows) cliByLead[c.lead_id] = { ...c, socios: sociosByCliente[c.id] || [] }
+
+  return leads.map(l => {
+    const c = cliByLead[l.id]
+    return {
+      id: l.id,
+      nome: l.nome,
+      whatsapp: l.whatsapp,
+      interesse: l.interesse,
+      onboarding_categoria: l.onboarding_categoria,
+      cliente_id: c ? (c.id as string) : null,
+      cadastro_completo: isContratoPronto(c, l),
+      checks: checksByLead[l.id] || [],
+    }
+  })
 }
 
 export async function setOnboardingCheck(leadId: string, itemKey: string, done: boolean, byUser: string | null) {

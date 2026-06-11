@@ -11,12 +11,21 @@ export const SETORES = [
 
 export type SetorId = typeof SETORES[number]['id']
 
+// Item automático: marca sozinho quando o cadastro do cliente está completo.
+export const ITEM_CADASTRO = 'gerente:cadastro'
+
 // Itens do GERENTE (iguais a todas as categorias por enquanto).
 const GERENTE_ITENS: ChecklistItem[] = [
-  { key: 'gerente:cadastro',  label: 'Cadastro completo' },
+  { key: ITEM_CADASTRO,       label: 'Cadastro completo' },
   { key: 'gerente:pagamento', label: 'Pagamento confirmado' },
   { key: 'gerente:abertura',  label: 'Abertura da empresa' },
 ]
+
+/** Inclui o item de cadastro automaticamente quando o cadastro está completo. */
+export function checksEfetivos(checks: string[], cadastroCompleto: boolean): string[] {
+  if (cadastroCompleto && !checks.includes(ITEM_CADASTRO)) return [...checks, ITEM_CADASTRO]
+  return checks
+}
 
 /** Itens de um setor para uma categoria. Fiscal/Pessoal/Atendente: a definir. */
 export function itensDoSetor(setor: SetorId, _categoria: string): ChecklistItem[] {

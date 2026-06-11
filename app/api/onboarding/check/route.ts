@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { setOnboardingCheck, getOnboardingBoard } from '@/lib/leads'
-import { podeEditarSetor, gerenteConcluido, type SetorId } from '@/lib/onboarding-checklist'
+import { podeEditarSetor, gerenteConcluido, checksEfetivos, ITEM_CADASTRO, type SetorId } from '@/lib/onboarding-checklist'
 
 export const dynamic = 'force-dynamic'
 
@@ -17,6 +17,11 @@ export async function POST(req: NextRequest) {
   const setor = (itemKey.split(':')[0]) as SetorId
   const role = su.role ?? ''
 
+  // Item de cadastro é automático — não pode ser marcado/desmarcado manualmente
+  if (itemKey === ITEM_CADASTRO) {
+    return NextResponse.json({ error: 'Item automático (marca sozinho quando o cadastro fica completo)' }, { status: 409 })
+  }
+
   // Permissão de cargo
   if (!podeEditarSetor(role, setor)) {
     return NextResponse.json({ error: 'Sem permissão para este setor' }, { status: 403 })
@@ -26,7 +31,8 @@ export async function POST(req: NextRequest) {
   if (setor !== 'gerente') {
     const board = await getOnboardingBoard()
     const cli = board.find(c => c.id === leadId)
-    if (!cli || !gerenteConcluido(cli.onboarding_categoria ?? '', cli.checks)) {
+    const efetivos = cli ? checksEfetivos(cli.checks, cli.cadastro_completo) : []
+    if (!cli || !gerenteConcluido(cli.onboarding_categoria ?? '', efetivos)) {
       return NextResponse.json({ error: 'Aguardando o gerente concluir a etapa dele' }, { status: 409 })
     }
   }

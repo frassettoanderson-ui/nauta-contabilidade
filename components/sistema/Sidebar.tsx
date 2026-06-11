@@ -39,8 +39,8 @@ const NAV: NavItem[] = [
     { label: 'Consultar Contrato', href: '/sistema/contratos/consultar', icon: FileSearch },
   ] },
   { label: 'Comercial', icon: Briefcase, children: [
-    { label: 'Kanban', href: '/sistema/comercial/kanban', icon: LayoutGrid },
-    { label: 'Leads',  href: '/sistema/comercial/leads',  icon: Inbox },
+    { label: 'CRM',   href: '/sistema/comercial/kanban', icon: LayoutGrid },
+    { label: 'Leads', href: '/sistema/comercial/leads',  icon: Inbox },
   ] },
   { label: 'Relatórios', icon: BarChart3, children: [
     { label: 'Conversão', href: '/sistema/relatorios/conversao', icon: TrendingUp },

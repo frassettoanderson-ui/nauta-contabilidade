@@ -58,7 +58,8 @@ export async function getLeads(opts?: { userId?: string; role?: string }) {
       (SELECT autentique_status FROM contratos c WHERE c.lead_id = l.id ORDER BY c.criado_em DESC LIMIT 1) AS contrato_autentique_status,
       (SELECT status FROM contratos c WHERE c.lead_id = l.id ORDER BY c.criado_em DESC LIMIT 1) AS contrato_status
      FROM leads l
-     ${verTodos ? '' : 'WHERE l.responsavel_id = $1'}
+     WHERE COALESCE(l.em_onboarding, false) = false
+       ${verTodos ? '' : 'AND l.responsavel_id = $1'}
      ORDER BY l.criado_em DESC`,
     verTodos ? [] : [opts!.userId]
   )
@@ -108,6 +109,37 @@ export async function updateLead(id: string, fields: Partial<{ nome: string; wha
 export async function deleteLead(id: string) {
   await pool.query(`DELETE FROM leads WHERE id = $1`, [id])
   emitCrmChange()
+}
+
+// ─── ONBOARDING ──────────────────────────────────────────────────────────
+
+/** Move o lead para o Onboarding (Etapa 1) na categoria informada. */
+export async function iniciarOnboarding(leadId: string, categoria: string) {
+  await pool.query(
+    `UPDATE leads SET em_onboarding = true, onboarding_etapa = 1, onboarding_categoria = $2 WHERE id = $1`,
+    [leadId, categoria]
+  )
+  emitCrmChange()
+}
+
+/** Lista os leads em onboarding de uma categoria. */
+export async function getOnboardingLeads(categoria: string) {
+  const res = await pool.query(
+    `SELECT id, nome, whatsapp, email, interesse, classificacao, onboarding_etapa, criado_em
+       FROM leads
+      WHERE em_onboarding = true AND onboarding_categoria = $1
+      ORDER BY criado_em DESC`,
+    [categoria]
+  )
+  return res.rows
+}
+
+/** Quantos leads estão na Etapa 1 do onboarding (para o badge "Novo"). */
+export async function countOnboardingEtapa1(): Promise<number> {
+  const r = await pool.query(
+    `SELECT COUNT(*)::int AS n FROM leads WHERE em_onboarding = true AND onboarding_etapa = 1`
+  )
+  return r.rows[0]?.n ?? 0
 }
 
 // ─── ATIVIDADES ──────────────────────────────────────────────────────────

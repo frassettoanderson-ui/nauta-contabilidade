@@ -1,5 +1,5 @@
 'use client'
 import OnboardingKanban from '@/components/sistema/OnboardingKanban'
 export default function Page() {
-  return <OnboardingKanban titulo="Deixar de ser MEI" />
+  return <OnboardingKanban titulo="Deixar de ser MEI" categoria="deixar-mei" />
 }

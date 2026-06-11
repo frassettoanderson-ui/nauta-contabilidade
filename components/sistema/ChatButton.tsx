@@ -8,7 +8,7 @@ export default function ChatButton() {
   const [hint, setHint] = useState(false)
 
   return (
-    <div className="hidden lg:block fixed top-4 right-5 z-40">
+    <div className="fixed bottom-5 right-5 z-40">
       <button
         onMouseEnter={() => setHint(true)}
         onMouseLeave={() => setHint(false)}
@@ -19,7 +19,7 @@ export default function ChatButton() {
         <MessageCircle size={20} className="text-white" />
       </button>
       {hint && (
-        <div className="absolute right-0 mt-2 px-3 py-1.5 rounded-lg text-xs text-gray-300 whitespace-nowrap"
+        <div className="absolute right-0 bottom-full mb-2 px-3 py-1.5 rounded-lg text-xs text-gray-300 whitespace-nowrap"
           style={{ background: 'var(--sys-modal)', border: '1px solid var(--sys-border-2)' }}>
           Chat em breve
         </div>

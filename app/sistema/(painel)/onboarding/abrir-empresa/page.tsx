@@ -1,5 +1,5 @@
 'use client'
 import OnboardingKanban from '@/components/sistema/OnboardingKanban'
 export default function Page() {
-  return <OnboardingKanban titulo="Abrir minha empresa" />
+  return <OnboardingKanban titulo="Abrir minha empresa" categoria="abrir-empresa" />
 }

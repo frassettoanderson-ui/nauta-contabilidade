@@ -2,8 +2,8 @@
 
 import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { Loader2, Plus, Bell, Check, XCircle, FileText, MessageCircle, Pencil, ClipboardCheck, AlertCircle } from 'lucide-react'
-import { getLeads, updateLead, type LeadRow } from '@/lib/api'
+import { Loader2, Plus, Bell, Check, XCircle, FileText, MessageCircle, Pencil, ClipboardCheck, AlertCircle, Rocket } from 'lucide-react'
+import { getLeads, updateLead, iniciarOnboarding, type LeadRow } from '@/lib/api'
 import { ETAPAS } from '@/lib/crm-config'
 import ClassBar from '@/components/sistema/ClassBar'
 import AddLeadModal from '@/components/sistema/AddLeadModal'
@@ -72,6 +72,16 @@ export default function KanbanPage() {
   }
   function abrir(id: string, mode: 'view' | 'edit' | 'lembrete') { setModalMode(mode); setOpenId(id) }
 
+  async function handleIniciarOnboarding(l: LeadRow) {
+    if (!confirm(`Iniciar o Onboarding de "${l.nome}"? Ele sai do CRM e vai para a Etapa 1 do onboarding.`)) return
+    try {
+      await iniciarOnboarding(l.id)
+      load()
+    } catch {
+      alert('Não foi possível iniciar. Verifique se o interesse do lead é uma categoria válida (não pode ser "Outro").')
+    }
+  }
+
   const pend = (l: LeadRow) => Number(l.lembretes_pendentes ?? 0) > 0
   const waLink = (tel: string) => `https://wa.me/55${(tel || '').replace(/\D/g, '')}`
 
@@ -86,16 +96,9 @@ export default function KanbanPage() {
 
   return (
     <div className="p-6 lg:p-8">
-      <div className="flex items-center justify-between mb-6 gap-4 flex-wrap">
-        <div>
-          <h1 className="text-2xl font-black text-white" style={{ letterSpacing: '-0.02em' }}>Funil comercial</h1>
-          <p className="text-gray-500 text-sm mt-0.5">Arraste os cards entre as etapas. Clique para ver detalhes.</p>
-        </div>
-        <button onClick={() => setAdding(true)}
-          className="inline-flex items-center gap-2 px-5 py-2.5 font-bold text-white text-sm rounded-xl transition-all hover:-translate-y-px"
-          style={{ background: 'linear-gradient(135deg, #0BBCD4, #0999ae)', boxShadow: '0 4px 16px rgba(11,188,212,0.2)' }}>
-          <Plus size={16} /> Adicionar lead
-        </button>
+      <div className="mb-6">
+        <h1 className="text-2xl font-black text-white" style={{ letterSpacing: '-0.02em' }}>Funil comercial</h1>
+        <p className="text-gray-500 text-sm mt-0.5">Arraste os cards entre as etapas. Clique para ver detalhes.</p>
       </div>
 
       {leads === null ? (
@@ -203,11 +206,19 @@ export default function KanbanPage() {
                               </p>
                             )}
                             {l.cadastro_completo ? (
-                              <button onClick={() => abrir(l.id, 'view')}
-                                className="w-full flex items-center justify-center gap-1.5 h-8 rounded-lg text-xs font-bold text-white"
-                                style={{ background: l.contrato_autentique_status === 'assinado' ? 'linear-gradient(135deg, #22c55e, #16a34a)' : l.contrato_autentique_status === 'pendente' ? 'rgba(251,191,36,0.2)' : l.contrato_status ? 'linear-gradient(135deg, #7c6fff, #6355e0)' : 'linear-gradient(135deg, #22c55e, #16a34a)' }}>
-                                {l.contrato_autentique_status === 'assinado' ? <><ClipboardCheck size={13} /> Contrato assinado</> : l.contrato_autentique_status === 'pendente' ? <><Loader2 size={13} className="animate-spin" /> Aguardando assinatura</> : l.contrato_status ? <><FileText size={13} /> Enviar para assinatura</> : <><FileText size={13} /> Gerar contrato</>}
-                              </button>
+                              l.contrato_autentique_status === 'assinado' ? (
+                                <button onClick={() => handleIniciarOnboarding(l)}
+                                  className="w-full flex items-center justify-center gap-1.5 h-9 rounded-lg text-xs font-bold text-white onb-start-btn"
+                                  style={{ background: 'linear-gradient(135deg, #0BBCD4, #6355e0)' }}>
+                                  <Rocket size={14} /> Iniciar Onboarding
+                                </button>
+                              ) : (
+                                <button onClick={() => abrir(l.id, 'view')}
+                                  className="w-full flex items-center justify-center gap-1.5 h-8 rounded-lg text-xs font-bold text-white"
+                                  style={{ background: l.contrato_autentique_status === 'pendente' ? 'rgba(251,191,36,0.2)' : l.contrato_status ? 'linear-gradient(135deg, #7c6fff, #6355e0)' : 'linear-gradient(135deg, #22c55e, #16a34a)' }}>
+                                  {l.contrato_autentique_status === 'pendente' ? <><Loader2 size={13} className="animate-spin" /> Aguardando assinatura</> : l.contrato_status ? <><FileText size={13} /> Enviar para assinatura</> : <><FileText size={13} /> Gerar contrato</>}
+                                </button>
+                              )
                             ) : (
                               <>
                                 <button disabled className="w-full flex items-center justify-center gap-1.5 h-8 rounded-lg text-xs font-bold text-gray-500 cursor-not-allowed" style={{ background: 'var(--sys-surface-3)' }}>
@@ -229,6 +240,22 @@ export default function KanbanPage() {
               </div>
             )
           })}
+
+          {/* Coluna estreita: adicionar lead */}
+          <div className="w-44 shrink-0">
+            <div className="flex items-center gap-2 mb-3 px-1">
+              <span className="w-2.5 h-2.5 rounded-full" style={{ background: '#0BBCD4' }} />
+              <h2 className="text-sm font-bold text-gray-400">Novo</h2>
+            </div>
+            <button onClick={() => setAdding(true)}
+              className="w-full min-h-[62vh] rounded-2xl flex flex-col items-center justify-center gap-3 text-sm font-bold transition-all hover:bg-[rgba(11,188,212,0.05)]"
+              style={{ border: '2px dashed var(--sys-border-2)', color: '#0BBCD4', background: 'transparent' }}>
+              <span className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #0BBCD4, #0999ae)', boxShadow: '0 4px 16px rgba(11,188,212,0.25)' }}>
+                <Plus size={22} className="text-white" />
+              </span>
+              Adicionar lead
+            </button>
+          </div>
         </div>
       )}
 

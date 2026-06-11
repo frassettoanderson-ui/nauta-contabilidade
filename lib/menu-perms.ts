@@ -22,7 +22,7 @@ export const MENU_GRUPOS: MenuGrupo[] = [
     { href: '/sistema/contratos/consultar', label: 'Consultar Contrato' },
   ] },
   { grupo: 'Comercial', itens: [
-    { href: '/sistema/comercial/kanban', label: 'Kanban' },
+    { href: '/sistema/comercial/kanban', label: 'CRM' },
     { href: '/sistema/comercial/leads', label: 'Leads' },
   ] },
   { grupo: 'Onboarding', itens: [

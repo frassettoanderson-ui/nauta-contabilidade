@@ -281,6 +281,19 @@ export function getOnboardingStatus(): Promise<{ temNovos: boolean; total?: numb
   return fetch('/api/onboarding/status').then(r => json(r))
 }
 
+export interface OnboardingLead {
+  id: string; nome: string; whatsapp: string; email: string
+  interesse: string; classificacao: number; onboarding_etapa: number; criado_em: string
+}
+export function getOnboardingLeads(categoria: string): Promise<OnboardingLead[]> {
+  return fetch(`/api/onboarding/leads?categoria=${encodeURIComponent(categoria)}`).then(r => json<OnboardingLead[]>(r))
+}
+export function iniciarOnboarding(leadId: string, categoria?: string): Promise<{ ok: boolean; categoria?: string }> {
+  return fetch('/api/onboarding/iniciar', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ leadId, categoria }),
+  }).then(r => json(r))
+}
+
 // ─── UPLOAD ────────────────────────────────────────────────────────────────
 
 export async function uploadImage(file: File): Promise<string> {

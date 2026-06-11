@@ -77,13 +77,17 @@ export default function Sidebar({ email }: { email?: string | null }) {
 
   const [mobileOpen, setMobileOpen] = useState(false)
   const [onbNovos, setOnbNovos] = useState(false)
+  const [onbCategorias, setOnbCategorias] = useState<Record<string, number>>({})
   const [temaLight, setTemaLight] = useState(false)
   const [openGroups, setOpenGroups] = useState<string[]>(
     NAV.filter(isGroup).filter(g => g.children.some(c => pathname.startsWith(c.href))).map(g => g.label)
   )
 
   useEffect(() => {
-    getOnboardingStatus().then(s => setOnbNovos(!!s.temNovos)).catch(() => {})
+    getOnboardingStatus().then(s => {
+      setOnbNovos(!!s.temNovos)
+      setOnbCategorias(s.categorias ?? {})
+    }).catch(() => {})
   }, [pathname])
 
   useEffect(() => {
@@ -145,10 +149,13 @@ export default function Sidebar({ email }: { email?: string | null }) {
                     <div className="mt-1 ml-3 pl-3 space-y-1 border-l border-[#0BBCD4]/20">
                       {item.children.map(c => {
                         const active = pathname === c.href
+                        const slug = c.href.split('/').pop() ?? ''
+                        const temNovo = (onbCategorias[slug] ?? 0) > 0
                         return (
-                          <Link key={c.href} href={c.href} onClick={() => setMobileOpen(false)} className={itemBase}
+                          <Link key={c.href} href={c.href} onClick={() => setMobileOpen(false)} className={`${itemBase} justify-between`}
                             style={{ background: active ? 'rgba(11,188,212,0.12)' : 'transparent', color: active ? '#0BBCD4' : '#9ca3af', border: active ? '1px solid rgba(11,188,212,0.2)' : '1px solid transparent' }}>
-                            <c.icon size={16} /> {c.label}
+                            <span className="flex items-center gap-3"><c.icon size={16} /> {c.label}</span>
+                            {temNovo && <span className="onb-dot" title="Cliente novo nesta categoria" />}
                           </Link>
                         )
                       })}

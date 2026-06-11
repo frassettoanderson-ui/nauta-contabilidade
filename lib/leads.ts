@@ -142,6 +142,19 @@ export async function countOnboardingEtapa1(): Promise<number> {
   return r.rows[0]?.n ?? 0
 }
 
+/** Contagem de leads na Etapa 1 por categoria (para a bolinha vermelha no menu). */
+export async function countOnboardingEtapa1PorCategoria(): Promise<Record<string, number>> {
+  const r = await pool.query(
+    `SELECT onboarding_categoria AS cat, COUNT(*)::int AS n
+       FROM leads
+      WHERE em_onboarding = true AND onboarding_etapa = 1 AND onboarding_categoria IS NOT NULL
+      GROUP BY onboarding_categoria`
+  )
+  const out: Record<string, number> = {}
+  for (const row of r.rows) out[row.cat] = row.n
+  return out
+}
+
 // ─── ATIVIDADES ──────────────────────────────────────────────────────────
 
 export async function addAtividade(leadId: string, descricao: string, autor: string | null) {

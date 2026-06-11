@@ -277,7 +277,7 @@ export function resetSenhaUsuario(id: string): Promise<void> {
   return fetch(`/api/sistema/usuarios/${id}/reset-password`, { method: 'POST' }).then(r => json(r)).then(() => undefined)
 }
 
-export function getOnboardingStatus(): Promise<{ temNovos: boolean; total?: number }> {
+export function getOnboardingStatus(): Promise<{ temNovos: boolean; total?: number; categorias?: Record<string, number> }> {
   return fetch('/api/onboarding/status').then(r => json(r))
 }
 

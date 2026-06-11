@@ -247,8 +247,37 @@ html { scroll-behavior: smooth; }
   0%, 100% { box-shadow: 0 0 8px rgba(11,188,212,0.22),  inset 0 0 10px rgba(124,111,255,0.06); }
   50%      { box-shadow: 0 0 18px rgba(11,188,212,0.45), inset 0 0 16px rgba(124,111,255,0.14); }
 }
+/* Chama do foguete (Onboarding) */
+.rocket-flame {
+  transform-origin: 12px 15.4px;
+  animation: rocketFlame 0.45s ease-in-out infinite;
+}
+@keyframes rocketFlame {
+  0%, 100% { transform: scaleY(0.9) scaleX(1);   opacity: 0.85; fill: #fb923c; }
+  50%      { transform: scaleY(1.45) scaleX(0.78); opacity: 1;    fill: #fbbf24; }
+}
+
+/* Badge "Novo" no Onboarding */
+.onb-badge {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #fff;
+  padding: 1px 6px;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, #ef4444, #f97316);
+  box-shadow: 0 0 8px rgba(249, 115, 22, 0.6);
+  -webkit-text-fill-color: #fff;
+  animation: onbBadgePulse 1.4s ease-in-out infinite;
+}
+@keyframes onbBadgePulse {
+  0%, 100% { transform: scale(1);    box-shadow: 0 0 6px rgba(249,115,22,0.5); }
+  50%      { transform: scale(1.12); box-shadow: 0 0 12px rgba(249,115,22,0.85); }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .nav-onboarding, .nav-onboarding-text { animation: none !important; }
+  .nav-onboarding, .nav-onboarding-text, .rocket-flame, .onb-badge { animation: none !important; }
 }
 
 /* ── Focus ring ── */

@@ -277,6 +277,10 @@ export function resetSenhaUsuario(id: string): Promise<void> {
   return fetch(`/api/sistema/usuarios/${id}/reset-password`, { method: 'POST' }).then(r => json(r)).then(() => undefined)
 }
 
+export function getOnboardingStatus(): Promise<{ temNovos: boolean; total?: number }> {
+  return fetch('/api/onboarding/status').then(r => json(r))
+}
+
 // ─── UPLOAD ────────────────────────────────────────────────────────────────
 
 export async function uploadImage(file: File): Promise<string> {

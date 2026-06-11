@@ -1,15 +1,17 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
 import { effectivePerms, podeVer } from '@/lib/menu-perms'
+import { getOnboardingStatus } from '@/lib/api'
+import RocketIcon from './RocketIcon'
 import {
   Users, UserPlus, Search, FileText, FilePlus, FileClock, FileSearch,
   Briefcase, LayoutGrid, Inbox, BarChart3, TrendingUp, Calculator, UserCog,
-  Rocket, LayoutDashboard, Repeat, Building2, BadgeMinus, Wallet, Vote,
+  Rocket, LayoutDashboard, Repeat, Building2, BadgeMinus, Wallet, Vote, Settings,
   LogOut, ChevronDown, Menu, X, type LucideIcon,
 } from 'lucide-react'
 
@@ -44,6 +46,7 @@ const NAV: NavItem[] = [
   ] },
   { label: 'Fiscal',  href: '/sistema/fiscal',  icon: Calculator },
   { label: 'Pessoal', href: '/sistema/pessoal', icon: Users },
+  { label: 'Configurações', href: '/sistema/configuracoes', icon: Settings },
   { label: 'Usuários', icon: UserCog, children: [
     { label: 'Criar Usuário', href: '/sistema/usuarios/criar', icon: UserPlus },
     { label: 'Consultar',     href: '/sistema/usuarios/consultar', icon: Search },
@@ -72,14 +75,38 @@ export default function Sidebar({ email }: { email?: string | null }) {
     .filter((i): i is NavItem => i !== null)
 
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [onbNovos, setOnbNovos] = useState(false)
   const [openGroups, setOpenGroups] = useState<string[]>(
     NAV.filter(isGroup).filter(g => g.children.some(c => pathname.startsWith(c.href))).map(g => g.label)
   )
 
-  const toggleGroup = (label: string) =>
-    setOpenGroups(g => g.includes(label) ? g.filter(x => x !== label) : [...g, label])
+  useEffect(() => {
+    getOnboardingStatus().then(s => setOnbNovos(!!s.temNovos)).catch(() => {})
+  }, [pathname])
 
-  const itemBase = 'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-150'
+  // Som de clique curto via Web Audio (sem asset)
+  const playClick = () => {
+    try {
+      const AC = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
+      const ctx = new AC()
+      const o = ctx.createOscillator()
+      const g = ctx.createGain()
+      o.connect(g); g.connect(ctx.destination)
+      o.type = 'sine'; o.frequency.value = 620
+      g.gain.setValueAtTime(0.0001, ctx.currentTime)
+      g.gain.exponentialRampToValueAtTime(0.13, ctx.currentTime + 0.005)
+      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.11)
+      o.start(); o.stop(ctx.currentTime + 0.12)
+      o.onended = () => ctx.close()
+    } catch { /* navegador sem suporte: ignora */ }
+  }
+
+  const toggleGroup = (label: string) => {
+    playClick()
+    setOpenGroups(g => g.includes(label) ? g.filter(x => x !== label) : [...g, label])
+  }
+
+  const itemBase = 'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-150 hover:translate-x-[3px] hover:bg-white/[0.04]'
 
   const content = (
     <div className="flex flex-col h-full">
@@ -98,7 +125,8 @@ export default function Sidebar({ email }: { email?: string | null }) {
                 <div key={item.label} className="mb-2">
                   <button onClick={() => toggleGroup(item.label)} className={`${itemBase} nav-onboarding w-full justify-between`}>
                     <span className="flex items-center gap-3 nav-onboarding-text">
-                      <item.icon size={18} className="nav-onboarding-icon" /> {item.label}
+                      <RocketIcon size={19} className="nav-onboarding-icon" /> {item.label}
+                      {onbNovos && <span className="onb-badge">Novo</span>}
                     </span>
                     <ChevronDown size={14} className={`nav-onboarding-text transition-transform ${open ? 'rotate-180' : ''}`} />
                   </button>
@@ -142,7 +170,7 @@ export default function Sidebar({ email }: { email?: string | null }) {
           }
           const active = pathname === item.href
           return (
-            <Link key={item.href} href={item.href} onClick={() => setMobileOpen(false)} className={itemBase}
+            <Link key={item.href} href={item.href} onClick={() => { playClick(); setMobileOpen(false) }} className={itemBase}
               style={{ background: active ? 'rgba(11,188,212,0.12)' : 'transparent', color: active ? '#0BBCD4' : '#9ca3af', border: active ? '1px solid rgba(11,188,212,0.2)' : '1px solid transparent' }}>
               <item.icon size={17} /> {item.label}
             </Link>

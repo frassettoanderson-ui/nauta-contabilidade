@@ -7,6 +7,7 @@ import { Loader2 } from 'lucide-react'
 import Sidebar from '@/components/sistema/Sidebar'
 import ForcePasswordChange from '@/components/sistema/ForcePasswordChange'
 import ReminderWatcher from '@/components/sistema/ReminderWatcher'
+import ChatButton from '@/components/sistema/ChatButton'
 
 export default function PainelLayout({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession()
@@ -29,6 +30,7 @@ export default function PainelLayout({ children }: { children: React.ReactNode }
   return (
     <div className="min-h-screen" style={{ background: '#0a0918' }}>
       <Sidebar email={session.user?.email} />
+      <ChatButton />
       {/* Conteúdo: deslocado pela sidebar no desktop; topbar no mobile */}
       <div className="lg:pl-64 pt-14 lg:pt-0">
         {children}

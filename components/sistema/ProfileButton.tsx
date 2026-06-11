@@ -1,9 +1,24 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import Image from 'next/image'
 import { User, X, Save, Loader2, Camera } from 'lucide-react'
 import { getPerfil, updatePerfil, uploadDoc, type PerfilRow } from '@/lib/api'
+
+// Reduz a imagem para no máx. 512px e exporta JPEG leve antes do upload
+async function compressImage(file: File, max = 512): Promise<File> {
+  const dataUrl: string = await new Promise((res, rej) => {
+    const fr = new FileReader(); fr.onload = () => res(fr.result as string); fr.onerror = rej; fr.readAsDataURL(file)
+  })
+  const img: HTMLImageElement = await new Promise((res, rej) => {
+    const im = new window.Image(); im.onload = () => res(im); im.onerror = rej; im.src = dataUrl
+  })
+  const scale = Math.min(1, max / Math.max(img.width, img.height))
+  const w = Math.round(img.width * scale), h = Math.round(img.height * scale)
+  const canvas = document.createElement('canvas'); canvas.width = w; canvas.height = h
+  canvas.getContext('2d')!.drawImage(img, 0, 0, w, h)
+  const blob: Blob = await new Promise(res => canvas.toBlob(b => res(b!), 'image/jpeg', 0.85))
+  return new File([blob], 'perfil.jpg', { type: 'image/jpeg' })
+}
 
 const FS = { background: 'var(--sys-surface-3)', border: '1px solid var(--sys-border-2)' }
 const FIELD = 'w-full h-11 px-4 rounded-xl text-sm text-white placeholder-gray-600 outline-none'
@@ -27,7 +42,8 @@ export default function ProfileButton() {
           className="w-11 h-11 rounded-full overflow-hidden flex items-center justify-center transition-all hover:scale-105"
           style={{ background: 'var(--sys-surface-3)', border: '2px solid rgba(11,188,212,0.5)' }}>
           {perfil?.foto_url
-            ? <Image src={perfil.foto_url} alt="Perfil" width={44} height={44} className="w-full h-full object-cover" />
+            // eslint-disable-next-line @next/next/no-img-element
+            ? <img src={perfil.foto_url} alt="Perfil" className="w-full h-full object-cover" />
             : <User size={20} className="text-[#0BBCD4]" />}
         </button>
       </div>
@@ -50,7 +66,11 @@ function PerfilModal({ perfil, onClose, onSaved }: { perfil: PerfilRow; onClose:
   async function handleFoto(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0]; if (!f) return
     setUploading(true)
-    try { const r = await uploadDoc(f); setFoto(r.url) } catch { alert('Erro ao enviar a foto.') }
+    try {
+      const small = await compressImage(f)
+      const r = await uploadDoc(small)
+      setFoto(r.url)
+    } catch { alert('Erro ao enviar a foto.') }
     finally { setUploading(false) }
   }
 
@@ -77,7 +97,8 @@ function PerfilModal({ perfil, onClose, onSaved }: { perfil: PerfilRow; onClose:
           <label className="relative w-24 h-24 rounded-full overflow-hidden cursor-pointer flex items-center justify-center group"
             style={{ background: 'var(--sys-surface-3)', border: '2px solid rgba(11,188,212,0.5)' }}>
             {foto
-              ? <Image src={foto} alt="Foto" width={96} height={96} className="w-full h-full object-cover" />
+              // eslint-disable-next-line @next/next/no-img-element
+              ? <img src={foto} alt="Foto" className="w-full h-full object-cover" />
               : <User size={34} className="text-[#0BBCD4]" />}
             <span className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity">
               {uploading ? <Loader2 size={20} className="animate-spin text-white" /> : <Camera size={20} className="text-white" />}

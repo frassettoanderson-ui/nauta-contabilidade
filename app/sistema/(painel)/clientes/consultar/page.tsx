@@ -6,10 +6,15 @@ import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { Loader2, Search, Users, Building2 } from 'lucide-react'
 import { listClientes } from '@/lib/api'
+import { parseCidadeEstado } from '@/lib/form-masks'
+
+type Cli = Record<string, unknown>
+
+const s = (v: unknown) => String(v ?? '')
 
 export default function ConsultarClientesPage() {
   const router = useRouter()
-  const [clientes, setClientes] = useState<Record<string, unknown>[] | null>(null)
+  const [clientes, setClientes] = useState<Cli[] | null>(null)
   const [busca, setBusca] = useState('')
 
   useEffect(() => { listClientes().then(setClientes).catch(() => setClientes([])) }, [])
@@ -17,11 +22,13 @@ export default function ConsultarClientesPage() {
   const filtered = (clientes ?? []).filter(c => {
     if (!busca.trim()) return true
     const q = busca.toLowerCase()
-    return String(c.emp_nome ?? '').toLowerCase().includes(q) || String(c.cli_nome_completo ?? '').toLowerCase().includes(q)
+    return s(c.emp_nome).toLowerCase().includes(q) || s(c.responsavel).toLowerCase().includes(q)
   })
 
+  const COLS = ['Empresa', 'Responsável', 'Telefone', 'Cidade', 'UF', 'Cadastro', 'Tipo', 'Origem', 'Interesse']
+
   return (
-    <div className="p-6 lg:p-8 max-w-5xl">
+    <div className="p-6 lg:p-8">
       <div className="flex items-center justify-between mb-8 gap-4 flex-wrap">
         <div>
           <h1 className="text-2xl font-black text-white flex items-center gap-2" style={{ letterSpacing: '-0.02em' }}><Users size={22} className="text-[#0BBCD4]" /> Clientes</h1>
@@ -29,8 +36,8 @@ export default function ConsultarClientesPage() {
         </div>
         <div className="relative">
           <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" />
-          <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar..."
-            className="h-10 pl-9 pr-4 rounded-xl text-sm text-white placeholder-gray-600 outline-none w-56" style={{ background: 'var(--sys-surface-3)', border: '1px solid var(--sys-border-2)' }} />
+          <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar empresa ou responsável..."
+            className="h-10 pl-9 pr-4 rounded-xl text-sm text-white placeholder-gray-600 outline-none w-72" style={{ background: 'var(--sys-surface-3)', border: '1px solid var(--sys-border-2)' }} />
         </div>
       </div>
 
@@ -42,17 +49,39 @@ export default function ConsultarClientesPage() {
           <p className="text-sm">Nenhum cliente cadastrado ainda.</p>
         </div>
       ) : (
-        <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid var(--sys-surface-4)', background: 'rgba(255,255,255,0.02)' }}>
-          {filtered.map(c => (
-            <button key={String(c.id)} onClick={() => router.push(`/sistema/clientes/cadastrar?cliente=${c.id}`)}
-              className="w-full text-left flex items-center gap-4 px-5 py-4 border-b last:border-0 hover:bg-white/[0.02] transition-colors" style={{ borderColor: 'var(--sys-surface-3)' }}>
-              <div className="flex-1 min-w-0">
-                <p className="text-white text-sm font-semibold truncate">{String(c.emp_nome || c.cli_nome_completo || 'Sem nome')}</p>
-                <p className="text-gray-600 text-xs truncate">{String(c.cli_nome_completo || '')} {c.emp_telefone ? `· ${c.emp_telefone}` : ''}</p>
-              </div>
-              <span className="text-gray-600 text-xs shrink-0">{c.criado_em ? format(new Date(String(c.criado_em)), 'dd/MM/yyyy', { locale: ptBR }) : ''}</span>
-            </button>
-          ))}
+        <div className="rounded-2xl overflow-x-auto" style={{ border: '1px solid var(--sys-border)', background: 'var(--sys-surface)' }}>
+          <table className="w-full text-sm whitespace-nowrap">
+            <thead>
+              <tr style={{ borderBottom: '1px solid var(--sys-border)' }}>
+                {COLS.map(col => (
+                  <th key={col} className="text-left text-[11px] font-bold uppercase tracking-wide text-gray-500 px-4 py-3">{col}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map(c => {
+                const { cidade, uf } = parseCidadeEstado(s(c.emp_cidade_estado))
+                return (
+                  <tr key={s(c.id)} onClick={() => router.push(`/sistema/clientes/cadastrar?cliente=${c.id}`)}
+                    className="cursor-pointer transition-colors hover:bg-white/[0.03]" style={{ borderBottom: '1px solid var(--sys-surface-4)' }}>
+                    <td className="px-4 py-3 font-semibold text-white">{s(c.emp_nome) || '—'}</td>
+                    <td className="px-4 py-3 text-gray-300">{s(c.responsavel) || '—'}</td>
+                    <td className="px-4 py-3 text-gray-400">{s(c.emp_telefone) || '—'}</td>
+                    <td className="px-4 py-3 text-gray-400">{cidade || '—'}</td>
+                    <td className="px-4 py-3 text-gray-400">{uf || '—'}</td>
+                    <td className="px-4 py-3 text-gray-500">{c.criado_em ? format(new Date(s(c.criado_em)), 'dd/MM/yyyy', { locale: ptBR }) : '—'}</td>
+                    <td className="px-4 py-3">
+                      {c.emp_regime
+                        ? <span className="text-[11px] font-bold px-2 py-0.5 rounded-full" style={{ background: 'rgba(11,188,212,0.12)', color: '#0BBCD4' }}>{s(c.emp_regime)}</span>
+                        : <span className="text-gray-600">—</span>}
+                    </td>
+                    <td className="px-4 py-3 text-gray-400">{s(c.lead_origem) || '—'}</td>
+                    <td className="px-4 py-3 text-gray-400">{s(c.lead_interesse) || '—'}</td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
         </div>
       )}
     </div>

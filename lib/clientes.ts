@@ -5,7 +5,7 @@ const CLI_COLS = [
   'cli_nome_completo', 'cli_rg', 'cli_cpf', 'cli_nascimento', 'cli_nome_pai', 'cli_nome_mae',
   'cli_estado_civil', 'cli_recibo_irpf', 'cli_titulo_eleitor', 'cli_email', 'cli_endereco', 'cli_bairro', 'cli_cidade_estado', 'cli_cep',
   'cli_doc_url', 'cli_cert_url', 'cli_cert_senha',
-  'emp_nome', 'emp_fantasia', 'emp_cnpj', 'emp_endereco', 'emp_bairro', 'emp_cidade_estado', 'emp_cep',
+  'emp_nome', 'emp_fantasia', 'emp_cnpj', 'emp_regime', 'emp_endereco', 'emp_bairro', 'emp_cidade_estado', 'emp_cep',
   'emp_area_ocupada', 'emp_edificacao', 'emp_usa_glp',
   'emp_proprietario_nome', 'emp_proprietario_cpf', 'emp_atividade', 'emp_capital_social', 'emp_telefone', 'emp_email',
 ]
@@ -19,8 +19,18 @@ type AnyObj = Record<string, unknown>
 
 export async function listClientes() {
   const res = await pool.query(
-    `SELECT id, lead_id, cli_nome_completo, emp_nome, emp_telefone, emp_email, criado_em
-     FROM clientes ORDER BY criado_em DESC`
+    `SELECT
+        c.id, c.lead_id, c.emp_nome, c.emp_telefone, c.emp_cidade_estado, c.emp_regime, c.criado_em,
+        COALESCE(
+          (SELECT s.nome_completo FROM cliente_socios s
+            WHERE s.cliente_id = c.id ORDER BY s.ordem ASC LIMIT 1),
+          c.cli_nome_completo
+        ) AS responsavel,
+        l.origem    AS lead_origem,
+        l.interesse AS lead_interesse
+     FROM clientes c
+     LEFT JOIN leads l ON l.id = c.lead_id
+     ORDER BY c.criado_em DESC`
   )
   return res.rows
 }

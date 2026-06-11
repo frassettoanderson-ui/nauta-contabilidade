@@ -21,6 +21,10 @@ export const ESTADO_CIVIL_OPS = [
   'Solteiro(a)', 'Casado(a)', 'Divorciado(a)', 'Viúvo(a)', 'União estável',
 ]
 
+export const REGIME_OPS = [
+  'MEI', 'Simples Nacional', 'Lucro Presumido', 'Lucro Real',
+]
+
 // ─── Máscaras ─────────────────────────────────────────────────────────────
 
 export function maskCPF(v: string): string {

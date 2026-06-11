@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { Loader2 } from 'lucide-react'
 import {
   maskCPF, validateCPF, maskCNPJ, maskCEP, maskPhone, onlyLetters, onlyNumbers, maskMoney,
-  ESTADOS_BR, ESTADO_CIVIL_OPS, fetchCEP, parseCidadeEstado,
+  ESTADOS_BR, ESTADO_CIVIL_OPS, REGIME_OPS, fetchCEP, parseCidadeEstado,
   type CEPData,
 } from '@/lib/form-masks'
 
@@ -181,6 +181,20 @@ export default function SmartField({
           className={BASE_SEL} style={errBorder && !value ? FSSE : FSS}>
           <option value="">Selecione</option>
           {ESTADO_CIVIL_OPS.map(o => <option key={o} value={o}>{o}</option>)}
+        </select>
+      </div>
+    )
+  }
+
+  if (type === 'regime') {
+    return (
+      <div>
+        <Label text={label} />
+        <select value={value} disabled={disabled}
+          onChange={e => onChange(e.target.value)}
+          className={BASE_SEL} style={errBorder && !value ? FSSE : FSS}>
+          <option value="">Selecione</option>
+          {REGIME_OPS.map(o => <option key={o} value={o}>{o}</option>)}
         </select>
       </div>
     )

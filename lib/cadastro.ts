@@ -25,6 +25,7 @@ export const EMP_FIELDS: Field[] = [
   ['emp_nome',         'Nome da empresa'],
   ['emp_fantasia',     'Nome fantasia'],
   ['emp_cnpj',         'CNPJ',                 'cnpj'],
+  ['emp_regime',       'Tipo de empresa (regime)', 'regime'],
   ['emp_cep',          'CEP',                  'cep'],
   ['emp_endereco',     'Endereço da empresa'],
   ['emp_bairro',       'Bairro'],

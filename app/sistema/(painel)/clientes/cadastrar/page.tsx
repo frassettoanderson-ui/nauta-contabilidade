@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
-import { Loader2, Check, ArrowLeft, ArrowRight, Upload, FileText, Paperclip, Save, Trash2, Link2, Copy, X, Send, Pencil, Folder, Download } from 'lucide-react'
+import { Loader2, Check, ArrowLeft, ArrowRight, Upload, FileText, FileImage, Paperclip, Save, Trash2, Link2, Copy, X, Send, Pencil, Folder, Download } from 'lucide-react'
 import { uploadDoc, saveCliente, getCliente, getClienteByLead, deleteCliente, gerarLinkCadastro, getLeadDetail, enviarParaAssinatura, getContratoByLead, listArquivos, addArquivoCliente, deleteArquivoCliente, type ContratoRow, type ArquivoRow } from '@/lib/api'
 import { CLI_FIELDS, EMP_FIELDS, SOCIO_FIELDS, CLI_TO_SOCIO } from '@/lib/cadastro'
 import { tipoFromInteresse, requiredKeysFor, REQ_SOCIO, TIPO_LABEL } from '@/lib/contratos'
@@ -51,13 +51,29 @@ function FileField({ label, url, onUpload, disabled }: { label: string; url?: st
   )
 }
 
-function FileRow({ nome, url, onDelete }: { nome: string; url: string; onDelete?: () => void }) {
+function fileKind(s: string) {
+  const v = s.toLowerCase()
+  if (/\.(png|jpe?g|gif|webp|svg|bmp)/.test(v)) return 'img'
+  if (/\.pdf/.test(v)) return 'pdf'
+  return 'file'
+}
+
+function FileTile({ nome, url, onDelete }: { nome: string; url: string; onDelete?: () => void }) {
+  const kind = fileKind(nome + ' ' + url)
+  const Icon = kind === 'img' ? FileImage : FileText
+  const color = kind === 'pdf' ? '#ef4444' : kind === 'img' ? '#22c55e' : '#0BBCD4'
   return (
-    <div className="flex items-center gap-3 p-2.5 rounded-lg" style={{ background: 'var(--sys-surface-3)', border: '1px solid var(--sys-border)' }}>
-      <FileText size={16} className="text-[#0BBCD4] shrink-0" />
-      <span className="text-sm text-gray-200 truncate flex-1">{nome}</span>
-      <a href={url} target="_blank" rel="noopener noreferrer" download title="Baixar" className="text-gray-400 hover:text-white"><Download size={16} /></a>
-      {onDelete && <button onClick={onDelete} title="Excluir" className="text-red-400 hover:text-red-300"><Trash2 size={16} /></button>}
+    <div className="group relative flex flex-col items-center text-center p-3 rounded-xl transition-colors hover:bg-white/[0.04]">
+      <a href={url} target="_blank" rel="noopener noreferrer" download className="flex flex-col items-center gap-2 w-full">
+        <Icon size={44} style={{ color }} strokeWidth={1.5} />
+        <span className="text-[11px] text-gray-300 leading-tight line-clamp-2 w-full break-all" title={nome}>{nome}</span>
+      </a>
+      <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <a href={url} target="_blank" rel="noopener noreferrer" download title="Baixar"
+          className="w-6 h-6 rounded flex items-center justify-center text-gray-200 hover:text-white" style={{ background: 'rgba(0,0,0,0.45)' }}><Download size={12} /></a>
+        {onDelete && <button onClick={onDelete} title="Excluir"
+          className="w-6 h-6 rounded flex items-center justify-center text-red-400 hover:text-red-300" style={{ background: 'rgba(0,0,0,0.45)' }}><Trash2 size={12} /></button>}
+      </div>
     </div>
   )
 }
@@ -377,24 +393,24 @@ function Wizard() {
               <>
                 <div>
                   <p className="text-xs font-bold uppercase tracking-wide text-gray-400 mb-2">Documentos do cadastro</p>
-                  <div className="space-y-2">
-                    {(() => {
-                      const docs: { nome: string; url: string }[] = []
-                      if (contrato) {
-                        const u = contrato.autentique_status === 'assinado' && contrato.autentique_url ? contrato.autentique_url : contrato.pdf_url
-                        if (u) docs.push({ nome: 'Contrato', url: u })
-                      }
-                      if (cli.cli_doc_url) docs.push({ nome: 'Documento pessoal do cliente', url: cli.cli_doc_url as string })
-                      if (cli.cli_cert_url) docs.push({ nome: 'Certificado digital do cliente', url: cli.cli_cert_url as string })
-                      socios.forEach((sx, i) => {
-                        if (sx.doc_url) docs.push({ nome: `Documento Sócio ${i + 1}`, url: sx.doc_url as string })
-                        if (sx.cert_url) docs.push({ nome: `Certificado Sócio ${i + 1}`, url: sx.cert_url as string })
-                      })
-                      return docs.length
-                        ? docs.map((d, idx) => <FileRow key={idx} nome={d.nome} url={d.url} />)
-                        : <p className="text-gray-600 text-xs">Nenhum documento do cadastro ainda.</p>
-                    })()}
-                  </div>
+                  {(() => {
+                    const docs: { nome: string; url: string }[] = []
+                    if (contrato) {
+                      const u = contrato.autentique_status === 'assinado' && contrato.autentique_url ? contrato.autentique_url : contrato.pdf_url
+                      if (u) docs.push({ nome: 'Contrato.pdf', url: u })
+                    }
+                    if (cli.cli_doc_url) docs.push({ nome: 'Documento do cliente', url: cli.cli_doc_url as string })
+                    if (cli.cli_cert_url) docs.push({ nome: 'Certificado do cliente', url: cli.cli_cert_url as string })
+                    socios.forEach((sx, i) => {
+                      if (sx.doc_url) docs.push({ nome: `Documento Sócio ${i + 1}`, url: sx.doc_url as string })
+                      if (sx.cert_url) docs.push({ nome: `Certificado Sócio ${i + 1}`, url: sx.cert_url as string })
+                    })
+                    return docs.length ? (
+                      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-1">
+                        {docs.map((d, idx) => <FileTile key={idx} nome={d.nome} url={d.url} />)}
+                      </div>
+                    ) : <p className="text-gray-600 text-xs">Nenhum documento do cadastro ainda.</p>
+                  })()}
                 </div>
 
                 <div>
@@ -405,11 +421,13 @@ function Wizard() {
                       <input type="file" className="hidden" onChange={handleUploadArquivo} disabled={uploadingArq} />
                     </label>
                   </div>
-                  <div className="space-y-2">
-                    {arquivos.length === 0
-                      ? <p className="text-gray-600 text-xs">Nenhum arquivo enviado.</p>
-                      : arquivos.map(a => <FileRow key={a.id} nome={a.nome} url={a.url} onDelete={() => handleExcluirArquivo(a.id)} />)}
-                  </div>
+                  {arquivos.length === 0 ? (
+                    <p className="text-gray-600 text-xs">Nenhum arquivo enviado.</p>
+                  ) : (
+                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-1">
+                      {arquivos.map(a => <FileTile key={a.id} nome={a.nome} url={a.url} onDelete={() => handleExcluirArquivo(a.id)} />)}
+                    </div>
+                  )}
                 </div>
               </>
             )}

@@ -103,7 +103,8 @@ export default function FloatingChat() {
     setThread([{ de: 'bot', texto: 'Olá! 👋 Você já é cliente da Nauta?' }]); setStep('inicio')
   }
 
-  const usaInput = ['cli_nome', 'cli_empresa', 'nc_nome', 'nc_tel', 'nc_email', 'chat'].includes(step)
+  const encerrada = serverMsgs.some(m => m.autor_tipo === 'bot' && (m.texto || '').includes('Atendimento encerrado'))
+  const usaInput = ['cli_nome', 'cli_empresa', 'nc_nome', 'nc_tel', 'nc_email', 'chat'].includes(step) && !(step === 'chat' && encerrada)
   const placeholder = step === 'nc_email' ? 'seu@email.com' : step === 'nc_tel' ? '(00) 00000-0000' : step === 'chat' ? 'Digite sua mensagem...' : 'Digite aqui...'
 
   return (
@@ -139,7 +140,7 @@ export default function FloatingChat() {
             {/* Conversa conectada */}
             {step === 'chat' && (
               <>
-                <p className="text-center text-[11px] text-gray-400 mb-1">Você está em atendimento. Aguarde a resposta. 💬</p>
+                <p className="text-center text-[11px] text-gray-400 mb-1">Você está em atendimento. 💬</p>
                 {serverMsgs.filter(m => m.autor_tipo !== 'bot').map(m => {
                   const meu = m.autor_tipo === 'visitante'
                   return (
@@ -148,6 +149,12 @@ export default function FloatingChat() {
                     </div>
                   )
                 })}
+                {encerrada && (
+                  <div className="text-center pt-2">
+                    <p className="text-xs text-gray-500 mb-2">🔒 Este atendimento foi encerrado.</p>
+                    <button onClick={reiniciar} className="h-9 px-4 rounded-lg text-sm font-bold text-white bg-[#3D3B8E]">Iniciar novo atendimento</button>
+                  </div>
+                )}
               </>
             )}
 
@@ -181,7 +188,7 @@ export default function FloatingChat() {
               </button>
             </div>
           )}
-          {step === 'chat' && (
+          {step === 'chat' && !encerrada && (
             <button onClick={reiniciar} className="text-[10px] text-gray-400 hover:text-gray-600 py-1.5 bg-white">Encerrar e iniciar novo atendimento</button>
           )}
         </div>

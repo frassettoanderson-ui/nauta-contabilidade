@@ -336,6 +336,23 @@ html { scroll-behavior: smooth; }
   .nav-onboarding, .nav-onboarding-text, .rocket-flame, .onb-badge, .onb-dot { animation: none !important; }
 }
 
+/* ── Animações do chat ── */
+@keyframes chatIn {
+  from { opacity: 0; transform: translateY(14px) scale(0.97); }
+  to   { opacity: 1; transform: none; }
+}
+.animate-chat-in { animation: chatIn 0.24s cubic-bezier(0.16, 1, 0.3, 1); }
+
+@keyframes msgIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
+.animate-msg-in { animation: msgIn 0.18s ease-out; }
+
+/* Submenu retrátil (anima altura via grid-rows) */
+.chat-collapse { display: grid; transition: grid-template-rows 0.22s ease; }
+.chat-collapse > div { overflow: hidden; }
+
 /* ── Avatar com mensagem não lida (chat) ── */
 .chat-unread-glow {
   animation: chatGlow 1.4s ease-in-out infinite;

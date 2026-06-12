@@ -41,6 +41,7 @@ export const MENU_GRUPOS: MenuGrupo[] = [
   { grupo: 'Usuários', itens: [
     { href: '/sistema/usuarios/criar', label: 'Criar Usuário' },
     { href: '/sistema/usuarios/consultar', label: 'Consultar' },
+    { href: '/sistema/usuarios/historico-chat', label: 'Histórico de chat' },
   ] },
 ]
 

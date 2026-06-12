@@ -64,8 +64,35 @@ export async function listConversas(meId: string) {
   return res.rows
 }
 
-// Conversas vindas do site, pelo setor do usuário (gerente/admin veem todas)
+// Encerra automaticamente conversas do site inativas (10 min sem mensagem do visitante)
+export async function encerrarInativas() {
+  const ids = await pool.query(
+    `SELECT c.id FROM chat_conversas c
+      WHERE c.tipo = 'site' AND c.encerrada_em IS NULL
+        AND COALESCE(
+          (SELECT MAX(m.criado_em) FROM chat_mensagens m WHERE m.conversa_id = c.id AND m.autor_tipo = 'visitante'),
+          c.criado_em
+        ) < NOW() - INTERVAL '10 minutes'`
+  )
+  for (const r of ids.rows) await encerrarConversa(r.id, 'inatividade')
+}
+
+export async function encerrarConversa(conversaId: string, motivo: 'atendente' | 'inatividade') {
+  const aviso = motivo === 'inatividade'
+    ? '🔒 Atendimento encerrado por inatividade. Se precisar, é só iniciar um novo atendimento.'
+    : '🔒 Atendimento encerrado pelo atendente. Obrigado pelo contato!'
+  const m = await pool.query(
+    `INSERT INTO chat_mensagens (conversa_id, autor_tipo, autor_nome, texto) VALUES ($1, 'bot', 'Atendente Virtual', $2) RETURNING *`,
+    [conversaId, aviso]
+  )
+  await pool.query(`UPDATE chat_conversas SET encerrada_em = NOW(), encerrada_motivo = $2, atualizado_em = NOW() WHERE id = $1`, [conversaId, motivo])
+  emitMsg(conversaId, m.rows[0])
+  emitCrmChange()
+}
+
+// Conversas vindas do site (abertas), pelo setor do usuário (gerente/admin veem todas)
 export async function listConversasSite(meId: string, role: string) {
+  await encerrarInativas()
   const res = await pool.query(
     `SELECT c.id, c.setor, c.visitante_nome, c.visitante_contato, c.atualizado_em,
             (SELECT m.texto FROM chat_mensagens m WHERE m.conversa_id = c.id AND m.autor_tipo <> 'bot' ORDER BY m.criado_em DESC LIMIT 1) AS ultima_msg,
@@ -73,9 +100,20 @@ export async function listConversasSite(meId: string, role: string) {
               AND m.criado_em > COALESCE(p.lido_em, '1970-01-01')) AS nao_lidas
        FROM chat_conversas c
        LEFT JOIN chat_participantes p ON p.conversa_id = c.id AND p.user_id = $1
-      WHERE c.tipo = 'site' AND ($2 = 'admin' OR $2 = 'gerente' OR c.setor = $2)
+      WHERE c.tipo = 'site' AND c.encerrada_em IS NULL AND ($2 = 'admin' OR $2 = 'gerente' OR c.setor = $2)
       ORDER BY c.atualizado_em DESC`,
     [meId, role]
+  )
+  return res.rows
+}
+
+// Histórico: conversas do site encerradas
+export async function listHistoricoSite() {
+  const res = await pool.query(
+    `SELECT c.id, c.setor, c.visitante_nome, c.visitante_contato, c.criado_em, c.encerrada_em, c.encerrada_motivo
+       FROM chat_conversas c
+      WHERE c.tipo = 'site' AND c.encerrada_em IS NOT NULL
+      ORDER BY c.encerrada_em DESC`
   )
   return res.rows
 }

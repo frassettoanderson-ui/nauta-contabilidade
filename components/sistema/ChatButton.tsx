@@ -2,9 +2,9 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
-import { MessageCircle, X, Send, Paperclip, Loader2, ArrowLeft, ChevronDown } from 'lucide-react'
+import { MessageCircle, X, Send, Paperclip, Loader2, ArrowLeft, ChevronDown, XCircle } from 'lucide-react'
 import {
-  chatContatos, chatConversas, chatSite, chatAbrirDM, chatMensagens, chatEnviar, chatMarcarLido, uploadDoc,
+  chatContatos, chatConversas, chatSite, chatAbrirDM, chatMensagens, chatEnviar, chatMarcarLido, chatEncerrar, uploadDoc,
   type ChatContato, type ChatConversa, type ChatConversaSite, type ChatMensagem,
 } from '@/lib/api'
 import { getSocket } from '@/lib/socket-client'
@@ -35,7 +35,7 @@ export default function ChatButton() {
   const [contatos, setContatos] = useState<ChatContato[]>([])
   const [conversas, setConversas] = useState<ChatConversa[]>([])
   const [siteConvs, setSiteConvs] = useState<ChatConversaSite[]>([])
-  const [ativo, setAtivo] = useState<{ conversaId: string; nome: string; foto: string | null; subtitulo: string; online: boolean } | null>(null)
+  const [ativo, setAtivo] = useState<{ conversaId: string; nome: string; foto: string | null; subtitulo: string; online: boolean; site?: boolean } | null>(null)
   const [secSite, setSecSite] = useState(true)
   const [secEquipe, setSecEquipe] = useState(true)
   const [msgs, setMsgs] = useState<ChatMensagem[]>([])
@@ -91,7 +91,13 @@ export default function ChatButton() {
   }
 
   function abrirSite(c: ChatConversaSite) {
-    setAtivo({ conversaId: c.id, nome: c.visitante_nome || 'Visitante', foto: null, subtitulo: `Via site · ${ROLE[c.setor ?? ''] ?? c.setor ?? 'Atendimento'}`, online: false })
+    setAtivo({ conversaId: c.id, nome: c.visitante_nome || 'Visitante', foto: null, subtitulo: `Via site · ${ROLE[c.setor ?? ''] ?? c.setor ?? 'Atendimento'}`, online: false, site: true })
+  }
+
+  async function encerrarAtivo() {
+    if (!ativo || !confirm('Encerrar este atendimento? Ele vai para o histórico.')) return
+    try { await chatEncerrar(ativo.conversaId); setAtivo(null); carregarListas() }
+    catch { alert('Erro ao encerrar.') }
   }
 
   async function enviar() {
@@ -131,7 +137,7 @@ export default function ChatButton() {
       </div>
 
       {open && (
-        <div className="fixed z-40 flex overflow-hidden shadow-2xl
+        <div className="fixed z-40 flex overflow-hidden shadow-2xl animate-chat-in
             inset-0 lg:inset-auto lg:bottom-20 lg:right-5 lg:w-[680px] lg:h-[520px] lg:rounded-2xl"
           style={{ background: 'var(--sys-modal)', border: '1px solid var(--sys-border-2)' }}>
 
@@ -150,22 +156,24 @@ export default function ChatButton() {
                     <span className="text-[10px] font-bold uppercase tracking-wide text-gray-500">Atendimentos do site</span>
                     {siteUnread > 0 && <span className="ml-auto min-w-4 h-4 px-1 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center">{siteUnread}</span>}
                   </button>
-                  {secSite && siteConvs.map(c => {
-                    const nl = Number(c.nao_lidas || 0)
-                    return (
-                      <button key={c.id} onClick={() => abrirSite(c)}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-white/[0.04] transition-colors text-left">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${nl > 0 ? 'chat-unread-glow' : ''}`} style={{ background: 'rgba(124,111,255,0.15)', border: '1px solid rgba(124,111,255,0.3)' }}>
-                          <MessageCircle size={16} className="text-[#a99bff]" />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="text-sm font-semibold text-white truncate">{c.visitante_nome || 'Visitante'}</p>
-                          <p className="text-[11px] text-gray-500 truncate">{ROLE[c.setor ?? ''] ?? c.setor} · {c.ultima_msg || 'novo'}</p>
-                        </div>
-                        {nl > 0 && <span className="min-w-5 h-5 px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">{nl}</span>}
-                      </button>
-                    )
-                  })}
+                  <div className="chat-collapse" style={{ gridTemplateRows: secSite ? '1fr' : '0fr' }}><div>
+                    {siteConvs.map(c => {
+                      const nl = Number(c.nao_lidas || 0)
+                      return (
+                        <button key={c.id} onClick={() => abrirSite(c)}
+                          className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-white/[0.04] transition-colors text-left">
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${nl > 0 ? 'chat-unread-glow' : ''}`} style={{ background: 'rgba(124,111,255,0.15)', border: '1px solid rgba(124,111,255,0.3)' }}>
+                            <MessageCircle size={16} className="text-[#a99bff]" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-semibold text-white truncate">{c.visitante_nome || 'Visitante'}</p>
+                            <p className="text-[11px] text-gray-500 truncate">{ROLE[c.setor ?? ''] ?? c.setor} · {c.ultima_msg || 'novo'}</p>
+                          </div>
+                          {nl > 0 && <span className="min-w-5 h-5 px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">{nl}</span>}
+                        </button>
+                      )
+                    })}
+                  </div></div>
                 </div>
               )}
 
@@ -174,25 +182,23 @@ export default function ChatButton() {
                 <span className="text-[10px] font-bold uppercase tracking-wide text-gray-500">Equipe</span>
                 {equipeUnread > 0 && <span className="ml-auto min-w-4 h-4 px-1 rounded-full bg-[#0BBCD4] text-white text-[9px] font-bold flex items-center justify-center">{equipeUnread}</span>}
               </button>
-              {secEquipe && (
-                <>
-                  {contatos.length === 0 && <p className="text-gray-600 text-xs text-center py-8">Nenhum contato.</p>}
-                  {contatos.map(c => {
-                    const nl = Number(unreadDe(c.id) || 0)
-                    return (
-                      <button key={c.id} onClick={() => abrirContato(c)}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-white/[0.04] transition-colors text-left">
-                        <Avatar foto={c.foto_url} nome={c.nome_completo || c.username} online={c.online} glow={nl > 0} />
-                        <div className="min-w-0 flex-1">
-                          <p className="text-sm font-semibold text-white truncate">{c.nome_completo || c.username}</p>
-                          <p className="text-[11px] text-gray-500">{ROLE[c.role] ?? c.role}{c.online ? ' · online' : ''}</p>
-                        </div>
-                        {nl > 0 && <span className="min-w-5 h-5 px-1 rounded-full bg-[#0BBCD4] text-white text-[10px] font-bold flex items-center justify-center">{nl}</span>}
-                      </button>
-                    )
-                  })}
-                </>
-              )}
+              <div className="chat-collapse" style={{ gridTemplateRows: secEquipe ? '1fr' : '0fr' }}><div>
+                {contatos.length === 0 && <p className="text-gray-600 text-xs text-center py-8">Nenhum contato.</p>}
+                {contatos.map(c => {
+                  const nl = Number(unreadDe(c.id) || 0)
+                  return (
+                    <button key={c.id} onClick={() => abrirContato(c)}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-white/[0.04] transition-colors text-left">
+                      <Avatar foto={c.foto_url} nome={c.nome_completo || c.username} online={c.online} glow={nl > 0} />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-semibold text-white truncate">{c.nome_completo || c.username}</p>
+                        <p className="text-[11px] text-gray-500">{ROLE[c.role] ?? c.role}{c.online ? ' · online' : ''}</p>
+                      </div>
+                      {nl > 0 && <span className="min-w-5 h-5 px-1 rounded-full bg-[#0BBCD4] text-white text-[10px] font-bold flex items-center justify-center">{nl}</span>}
+                    </button>
+                  )
+                })}
+              </div></div>
             </div>
           </div>
 
@@ -209,14 +215,22 @@ export default function ChatButton() {
                     <p className="text-sm font-bold text-white truncate">{ativo.nome}</p>
                     <p className="text-[11px] text-gray-500">{ativo.subtitulo}</p>
                   </div>
-                  <button onClick={() => setOpen(false)} className="ml-auto text-gray-400 hover:text-white hidden lg:block"><X size={18} /></button>
+                  <div className="ml-auto flex items-center gap-1">
+                    {ativo.site && (
+                      <button onClick={encerrarAtivo} title="Encerrar atendimento"
+                        className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 h-7 rounded-lg" style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)', color: '#f87171' }}>
+                        <XCircle size={13} /> Encerrar
+                      </button>
+                    )}
+                    <button onClick={() => setOpen(false)} className="text-gray-400 hover:text-white hidden lg:block p-1"><X size={18} /></button>
+                  </div>
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-3 space-y-2" style={{ background: 'var(--sys-bg)' }}>
                   {msgs.map(m => {
                     const meu = m.autor_id === meId
                     return (
-                      <div key={m.id} className={`flex ${meu ? 'justify-end' : 'justify-start'}`}>
+                      <div key={m.id} className={`flex animate-msg-in ${meu ? 'justify-end' : 'justify-start'}`}>
                         <div className="max-w-[78%] rounded-2xl px-3 py-2" style={{ background: meu ? 'linear-gradient(135deg, #0BBCD4, #0999ae)' : 'var(--sys-surface-3)' }}>
                           {m.arquivo_url && (ehImagem(m.arquivo_nome || m.arquivo_url)
                             // eslint-disable-next-line @next/next/no-img-element

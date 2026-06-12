@@ -12,7 +12,7 @@ import RocketIcon from './RocketIcon'
 import {
   Users, UserPlus, Search, FileText, FilePlus, FileClock, FileSearch,
   Briefcase, LayoutGrid, Inbox, BarChart3, TrendingUp, Calculator, UserCog,
-  Rocket, Settings, DollarSign, LayoutDashboard,
+  Rocket, Settings, DollarSign, LayoutDashboard, MessageCircle,
   LogOut, ChevronDown, Menu, X, type LucideIcon,
 } from 'lucide-react'
 
@@ -44,8 +44,9 @@ const NAV: NavItem[] = [
   { label: 'Financeiro', href: '/sistema/financeiro', icon: DollarSign },
   { label: 'Configurações', href: '/sistema/configuracoes', icon: Settings },
   { label: 'Usuários', icon: UserCog, children: [
-    { label: 'Criar Usuário', href: '/sistema/usuarios/criar', icon: UserPlus },
-    { label: 'Consultar',     href: '/sistema/usuarios/consultar', icon: Search },
+    { label: 'Criar Usuário',      href: '/sistema/usuarios/criar', icon: UserPlus },
+    { label: 'Consultar',          href: '/sistema/usuarios/consultar', icon: Search },
+    { label: 'Histórico de chat',  href: '/sistema/usuarios/historico-chat', icon: MessageCircle },
   ] },
 ]
 

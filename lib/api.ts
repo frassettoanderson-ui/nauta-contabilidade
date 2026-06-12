@@ -224,7 +224,7 @@ export function uploadDoc(file: File): Promise<{ url: string; nome: string }> {
   return fetch('/api/sistema/upload', { method: 'POST', body: fd }).then(r => json<{ url: string; nome: string }>(r))
 }
 
-export interface ArquivoRow { id: string; nome: string; url: string; criado_em: string }
+export interface ArquivoRow { id: string; nome: string; url: string; restrito?: boolean; criado_em: string }
 export function listArquivos(clienteId: string): Promise<ArquivoRow[]> {
   return fetch(`/api/clientes/${clienteId}/arquivos`).then(r => json<ArquivoRow[]>(r))
 }

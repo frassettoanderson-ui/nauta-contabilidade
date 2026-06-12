@@ -94,7 +94,7 @@ export async function deleteCliente(id: string) {
 
 export async function listArquivos(clienteId: string) {
   const res = await pool.query(
-    `SELECT id, nome, url, criado_em FROM cliente_arquivos WHERE cliente_id = $1 ORDER BY criado_em DESC`,
+    `SELECT id, nome, url, restrito, criado_em FROM cliente_arquivos WHERE cliente_id = $1 ORDER BY criado_em DESC`,
     [clienteId]
   )
   return res.rows
@@ -102,10 +102,24 @@ export async function listArquivos(clienteId: string) {
 
 export async function addArquivo(clienteId: string, nome: string, url: string) {
   const res = await pool.query(
-    `INSERT INTO cliente_arquivos (cliente_id, nome, url) VALUES ($1, $2, $3) RETURNING id, nome, url, criado_em`,
+    `INSERT INTO cliente_arquivos (cliente_id, nome, url) VALUES ($1, $2, $3) RETURNING id, nome, url, restrito, criado_em`,
     [clienteId, nome, url]
   )
   return res.rows[0]
+}
+
+// Arquivo restrito de texto (ex.: senha gov.br) — substitui o anterior de mesmo nome
+export async function addArquivoTextoRestrito(clienteId: string, nome: string, conteudo: string) {
+  await pool.query(`DELETE FROM cliente_arquivos WHERE cliente_id = $1 AND restrito = true AND nome = $2`, [clienteId, nome])
+  await pool.query(
+    `INSERT INTO cliente_arquivos (cliente_id, nome, url, restrito, conteudo) VALUES ($1, $2, '', true, $3)`,
+    [clienteId, nome, conteudo]
+  )
+}
+
+export async function getConteudoArquivo(arqId: string): Promise<{ nome: string; conteudo: string | null } | null> {
+  const r = await pool.query(`SELECT nome, conteudo FROM cliente_arquivos WHERE id = $1`, [arqId])
+  return r.rows[0] ?? null
 }
 
 export async function deleteArquivo(id: string) {
@@ -114,12 +128,16 @@ export async function deleteArquivo(id: string) {
 
 export async function generateLinkToken(id: string): Promise<string> {
   const token = `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 12)}`
-  await pool.query(`UPDATE clientes SET link_token = $1 WHERE id = $2`, [token, id])
+  // Link válido por 7 dias
+  await pool.query(`UPDATE clientes SET link_token = $1, link_token_expira = NOW() + INTERVAL '7 days' WHERE id = $2`, [token, id])
   return token
 }
 
 export async function getClienteByToken(token: string) {
-  const res = await pool.query(`SELECT id FROM clientes WHERE link_token = $1 LIMIT 1`, [token])
+  const res = await pool.query(
+    `SELECT id FROM clientes WHERE link_token = $1 AND (link_token_expira IS NULL OR link_token_expira > NOW()) LIMIT 1`,
+    [token]
+  )
   if (!res.rows[0]) return null
   return getCliente(res.rows[0].id)
 }

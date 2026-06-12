@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
-import { Loader2, Check, ArrowLeft, ArrowRight, Upload, FileText, FileImage, Paperclip, Save, Trash2, Link2, Copy, X, Send, Pencil, Folder, Download } from 'lucide-react'
+import { Loader2, Check, ArrowLeft, ArrowRight, Upload, FileText, FileImage, Paperclip, Save, Trash2, Link2, Copy, X, Send, Pencil, Folder, Download, Lock } from 'lucide-react'
 import { uploadDoc, saveCliente, getCliente, getClienteByLead, deleteCliente, gerarLinkCadastro, getLeadDetail, enviarParaAssinatura, getContratoByLead, listArquivos, addArquivoCliente, deleteArquivoCliente, type ContratoRow, type ArquivoRow } from '@/lib/api'
 import { CLI_FIELDS, EMP_FIELDS, SOCIO_FIELDS, CLI_TO_SOCIO } from '@/lib/cadastro'
 import { tipoFromInteresse, requiredKeysFor, REQ_SOCIO, TIPO_LABEL } from '@/lib/contratos'
@@ -58,12 +58,13 @@ function fileKind(s: string) {
   return 'file'
 }
 
-function FileTile({ nome, url, onDelete }: { nome: string; url: string; onDelete?: () => void }) {
+function FileTile({ nome, url, onDelete, restrito }: { nome: string; url: string; onDelete?: () => void; restrito?: boolean }) {
   const kind = fileKind(nome + ' ' + url)
   const Icon = kind === 'img' ? FileImage : FileText
-  const color = kind === 'pdf' ? '#ef4444' : kind === 'img' ? '#22c55e' : '#0BBCD4'
+  const color = restrito ? '#fbbf24' : kind === 'pdf' ? '#ef4444' : kind === 'img' ? '#22c55e' : '#0BBCD4'
   return (
-    <div className="relative flex flex-col items-center text-center p-3 pt-7 rounded-xl transition-colors hover:bg-white/[0.04]">
+    <div className="relative flex flex-col items-center text-center p-3 pt-7 rounded-xl transition-colors hover:bg-white/[0.04]"
+      title={restrito ? 'Restrito · admin/gerente' : undefined}>
       <div className="absolute top-1.5 right-1.5 flex gap-1">
         <a href={url} target="_blank" rel="noopener noreferrer" download title="Baixar"
           className="w-6 h-6 rounded-md flex items-center justify-center text-gray-300 hover:text-white"
@@ -73,7 +74,10 @@ function FileTile({ nome, url, onDelete }: { nome: string; url: string; onDelete
           style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)' }}><Trash2 size={13} /></button>}
       </div>
       <a href={url} target="_blank" rel="noopener noreferrer" download className="flex flex-col items-center gap-2 w-full">
-        <Icon size={44} style={{ color }} strokeWidth={1.5} />
+        <div className="relative">
+          <Icon size={44} style={{ color }} strokeWidth={1.5} />
+          {restrito && <Lock size={14} className="absolute -bottom-0.5 -right-1 text-[#fbbf24]" />}
+        </div>
         <span className="text-[11px] text-gray-300 leading-tight line-clamp-2 w-full break-all" title={nome}>{nome}</span>
       </a>
     </div>
@@ -424,13 +428,21 @@ function Wizard() {
                       <input type="file" className="hidden" onChange={handleUploadArquivo} disabled={uploadingArq} />
                     </label>
                   </div>
-                  {arquivos.length === 0 ? (
-                    <p className="text-gray-600 text-xs">Nenhum arquivo enviado.</p>
-                  ) : (
-                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-1">
-                      {arquivos.map(a => <FileTile key={a.id} nome={a.nome} url={a.url} onDelete={() => handleExcluirArquivo(a.id, a.nome)} />)}
-                    </div>
-                  )}
+                  {(() => {
+                    const visiveis = arquivos.filter(a => !a.restrito || podeExcluir)
+                    return visiveis.length === 0 ? (
+                      <p className="text-gray-600 text-xs">Nenhum arquivo enviado.</p>
+                    ) : (
+                      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-1">
+                        {visiveis.map(a => (
+                          <FileTile key={a.id} nome={a.nome}
+                            url={a.restrito ? `/api/clientes/${clienteId}/arquivos/${a.id}` : a.url}
+                            restrito={a.restrito}
+                            onDelete={() => handleExcluirArquivo(a.id, a.nome)} />
+                        ))}
+                      </div>
+                    )
+                  })()}
                 </div>
               </>
             )}

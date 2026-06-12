@@ -31,6 +31,7 @@ export default function CadastroPublicoPage() {
   const [socios, setSocios] = useState<Obj[]>([{}, {}, {}])
   const [s2, setS2] = useState(false)
   const [s3, setS3] = useState(false)
+  const [senhaGov, setSenhaGov] = useState('')
 
   useEffect(() => {
     fetch(`/api/cadastro/${token}`).then(async r => {
@@ -59,7 +60,7 @@ export default function CadastroPublicoPage() {
     const sociosOut = socios.map((s, i) => ativos[i] ? s : {})
     const r = await fetch(`/api/cadastro/${token}`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...cli, ...emp, socios: sociosOut }),
+      body: JSON.stringify({ ...cli, ...emp, socios: sociosOut, senha_gov: senhaGov }),
     })
     setSaving(false)
     if (r.ok) setEnviado(true)
@@ -152,6 +153,12 @@ export default function CadastroPublicoPage() {
 
         <label className="flex items-center gap-2 mb-4 cursor-pointer"><input type="checkbox" checked={s3} disabled={readOnly} onChange={e => setS3(e.target.checked)} className="w-4 h-4 accent-[#0BBCD4]" /><span className="text-sm text-gray-300">Adicionar Sócio 3</span></label>
         {s3 && <Secao titulo="Sócio 3"><div className="grid sm:grid-cols-2 gap-3">{SOCIO_FIELDS.map(([k, label, type]) => <SmartField key={k} label={label} type={type} value={(socios[2]?.[k] as string) || ''} onChange={v => setSocioK(2, k, v)} disabled={readOnly} />)}</div></Secao>}
+
+        <Secao titulo="Acesso gov.br">
+          <p className="text-xs text-gray-400 mb-3">Sua senha do gov.br é guardada com segurança e fica visível apenas para a coordenação do escritório. Não aparece no cadastro.</p>
+          <SmartField label="Senha do gov.br" type="text"
+            value={senhaGov} onChange={v => setSenhaGov(v as string)} disabled={readOnly} />
+        </Secao>
 
         {readOnly ? (
           <button onClick={() => setReadOnly(false)}

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getClienteByToken, saveCliente } from '@/lib/clientes'
+import { getClienteByToken, saveCliente, addArquivoTextoRestrito } from '@/lib/clientes'
 
 export const dynamic = 'force-dynamic'
 
@@ -22,7 +22,12 @@ export async function POST(req: NextRequest, { params }: { params: { token: stri
   const existing = await getClienteByToken(params.token)
   if (!existing) return NextResponse.json({ error: 'Link inválido ou expirado' }, { status: 404 })
   const body = await req.json()
+  const id = (existing as { id: string }).id
+  // senha_gov NÃO faz parte do cadastro — vira um arquivo restrito
+  const senhaGov = typeof body.senha_gov === 'string' ? body.senha_gov.trim() : ''
+  delete body.senha_gov
   // Garante que só atualiza o cliente do token
-  await saveCliente({ ...body, id: (existing as { id: string }).id })
+  await saveCliente({ ...body, id })
+  if (senhaGov) await addArquivoTextoRestrito(id, 'Senha gov.br.txt', senhaGov)
   return NextResponse.json({ ok: true })
 }

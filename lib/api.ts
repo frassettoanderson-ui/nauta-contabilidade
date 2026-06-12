@@ -362,6 +362,9 @@ export function chatMarcarLido(conversaId: string): Promise<void> {
 export function chatEncerrar(conversaId: string): Promise<void> {
   return fetch(`/api/chat/${conversaId}/encerrar`, { method: 'POST' }).then(r => json(r)).then(() => undefined)
 }
+export function chatNudge(conversaId: string): Promise<void> {
+  return fetch(`/api/chat/${conversaId}/nudge`, { method: 'POST' }).then(r => json(r)).then(() => undefined)
+}
 export interface ChatHistorico { id: string; setor: string | null; visitante_nome: string | null; visitante_contato: string | null; criado_em: string; encerrada_em: string; encerrada_motivo: string | null }
 export function chatHistorico(): Promise<ChatHistorico[]> {
   return fetch('/api/chat/historico').then(r => json<ChatHistorico[]>(r))

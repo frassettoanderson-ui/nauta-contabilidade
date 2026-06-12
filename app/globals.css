@@ -353,6 +353,21 @@ html { scroll-behavior: smooth; }
 .chat-collapse { display: grid; transition: grid-template-rows 0.22s ease; }
 .chat-collapse > div { overflow: hidden; }
 
+/* "Chamar atenção" (nudge) — balança a janela */
+@keyframes chatShake {
+  0%, 100% { transform: translate(0, 0) rotate(0); }
+  10% { transform: translate(-8px, 6px) rotate(-1.2deg); }
+  20% { transform: translate(8px, -6px) rotate(1.2deg); }
+  30% { transform: translate(-7px, 5px) rotate(-1deg); }
+  40% { transform: translate(7px, -5px) rotate(1deg); }
+  50% { transform: translate(-5px, 4px) rotate(-0.7deg); }
+  60% { transform: translate(5px, -4px) rotate(0.7deg); }
+  70% { transform: translate(-3px, 2px) rotate(-0.4deg); }
+  80% { transform: translate(3px, -2px) rotate(0.4deg); }
+  90% { transform: translate(-1px, 1px); }
+}
+.chat-shake { animation: chatShake 0.7s ease-in-out; }
+
 /* ── Avatar com mensagem não lida (chat) ── */
 .chat-unread-glow {
   animation: chatGlow 1.4s ease-in-out infinite;

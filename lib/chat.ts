@@ -4,10 +4,19 @@ import { insertLead } from './leads'
 
 const ONLINE_SEGUNDOS = 45
 
+type IO = { to: (r: string) => { emit: (e: string, p: unknown) => void } }
+function getIO() { return (globalThis as unknown as { __io?: IO }).__io }
+
 // Emite a mensagem em tempo real (Socket.IO) para quem está na conversa
 function emitMsg(conversaId: string, msg: unknown) {
-  const io = (globalThis as unknown as { __io?: { to: (r: string) => { emit: (e: string, p: unknown) => void } } }).__io
-  io?.to(conversaId).emit('nova-msg', { conversaId, msg })
+  getIO()?.to(conversaId).emit('nova-msg', { conversaId, msg })
+}
+
+// "Chamar atenção" (nudge) — avisa o outro participante na sala pessoal dele
+export async function nudge(conversaId: string, senderId: string, senderNome: string) {
+  const r = await pool.query(`SELECT user_id FROM chat_participantes WHERE conversa_id = $1 AND user_id <> $2`, [conversaId, senderId])
+  const io = getIO()
+  for (const row of r.rows) io?.to(`user:${row.user_id}`).emit('nudge', { conversaId, deNome: senderNome })
 }
 
 export async function heartbeat(userId: string) {

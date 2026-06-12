@@ -2,9 +2,9 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
-import { MessageCircle, X, Send, Paperclip, Loader2, ArrowLeft, ChevronDown, XCircle } from 'lucide-react'
+import { MessageCircle, X, Send, Paperclip, Loader2, ArrowLeft, ChevronDown, XCircle, Zap } from 'lucide-react'
 import {
-  chatContatos, chatConversas, chatSite, chatAbrirDM, chatMensagens, chatEnviar, chatMarcarLido, chatEncerrar, uploadDoc,
+  chatContatos, chatConversas, chatSite, chatAbrirDM, chatMensagens, chatEnviar, chatMarcarLido, chatEncerrar, chatNudge, uploadDoc,
   type ChatContato, type ChatConversa, type ChatConversaSite, type ChatMensagem,
 } from '@/lib/api'
 import { getSocket } from '@/lib/socket-client'
@@ -38,6 +38,12 @@ export default function ChatButton() {
   const [ativo, setAtivo] = useState<{ conversaId: string; nome: string; foto: string | null; subtitulo: string; online: boolean; site?: boolean } | null>(null)
   const [secSite, setSecSite] = useState(true)
   const [secEquipe, setSecEquipe] = useState(true)
+  const [shake, setShake] = useState(false)
+
+  function tocarNudge() {
+    try { const a = new Audio('/atencao.wav'); a.volume = 0.6; a.play().catch(() => {}) } catch { /* ignora */ }
+  }
+  function balancar() { setShake(true); setTimeout(() => setShake(false), 750) }
   const [msgs, setMsgs] = useState<ChatMensagem[]>([])
   const [texto, setTexto] = useState('')
   const [enviando, setEnviando] = useState(false)
@@ -60,6 +66,29 @@ export default function ChatButton() {
     const t = setInterval(carregarListas, 8000)
     return () => clearInterval(t)
   }, [meId, carregarListas])
+
+  // Sala pessoal + recebimento de "chamar atenção"
+  useEffect(() => {
+    if (!meId) return
+    const socket = getSocket()
+    const joinUser = () => socket.emit('join', `user:${meId}`)
+    joinUser()
+    socket.on('connect', joinUser)
+    const onNudge = (data: { conversaId: string; deNome: string }) => {
+      setOpen(true)
+      const conv = conversas.find(c => c.id === data.conversaId)
+      if (conv) setAtivo({ conversaId: conv.id, nome: conv.outro_nome || data.deNome, foto: conv.outro_foto, subtitulo: (ROLE[conv.outro_role ?? ''] ?? conv.outro_role ?? '') + (conv.outro_online ? ' · online' : ''), online: !!conv.outro_online })
+      else setAtivo(a => (a?.conversaId === data.conversaId ? a : { conversaId: data.conversaId, nome: data.deNome, foto: null, subtitulo: '', online: false }))
+      balancar(); tocarNudge()
+    }
+    socket.on('nudge', onNudge)
+    return () => { socket.off('nudge', onNudge); socket.off('connect', joinUser) }
+  }, [meId, conversas])
+
+  async function chamarAtencao() {
+    if (!ativo) return
+    try { await chatNudge(ativo.conversaId); balancar(); tocarNudge() } catch { /* ignora */ }
+  }
 
   // Mensagens da conversa ativa (Socket.IO em tempo real + fallback)
   useEffect(() => {
@@ -137,8 +166,8 @@ export default function ChatButton() {
       </div>
 
       {open && (
-        <div className="fixed z-40 flex overflow-hidden shadow-2xl animate-chat-in
-            inset-0 lg:inset-auto lg:bottom-20 lg:right-5 lg:w-[680px] lg:h-[520px] lg:rounded-2xl"
+        <div className={`fixed z-40 flex overflow-hidden shadow-2xl ${shake ? 'chat-shake' : 'animate-chat-in'}
+            inset-0 lg:inset-auto lg:bottom-20 lg:right-5 lg:w-[680px] lg:h-[520px] lg:rounded-2xl`}
           style={{ background: 'var(--sys-modal)', border: '1px solid var(--sys-border-2)' }}>
 
           {/* Lista de contatos */}
@@ -216,6 +245,12 @@ export default function ChatButton() {
                     <p className="text-[11px] text-gray-500">{ativo.subtitulo}</p>
                   </div>
                   <div className="ml-auto flex items-center gap-1">
+                    {!ativo.site && (
+                      <button onClick={chamarAtencao} title="Chamar atenção"
+                        className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 h-7 rounded-lg" style={{ background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.3)', color: '#fbbf24' }}>
+                        <Zap size={13} /> Chamar atenção
+                      </button>
+                    )}
                     {ativo.site && (
                       <button onClick={encerrarAtivo} title="Encerrar atendimento"
                         className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 h-7 rounded-lg" style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)', color: '#f87171' }}>

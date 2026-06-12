@@ -1,5 +1,6 @@
 import pool from './db'
 import { emitCrmChange } from './realtime'
+import { insertLead } from './leads'
 
 const ONLINE_SEGUNDOS = 45
 
@@ -78,4 +79,45 @@ export async function enviarMensagem(conversaId: string, autorId: string, autorN
 
 export async function marcarLido(conversaId: string, userId: string) {
   await pool.query(`UPDATE chat_participantes SET lido_em = NOW() WHERE conversa_id = $1 AND user_id = $2`, [conversaId, userId])
+}
+
+// ─── CHAT DO SITE (bot/visitante) ────────────────────────────────────────────
+
+export async function criarConversaSite(opts: {
+  ehCliente: boolean; nome: string; setor: string
+  empresa?: string; telefone?: string; email?: string; interesse?: string
+}): Promise<string> {
+  const contato = opts.telefone || opts.email || opts.empresa || ''
+  const c = await pool.query(
+    `INSERT INTO chat_conversas (tipo, setor, visitante_nome, visitante_contato) VALUES ('site', $1, $2, $3) RETURNING id`,
+    [opts.setor, opts.nome, contato]
+  )
+  const conversaId = c.rows[0].id
+
+  const resumo = opts.ehCliente
+    ? `📋 Cliente Nauta\nNome: ${opts.nome}${opts.empresa ? `\nEmpresa: ${opts.empresa}` : ''}\nSetor: ${opts.setor}`
+    : `📋 Novo contato (não é cliente)\nNome: ${opts.nome}\nTelefone: ${opts.telefone ?? '—'}\nE-mail: ${opts.email ?? '—'}\nInteresse: ${opts.interesse ?? '—'}\nEncaminhado ao Comercial.`
+  await pool.query(
+    `INSERT INTO chat_mensagens (conversa_id, autor_tipo, autor_nome, texto) VALUES ($1, 'bot', 'Atendente Virtual', $2)`,
+    [conversaId, resumo]
+  )
+
+  if (!opts.ehCliente) {
+    await insertLead({
+      nome: opts.nome, whatsapp: opts.telefone ?? '', email: opts.email ?? '',
+      interesse: opts.interesse ?? '', etapa: 'novo', origem: 'Site',
+    })
+  }
+  emitCrmChange()
+  return conversaId
+}
+
+export async function enviarVisitante(conversaId: string, nome: string, texto: string) {
+  const res = await pool.query(
+    `INSERT INTO chat_mensagens (conversa_id, autor_tipo, autor_nome, texto) VALUES ($1, 'visitante', $2, $3) RETURNING *`,
+    [conversaId, nome, texto]
+  )
+  await pool.query(`UPDATE chat_conversas SET atualizado_em = NOW() WHERE id = $1`, [conversaId])
+  emitCrmChange()
+  return res.rows[0]
 }

@@ -53,6 +53,30 @@ export default function ChatButton() {
   }
   function balancar() { setShake(true); setTimeout(() => setShake(false), 750) }
 
+  // Alerta quando a aba NÃO está em foco: notificação do navegador + título piscando
+  const tituloOriginalRef = useRef('')
+  const flashRef = useRef<number | null>(null)
+  function pararFlash() {
+    if (flashRef.current) { clearInterval(flashRef.current); flashRef.current = null }
+    if (typeof document !== 'undefined' && tituloOriginalRef.current) document.title = tituloOriginalRef.current
+  }
+  function alertarForaDaTela(titulo: string, corpo: string) {
+    if (typeof document === 'undefined' || !document.hidden) return
+    if ('Notification' in window && Notification.permission === 'granted') {
+      try { const n = new Notification(titulo, { body: corpo, icon: '/icone-branca.png' }); n.onclick = () => { window.focus(); n.close() } } catch { /* ignora */ }
+    }
+    if (!flashRef.current && typeof document !== 'undefined') {
+      tituloOriginalRef.current = document.title
+      let on = false
+      flashRef.current = window.setInterval(() => { document.title = on ? tituloOriginalRef.current : `🔔 ${titulo}`; on = !on }, 900)
+    }
+  }
+  function pedirPermissaoNotif() {
+    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission().catch(() => {})
+    }
+  }
+
   function abrirToast(t: { id: string; tipo: string; conversaId: string; titulo: string; setor?: string }) {
     setOpen(true)
     if (t.tipo === 'site') setAtivo({ conversaId: t.conversaId, nome: t.titulo, foto: null, subtitulo: `Via site · ${ROLE[t.setor ?? ''] ?? t.setor ?? ''}`, online: false, site: true })
@@ -105,6 +129,7 @@ export default function ChatButton() {
       if (conv) setAtivo({ conversaId: conv.id, nome: conv.outro_nome || data.deNome, foto: conv.outro_foto, subtitulo: (ROLE[conv.outro_role ?? ''] ?? conv.outro_role ?? '') + (conv.outro_online ? ' · online' : ''), online: !!conv.outro_online })
       else setAtivo(a => (a?.conversaId === data.conversaId ? a : { conversaId: data.conversaId, nome: data.deNome, foto: null, subtitulo: '', online: false }))
       balancar(); tocarNudge()
+      alertarForaDaTela('Chamando sua atenção!', `${data.deNome} está te chamando no chat.`)
     }
     socket.on('nudge', onNudge)
 
@@ -113,6 +138,7 @@ export default function ChatButton() {
       setToasts(t => [...t.slice(-3), { id, ...data }])
       setTimeout(() => setToasts(t => t.filter(x => x.id !== id)), 7000)
       tocarNotif()
+      alertarForaDaTela(data.tipo === 'site' ? 'Novo atendimento do site' : 'Nova conversa no chat', data.titulo)
       carregarListas()
     }
     socket.on('notif', onNotif)
@@ -148,6 +174,14 @@ export default function ChatButton() {
   }, [ativo, carregarListas])
 
   useEffect(() => { fimRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [msgs])
+
+  // Para de piscar o título quando a aba volta a ter foco
+  useEffect(() => {
+    const onVis = () => { if (typeof document !== 'undefined' && !document.hidden) pararFlash() }
+    document.addEventListener('visibilitychange', onVis)
+    window.addEventListener('focus', onVis)
+    return () => { document.removeEventListener('visibilitychange', onVis); window.removeEventListener('focus', onVis) }
+  }, [])
 
   // Som quando alguém da equipe fica online (transição offline → online)
   const prevOnlineRef = useRef<Set<string> | null>(null)
@@ -221,7 +255,7 @@ export default function ChatButton() {
       )}
 
       <div className="fixed bottom-5 right-5 z-40">
-        <button onClick={() => setOpen(o => !o)} aria-label="Chat"
+        <button onClick={() => { pedirPermissaoNotif(); setOpen(o => !o) }} aria-label="Chat"
           className="relative w-12 h-12 rounded-full flex items-center justify-center transition-all hover:scale-105"
           style={{ background: 'linear-gradient(135deg, #0BBCD4, #6355e0)', boxShadow: '0 4px 16px rgba(11,188,212,0.35)' }}>
           {open ? <X size={20} className="text-white" /> : <MessageCircle size={20} className="text-white" />}

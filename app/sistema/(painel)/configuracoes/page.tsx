@@ -1,8 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { Settings, Sun, Moon, Volume2, VolumeX } from 'lucide-react'
+import { useEffect, useState, useCallback } from 'react'
+import { Settings, Sun, Moon, Volume2, VolumeX, Tag, Plus, Trash2, Loader2 } from 'lucide-react'
 import { getTema, setTema, getSomAtivo, setSomAtivo, type Tema } from '@/lib/sys-prefs'
+import { listCategoriasServico, addCategoriaServico, deleteCategoriaServico, type CategoriaServico } from '@/lib/api'
 
 function Toggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => void }) {
   return (
@@ -27,6 +28,20 @@ export default function ConfiguracoesPage() {
   }
   function trocarSom(on: boolean) {
     setSomUI(on); setSomAtivo(on)
+  }
+
+  // Categorias de serviço avulso (Lançar Entrada)
+  const [cats, setCats] = useState<CategoriaServico[]>([])
+  const [novaCat, setNovaCat] = useState('')
+  const [salvandoCat, setSalvandoCat] = useState(false)
+  const loadCats = useCallback(() => { listCategoriasServico().then(setCats).catch(() => {}) }, [])
+  useEffect(() => { loadCats() }, [loadCats])
+  async function addCat() {
+    if (!novaCat.trim()) return
+    setSalvandoCat(true)
+    try { await addCategoriaServico(novaCat.trim()); setNovaCat(''); loadCats() }
+    catch { alert('Erro ao adicionar.') }
+    finally { setSalvandoCat(false) }
   }
 
   return (
@@ -67,6 +82,38 @@ export default function ConfiguracoesPage() {
             </div>
           </div>
           <Toggle on={som} onChange={trocarSom} />
+        </div>
+
+        {/* Categorias de serviço avulso */}
+        <div className="rounded-2xl p-5" style={{ background: 'var(--sys-surface)', border: '1px solid var(--sys-border)' }}>
+          <div className="flex items-center gap-3 mb-3">
+            <span className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'var(--sys-surface-3)' }}>
+              <Tag size={18} className="text-[#22c55e]" />
+            </span>
+            <div>
+              <p className="text-sm font-bold text-white">Categorias de serviço avulso</p>
+              <p className="text-xs text-gray-500">Usadas em Financeiro → Lançar Entrada (ex.: Declaração de IR)</p>
+            </div>
+          </div>
+
+          <div className="flex gap-2 mb-3">
+            <input value={novaCat} onChange={e => setNovaCat(e.target.value)} onKeyDown={e => e.key === 'Enter' && addCat()}
+              placeholder="Nova categoria de serviço" className="flex-1 h-10 px-3 rounded-lg text-sm text-white placeholder-gray-600 outline-none"
+              style={{ background: 'var(--sys-surface-3)', border: '1px solid var(--sys-border-2)' }} />
+            <button onClick={addCat} disabled={salvandoCat || !novaCat.trim()} className="h-10 px-4 rounded-lg text-sm font-bold text-white inline-flex items-center gap-1.5 disabled:opacity-50" style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)' }}>
+              {salvandoCat ? <Loader2 size={15} className="animate-spin" /> : <><Plus size={15} /> Adicionar</>}
+            </button>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {cats.length === 0 && <p className="text-gray-600 text-xs">Nenhuma categoria cadastrada.</p>}
+            {cats.map(c => (
+              <span key={c.id} className="inline-flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg" style={{ background: 'var(--sys-surface-3)', border: '1px solid var(--sys-border-2)' }}>
+                <span className="text-gray-200">{c.nome}</span>
+                <button onClick={() => { if (confirm(`Excluir "${c.nome}"?`)) deleteCategoriaServico(c.id).then(loadCats) }} className="text-red-400 hover:text-red-300"><Trash2 size={13} /></button>
+              </span>
+            ))}
+          </div>
         </div>
       </div>
     </div>

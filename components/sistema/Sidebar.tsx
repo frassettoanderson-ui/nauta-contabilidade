@@ -13,6 +13,7 @@ import {
   Users, UserPlus, Search, FileText, FilePlus, FileClock, FileSearch,
   Briefcase, LayoutGrid, Inbox, BarChart3, TrendingUp, Calculator, UserCog,
   Rocket, Settings, DollarSign, LayoutDashboard, MessageCircle,
+  ArrowDownCircle, ArrowUpCircle, Repeat,
   LogOut, ChevronDown, Menu, X, type LucideIcon,
 } from 'lucide-react'
 
@@ -41,7 +42,12 @@ const NAV: NavItem[] = [
   ] },
   { label: 'Fiscal',     href: '/sistema/fiscal',     icon: Calculator },
   { label: 'Pessoal',    href: '/sistema/pessoal',    icon: Users },
-  { label: 'Financeiro', href: '/sistema/financeiro', icon: DollarSign },
+  { label: 'Financeiro', icon: DollarSign, children: [
+    { label: 'Faturamento',    href: '/sistema/financeiro/faturamento',    icon: DollarSign },
+    { label: 'Lançar Entrada', href: '/sistema/financeiro/lancar-entrada',  icon: ArrowDownCircle },
+    { label: 'Lançar Despesa', href: '/sistema/financeiro/lancar-despesa',  icon: ArrowUpCircle },
+    { label: 'Despesas Fixas', href: '/sistema/financeiro/despesas-fixas',  icon: Repeat },
+  ] },
   { label: 'Configurações', href: '/sistema/configuracoes', icon: Settings },
   { label: 'Usuários', icon: UserCog, children: [
     { label: 'Criar Usuário',      href: '/sistema/usuarios/criar', icon: UserPlus },

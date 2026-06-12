@@ -317,6 +317,45 @@ export function listFinanceiro(): Promise<Record<string, unknown>[]> {
   return fetch('/api/financeiro/clientes').then(r => json<Record<string, unknown>[]>(r))
 }
 
+// Categorias de serviço avulso
+export interface CategoriaServico { id: string; nome: string }
+export function listCategoriasServico(): Promise<CategoriaServico[]> {
+  return fetch('/api/financeiro/categorias').then(r => json<CategoriaServico[]>(r))
+}
+export function addCategoriaServico(nome: string): Promise<CategoriaServico> {
+  return fetch('/api/financeiro/categorias', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nome }) }).then(r => json(r))
+}
+export function deleteCategoriaServico(id: string): Promise<void> {
+  return fetch(`/api/financeiro/categorias?id=${id}`, { method: 'DELETE' }).then(r => json(r)).then(() => undefined)
+}
+
+// Lançamentos
+export interface Lancamento { id: string; tipo: string; categoria: string | null; descricao: string | null; cliente_nome: string | null; valor: number | string | null; data: string | null; autor: string | null; criado_em: string }
+export function listLancamentos(tipo: 'entrada' | 'despesa'): Promise<Lancamento[]> {
+  return fetch(`/api/financeiro/lancamentos?tipo=${tipo}`).then(r => json<Lancamento[]>(r))
+}
+export function addLancamento(l: { tipo: 'entrada' | 'despesa'; categoria?: string; descricao?: string; cliente_nome?: string; valor: number; data?: string }): Promise<Lancamento> {
+  return fetch('/api/financeiro/lancamentos', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(l) }).then(r => json(r))
+}
+export function deleteLancamento(id: string): Promise<void> {
+  return fetch(`/api/financeiro/lancamentos?id=${id}`, { method: 'DELETE' }).then(r => json(r)).then(() => undefined)
+}
+
+// Despesas fixas
+export interface DespesaFixa { id: string; descricao: string; categoria: string | null; valor: number | string | null; dia_vencimento: number | null; ativo: boolean }
+export function listDespesasFixas(): Promise<DespesaFixa[]> {
+  return fetch('/api/financeiro/despesas-fixas').then(r => json<DespesaFixa[]>(r))
+}
+export function addDespesaFixa(d: { descricao: string; categoria?: string; valor?: number; dia_vencimento?: number }): Promise<DespesaFixa> {
+  return fetch('/api/financeiro/despesas-fixas', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(d) }).then(r => json(r))
+}
+export function toggleDespesaFixa(id: string, ativo: boolean): Promise<void> {
+  return fetch('/api/financeiro/despesas-fixas', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, ativo }) }).then(r => json(r)).then(() => undefined)
+}
+export function deleteDespesaFixa(id: string): Promise<void> {
+  return fetch(`/api/financeiro/despesas-fixas?id=${id}`, { method: 'DELETE' }).then(r => json(r)).then(() => undefined)
+}
+
 export interface DashboardData {
   meses: string[]
   resultadoMes: number; recebidoSerie: number[]

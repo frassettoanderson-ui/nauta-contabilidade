@@ -32,10 +32,15 @@ export const MENU_GRUPOS: MenuGrupo[] = [
   { grupo: 'Relatórios', itens: [
     { href: '/sistema/relatorios/conversao', label: 'Conversão' },
   ] },
+  { grupo: 'Financeiro', itens: [
+    { href: '/sistema/financeiro/faturamento', label: 'Faturamento' },
+    { href: '/sistema/financeiro/lancar-entrada', label: 'Lançar Entrada' },
+    { href: '/sistema/financeiro/lancar-despesa', label: 'Lançar Despesa' },
+    { href: '/sistema/financeiro/despesas-fixas', label: 'Despesas Fixas' },
+  ] },
   { grupo: 'Áreas', itens: [
     { href: '/sistema/fiscal', label: 'Fiscal' },
     { href: '/sistema/pessoal', label: 'Pessoal' },
-    { href: '/sistema/financeiro', label: 'Financeiro' },
     { href: '/sistema/configuracoes', label: 'Configurações' },
   ] },
   { grupo: 'Usuários', itens: [

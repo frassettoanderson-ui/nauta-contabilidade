@@ -370,11 +370,12 @@ html { scroll-behavior: smooth; }
 
 /* ── Avatar com mensagem não lida (chat) ── */
 .chat-unread-glow {
-  animation: chatGlow 1.4s ease-in-out infinite;
+  border-color: #0BBCD4 !important;
+  animation: chatGlow 1.3s ease-in-out infinite;
 }
 @keyframes chatGlow {
-  0%, 100% { box-shadow: 0 0 0 2px #0BBCD4, 0 0 6px rgba(11,188,212,0.6); }
-  50%      { box-shadow: 0 0 0 2px #0BBCD4, 0 0 13px rgba(11,188,212,1); }
+  0%, 100% { box-shadow: 0 0 0 2px rgba(11,188,212,0.85), 0 0 7px 1px rgba(11,188,212,0.55); }
+  50%      { box-shadow: 0 0 0 2px rgba(11,188,212,1), 0 0 15px 3px rgba(11,188,212,0.95); }
 }
 
 /* ── Focus ring ── */

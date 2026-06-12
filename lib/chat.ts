@@ -25,17 +25,22 @@ export async function heartbeat(userId: string) {
   await pool.query(`UPDATE admin_users SET last_seen = NOW() WHERE id = $1`, [userId])
 }
 
-// Usuários do sistema (contatos) com status online
+function isOnline(userId: string): boolean {
+  const m = (globalThis as unknown as { __online?: Map<string, number> }).__online
+  return m ? m.has(userId) : false
+}
+
+// Usuários do sistema (contatos) com status online (online = conectado por socket)
 export async function listContatos(meId: string) {
   const res = await pool.query(
-    `SELECT id, username, nome_completo, role, foto_url,
-            (last_seen IS NOT NULL AND last_seen > NOW() - INTERVAL '${ONLINE_SEGUNDOS} seconds') AS online
-       FROM admin_users
-      WHERE id <> $1
-      ORDER BY online DESC, COALESCE(nome_completo, username) ASC`,
+    `SELECT id, username, nome_completo, role, foto_url
+       FROM admin_users WHERE id <> $1
+      ORDER BY COALESCE(nome_completo, username) ASC`,
     [meId]
   )
   return res.rows
+    .map(r => ({ ...r, online: isOnline(r.id) }))
+    .sort((a, b) => Number(b.online) - Number(a.online) || String(a.nome_completo || a.username).localeCompare(String(b.nome_completo || b.username)))
 }
 
 // Encontra (ou cria) a conversa 1:1 interna entre dois usuários
@@ -72,7 +77,7 @@ export async function listConversas(meId: string) {
       ORDER BY c.atualizado_em DESC`,
     [meId]
   )
-  return res.rows
+  return res.rows.map(r => ({ ...r, outro_online: r.outro_id ? isOnline(r.outro_id) : false }))
 }
 
 // Encerra automaticamente conversas do site inativas (10 min sem mensagem do visitante)
@@ -147,12 +152,11 @@ export async function enviarMensagem(conversaId: string, autorId: string, autorN
   await pool.query(`UPDATE chat_conversas SET atualizado_em = NOW() WHERE id = $1`, [conversaId])
   emitMsg(conversaId, res.rows[0])
 
-  // Notifica os outros participantes na PRIMEIRA mensagem (nova conversa)
+  // Notifica os outros participantes em TODA mensagem (eles decidem se mostram o toast)
   const cnt = await pool.query(`SELECT COUNT(*)::int AS n FROM chat_mensagens WHERE conversa_id = $1`, [conversaId])
-  if (cnt.rows[0]?.n === 1) {
-    const parts = await pool.query(`SELECT user_id FROM chat_participantes WHERE conversa_id = $1 AND user_id <> $2`, [conversaId, autorId])
-    for (const p of parts.rows) emitNotif(`user:${p.user_id}`, { tipo: 'interna', conversaId, titulo: autorNome, texto: texto || 'enviou um arquivo' })
-  }
+  const parts = await pool.query(`SELECT user_id FROM chat_participantes WHERE conversa_id = $1 AND user_id <> $2`, [conversaId, autorId])
+  for (const p of parts.rows) emitNotif(`user:${p.user_id}`, { tipo: 'interna', conversaId, titulo: autorNome, texto: texto || '📎 Arquivo', primeira: cnt.rows[0]?.n === 1 })
+
   emitCrmChange()
   return res.rows[0]
 }
@@ -210,6 +214,15 @@ export async function enviarVisitante(conversaId: string, nome: string, texto: s
   )
   await pool.query(`UPDATE chat_conversas SET atualizado_em = NOW() WHERE id = $1`, [conversaId])
   emitMsg(conversaId, res.rows[0])
+
+  // Notifica o setor responsável (toast para o atendente)
+  const conv = await pool.query(`SELECT setor, visitante_nome FROM chat_conversas WHERE id = $1`, [conversaId])
+  const setor = conv.rows[0]?.setor
+  if (setor) {
+    const notif = { tipo: 'site', conversaId, setor, titulo: conv.rows[0]?.visitante_nome || 'Visitante', texto }
+    emitNotif(`setor:${setor}`, notif)
+    emitNotif('setor:all', notif)
+  }
   emitCrmChange()
   return res.rows[0]
 }

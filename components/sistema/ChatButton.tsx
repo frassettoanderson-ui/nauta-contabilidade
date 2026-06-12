@@ -41,6 +41,8 @@ export default function ChatButton() {
   const [secEquipe, setSecEquipe] = useState(true)
   const [shake, setShake] = useState(false)
   const [toasts, setToasts] = useState<{ id: string; tipo: string; conversaId: string; titulo: string; texto?: string; setor?: string }[]>([])
+  const openRef = useRef(false); openRef.current = open
+  const ativoRef = useRef<typeof ativo>(null); ativoRef.current = ativo
 
   function tocarNudge() {
     try { const a = new Audio('/atencao.wav'); a.volume = 0.6; a.play().catch(() => {}) } catch { /* ignora */ }
@@ -134,12 +136,14 @@ export default function ChatButton() {
     socket.on('nudge', onNudge)
 
     const onNotif = (data: { tipo: string; conversaId: string; titulo: string; texto?: string; setor?: string }) => {
+      carregarListas()
+      // Se já estou com essa conversa aberta, não precisa de toast
+      if (openRef.current && ativoRef.current?.conversaId === data.conversaId) return
       const id = Math.random().toString(36).slice(2)
       setToasts(t => [...t.slice(-3), { id, ...data }])
-      setTimeout(() => setToasts(t => t.filter(x => x.id !== id)), 7000)
+      setTimeout(() => setToasts(t => t.filter(x => x.id !== id)), 9000)
       tocarNotif()
-      alertarForaDaTela(data.tipo === 'site' ? 'Novo atendimento do site' : 'Nova conversa no chat', data.titulo)
-      carregarListas()
+      alertarForaDaTela(data.tipo === 'site' ? `${data.titulo} (atendimento do site)` : `${data.titulo} diz:`, data.texto || 'Nova mensagem')
     }
     socket.on('notif', onNotif)
 
@@ -235,19 +239,22 @@ export default function ChatButton() {
 
   return (
     <>
-      {/* Toasts de notificação */}
+      {/* Toasts de notificação (estilo MSN) */}
       {toasts.length > 0 && (
-        <div className="fixed bottom-5 left-5 z-50 flex flex-col gap-2 w-72">
+        <div className="fixed bottom-5 left-5 z-50 flex flex-col gap-2.5 w-80">
           {toasts.map(t => (
             <button key={t.id} onClick={() => abrirToast(t)}
-              className="animate-chat-in text-left rounded-xl p-3 flex items-start gap-3 shadow-2xl hover:brightness-110 transition-all"
-              style={{ background: 'var(--sys-modal)', border: '1px solid var(--sys-border-2)' }}>
-              <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0" style={{ background: t.tipo === 'site' ? 'rgba(124,111,255,0.15)' : 'rgba(11,188,212,0.15)' }}>
-                <MessageCircle size={16} style={{ color: t.tipo === 'site' ? '#a99bff' : '#0BBCD4' }} />
+              className="animate-chat-in text-left rounded-xl p-3.5 flex items-start gap-3 shadow-2xl hover:brightness-110 transition-all"
+              style={{ background: 'var(--sys-modal)', border: `1px solid ${t.tipo === 'site' ? 'rgba(124,111,255,0.5)' : 'rgba(11,188,212,0.5)'}` }}>
+              <div className="w-11 h-11 rounded-full flex items-center justify-center shrink-0" style={{ background: t.tipo === 'site' ? 'rgba(124,111,255,0.15)' : 'rgba(11,188,212,0.15)' }}>
+                <MessageCircle size={20} style={{ color: t.tipo === 'site' ? '#a99bff' : '#0BBCD4' }} />
               </div>
-              <div className="min-w-0">
-                <p className="text-sm font-bold text-white truncate">{t.tipo === 'site' ? 'Novo atendimento do site' : 'Nova conversa'}</p>
-                <p className="text-[11px] text-gray-400 truncate">{t.titulo}{t.tipo === 'site' ? ` · ${ROLE[t.setor ?? ''] ?? t.setor ?? ''}` : (t.texto ? `: ${t.texto}` : '')}</p>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5">
+                  <p className="text-sm font-bold text-white truncate">{t.titulo}</p>
+                  {t.tipo === 'site' && <span className="text-[9px] font-bold px-1.5 rounded-full shrink-0" style={{ background: 'rgba(124,111,255,0.2)', color: '#a99bff' }}>site</span>}
+                </div>
+                <p className="text-xs text-gray-300 line-clamp-2 mt-0.5">{t.texto || 'Nova mensagem'}</p>
               </div>
             </button>
           ))}

@@ -27,6 +27,7 @@ export const MENU_GRUPOS: MenuGrupo[] = [
   ] },
   { grupo: 'Onboarding', itens: [
     { href: '/sistema/onboarding', label: 'Onboarding' },
+    { href: '/sistema', label: 'Dashboard' },
   ] },
   { grupo: 'Relatórios', itens: [
     { href: '/sistema/relatorios/conversao', label: 'Conversão' },

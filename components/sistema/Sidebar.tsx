@@ -12,7 +12,7 @@ import RocketIcon from './RocketIcon'
 import {
   Users, UserPlus, Search, FileText, FilePlus, FileClock, FileSearch,
   Briefcase, LayoutGrid, Inbox, BarChart3, TrendingUp, Calculator, UserCog,
-  Rocket, Settings, DollarSign,
+  Rocket, Settings, DollarSign, LayoutDashboard,
   LogOut, ChevronDown, Menu, X, type LucideIcon,
 } from 'lucide-react'
 
@@ -22,6 +22,7 @@ type NavItem = NavLeaf | NavGroup
 
 const NAV: NavItem[] = [
   { label: 'Onboarding', href: '/sistema/onboarding', icon: Rocket, highlight: true },
+  { label: 'Dashboard',  href: '/sistema', icon: LayoutDashboard },
   { label: 'Clientes', icon: Users, children: [
     { label: 'Cadastrar', href: '/sistema/clientes/cadastrar', icon: UserPlus },
     { label: 'Consultar', href: '/sistema/clientes/consultar', icon: Search },

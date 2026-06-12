@@ -161,7 +161,9 @@ export interface OnboardingCliente {
   id: string
   nome: string
   whatsapp: string
+  email: string
   interesse: string
+  valor_honorario: number | string | null
   onboarding_categoria: string | null
   cliente_id: string | null
   cadastro_completo: boolean
@@ -198,7 +200,9 @@ export async function getOnboardingBoard(): Promise<OnboardingCliente[]> {
       id: l.id,
       nome: l.nome,
       whatsapp: l.whatsapp,
+      email: l.email,
       interesse: l.interesse,
+      valor_honorario: l.valor_honorario ?? null,
       onboarding_categoria: l.onboarding_categoria,
       cliente_id: c ? (c.id as string) : null,
       cadastro_completo: isContratoPronto(c, l),
@@ -220,9 +224,39 @@ export async function setOnboardingCheck(leadId: string, itemKey: string, done: 
   emitCrmChange()
 }
 
-export async function concluirOnboarding(leadId: string) {
-  await pool.query(`UPDATE leads SET onboarding_concluido = true WHERE id = $1`, [leadId])
+export async function concluirOnboarding(leadId: string, valor?: number | null, vencimento?: string | null) {
+  await pool.query(
+    `UPDATE leads
+        SET onboarding_concluido = true,
+            financeiro_ativo = true,
+            financeiro_status = 'em_aberto',
+            valor_honorario = COALESCE($2, valor_honorario),
+            honorario_vencimento = $3
+      WHERE id = $1`,
+    [leadId, valor ?? null, vencimento ?? null]
+  )
   emitCrmChange()
+}
+
+// ─── FINANCEIRO ──────────────────────────────────────────────────────────
+
+export async function listFinanceiro() {
+  const res = await pool.query(
+    `SELECT
+        l.id AS lead_id, l.nome AS lead_nome, l.whatsapp, l.email,
+        l.valor_honorario, l.honorario_vencimento, l.financeiro_status,
+        l.origem AS lead_origem, l.interesse AS lead_interesse,
+        c.id AS cliente_id, c.emp_nome, c.emp_telefone, c.emp_cidade_estado, c.emp_regime,
+        COALESCE(
+          (SELECT s.nome_completo FROM cliente_socios s WHERE s.cliente_id = c.id ORDER BY s.ordem ASC LIMIT 1),
+          c.cli_nome_completo, l.nome
+        ) AS responsavel
+     FROM leads l
+     LEFT JOIN clientes c ON c.lead_id = l.id
+     WHERE l.financeiro_ativo = true
+     ORDER BY l.honorario_vencimento ASC NULLS LAST`
+  )
+  return res.rows
 }
 
 // ─── ATIVIDADES ──────────────────────────────────────────────────────────

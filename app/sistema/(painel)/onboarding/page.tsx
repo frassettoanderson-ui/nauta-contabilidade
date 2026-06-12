@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { Loader2, Lock, Check, CheckCircle2, Link2, Rocket, MessageCircle, Pencil, ClipboardCheck } from 'lucide-react'
+import { Loader2, Lock, Check, CheckCircle2, Link2, Rocket, MessageCircle, Pencil, ClipboardCheck, X } from 'lucide-react'
 import { getOnboardingBoard, setOnboardingCheck, concluirOnboarding, gerarLinkCadastro, type OnboardingCliente } from '@/lib/api'
 import { SETORES, itensDoSetor, gerenteConcluido, podeEditarSetor, checksEfetivos, setorConcluido, setorItensCompletos, tudoConcluido, doneKey, ITEM_CADASTRO, type SetorId } from '@/lib/onboarding-checklist'
 import { ONBOARDING_CATEGORIAS } from '@/lib/onboarding'
@@ -24,6 +24,7 @@ export default function OnboardingPage() {
   const [board, setBoard] = useState<OnboardingCliente[] | null>(null)
   const [busy, setBusy] = useState<string | null>(null)
   const [editId, setEditId] = useState<string | null>(null)
+  const [concluindo, setConcluindo] = useState<OnboardingCliente | null>(null)
 
   const load = useCallback(() => { getOnboardingBoard().then(setBoard).catch(() => setBoard([])) }, [])
   useEffect(() => { load() }, [load])
@@ -50,9 +51,9 @@ export default function OnboardingPage() {
     finally { setBusy(null) }
   }
 
-  async function concluir(c: OnboardingCliente) {
-    if (!confirm(`Concluir o onboarding de "${c.nome}"? Ele sai do quadro.`)) return
-    try { await concluirOnboarding(c.id); load() }
+  async function confirmarConclusao(valor: number | null, vencimento: string) {
+    if (!concluindo) return
+    try { await concluirOnboarding(concluindo.id, valor, vencimento); setConcluindo(null); load() }
     catch { alert('Erro ao concluir.') }
   }
 
@@ -126,7 +127,7 @@ export default function OnboardingPage() {
 
                 {/* Concluir onboarding — só quando todos os setores concluíram */}
                 {ehGestor && prontoConcluir && (
-                  <button onClick={() => concluir(c)}
+                  <button onClick={() => setConcluindo(c)}
                     className="w-full mb-4 inline-flex items-center justify-center gap-1.5 h-10 rounded-lg text-sm font-bold text-white"
                     style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)', boxShadow: '0 0 12px rgba(34,197,94,0.4)' }}>
                     <CheckCircle2 size={16} /> Concluir onboarding
@@ -216,6 +217,74 @@ export default function OnboardingPage() {
       )}
 
       {editId && <LeadModal leadId={editId} mode="edit" onClose={() => setEditId(null)} onChanged={load} />}
+      {concluindo && <ConcluirModal cliente={concluindo} onClose={() => setConcluindo(null)} onConfirm={confirmarConclusao} />}
+    </div>
+  )
+}
+
+function ConcluirModal({ cliente, onClose, onConfirm }: {
+  cliente: OnboardingCliente
+  onClose: () => void
+  onConfirm: (valor: number | null, vencimento: string) => Promise<void>
+}) {
+  const [valor, setValor] = useState(cliente.valor_honorario != null ? String(cliente.valor_honorario) : '')
+  const [venc, setVenc] = useState('')
+  const [saving, setSaving] = useState(false)
+
+  const FS = { background: 'var(--sys-surface-3)', border: '1px solid var(--sys-border-2)' }
+  const FIELD = 'w-full h-10 px-3.5 rounded-lg text-sm text-white placeholder-gray-600 outline-none'
+
+  async function salvar() {
+    if (!venc) { alert('Informe a data do primeiro honorário.'); return }
+    setSaving(true)
+    try { await onConfirm(valor ? Number(valor) : null, venc) }
+    finally { setSaving(false) }
+  }
+
+  const Info = ({ label, valor }: { label: string; valor: string }) => (
+    <div className="flex justify-between gap-3 py-1.5 border-b" style={{ borderColor: 'var(--sys-surface-4)' }}>
+      <span className="text-xs text-gray-500">{label}</span>
+      <span className="text-sm text-gray-200 text-right truncate">{valor || '—'}</span>
+    </div>
+  )
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/60" onClick={onClose} />
+      <div className="relative w-full max-w-md rounded-2xl p-6" style={{ background: 'var(--sys-modal)', border: '1px solid var(--sys-border-2)' }}>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-black text-white flex items-center gap-2"><CheckCircle2 size={18} className="text-[#22c55e]" /> Concluir onboarding</h2>
+          <button onClick={onClose} className="text-gray-500 hover:text-white"><X size={20} /></button>
+        </div>
+
+        <p className="text-xs text-gray-500 mb-3">Confira os dados antes de enviar o cliente para o Financeiro.</p>
+
+        <div className="rounded-xl p-3 mb-4" style={{ background: 'var(--sys-surface)', border: '1px solid var(--sys-border)' }}>
+          <Info label="Cliente" valor={cliente.nome} />
+          <Info label="E-mail" valor={cliente.email} />
+          <Info label="WhatsApp" valor={cliente.whatsapp} />
+        </div>
+
+        <div className="space-y-3">
+          <div>
+            <label className="block text-xs font-semibold text-gray-400 mb-1">Valor do honorário mensal (R$)</label>
+            <input type="number" step="0.01" value={valor} onChange={e => setValor(e.target.value)} placeholder="0,00" className={FIELD} style={FS} />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-gray-400 mb-1">Data do primeiro honorário</label>
+            <input type="date" value={venc} onChange={e => setVenc(e.target.value)} className={FIELD} style={{ ...FS, colorScheme: 'dark' }} />
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-2 mt-6">
+          <button onClick={onClose} className="px-4 h-10 rounded-lg text-sm text-gray-300" style={FS}>Cancelar</button>
+          <button onClick={salvar} disabled={saving}
+            className="inline-flex items-center gap-2 px-5 h-10 rounded-lg text-sm font-bold text-white disabled:opacity-60"
+            style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)' }}>
+            {saving ? <Loader2 size={15} className="animate-spin" /> : <><CheckCircle2 size={15} /> Concluir e enviar ao Financeiro</>}
+          </button>
+        </div>
+      </div>
     </div>
   )
 }

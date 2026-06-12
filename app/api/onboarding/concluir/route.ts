@@ -11,8 +11,8 @@ export async function POST(req: NextRequest) {
   if (!session || (role !== 'admin' && role !== 'gerente')) {
     return NextResponse.json({ error: 'Apenas o gerente pode concluir' }, { status: 403 })
   }
-  const { leadId } = await req.json()
+  const { leadId, valor, vencimento } = await req.json()
   if (!leadId) return NextResponse.json({ error: 'leadId faltando' }, { status: 400 })
-  await concluirOnboarding(leadId)
+  await concluirOnboarding(leadId, valor ?? null, vencimento ?? null)
   return NextResponse.json({ ok: true })
 }

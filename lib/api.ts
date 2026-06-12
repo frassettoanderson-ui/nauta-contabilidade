@@ -295,7 +295,8 @@ export function getOnboardingStatus(): Promise<{ temNovos: boolean; total?: numb
 }
 
 export interface OnboardingCliente {
-  id: string; nome: string; whatsapp: string; interesse: string
+  id: string; nome: string; whatsapp: string; email: string; interesse: string
+  valor_honorario: number | string | null
   onboarding_categoria: string | null; cliente_id: string | null
   cadastro_completo: boolean; checks: string[]
 }
@@ -307,10 +308,13 @@ export function setOnboardingCheck(leadId: string, itemKey: string, done: boolea
     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ leadId, itemKey, done }),
   }).then(r => json(r)).then(() => undefined)
 }
-export function concluirOnboarding(leadId: string): Promise<void> {
+export function concluirOnboarding(leadId: string, valor?: number | null, vencimento?: string | null): Promise<void> {
   return fetch('/api/onboarding/concluir', {
-    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ leadId }),
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ leadId, valor, vencimento }),
   }).then(r => json(r)).then(() => undefined)
+}
+export function listFinanceiro(): Promise<Record<string, unknown>[]> {
+  return fetch('/api/financeiro/clientes').then(r => json<Record<string, unknown>[]>(r))
 }
 
 export interface OnboardingLead {

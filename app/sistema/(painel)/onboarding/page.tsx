@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { Loader2, Lock, Check, CheckCircle2, Link2, Rocket, MessageCircle, Pencil, ClipboardCheck, X } from 'lucide-react'
+import { Loader2, Lock, Check, CheckCircle2, Link2, Rocket, MessageCircle, Pencil, ClipboardCheck, X, ChevronDown, ChevronUp } from 'lucide-react'
 import { getOnboardingBoard, setOnboardingCheck, concluirOnboarding, gerarLinkCadastro, type OnboardingCliente } from '@/lib/api'
 import { SETORES, itensDoSetor, gerenteConcluido, podeEditarSetor, checksEfetivos, setorConcluido, setorItensCompletos, tudoConcluido, doneKey, ITEM_CADASTRO, type SetorId } from '@/lib/onboarding-checklist'
 import { ONBOARDING_CATEGORIAS } from '@/lib/onboarding'
@@ -25,6 +25,8 @@ export default function OnboardingPage() {
   const [busy, setBusy] = useState<string | null>(null)
   const [editId, setEditId] = useState<string | null>(null)
   const [concluindo, setConcluindo] = useState<OnboardingCliente | null>(null)
+  const [expandidos, setExpandidos] = useState<Set<string>>(new Set())
+  const toggleExpandir = (id: string) => setExpandidos(s => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n })
 
   const load = useCallback(() => { getOnboardingBoard().then(setBoard).catch(() => setBoard([])) }, [])
   useEffect(() => { load() }, [load])
@@ -94,10 +96,13 @@ export default function OnboardingPage() {
             const cat = c.onboarding_categoria ?? ''
             const checks = checksEfetivos(c.checks, c.cadastro_completo)
             const gerOk = gerenteConcluido(cat, checks)
-            // Gerente/admin veem todos os setores; cada setor vê só o seu
-            const setoresVisiveis = ehGestor ? SETORES : SETORES.filter(s => s.id === role)
-            const itens = setoresVisiveis.flatMap(s => itensDoSetor(s.id, cat))
+            // Setores que pertencem ao usuário (gerente/admin = todos)
+            const setoresDoUsuario = ehGestor ? SETORES : SETORES.filter(s => s.id === role)
+            const itens = setoresDoUsuario.flatMap(s => itensDoSetor(s.id, cat))
             const feitos = itens.filter(i => checks.includes(i.key)).length
+            // Gerente: por padrão mostra só a seção dele; expande para ver todos
+            const expandido = expandidos.has(c.id)
+            const setoresVisiveis = ehGestor && !expandido ? SETORES.filter(s => s.id === 'gerente') : setoresDoUsuario
             const prontoConcluir = tudoConcluido(cat, checks)
             return (
               <div key={c.id} className="w-80 shrink-0 rounded-2xl p-4 transition-all"
@@ -210,6 +215,14 @@ export default function OnboardingPage() {
                     )
                   })}
                 </div>
+
+                {ehGestor && (
+                  <button onClick={() => toggleExpandir(c.id)}
+                    className="w-full mt-3 inline-flex items-center justify-center gap-1.5 h-8 rounded-lg text-xs font-bold transition-colors"
+                    style={{ background: 'var(--sys-surface-3)', border: '1px solid var(--sys-border-2)', color: '#9ca3af' }}>
+                    {expandido ? <>Recolher setores <ChevronUp size={14} /></> : <>Ver todos os setores <ChevronDown size={14} /></>}
+                  </button>
+                )}
               </div>
             )
           })}

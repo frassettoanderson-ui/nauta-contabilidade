@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
-import { MessageCircle, X, Send, Paperclip, Loader2, ArrowLeft } from 'lucide-react'
+import { MessageCircle, X, Send, Paperclip, Loader2, ArrowLeft, ChevronDown } from 'lucide-react'
 import {
   chatContatos, chatConversas, chatSite, chatAbrirDM, chatMensagens, chatEnviar, chatMarcarLido, uploadDoc,
   type ChatContato, type ChatConversa, type ChatConversaSite, type ChatMensagem,
@@ -11,10 +11,10 @@ import {
 const ROLE: Record<string, string> = { admin: 'Admin', gerente: 'Gerente', comercial: 'Comercial', fiscal: 'Fiscal', pessoal: 'Pessoal', atendente: 'Atendente' }
 const ehImagem = (s: string) => /\.(png|jpe?g|gif|webp|svg|bmp)$/i.test(s || '')
 
-function Avatar({ foto, nome, online, size = 40 }: { foto?: string | null; nome: string; online?: boolean; size?: number }) {
+function Avatar({ foto, nome, online, size = 40, glow }: { foto?: string | null; nome: string; online?: boolean; size?: number; glow?: boolean }) {
   return (
     <div className="relative shrink-0" style={{ width: size, height: size }}>
-      <div className="w-full h-full rounded-full overflow-hidden flex items-center justify-center" style={{ background: 'var(--sys-surface-3)', border: '1px solid var(--sys-border-2)' }}>
+      <div className={`w-full h-full rounded-full overflow-hidden flex items-center justify-center ${glow ? 'chat-unread-glow' : ''}`} style={{ background: 'var(--sys-surface-3)', border: '1px solid var(--sys-border-2)' }}>
         {foto
           // eslint-disable-next-line @next/next/no-img-element
           ? <img src={foto} alt={nome} className="w-full h-full object-cover" />
@@ -35,13 +35,16 @@ export default function ChatButton() {
   const [conversas, setConversas] = useState<ChatConversa[]>([])
   const [siteConvs, setSiteConvs] = useState<ChatConversaSite[]>([])
   const [ativo, setAtivo] = useState<{ conversaId: string; nome: string; foto: string | null; subtitulo: string; online: boolean } | null>(null)
+  const [secSite, setSecSite] = useState(true)
+  const [secEquipe, setSecEquipe] = useState(true)
   const [msgs, setMsgs] = useState<ChatMensagem[]>([])
   const [texto, setTexto] = useState('')
   const [enviando, setEnviando] = useState(false)
   const fimRef = useRef<HTMLDivElement>(null)
 
-  const naoLidasTotal = conversas.reduce((s, c) => s + Number(c.nao_lidas || 0), 0)
-    + siteConvs.reduce((s, c) => s + Number(c.nao_lidas || 0), 0)
+  const equipeUnread = conversas.reduce((s, c) => s + Number(c.nao_lidas || 0), 0)
+  const siteUnread = siteConvs.reduce((s, c) => s + Number(c.nao_lidas || 0), 0)
+  const naoLidasTotal = equipeUnread + siteUnread
 
   // Presença + conversas (polling)
   const carregarListas = useCallback(() => {
@@ -130,13 +133,17 @@ export default function ChatButton() {
               {/* Atendimentos do site */}
               {siteConvs.length > 0 && (
                 <div className="border-b" style={{ borderColor: 'var(--sys-border)' }}>
-                  <p className="text-[10px] font-bold uppercase tracking-wide text-gray-500 px-3 pt-2 pb-1">Atendimentos do site</p>
-                  {siteConvs.map(c => {
+                  <button onClick={() => setSecSite(v => !v)} className="w-full flex items-center gap-2 px-3 pt-2.5 pb-1.5 text-left">
+                    <ChevronDown size={13} className={`text-gray-500 transition-transform ${secSite ? '' : '-rotate-90'}`} />
+                    <span className="text-[10px] font-bold uppercase tracking-wide text-gray-500">Atendimentos do site</span>
+                    {siteUnread > 0 && <span className="ml-auto min-w-4 h-4 px-1 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center">{siteUnread}</span>}
+                  </button>
+                  {secSite && siteConvs.map(c => {
                     const nl = Number(c.nao_lidas || 0)
                     return (
                       <button key={c.id} onClick={() => abrirSite(c)}
                         className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-white/[0.04] transition-colors text-left">
-                        <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ background: 'rgba(124,111,255,0.15)', border: '1px solid rgba(124,111,255,0.3)' }}>
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${nl > 0 ? 'chat-unread-glow' : ''}`} style={{ background: 'rgba(124,111,255,0.15)', border: '1px solid rgba(124,111,255,0.3)' }}>
                           <MessageCircle size={16} className="text-[#a99bff]" />
                         </div>
                         <div className="min-w-0 flex-1">
@@ -149,22 +156,31 @@ export default function ChatButton() {
                   })}
                 </div>
               )}
-              <p className="text-[10px] font-bold uppercase tracking-wide text-gray-500 px-3 pt-2 pb-1">Equipe</p>
-              {contatos.length === 0 && <p className="text-gray-600 text-xs text-center py-8">Nenhum contato.</p>}
-              {contatos.map(c => {
-                const nl = Number(unreadDe(c.id) || 0)
-                return (
-                  <button key={c.id} onClick={() => abrirContato(c)}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-white/[0.04] transition-colors text-left">
-                    <Avatar foto={c.foto_url} nome={c.nome_completo || c.username} online={c.online} />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-semibold text-white truncate">{c.nome_completo || c.username}</p>
-                      <p className="text-[11px] text-gray-500">{ROLE[c.role] ?? c.role}{c.online ? ' · online' : ''}</p>
-                    </div>
-                    {nl > 0 && <span className="min-w-5 h-5 px-1 rounded-full bg-[#0BBCD4] text-white text-[10px] font-bold flex items-center justify-center">{nl}</span>}
-                  </button>
-                )
-              })}
+
+              <button onClick={() => setSecEquipe(v => !v)} className="w-full flex items-center gap-2 px-3 pt-2.5 pb-1.5 text-left">
+                <ChevronDown size={13} className={`text-gray-500 transition-transform ${secEquipe ? '' : '-rotate-90'}`} />
+                <span className="text-[10px] font-bold uppercase tracking-wide text-gray-500">Equipe</span>
+                {equipeUnread > 0 && <span className="ml-auto min-w-4 h-4 px-1 rounded-full bg-[#0BBCD4] text-white text-[9px] font-bold flex items-center justify-center">{equipeUnread}</span>}
+              </button>
+              {secEquipe && (
+                <>
+                  {contatos.length === 0 && <p className="text-gray-600 text-xs text-center py-8">Nenhum contato.</p>}
+                  {contatos.map(c => {
+                    const nl = Number(unreadDe(c.id) || 0)
+                    return (
+                      <button key={c.id} onClick={() => abrirContato(c)}
+                        className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-white/[0.04] transition-colors text-left">
+                        <Avatar foto={c.foto_url} nome={c.nome_completo || c.username} online={c.online} glow={nl > 0} />
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-semibold text-white truncate">{c.nome_completo || c.username}</p>
+                          <p className="text-[11px] text-gray-500">{ROLE[c.role] ?? c.role}{c.online ? ' · online' : ''}</p>
+                        </div>
+                        {nl > 0 && <span className="min-w-5 h-5 px-1 rounded-full bg-[#0BBCD4] text-white text-[10px] font-bold flex items-center justify-center">{nl}</span>}
+                      </button>
+                    )
+                  })}
+                </>
+              )}
             </div>
           </div>
 

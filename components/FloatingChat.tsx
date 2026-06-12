@@ -23,6 +23,7 @@ export default function FloatingChat() {
   const [input, setInput] = useState('')
   const [dados, setDados] = useState<{ nome?: string; empresa?: string; telefone?: string; email?: string; interesse?: string }>({})
   const [conversaId, setConversaId] = useState<string | null>(null)
+  const [nomeCliente, setNomeCliente] = useState('')
   const [serverMsgs, setServerMsgs] = useState<{ id: string; autor_tipo: string; texto: string | null }[]>([])
   const inputRef = useRef<HTMLInputElement>(null)
   const fimRef = useRef<HTMLDivElement>(null)
@@ -31,6 +32,8 @@ export default function FloatingChat() {
   useEffect(() => {
     const id = typeof window !== 'undefined' ? localStorage.getItem('nauta-site-chat') : null
     if (id) { setConversaId(id); setStep('chat') }
+    const nm = typeof window !== 'undefined' ? localStorage.getItem('nauta-site-chat-nome') : null
+    if (nm) setNomeCliente(nm)
   }, [])
 
   const scrollFim = () => setTimeout(() => fimRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
@@ -66,6 +69,7 @@ export default function FloatingChat() {
       if (r.conversaId) {
         localStorage.setItem('nauta-site-chat', r.conversaId)
         localStorage.setItem('nauta-site-chat-nome', d.nome ?? 'Visitante')
+        setNomeCliente(d.nome ?? '')
         setConversaId(r.conversaId)
         setStep('chat')
       }
@@ -140,7 +144,16 @@ export default function FloatingChat() {
             {/* Conversa conectada */}
             {step === 'chat' && (
               <>
-                <p className="text-center text-[11px] text-gray-400 mb-1">Você está em atendimento. 💬</p>
+                {!encerrada && (
+                  <div className="flex items-start gap-2 mb-2">
+                    <div className="w-7 h-7 bg-[#3D3B8E] rounded-full flex items-center justify-center shrink-0 mt-0.5">
+                      <Image src="/icone-branca.png" alt="" width={14} height={14} className="object-contain" />
+                    </div>
+                    <div className="bg-white rounded-2xl rounded-tl-none px-3.5 py-2.5 shadow-sm max-w-[230px]">
+                      <p className="text-gray-700 text-sm leading-snug">Certo{nomeCliente ? `, ${nomeCliente.split(' ')[0]}` : ''}! Já avisei o responsável sobre o seu contato e dentro de alguns instantes nosso time vai te atender!! 🙌</p>
+                    </div>
+                  </div>
+                )}
                 {serverMsgs.filter(m => m.autor_tipo !== 'bot').map(m => {
                   const meu = m.autor_tipo === 'visitante'
                   return (

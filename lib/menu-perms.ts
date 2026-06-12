@@ -34,6 +34,7 @@ export const MENU_GRUPOS: MenuGrupo[] = [
   { grupo: 'Áreas', itens: [
     { href: '/sistema/fiscal', label: 'Fiscal' },
     { href: '/sistema/pessoal', label: 'Pessoal' },
+    { href: '/sistema/financeiro', label: 'Financeiro' },
     { href: '/sistema/configuracoes', label: 'Configurações' },
   ] },
   { grupo: 'Usuários', itens: [

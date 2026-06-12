@@ -6,7 +6,7 @@ import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
 import { effectivePerms, podeVer } from '@/lib/menu-perms'
-import { getOnboardingStatus } from '@/lib/api'
+import { getOnboardingStatus, getComercialStatus } from '@/lib/api'
 import { getSomAtivo, getTema, onPrefsChange } from '@/lib/sys-prefs'
 import RocketIcon from './RocketIcon'
 import {
@@ -79,6 +79,7 @@ export default function Sidebar({ email }: { email?: string | null }) {
 
   const [mobileOpen, setMobileOpen] = useState(false)
   const [onbNovos, setOnbNovos] = useState(false)
+  const [comNovos, setComNovos] = useState(false)
   const [temaLight, setTemaLight] = useState(false)
   const [openGroups, setOpenGroups] = useState<string[]>(
     NAV.filter(isGroup).filter(g => g.children.some(c => pathname.startsWith(c.href))).map(g => g.label)
@@ -86,6 +87,7 @@ export default function Sidebar({ email }: { email?: string | null }) {
 
   useEffect(() => {
     getOnboardingStatus().then(s => setOnbNovos(!!s.temNovos)).catch(() => {})
+    getComercialStatus().then(s => setComNovos(!!s.temNovos)).catch(() => {})
   }, [pathname])
 
   useEffect(() => {
@@ -136,7 +138,9 @@ export default function Sidebar({ email }: { email?: string | null }) {
             return (
               <div key={item.label}>
                 <button onClick={() => toggleGroup(item.label)} className={`${itemBase} w-full justify-between`} style={{ color: activeChild ? '#0BBCD4' : '#9ca3af' }}>
-                  <span className="flex items-center gap-3"><item.icon size={17} /> {item.label}</span>
+                  <span className="flex items-center gap-3"><item.icon size={17} /> {item.label}
+                    {item.label === 'Comercial' && comNovos && <span className="onb-badge">Novo</span>}
+                  </span>
                   <ChevronDown size={14} className={`transition-transform ${open ? 'rotate-180' : ''}`} />
                 </button>
                 {open && (

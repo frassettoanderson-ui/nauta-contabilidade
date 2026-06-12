@@ -112,6 +112,15 @@ export async function deleteLead(id: string) {
   emitCrmChange()
 }
 
+/** Há leads na coluna "Novo" do CRM (para o badge do menu Comercial)? */
+export async function countLeadsNovos(): Promise<number> {
+  const r = await pool.query(
+    `SELECT COUNT(*)::int AS n FROM leads
+      WHERE COALESCE(etapa, 'novo') = 'novo' AND COALESCE(em_onboarding, false) = false`
+  )
+  return r.rows[0]?.n ?? 0
+}
+
 // ─── ONBOARDING ──────────────────────────────────────────────────────────
 
 /** Move o lead para o Onboarding (Etapa 1) na categoria informada. */

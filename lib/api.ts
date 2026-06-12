@@ -293,6 +293,9 @@ export function resetSenhaUsuario(id: string): Promise<void> {
 export function getOnboardingStatus(): Promise<{ temNovos: boolean; total?: number }> {
   return fetch('/api/onboarding/status').then(r => json(r))
 }
+export function getComercialStatus(): Promise<{ temNovos: boolean; total?: number }> {
+  return fetch('/api/comercial/status').then(r => json(r))
+}
 
 export interface OnboardingCliente {
   id: string; nome: string; whatsapp: string; email: string; interesse: string

@@ -5,7 +5,7 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { Loader2, Lock, Check, CheckCircle2, Link2, Rocket, MessageCircle, Pencil, ClipboardCheck } from 'lucide-react'
 import { getOnboardingBoard, setOnboardingCheck, concluirOnboarding, gerarLinkCadastro, type OnboardingCliente } from '@/lib/api'
-import { SETORES, itensDoSetor, gerenteConcluido, podeEditarSetor, todosItens, checksEfetivos, setorConcluido, setorItensCompletos, tudoConcluido, doneKey, ITEM_CADASTRO, type SetorId } from '@/lib/onboarding-checklist'
+import { SETORES, itensDoSetor, gerenteConcluido, podeEditarSetor, checksEfetivos, setorConcluido, setorItensCompletos, tudoConcluido, doneKey, ITEM_CADASTRO, type SetorId } from '@/lib/onboarding-checklist'
 import { ONBOARDING_CATEGORIAS } from '@/lib/onboarding'
 import { useRealtime } from '@/components/sistema/useRealtime'
 import LeadModal from '@/components/sistema/LeadModal'
@@ -93,7 +93,9 @@ export default function OnboardingPage() {
             const cat = c.onboarding_categoria ?? ''
             const checks = checksEfetivos(c.checks, c.cadastro_completo)
             const gerOk = gerenteConcluido(cat, checks)
-            const itens = todosItens(cat)
+            // Gerente/admin veem todos os setores; cada setor vê só o seu
+            const setoresVisiveis = ehGestor ? SETORES : SETORES.filter(s => s.id === role)
+            const itens = setoresVisiveis.flatMap(s => itensDoSetor(s.id, cat))
             const feitos = itens.filter(i => checks.includes(i.key)).length
             const prontoConcluir = tudoConcluido(cat, checks)
             return (
@@ -133,7 +135,7 @@ export default function OnboardingPage() {
 
                 {/* Seções por setor */}
                 <div className="space-y-4">
-                  {SETORES.map(s => {
+                  {setoresVisiveis.map(s => {
                     const setor = s.id as SetorId
                     const setorItens = itensDoSetor(setor, cat)
                     const bloqueado = setor !== 'gerente' && !gerOk

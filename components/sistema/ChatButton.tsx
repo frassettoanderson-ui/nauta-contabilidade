@@ -29,6 +29,7 @@ function Avatar({ foto, nome, online, size = 40, glow }: { foto?: string | null;
 export default function ChatButton() {
   const { data: session } = useSession()
   const meId = (session?.user as unknown as { id?: string })?.id
+  const meRole = (session?.user as unknown as { role?: string })?.role ?? ''
   const meNome = session?.user?.name ?? ''
 
   const [open, setOpen] = useState(false)
@@ -39,11 +40,27 @@ export default function ChatButton() {
   const [secSite, setSecSite] = useState(true)
   const [secEquipe, setSecEquipe] = useState(true)
   const [shake, setShake] = useState(false)
+  const [toasts, setToasts] = useState<{ id: string; tipo: string; conversaId: string; titulo: string; texto?: string; setor?: string }[]>([])
 
   function tocarNudge() {
     try { const a = new Audio('/atencao.wav'); a.volume = 0.6; a.play().catch(() => {}) } catch { /* ignora */ }
   }
+  function tocarNotif() {
+    try { const a = new Audio('/notificacao.mp3'); a.volume = 0.5; a.play().catch(() => {}) } catch { /* ignora */ }
+  }
   function balancar() { setShake(true); setTimeout(() => setShake(false), 750) }
+
+  function abrirToast(t: { id: string; tipo: string; conversaId: string; titulo: string; setor?: string }) {
+    setOpen(true)
+    if (t.tipo === 'site') setAtivo({ conversaId: t.conversaId, nome: t.titulo, foto: null, subtitulo: `Via site · ${ROLE[t.setor ?? ''] ?? t.setor ?? ''}`, online: false, site: true })
+    else {
+      const conv = conversas.find(c => c.id === t.conversaId)
+      setAtivo(conv
+        ? { conversaId: conv.id, nome: conv.outro_nome || t.titulo, foto: conv.outro_foto, subtitulo: (ROLE[conv.outro_role ?? ''] ?? conv.outro_role ?? '') + (conv.outro_online ? ' · online' : ''), online: !!conv.outro_online }
+        : { conversaId: t.conversaId, nome: t.titulo, foto: null, subtitulo: '', online: false })
+    }
+    setToasts(ts => ts.filter(x => x.id !== t.id))
+  }
   const [msgs, setMsgs] = useState<ChatMensagem[]>([])
   const [texto, setTexto] = useState('')
   const [enviando, setEnviando] = useState(false)
@@ -67,13 +84,18 @@ export default function ChatButton() {
     return () => clearInterval(t)
   }, [meId, carregarListas])
 
-  // Sala pessoal + recebimento de "chamar atenção"
+  // Salas (pessoal + setor) + nudge + notificações
   useEffect(() => {
     if (!meId) return
     const socket = getSocket()
-    const joinUser = () => socket.emit('join', `user:${meId}`)
-    joinUser()
-    socket.on('connect', joinUser)
+    const joinRooms = () => {
+      socket.emit('join', `user:${meId}`)
+      if (meRole) socket.emit('join', `setor:${meRole}`)
+      if (meRole === 'admin' || meRole === 'gerente') socket.emit('join', 'setor:all')
+    }
+    joinRooms()
+    socket.on('connect', joinRooms)
+
     const onNudge = (data: { conversaId: string; deNome: string }) => {
       setOpen(true)
       const conv = conversas.find(c => c.id === data.conversaId)
@@ -82,8 +104,18 @@ export default function ChatButton() {
       balancar(); tocarNudge()
     }
     socket.on('nudge', onNudge)
-    return () => { socket.off('nudge', onNudge); socket.off('connect', joinUser) }
-  }, [meId, conversas])
+
+    const onNotif = (data: { tipo: string; conversaId: string; titulo: string; texto?: string; setor?: string }) => {
+      const id = Math.random().toString(36).slice(2)
+      setToasts(t => [...t.slice(-3), { id, ...data }])
+      setTimeout(() => setToasts(t => t.filter(x => x.id !== id)), 7000)
+      tocarNotif()
+      carregarListas()
+    }
+    socket.on('notif', onNotif)
+
+    return () => { socket.off('nudge', onNudge); socket.off('notif', onNotif); socket.off('connect', joinRooms) }
+  }, [meId, meRole, conversas, carregarListas])
 
   async function chamarAtencao() {
     if (!ativo) return
@@ -154,6 +186,25 @@ export default function ChatButton() {
 
   return (
     <>
+      {/* Toasts de notificação */}
+      {toasts.length > 0 && (
+        <div className="fixed bottom-5 left-5 z-50 flex flex-col gap-2 w-72">
+          {toasts.map(t => (
+            <button key={t.id} onClick={() => abrirToast(t)}
+              className="animate-chat-in text-left rounded-xl p-3 flex items-start gap-3 shadow-2xl hover:brightness-110 transition-all"
+              style={{ background: 'var(--sys-modal)', border: '1px solid var(--sys-border-2)' }}>
+              <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0" style={{ background: t.tipo === 'site' ? 'rgba(124,111,255,0.15)' : 'rgba(11,188,212,0.15)' }}>
+                <MessageCircle size={16} style={{ color: t.tipo === 'site' ? '#a99bff' : '#0BBCD4' }} />
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-bold text-white truncate">{t.tipo === 'site' ? 'Novo atendimento do site' : 'Nova conversa'}</p>
+                <p className="text-[11px] text-gray-400 truncate">{t.titulo}{t.tipo === 'site' ? ` · ${ROLE[t.setor ?? ''] ?? t.setor ?? ''}` : (t.texto ? `: ${t.texto}` : '')}</p>
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
+
       <div className="fixed bottom-5 right-5 z-40">
         <button onClick={() => setOpen(o => !o)} aria-label="Chat"
           className="relative w-12 h-12 rounded-full flex items-center justify-center transition-all hover:scale-105"

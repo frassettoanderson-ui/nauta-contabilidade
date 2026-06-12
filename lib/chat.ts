@@ -19,6 +19,8 @@ export async function nudge(conversaId: string, senderId: string, senderNome: st
   for (const row of r.rows) io?.to(`user:${row.user_id}`).emit('nudge', { conversaId, deNome: senderNome })
 }
 
+function emitNotif(room: string, payload: unknown) { getIO()?.to(room).emit('notif', payload) }
+
 export async function heartbeat(userId: string) {
   await pool.query(`UPDATE admin_users SET last_seen = NOW() WHERE id = $1`, [userId])
 }
@@ -144,6 +146,13 @@ export async function enviarMensagem(conversaId: string, autorId: string, autorN
   )
   await pool.query(`UPDATE chat_conversas SET atualizado_em = NOW() WHERE id = $1`, [conversaId])
   emitMsg(conversaId, res.rows[0])
+
+  // Notifica os outros participantes na PRIMEIRA mensagem (nova conversa)
+  const cnt = await pool.query(`SELECT COUNT(*)::int AS n FROM chat_mensagens WHERE conversa_id = $1`, [conversaId])
+  if (cnt.rows[0]?.n === 1) {
+    const parts = await pool.query(`SELECT user_id FROM chat_participantes WHERE conversa_id = $1 AND user_id <> $2`, [conversaId, autorId])
+    for (const p of parts.rows) emitNotif(`user:${p.user_id}`, { tipo: 'interna', conversaId, titulo: autorNome, texto: texto || 'enviou um arquivo' })
+  }
   emitCrmChange()
   return res.rows[0]
 }
@@ -184,6 +193,12 @@ export async function criarConversaSite(opts: {
       interesse: opts.interesse ?? '', etapa: 'novo', origem: 'Site',
     })
   }
+
+  // Notifica o setor responsável (e gerentes/admin) sobre o novo atendimento
+  const notif = { tipo: 'site', conversaId, setor: opts.setor, titulo: opts.nome }
+  emitNotif(`setor:${opts.setor}`, notif)
+  emitNotif('setor:all', notif)
+
   emitCrmChange()
   return conversaId
 }

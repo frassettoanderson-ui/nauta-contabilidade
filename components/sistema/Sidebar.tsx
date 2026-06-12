@@ -175,7 +175,7 @@ export default function Sidebar({ email }: { email?: string | null }) {
           <p className="text-[10px] uppercase tracking-wider text-gray-600 font-bold">Conectado</p>
           <p className="text-xs text-gray-400 truncate">{email ?? '—'}</p>
         </div>
-        <button onClick={() => signOut({ callbackUrl: '/sistema/login' })} className={`${itemBase} w-full text-gray-500 hover:text-red-400`}>
+        <button onClick={async () => { await signOut({ redirect: false }); window.location.href = '/sistema/login' }} className={`${itemBase} w-full text-gray-500 hover:text-red-400`}>
           <LogOut size={16} /> Sair
         </button>
       </div>

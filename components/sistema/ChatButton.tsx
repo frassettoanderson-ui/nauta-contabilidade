@@ -48,6 +48,9 @@ export default function ChatButton() {
   function tocarNotif() {
     try { const a = new Audio('/notificacao.mp3'); a.volume = 0.5; a.play().catch(() => {}) } catch { /* ignora */ }
   }
+  function tocarOnline() {
+    try { const a = new Audio('/online.wav'); a.volume = 0.5; a.play().catch(() => {}) } catch { /* ignora */ }
+  }
   function balancar() { setShake(true); setTimeout(() => setShake(false), 750) }
 
   function abrirToast(t: { id: string; tipo: string; conversaId: string; titulo: string; setor?: string }) {
@@ -145,6 +148,18 @@ export default function ChatButton() {
   }, [ativo, carregarListas])
 
   useEffect(() => { fimRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [msgs])
+
+  // Som quando alguém da equipe fica online (transição offline → online)
+  const prevOnlineRef = useRef<Set<string> | null>(null)
+  useEffect(() => {
+    const cur = new Set(contatos.filter(c => c.online).map(c => c.id))
+    if (prevOnlineRef.current) {
+      let novo = false
+      cur.forEach(id => { if (!prevOnlineRef.current!.has(id)) novo = true })
+      if (novo) tocarOnline()
+    }
+    prevOnlineRef.current = cur
+  }, [contatos])
 
   async function abrirContato(c: ChatContato) {
     const { conversaId } = await chatAbrirDM(c.id)

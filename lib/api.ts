@@ -317,6 +317,16 @@ export function listFinanceiro(): Promise<Record<string, unknown>[]> {
   return fetch('/api/financeiro/clientes').then(r => json<Record<string, unknown>[]>(r))
 }
 
+export interface DashboardData {
+  meses: string[]
+  resultadoMes: number; recebidoSerie: number[]
+  aReceberMes: number; aReceberSerie: number[]
+  vencidosCount: number; vencidosSerie: number[]
+}
+export function getDashboard(): Promise<DashboardData> {
+  return fetch('/api/dashboard').then(r => json<DashboardData>(r))
+}
+
 export interface PagamentoRow { id: string; competencia: string; valor: number | string | null; pago_em: string | null; criado_em: string }
 export function listPagamentos(leadId: string): Promise<PagamentoRow[]> {
   return fetch(`/api/financeiro/${leadId}/pagamentos`).then(r => json<PagamentoRow[]>(r))

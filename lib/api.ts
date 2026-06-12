@@ -317,6 +317,29 @@ export function listFinanceiro(): Promise<Record<string, unknown>[]> {
   return fetch('/api/financeiro/clientes').then(r => json<Record<string, unknown>[]>(r))
 }
 
+export interface PagamentoRow { id: string; competencia: string; valor: number | string | null; pago_em: string | null; criado_em: string }
+export function listPagamentos(leadId: string): Promise<PagamentoRow[]> {
+  return fetch(`/api/financeiro/${leadId}/pagamentos`).then(r => json<PagamentoRow[]>(r))
+}
+export function addPagamento(leadId: string, competencia: string, valor: number | null, pago_em: string | null): Promise<PagamentoRow> {
+  return fetch(`/api/financeiro/${leadId}/pagamentos`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ competencia, valor, pago_em }),
+  }).then(r => json<PagamentoRow>(r))
+}
+export function deletePagamento(leadId: string, id: string): Promise<void> {
+  return fetch(`/api/financeiro/${leadId}/pagamentos?id=${id}`, { method: 'DELETE' }).then(r => json(r)).then(() => undefined)
+}
+
+export interface EventoRow { id: string; tipo: string; descricao: string; prazo_pagamento: string | null; autor: string | null; criado_em: string }
+export function listEventos(leadId: string): Promise<EventoRow[]> {
+  return fetch(`/api/financeiro/${leadId}/eventos`).then(r => json<EventoRow[]>(r))
+}
+export function addEvento(leadId: string, tipo: string, descricao: string, prazo_pagamento: string | null): Promise<EventoRow> {
+  return fetch(`/api/financeiro/${leadId}/eventos`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tipo, descricao, prazo_pagamento }),
+  }).then(r => json<EventoRow>(r))
+}
+
 export interface OnboardingLead {
   id: string; nome: string; whatsapp: string; email: string
   interesse: string; classificacao: number; onboarding_etapa: number; criado_em: string

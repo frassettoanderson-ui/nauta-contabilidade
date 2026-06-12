@@ -1,6 +1,7 @@
 import pool from './db'
 import { isContratoPronto } from './contratos'
 import { emitCrmChange } from './realtime'
+import { calcStatusFinanceiro } from './financeiro-calc'
 
 export type Lead = {
   id?: string
@@ -244,7 +245,7 @@ export async function listFinanceiro() {
   const res = await pool.query(
     `SELECT
         l.id AS lead_id, l.nome AS lead_nome, l.whatsapp, l.email,
-        l.valor_honorario, l.honorario_vencimento, l.financeiro_status,
+        l.valor_honorario, l.honorario_vencimento,
         l.origem AS lead_origem, l.interesse AS lead_interesse,
         c.id AS cliente_id, c.emp_nome, c.emp_telefone, c.emp_cidade_estado, c.emp_regime,
         COALESCE(
@@ -253,10 +254,79 @@ export async function listFinanceiro() {
         ) AS responsavel
      FROM leads l
      LEFT JOIN clientes c ON c.lead_id = l.id
-     WHERE l.financeiro_ativo = true
-     ORDER BY l.honorario_vencimento ASC NULLS LAST`
+     WHERE l.financeiro_ativo = true`
+  )
+  const rows = res.rows
+  const ids = rows.map(r => r.lead_id)
+  if (ids.length === 0) return []
+
+  // Meses pagos por lead
+  const pag = await pool.query(`SELECT lead_id, to_char(competencia, 'YYYY-MM') AS comp FROM financeiro_pagamentos WHERE lead_id = ANY($1)`, [ids])
+  const pagosByLead: Record<string, Set<string>> = {}
+  for (const p of pag.rows) (pagosByLead[p.lead_id] ||= new Set()).add(p.comp)
+
+  // Prazo prometido mais recente (futuro) por lead
+  const ev = await pool.query(
+    `SELECT DISTINCT ON (lead_id) lead_id, prazo_pagamento
+       FROM financeiro_eventos
+      WHERE lead_id = ANY($1) AND prazo_pagamento IS NOT NULL AND prazo_pagamento >= CURRENT_DATE
+      ORDER BY lead_id, prazo_pagamento ASC`, [ids]
+  )
+  const prazoByLead: Record<string, string> = {}
+  for (const e of ev.rows) prazoByLead[e.lead_id] = e.prazo_pagamento
+
+  return rows.map(r => {
+    const calc = calcStatusFinanceiro(r.honorario_vencimento, pagosByLead[r.lead_id] ?? new Set())
+    return {
+      ...r,
+      financeiro_status: calc.status,
+      meses_atraso: calc.mesesAtraso,
+      proximo_vencimento: calc.proximoVencimento ? calc.proximoVencimento.toISOString().slice(0, 10) : null,
+      prazo_prometido: prazoByLead[r.lead_id] ?? null,
+    }
+  })
+}
+
+export async function listPagamentos(leadId: string) {
+  const res = await pool.query(
+    `SELECT id, to_char(competencia, 'YYYY-MM') AS competencia, valor, pago_em, criado_em
+       FROM financeiro_pagamentos WHERE lead_id = $1 ORDER BY competencia DESC`, [leadId]
   )
   return res.rows
+}
+
+export async function addPagamento(leadId: string, competencia: string, valor: number | null, pagoEm: string | null) {
+  // competencia 'YYYY-MM' -> primeiro dia do mês
+  const res = await pool.query(
+    `INSERT INTO financeiro_pagamentos (lead_id, competencia, valor, pago_em)
+     VALUES ($1, ($2 || '-01')::date, $3, $4) RETURNING id, to_char(competencia,'YYYY-MM') AS competencia, valor, pago_em, criado_em`,
+    [leadId, competencia, valor, pagoEm]
+  )
+  emitCrmChange()
+  return res.rows[0]
+}
+
+export async function deletePagamento(id: string) {
+  await pool.query(`DELETE FROM financeiro_pagamentos WHERE id = $1`, [id])
+  emitCrmChange()
+}
+
+export async function listEventos(leadId: string) {
+  const res = await pool.query(
+    `SELECT id, tipo, descricao, prazo_pagamento, autor, criado_em
+       FROM financeiro_eventos WHERE lead_id = $1 ORDER BY criado_em DESC`, [leadId]
+  )
+  return res.rows
+}
+
+export async function addEvento(leadId: string, tipo: string, descricao: string, prazo: string | null, autor: string | null) {
+  const res = await pool.query(
+    `INSERT INTO financeiro_eventos (lead_id, tipo, descricao, prazo_pagamento, autor)
+     VALUES ($1, $2, $3, $4, $5) RETURNING id, tipo, descricao, prazo_pagamento, autor, criado_em`,
+    [leadId, tipo, descricao, prazo, autor]
+  )
+  emitCrmChange()
+  return res.rows[0]
 }
 
 // ─── ATIVIDADES ──────────────────────────────────────────────────────────

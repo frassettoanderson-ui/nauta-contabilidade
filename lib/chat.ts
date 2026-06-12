@@ -4,6 +4,12 @@ import { insertLead } from './leads'
 
 const ONLINE_SEGUNDOS = 45
 
+// Emite a mensagem em tempo real (Socket.IO) para quem está na conversa
+function emitMsg(conversaId: string, msg: unknown) {
+  const io = (globalThis as unknown as { __io?: { to: (r: string) => { emit: (e: string, p: unknown) => void } } }).__io
+  io?.to(conversaId).emit('nova-msg', { conversaId, msg })
+}
+
 export async function heartbeat(userId: string) {
   await pool.query(`UPDATE admin_users SET last_seen = NOW() WHERE id = $1`, [userId])
 }
@@ -90,6 +96,7 @@ export async function enviarMensagem(conversaId: string, autorId: string, autorN
     [conversaId, autorId, autorNome, texto || null, arquivoUrl || null, arquivoNome || null]
   )
   await pool.query(`UPDATE chat_conversas SET atualizado_em = NOW() WHERE id = $1`, [conversaId])
+  emitMsg(conversaId, res.rows[0])
   emitCrmChange()
   return res.rows[0]
 }
@@ -140,6 +147,7 @@ export async function enviarVisitante(conversaId: string, nome: string, texto: s
     [conversaId, nome, texto]
   )
   await pool.query(`UPDATE chat_conversas SET atualizado_em = NOW() WHERE id = $1`, [conversaId])
+  emitMsg(conversaId, res.rows[0])
   emitCrmChange()
   return res.rows[0]
 }

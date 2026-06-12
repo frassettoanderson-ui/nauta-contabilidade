@@ -7,6 +7,7 @@ import {
   chatContatos, chatConversas, chatSite, chatAbrirDM, chatMensagens, chatEnviar, chatMarcarLido, uploadDoc,
   type ChatContato, type ChatConversa, type ChatConversaSite, type ChatMensagem,
 } from '@/lib/api'
+import { getSocket } from '@/lib/socket-client'
 
 const ROLE: Record<string, string> = { admin: 'Admin', gerente: 'Gerente', comercial: 'Comercial', fiscal: 'Fiscal', pessoal: 'Pessoal', atendente: 'Atendente' }
 const ehImagem = (s: string) => /\.(png|jpe?g|gif|webp|svg|bmp)$/i.test(s || '')
@@ -60,16 +61,27 @@ export default function ChatButton() {
     return () => clearInterval(t)
   }, [meId, carregarListas])
 
-  // Mensagens da conversa ativa (polling rápido)
+  // Mensagens da conversa ativa (Socket.IO em tempo real + fallback)
   useEffect(() => {
     if (!ativo) return
     let parar = false
     const load = () => chatMensagens(ativo.conversaId).then(m => { if (!parar) setMsgs(m) }).catch(() => {})
     load()
     chatMarcarLido(ativo.conversaId).catch(() => {})
-    const t = setInterval(load, 2500)
-    return () => { parar = true; clearInterval(t) }
-  }, [ativo])
+
+    const socket = getSocket()
+    socket.emit('join', ativo.conversaId)
+    const onMsg = (data: { conversaId: string; msg: ChatMensagem }) => {
+      if (data?.conversaId !== ativo.conversaId) return
+      setMsgs(m => m.some(x => x.id === data.msg.id) ? m : [...m, data.msg])
+      chatMarcarLido(ativo.conversaId).catch(() => {})
+      carregarListas()
+    }
+    socket.on('nova-msg', onMsg)
+
+    const t = setInterval(load, 12000) // fallback caso o socket caia
+    return () => { parar = true; clearInterval(t); socket.emit('leave', ativo.conversaId); socket.off('nova-msg', onMsg) }
+  }, [ativo, carregarListas])
 
   useEffect(() => { fimRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [msgs])
 

@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import Image from 'next/image'
 import { X, Send, MessageSquare } from 'lucide-react'
+import { getSocket } from '@/lib/socket-client'
 
 interface Bolha { de: 'bot' | 'me'; texto: string }
 type Step = 'inicio' | 'cli_nome' | 'cli_empresa' | 'cli_setor' | 'nc_nome' | 'nc_tel' | 'nc_email' | 'nc_interesse' | 'chat'
@@ -47,8 +48,12 @@ export default function FloatingChat() {
   useEffect(() => {
     if (step !== 'chat' || !conversaId) return
     carregar()
-    const t = setInterval(carregar, 3000)
-    return () => clearInterval(t)
+    const socket = getSocket()
+    socket.emit('join', conversaId)
+    const onMsg = (data: { conversaId: string }) => { if (data?.conversaId === conversaId) carregar() }
+    socket.on('nova-msg', onMsg)
+    const t = setInterval(carregar, 10000) // fallback
+    return () => { clearInterval(t); socket.emit('leave', conversaId); socket.off('nova-msg', onMsg) }
   }, [step, conversaId, carregar])
 
   async function finalizar(ehCliente: boolean, setor: string, d: typeof dados) {

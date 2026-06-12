@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "node server.js",
     "lint": "next lint"
   },
   "dependencies": {
@@ -34,6 +34,8 @@
     "react": "^18",
     "react-dom": "^18",
     "slugify": "^1.6.9",
+    "socket.io": "^4.8.3",
+    "socket.io-client": "^4.8.3",
     "tailwind-merge": "^3.6.0"
   },
   "devDependencies": {

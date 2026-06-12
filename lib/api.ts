@@ -327,6 +327,35 @@ export function getDashboard(): Promise<DashboardData> {
   return fetch('/api/dashboard').then(r => json<DashboardData>(r))
 }
 
+// ─── CHAT INTERNO ────────────────────────────────────────────────────────────
+
+export interface ChatContato { id: string; username: string; nome_completo: string | null; role: string; foto_url: string | null; online: boolean }
+export interface ChatConversa {
+  id: string; tipo: string; setor: string | null; visitante_nome: string | null; atualizado_em: string
+  outro_id: string | null; outro_nome: string | null; outro_role: string | null; outro_foto: string | null; outro_online: boolean
+  ultima_msg: string | null; ultima_arq: string | null; nao_lidas: number | string
+}
+export interface ChatMensagem { id: string; autor_id: string | null; autor_tipo: string; autor_nome: string | null; texto: string | null; arquivo_url: string | null; arquivo_nome: string | null; criado_em: string }
+
+export function chatContatos(): Promise<ChatContato[]> {
+  return fetch('/api/chat/contatos').then(r => json<ChatContato[]>(r))
+}
+export function chatConversas(): Promise<ChatConversa[]> {
+  return fetch('/api/chat/conversas').then(r => json<ChatConversa[]>(r))
+}
+export function chatAbrirDM(outroId: string): Promise<{ conversaId: string }> {
+  return fetch('/api/chat/conversas', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ outroId }) }).then(r => json(r))
+}
+export function chatMensagens(conversaId: string): Promise<ChatMensagem[]> {
+  return fetch(`/api/chat/${conversaId}/mensagens`).then(r => json<ChatMensagem[]>(r))
+}
+export function chatEnviar(conversaId: string, texto: string, arquivo_url?: string | null, arquivo_nome?: string | null): Promise<ChatMensagem> {
+  return fetch(`/api/chat/${conversaId}/mensagens`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ texto, arquivo_url, arquivo_nome }) }).then(r => json(r))
+}
+export function chatMarcarLido(conversaId: string): Promise<void> {
+  return fetch(`/api/chat/${conversaId}/lido`, { method: 'POST' }).then(r => json(r)).then(() => undefined)
+}
+
 export interface PagamentoRow { id: string; competencia: string; valor: number | string | null; pago_em: string | null; criado_em: string }
 export function listPagamentos(leadId: string): Promise<PagamentoRow[]> {
   return fetch(`/api/financeiro/${leadId}/pagamentos`).then(r => json<PagamentoRow[]>(r))

@@ -43,6 +43,18 @@ export default function ChatButton() {
   const [toasts, setToasts] = useState<{ id: string; tipo: string; conversaId: string; titulo: string; texto?: string; setor?: string }[]>([])
   const openRef = useRef(false); openRef.current = open
   const ativoRef = useRef<typeof ativo>(null); ativoRef.current = ativo
+  const [digitando, setDigitando] = useState<string | null>(null)
+  const digEmitRef = useRef<number | null>(null)
+  const digRecvRef = useRef<number | null>(null)
+
+  function aoDigitar(v: string) {
+    setTexto(v)
+    if (!ativo) return
+    const socket = getSocket()
+    socket.emit('digitando', { conversaId: ativo.conversaId, nome: meNome })
+    if (digEmitRef.current) clearTimeout(digEmitRef.current)
+    digEmitRef.current = window.setTimeout(() => socket.emit('parou', { conversaId: ativo.conversaId }), 1800)
+  }
 
   function tocarNudge() {
     try { const a = new Audio('/atencao.wav'); a.volume = 0.6; a.play().catch(() => {}) } catch { /* ignora */ }
@@ -165,16 +177,27 @@ export default function ChatButton() {
 
     const socket = getSocket()
     socket.emit('join', ativo.conversaId)
+    setDigitando(null)
     const onMsg = (data: { conversaId: string; msg: ChatMensagem }) => {
       if (data?.conversaId !== ativo.conversaId) return
       setMsgs(m => m.some(x => x.id === data.msg.id) ? m : [...m, data.msg])
+      setDigitando(null)
       chatMarcarLido(ativo.conversaId).catch(() => {})
       carregarListas()
     }
     socket.on('nova-msg', onMsg)
+    const onDig = (p: { conversaId: string; nome?: string }) => {
+      if (p?.conversaId !== ativo.conversaId) return
+      setDigitando(p.nome || 'Digitando')
+      if (digRecvRef.current) clearTimeout(digRecvRef.current)
+      digRecvRef.current = window.setTimeout(() => setDigitando(null), 3000)
+    }
+    const onParou = (p: { conversaId: string }) => { if (p?.conversaId === ativo.conversaId) setDigitando(null) }
+    socket.on('digitando', onDig)
+    socket.on('parou', onParou)
 
     const t = setInterval(load, 12000) // fallback caso o socket caia
-    return () => { parar = true; clearInterval(t); socket.emit('leave', ativo.conversaId); socket.off('nova-msg', onMsg) }
+    return () => { parar = true; clearInterval(t); socket.emit('leave', ativo.conversaId); socket.off('nova-msg', onMsg); socket.off('digitando', onDig); socket.off('parou', onParou) }
   }, [ativo, carregarListas])
 
   useEffect(() => { fimRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [msgs])
@@ -218,6 +241,7 @@ export default function ChatButton() {
     if (!ativo || (!texto.trim() && !enviando)) return
     const t = texto.trim(); if (!t) return
     setTexto('')
+    getSocket().emit('parou', { conversaId: ativo.conversaId })
     const novo = await chatEnviar(ativo.conversaId, t).catch(() => null)
     if (novo) setMsgs(m => m.some(x => x.id === novo.id) ? m : [...m, novo])
     carregarListas()
@@ -349,7 +373,7 @@ export default function ChatButton() {
                   <Avatar foto={ativo.foto} nome={ativo.nome} online={ativo.online} size={34} />
                   <div className="min-w-0">
                     <p className="text-sm font-bold text-white truncate">{ativo.nome}</p>
-                    <p className="text-[11px] text-gray-500">{ativo.subtitulo}</p>
+                    {digitando ? <p className="text-[11px] text-[#0BBCD4] italic">digitando…</p> : <p className="text-[11px] text-gray-500">{ativo.subtitulo}</p>}
                   </div>
                   <div className="ml-auto flex items-center gap-1">
                     {!ativo.site && (
@@ -392,7 +416,7 @@ export default function ChatButton() {
                     {enviando ? <Loader2 size={16} className="animate-spin" /> : <Paperclip size={16} />}
                     <input type="file" className="hidden" onChange={enviarArquivo} disabled={enviando} />
                   </label>
-                  <input value={texto} onChange={e => setTexto(e.target.value)} onKeyDown={e => e.key === 'Enter' && enviar()}
+                  <input value={texto} onChange={e => aoDigitar(e.target.value)} onKeyDown={e => e.key === 'Enter' && enviar()}
                     placeholder="Mensagem..." className="flex-1 h-9 px-3 rounded-lg text-sm text-white placeholder-gray-600 outline-none" style={{ background: 'var(--sys-surface-3)', border: '1px solid var(--sys-border-2)' }} />
                   <button onClick={enviar} disabled={!texto.trim()} className="w-9 h-9 rounded-lg flex items-center justify-center text-white disabled:opacity-40" style={{ background: 'linear-gradient(135deg, #0BBCD4, #0999ae)' }}>
                     <Send size={16} />

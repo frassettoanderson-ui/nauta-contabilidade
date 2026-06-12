@@ -25,6 +25,9 @@ export default function FloatingChat() {
   const [conversaId, setConversaId] = useState<string | null>(null)
   const [nomeCliente, setNomeCliente] = useState('')
   const [serverMsgs, setServerMsgs] = useState<{ id: string; autor_tipo: string; texto: string | null }[]>([])
+  const [atendenteDigitando, setAtendenteDigitando] = useState(false)
+  const digEmitRef = useRef<number | null>(null)
+  const digRecvRef = useRef<number | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const fimRef = useRef<HTMLDivElement>(null)
 
@@ -53,11 +56,29 @@ export default function FloatingChat() {
     carregar()
     const socket = getSocket()
     socket.emit('join', conversaId)
-    const onMsg = (data: { conversaId: string }) => { if (data?.conversaId === conversaId) carregar() }
+    const onMsg = (data: { conversaId: string }) => { if (data?.conversaId === conversaId) { setAtendenteDigitando(false); carregar() } }
     socket.on('nova-msg', onMsg)
+    const onDig = (p: { conversaId: string }) => {
+      if (p?.conversaId !== conversaId) return
+      setAtendenteDigitando(true)
+      if (digRecvRef.current) clearTimeout(digRecvRef.current)
+      digRecvRef.current = window.setTimeout(() => setAtendenteDigitando(false), 3000)
+    }
+    const onParou = (p: { conversaId: string }) => { if (p?.conversaId === conversaId) setAtendenteDigitando(false) }
+    socket.on('digitando', onDig)
+    socket.on('parou', onParou)
     const t = setInterval(carregar, 10000) // fallback
-    return () => { clearInterval(t); socket.emit('leave', conversaId); socket.off('nova-msg', onMsg) }
+    return () => { clearInterval(t); socket.emit('leave', conversaId); socket.off('nova-msg', onMsg); socket.off('digitando', onDig); socket.off('parou', onParou) }
   }, [step, conversaId, carregar])
+
+  function aoDigitarSite(v: string) {
+    setInput(v)
+    if (step !== 'chat' || !conversaId) return
+    const socket = getSocket()
+    socket.emit('digitando', { conversaId, nome: nomeCliente || 'Cliente' })
+    if (digEmitRef.current) clearTimeout(digEmitRef.current)
+    digEmitRef.current = window.setTimeout(() => socket.emit('parou', { conversaId }), 1800)
+  }
 
   async function finalizar(ehCliente: boolean, setor: string, d: typeof dados) {
     addBot('Perfeito! Estou te transferindo para o setor responsável. Em breve um atendente fala com você por aqui. 😊')
@@ -97,6 +118,7 @@ export default function FloatingChat() {
     else if (step === 'nc_email') { setDados(d => ({ ...d, email: v })); addBot('Por último: qual assunto você procura?'); setStep('nc_interesse') }
     else if (step === 'chat' && conversaId) {
       const nome = localStorage.getItem('nauta-site-chat-nome') ?? 'Visitante'
+      getSocket().emit('parou', { conversaId })
       fetch('/api/site-chat/mensagem', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ conversaId, nome, texto: v }) }).then(carregar)
     }
   }
@@ -162,6 +184,13 @@ export default function FloatingChat() {
                     </div>
                   )
                 })}
+                {atendenteDigitando && !encerrada && (
+                  <div className="flex justify-start">
+                    <div className="bg-white rounded-2xl rounded-tl-none px-3.5 py-2 shadow-sm">
+                      <span className="text-gray-500 text-sm italic">digitando…</span>
+                    </div>
+                  </div>
+                )}
                 {encerrada && (
                   <div className="text-center pt-2">
                     <p className="text-xs text-gray-500 mb-2">🔒 Este atendimento foi encerrado.</p>
@@ -194,7 +223,7 @@ export default function FloatingChat() {
           {/* Input */}
           {usaInput && (
             <div className="p-2.5 bg-white border-t border-gray-100 flex items-center gap-2 shrink-0">
-              <input ref={inputRef} value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && responderTexto()}
+              <input ref={inputRef} value={input} onChange={e => aoDigitarSite(e.target.value)} onKeyDown={e => e.key === 'Enter' && responderTexto()}
                 placeholder={placeholder} className="flex-1 text-sm text-gray-700 outline-none bg-gray-100 rounded-full px-4 py-2.5 placeholder-gray-400" />
               <button onClick={responderTexto} disabled={!input.trim()} aria-label="Enviar" className="w-9 h-9 bg-[#0BBCD4] hover:bg-[#0999ae] disabled:opacity-40 rounded-full flex items-center justify-center shrink-0">
                 <Send size={15} className="text-white" />

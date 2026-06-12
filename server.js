@@ -30,6 +30,9 @@ app.prepare().then(() => {
       }
     })
     socket.on('leave', (room) => { if (room) socket.leave(String(room)) })
+    // "digitando" — repassa para os outros na mesma conversa
+    socket.on('digitando', (p) => { if (p && p.conversaId) socket.to(String(p.conversaId)).emit('digitando', p) })
+    socket.on('parou', (p) => { if (p && p.conversaId) socket.to(String(p.conversaId)).emit('parou', p) })
     socket.on('disconnect', () => {
       const uid = socket.data.uid
       if (!uid) return

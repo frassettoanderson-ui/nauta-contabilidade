@@ -4,8 +4,8 @@ import { useEffect, useRef, useState, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import { MessageCircle, X, Send, Paperclip, Loader2, ArrowLeft } from 'lucide-react'
 import {
-  chatContatos, chatConversas, chatAbrirDM, chatMensagens, chatEnviar, chatMarcarLido, uploadDoc,
-  type ChatContato, type ChatConversa, type ChatMensagem,
+  chatContatos, chatConversas, chatSite, chatAbrirDM, chatMensagens, chatEnviar, chatMarcarLido, uploadDoc,
+  type ChatContato, type ChatConversa, type ChatConversaSite, type ChatMensagem,
 } from '@/lib/api'
 
 const ROLE: Record<string, string> = { admin: 'Admin', gerente: 'Gerente', comercial: 'Comercial', fiscal: 'Fiscal', pessoal: 'Pessoal', atendente: 'Atendente' }
@@ -33,18 +33,21 @@ export default function ChatButton() {
   const [open, setOpen] = useState(false)
   const [contatos, setContatos] = useState<ChatContato[]>([])
   const [conversas, setConversas] = useState<ChatConversa[]>([])
-  const [ativo, setAtivo] = useState<{ conversaId: string; nome: string; foto: string | null; role: string; online: boolean } | null>(null)
+  const [siteConvs, setSiteConvs] = useState<ChatConversaSite[]>([])
+  const [ativo, setAtivo] = useState<{ conversaId: string; nome: string; foto: string | null; subtitulo: string; online: boolean } | null>(null)
   const [msgs, setMsgs] = useState<ChatMensagem[]>([])
   const [texto, setTexto] = useState('')
   const [enviando, setEnviando] = useState(false)
   const fimRef = useRef<HTMLDivElement>(null)
 
   const naoLidasTotal = conversas.reduce((s, c) => s + Number(c.nao_lidas || 0), 0)
+    + siteConvs.reduce((s, c) => s + Number(c.nao_lidas || 0), 0)
 
   // Presença + conversas (polling)
   const carregarListas = useCallback(() => {
     chatContatos().then(setContatos).catch(() => {})
     chatConversas().then(setConversas).catch(() => {})
+    chatSite().then(setSiteConvs).catch(() => {})
   }, [])
 
   useEffect(() => {
@@ -69,7 +72,11 @@ export default function ChatButton() {
 
   async function abrirContato(c: ChatContato) {
     const { conversaId } = await chatAbrirDM(c.id)
-    setAtivo({ conversaId, nome: c.nome_completo || c.username, foto: c.foto_url, role: c.role, online: c.online })
+    setAtivo({ conversaId, nome: c.nome_completo || c.username, foto: c.foto_url, subtitulo: (ROLE[c.role] ?? c.role) + (c.online ? ' · online' : ''), online: c.online })
+  }
+
+  function abrirSite(c: ChatConversaSite) {
+    setAtivo({ conversaId: c.id, nome: c.visitante_nome || 'Visitante', foto: null, subtitulo: `Via site · ${ROLE[c.setor ?? ''] ?? c.setor ?? 'Atendimento'}`, online: false })
   }
 
   async function enviar() {
@@ -120,6 +127,29 @@ export default function ChatButton() {
               <button onClick={() => setOpen(false)} className="lg:hidden text-gray-400"><X size={20} /></button>
             </div>
             <div className="flex-1 overflow-y-auto">
+              {/* Atendimentos do site */}
+              {siteConvs.length > 0 && (
+                <div className="border-b" style={{ borderColor: 'var(--sys-border)' }}>
+                  <p className="text-[10px] font-bold uppercase tracking-wide text-gray-500 px-3 pt-2 pb-1">Atendimentos do site</p>
+                  {siteConvs.map(c => {
+                    const nl = Number(c.nao_lidas || 0)
+                    return (
+                      <button key={c.id} onClick={() => abrirSite(c)}
+                        className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-white/[0.04] transition-colors text-left">
+                        <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ background: 'rgba(124,111,255,0.15)', border: '1px solid rgba(124,111,255,0.3)' }}>
+                          <MessageCircle size={16} className="text-[#a99bff]" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-semibold text-white truncate">{c.visitante_nome || 'Visitante'}</p>
+                          <p className="text-[11px] text-gray-500 truncate">{ROLE[c.setor ?? ''] ?? c.setor} · {c.ultima_msg || 'novo'}</p>
+                        </div>
+                        {nl > 0 && <span className="min-w-5 h-5 px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">{nl}</span>}
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+              <p className="text-[10px] font-bold uppercase tracking-wide text-gray-500 px-3 pt-2 pb-1">Equipe</p>
               {contatos.length === 0 && <p className="text-gray-600 text-xs text-center py-8">Nenhum contato.</p>}
               {contatos.map(c => {
                 const nl = Number(unreadDe(c.id) || 0)
@@ -149,7 +179,7 @@ export default function ChatButton() {
                   <Avatar foto={ativo.foto} nome={ativo.nome} online={ativo.online} size={34} />
                   <div className="min-w-0">
                     <p className="text-sm font-bold text-white truncate">{ativo.nome}</p>
-                    <p className="text-[11px] text-gray-500">{ROLE[ativo.role] ?? ativo.role}{ativo.online ? ' · online' : ''}</p>
+                    <p className="text-[11px] text-gray-500">{ativo.subtitulo}</p>
                   </div>
                   <button onClick={() => setOpen(false)} className="ml-auto text-gray-400 hover:text-white hidden lg:block"><X size={18} /></button>
                 </div>

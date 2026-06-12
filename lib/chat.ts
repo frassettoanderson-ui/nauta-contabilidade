@@ -51,8 +51,25 @@ export async function listConversas(meId: string) {
        JOIN chat_participantes p ON p.conversa_id = c.id AND p.user_id = $1
        LEFT JOIN chat_participantes po ON po.conversa_id = c.id AND po.user_id <> $1
        LEFT JOIN admin_users u ON u.id = po.user_id
+      WHERE c.tipo = 'interna'
       ORDER BY c.atualizado_em DESC`,
     [meId]
+  )
+  return res.rows
+}
+
+// Conversas vindas do site, pelo setor do usuário (gerente/admin veem todas)
+export async function listConversasSite(meId: string, role: string) {
+  const res = await pool.query(
+    `SELECT c.id, c.setor, c.visitante_nome, c.visitante_contato, c.atualizado_em,
+            (SELECT m.texto FROM chat_mensagens m WHERE m.conversa_id = c.id AND m.autor_tipo <> 'bot' ORDER BY m.criado_em DESC LIMIT 1) AS ultima_msg,
+            (SELECT COUNT(*) FROM chat_mensagens m WHERE m.conversa_id = c.id AND m.autor_tipo = 'visitante'
+              AND m.criado_em > COALESCE(p.lido_em, '1970-01-01')) AS nao_lidas
+       FROM chat_conversas c
+       LEFT JOIN chat_participantes p ON p.conversa_id = c.id AND p.user_id = $1
+      WHERE c.tipo = 'site' AND ($2 = 'admin' OR $2 = 'gerente' OR c.setor = $2)
+      ORDER BY c.atualizado_em DESC`,
+    [meId, role]
   )
   return res.rows
 }
@@ -78,7 +95,12 @@ export async function enviarMensagem(conversaId: string, autorId: string, autorN
 }
 
 export async function marcarLido(conversaId: string, userId: string) {
-  await pool.query(`UPDATE chat_participantes SET lido_em = NOW() WHERE conversa_id = $1 AND user_id = $2`, [conversaId, userId])
+  // UPSERT: abrir uma conversa do site (sem participante ainda) cria o vínculo e marca como lida
+  await pool.query(
+    `INSERT INTO chat_participantes (conversa_id, user_id, lido_em) VALUES ($1, $2, NOW())
+     ON CONFLICT (conversa_id, user_id) DO UPDATE SET lido_em = NOW()`,
+    [conversaId, userId]
+  )
 }
 
 // ─── CHAT DO SITE (bot/visitante) ────────────────────────────────────────────

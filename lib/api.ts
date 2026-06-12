@@ -343,6 +343,10 @@ export function chatContatos(): Promise<ChatContato[]> {
 export function chatConversas(): Promise<ChatConversa[]> {
   return fetch('/api/chat/conversas').then(r => json<ChatConversa[]>(r))
 }
+export interface ChatConversaSite { id: string; setor: string | null; visitante_nome: string | null; visitante_contato: string | null; atualizado_em: string; ultima_msg: string | null; nao_lidas: number | string }
+export function chatSite(): Promise<ChatConversaSite[]> {
+  return fetch('/api/chat/site').then(r => json<ChatConversaSite[]>(r))
+}
 export function chatAbrirDM(outroId: string): Promise<{ conversaId: string }> {
   return fetch('/api/chat/conversas', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ outroId }) }).then(r => json(r))
 }

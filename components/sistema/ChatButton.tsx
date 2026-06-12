@@ -99,7 +99,7 @@ export default function ChatButton() {
     const t = texto.trim(); if (!t) return
     setTexto('')
     const novo = await chatEnviar(ativo.conversaId, t).catch(() => null)
-    if (novo) setMsgs(m => [...m, novo])
+    if (novo) setMsgs(m => m.some(x => x.id === novo.id) ? m : [...m, novo])
     carregarListas()
   }
 
@@ -109,7 +109,7 @@ export default function ChatButton() {
     try {
       const r = await uploadDoc(f)
       const novo = await chatEnviar(ativo.conversaId, '', r.url, f.name)
-      setMsgs(m => [...m, novo])
+      setMsgs(m => m.some(x => x.id === novo.id) ? m : [...m, novo])
       carregarListas()
     } catch { alert('Erro ao enviar arquivo.') }
     finally { setEnviando(false); e.target.value = '' }

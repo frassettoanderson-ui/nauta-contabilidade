@@ -98,11 +98,16 @@ export async function getLeadDetail(id: string) {
   return { ...lead.rows[0], atividades: atividades.rows, lembretes: lembretes.rows }
 }
 
-export async function updateLead(id: string, fields: Partial<{ nome: string; whatsapp: string; email: string; interesse: string; etapa: string; classificacao: number }>) {
-  const keys = Object.keys(fields)
+const LEAD_UPDATE_COLS = new Set([
+  'nome', 'whatsapp', 'email', 'interesse', 'etapa', 'classificacao',
+  'valor_honorario', 'valor_abertura', 'honorario_vencimento', 'negociacao_obs',
+])
+
+export async function updateLead(id: string, fields: Record<string, unknown>) {
+  const keys = Object.keys(fields).filter(k => LEAD_UPDATE_COLS.has(k))
   if (keys.length === 0) return
   const sets = keys.map((k, i) => `${k} = $${i + 2}`).join(', ')
-  const values = keys.map(k => (fields as Record<string, unknown>)[k])
+  const values = keys.map(k => fields[k])
   await pool.query(`UPDATE leads SET ${sets} WHERE id = $1`, [id, ...values])
   emitCrmChange()
 }

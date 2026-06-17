@@ -215,6 +215,9 @@ export default function KanbanPage() {
                                 {Number(l.valor_abertura) > 0 && <> · Abertura: <span className="text-[#22c55e] font-bold">R$ {Number(l.valor_abertura).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span></>}
                               </p>
                             )}
+                            {l.negociacao_obs && (
+                              <p className="text-[11px] text-gray-500 mb-2 whitespace-pre-wrap border-l-2 border-[#0BBCD4]/50 pl-2">{String(l.negociacao_obs)}</p>
+                            )}
                             {l.cadastro_completo ? (
                               l.contrato_autentique_status === 'assinado' ? (
                                 <button onClick={() => handleIniciarOnboarding(l)}

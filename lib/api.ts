@@ -109,6 +109,7 @@ export interface LeadRow {
   cadastro_completo?: boolean
   valor_honorario?: number | string | null
   valor_abertura?: number | string | null
+  negociacao_obs?: string | null
   responsavel_id?: string | null
   responsavel_nome?: string | null
   origem?: string | null

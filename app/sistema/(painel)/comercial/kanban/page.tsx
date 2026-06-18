@@ -194,7 +194,7 @@ export default function KanbanPage() {
                             <MessageCircle size={19} />
                           </a>
                           <AcaoBtn title="Editar" onClick={() => abrir(l.id, 'edit')}><Pencil size={18} /></AcaoBtn>
-                          <AcaoBtn title="Cadastro completo" onClick={() => router.push(`/sistema/clientes/cadastrar?lead=${l.id}`)} color="#22c55e"><ClipboardCheck size={19} /></AcaoBtn>
+                          <AcaoBtn title="Cadastro completo" onClick={() => router.push(`/sistema/clientes/cadastrar?lead=${l.id}&edit=1`)} color="#22c55e"><ClipboardCheck size={19} /></AcaoBtn>
                           <AcaoBtn title="Cadastrar lembrete" onClick={() => abrir(l.id, 'lembrete')} color="#f59e0b"><Bell size={18} /></AcaoBtn>
                         </div>
 
@@ -237,7 +237,7 @@ export default function KanbanPage() {
                                 <button disabled className="w-full flex items-center justify-center gap-1.5 h-8 rounded-lg text-xs font-bold text-gray-500 cursor-not-allowed" style={{ background: 'var(--sys-surface-3)' }}>
                                   <FileText size={13} /> Gerar contrato
                                 </button>
-                                <button onClick={() => router.push(`/sistema/clientes/cadastrar?lead=${l.id}`)}
+                                <button onClick={() => router.push(`/sistema/clientes/cadastrar?lead=${l.id}&edit=1`)}
                                   className="w-full flex items-center justify-center gap-1 mt-1.5 text-[11px] font-bold text-red-400 animate-pulse">
                                   <AlertCircle size={11} /> Cadastro do cliente incompleto, clique aqui
                                 </button>

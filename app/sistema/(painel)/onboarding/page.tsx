@@ -125,7 +125,7 @@ export default function OnboardingPage() {
                         <MessageCircle size={15} />
                       </a>
                       <MiniBtn title="Editar lead" onClick={() => setEditId(c.id)}><Pencil size={14} /></MiniBtn>
-                      <MiniBtn title="Cadastro" onClick={() => router.push(`/sistema/clientes/cadastrar?lead=${c.id}`)} color="#22c55e"><ClipboardCheck size={15} /></MiniBtn>
+                      <MiniBtn title="Cadastro" onClick={() => router.push(`/sistema/clientes/cadastrar?lead=${c.id}&edit=1`)} color="#22c55e"><ClipboardCheck size={15} /></MiniBtn>
                     </div>
                   </div>
                 </div>

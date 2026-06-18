@@ -106,6 +106,7 @@ function Wizard() {
 
   const leadId = params.get('lead') || undefined
   const clienteParam = params.get('cliente') || undefined
+  const abrirEditavel = params.get('edit') === '1'
 
   const [step, setStep] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -135,7 +136,7 @@ function Wizard() {
       else if (leadId) data = await getClienteByLead(leadId)
       if (data) {
         setClienteId(data.id as string)
-        setReadOnly(true) // cadastro existente abre travado; "Editar" libera
+        setReadOnly(!abrirEditavel) // cadastro existente abre travado; com ?edit=1 (preencher) já abre liberado
         const c: Obj = {}, e: Obj = {}
         Object.entries(data).forEach(([k, v]) => { if (k.startsWith('cli_')) c[k] = v; if (k.startsWith('emp_')) e[k] = v })
         setCli(c); setEmp({ emp_usa_glp: false, ...e })

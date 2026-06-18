@@ -146,7 +146,7 @@ export default function LeadModal({ leadId, onClose, onChanged, mode = 'view' }:
                 {!editing && (() => {
                   const piscando = d.etapa === 'fechado' && !cadastroCompleto
                   return (
-                    <button onClick={() => router.push(`/sistema/clientes/cadastrar?lead=${leadId}`)} title="Cadastro completo"
+                    <button onClick={() => router.push(`/sistema/clientes/cadastrar?lead=${leadId}&edit=1`)} title="Cadastro completo"
                       className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${piscando ? 'animate-pulse' : 'hover:bg-white/5'}`}
                       style={piscando ? { background: 'rgba(239,68,68,0.18)', color: '#f87171', border: '1px solid rgba(239,68,68,0.4)' } : { background: 'rgba(34,197,94,0.12)', color: '#22c55e', border: '1px solid rgba(34,197,94,0.25)' }}>
                       <ClipboardCheck size={19} />
@@ -338,7 +338,7 @@ export default function LeadModal({ leadId, onClose, onChanged, mode = 'view' }:
                       <button disabled className="w-full h-11 rounded-xl font-bold text-gray-500 flex items-center justify-center gap-2 cursor-not-allowed" style={{ background: 'var(--sys-surface-3)' }}>
                         <FileText size={16} /> Gerar contrato
                       </button>
-                      <button onClick={() => router.push(`/sistema/clientes/cadastrar?lead=${leadId}`)}
+                      <button onClick={() => router.push(`/sistema/clientes/cadastrar?lead=${leadId}&edit=1`)}
                         className="w-full mt-2 text-xs font-bold text-red-400 animate-pulse">
                         Cadastro do cliente incompleto, clique aqui
                       </button>

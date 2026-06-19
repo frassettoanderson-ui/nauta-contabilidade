@@ -140,6 +140,11 @@ export function enviarParaAssinatura(leadId: string): Promise<{ ok: boolean; aut
     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ leadId }),
   }).then(r => json(r))
 }
+export function cancelarAssinatura(leadId: string): Promise<{ ok: boolean }> {
+  return fetch('/api/contratos/cancelar', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ leadId }),
+  }).then(r => json(r))
+}
 
 export interface AtividadeRow {
   id: string

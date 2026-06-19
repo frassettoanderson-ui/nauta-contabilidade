@@ -88,6 +88,16 @@ export async function assinarDocumento(documentId: string): Promise<void> {
   `)
 }
 
+/** Cancela/exclui um documento na Autentique (invalida os links de assinatura). Recebe o id do DOCUMENTO. */
+export async function deletarDocumento(documentId: string): Promise<boolean> {
+  const data = await gql(`
+    mutation {
+      deleteDocument(id: "${documentId}")
+    }
+  `)
+  return Boolean((data as Record<string, unknown>).deleteDocument)
+}
+
 /** Consulta status de um documento */
 export async function consultarDocumento(documentId: string) {
   const data = await gql(`

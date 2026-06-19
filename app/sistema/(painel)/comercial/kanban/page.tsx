@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Loader2, Plus, Bell, Check, XCircle, FileText, MessageCircle, Pencil, ClipboardCheck, AlertCircle, Rocket } from 'lucide-react'
-import { getLeads, updateLead, iniciarOnboarding, type LeadRow } from '@/lib/api'
+import { getLeads, updateLead, iniciarOnboarding, cancelarAssinatura, type LeadRow } from '@/lib/api'
 import { ETAPAS } from '@/lib/crm-config'
 import { versiculoAleatorio, type Versiculo } from '@/lib/versiculos'
 import ClassBar from '@/components/sistema/ClassBar'
@@ -83,6 +83,16 @@ export default function KanbanPage() {
       load()
     } catch {
       alert('Não foi possível iniciar. Verifique se o interesse do lead é uma categoria válida (não pode ser "Outro").')
+    }
+  }
+
+  async function handleCancelarAssinatura(l: LeadRow) {
+    if (!confirm(`Cancelar o envio do contrato de "${l.nome}"? O documento será excluído na Autentique e o link enviado ao cliente deixará de funcionar. Você poderá reenviar depois.`)) return
+    try {
+      await cancelarAssinatura(l.id)
+      load()
+    } catch {
+      alert('Não foi possível cancelar. Talvez o contrato já tenha sido assinado.')
     }
   }
 
@@ -230,11 +240,19 @@ export default function KanbanPage() {
                                   <Rocket size={14} /> Iniciar Onboarding
                                 </button>
                               ) : (
-                                <button onClick={() => abrir(l.id, 'view')}
-                                  className="w-full flex items-center justify-center gap-1.5 h-8 rounded-lg text-xs font-bold text-white"
-                                  style={{ background: l.contrato_autentique_status === 'pendente' ? 'rgba(251,191,36,0.2)' : l.contrato_status ? 'linear-gradient(135deg, #7c6fff, #6355e0)' : 'linear-gradient(135deg, #22c55e, #16a34a)' }}>
-                                  {l.contrato_autentique_status === 'pendente' ? <><Loader2 size={13} className="animate-spin" /> Aguardando assinatura</> : l.contrato_status ? <><FileText size={13} /> Enviar para assinatura</> : <><FileText size={13} /> Gerar contrato</>}
-                                </button>
+                                <>
+                                  <button onClick={() => abrir(l.id, 'view')}
+                                    className="w-full flex items-center justify-center gap-1.5 h-8 rounded-lg text-xs font-bold text-white"
+                                    style={{ background: l.contrato_autentique_status === 'pendente' ? 'rgba(251,191,36,0.2)' : l.contrato_status ? 'linear-gradient(135deg, #7c6fff, #6355e0)' : 'linear-gradient(135deg, #22c55e, #16a34a)' }}>
+                                    {l.contrato_autentique_status === 'pendente' ? <><Loader2 size={13} className="animate-spin" /> Aguardando assinatura</> : l.contrato_status ? <><FileText size={13} /> Enviar para assinatura</> : <><FileText size={13} /> Gerar contrato</>}
+                                  </button>
+                                  {l.contrato_autentique_status === 'pendente' && (
+                                    <button onClick={() => handleCancelarAssinatura(l)}
+                                      className="w-full flex items-center justify-center gap-1 mt-1.5 text-[11px] font-bold text-red-400 hover:text-red-300">
+                                      <XCircle size={12} /> Cancelar envio
+                                    </button>
+                                  )}
+                                </>
                               )
                             ) : (
                               <>

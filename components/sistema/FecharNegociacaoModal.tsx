@@ -8,13 +8,14 @@ const FIELD = 'w-full h-11 pl-9 pr-4 rounded-xl text-sm text-white placeholder-g
 const FS = { background: 'var(--sys-surface-3)', border: '1px solid var(--sys-border-2)' }
 
 export default function FecharNegociacaoModal({ lead, onClose, onConfirmed }: { lead: LeadRow; onClose: () => void; onConfirmed: () => void }) {
+  const editando = lead.etapa === 'fechado'
   const [honorario, setHonorario] = useState(lead.valor_honorario != null ? String(lead.valor_honorario) : '')
   const [abertura, setAbertura] = useState(lead.valor_abertura != null ? String(lead.valor_abertura) : '')
   const [obs, setObs] = useState(lead.negociacao_obs ?? '')
   const [saving, setSaving] = useState(false)
 
   async function confirmar() {
-    if (!honorario.trim() || Number(honorario) <= 0) { alert('Informe o valor do honorário mensal para fechar.'); return }
+    if (!honorario.trim() || Number(honorario) <= 0) { alert('Informe o valor do honorário mensal.'); return }
     setSaving(true)
     try {
       await updateLead(lead.id, {
@@ -32,10 +33,10 @@ export default function FecharNegociacaoModal({ lead, onClose, onConfirmed }: { 
       <div className="absolute inset-0 backdrop-blur-md" style={{ background: 'rgba(5,4,20,0.8)' }} onClick={onClose} />
       <div className="relative z-10 w-full max-w-sm rounded-2xl p-6" style={{ background: 'rgba(15,14,26,0.97)', border: '1px solid var(--sys-border-2)' }}>
         <div className="flex items-center justify-between mb-1">
-          <h2 className="text-lg font-black text-white">Fechar negociação</h2>
+          <h2 className="text-lg font-black text-white">{editando ? 'Editar negociação' : 'Fechar negociação'}</h2>
           <button onClick={onClose} className="text-gray-500 hover:text-white"><X size={20} /></button>
         </div>
-        <p className="text-gray-500 text-sm mb-5">{lead.nome} — informe os valores acordados.</p>
+        <p className="text-gray-500 text-sm mb-5">{lead.nome} — {editando ? 'ajuste os valores/observação. Gere o contrato novamente para refletir a alteração.' : 'informe os valores acordados.'}</p>
 
         <div className="space-y-3">
           <div>
@@ -64,7 +65,7 @@ export default function FecharNegociacaoModal({ lead, onClose, onConfirmed }: { 
         <button onClick={confirmar} disabled={saving}
           className="w-full h-11 mt-5 font-bold text-white rounded-xl flex items-center justify-center gap-2 disabled:opacity-60"
           style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)' }}>
-          {saving ? <Loader2 size={16} className="animate-spin" /> : <><Check size={16} /> Confirmar fechamento</>}
+          {saving ? <Loader2 size={16} className="animate-spin" /> : <><Check size={16} /> {editando ? 'Salvar alterações' : 'Confirmar fechamento'}</>}
         </button>
       </div>
     </div>

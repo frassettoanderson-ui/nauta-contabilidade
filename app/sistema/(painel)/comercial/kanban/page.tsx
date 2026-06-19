@@ -218,6 +218,10 @@ export default function KanbanPage() {
                             {l.negociacao_obs && (
                               <p className="text-[11px] text-gray-500 mb-2 whitespace-pre-wrap border-l-2 border-[#0BBCD4]/50 pl-2">{String(l.negociacao_obs)}</p>
                             )}
+                            <button onClick={() => setFecharLead(l)}
+                              className="inline-flex items-center gap-1 mb-2 text-[11px] font-bold text-gray-500 hover:text-[#0BBCD4]">
+                              <Pencil size={11} /> Editar honorário / abertura / observação
+                            </button>
                             {l.cadastro_completo ? (
                               l.contrato_autentique_status === 'assinado' ? (
                                 <button onClick={() => handleIniciarOnboarding(l)}

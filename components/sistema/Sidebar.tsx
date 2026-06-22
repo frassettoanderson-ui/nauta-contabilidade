@@ -13,11 +13,14 @@ import {
   Users, UserPlus, Search, FileText, FilePlus, FileClock, FileSearch,
   Briefcase, LayoutGrid, Inbox, BarChart3, TrendingUp, Calculator, UserCog,
   Rocket, Settings, DollarSign, LayoutDashboard, MessageCircle,
-  ArrowDownCircle, ArrowUpCircle, Repeat,
+  ArrowDownCircle, ArrowUpCircle, Repeat, CalendarCheck,
   LogOut, ChevronDown, Menu, X, type LucideIcon,
 } from 'lucide-react'
 
-interface NavLeaf { label: string; href: string; icon: LucideIcon; highlight?: boolean }
+// URL do GestorOA (sistema separado de obrigacoes/entregas). Trocar pelo subdominio quando o SSL estiver pronto.
+const GESTOROA_URL = 'http://89.117.79.163:8090'
+
+interface NavLeaf { label: string; href: string; icon: LucideIcon; highlight?: boolean; external?: boolean }
 interface NavGroup { label: string; icon: LucideIcon; children: NavLeaf[]; highlight?: boolean }
 type NavItem = NavLeaf | NavGroup
 
@@ -42,6 +45,7 @@ const NAV: NavItem[] = [
   ] },
   { label: 'Fiscal',     href: '/sistema/fiscal',     icon: Calculator },
   { label: 'Pessoal',    href: '/sistema/pessoal',    icon: Users },
+  { label: 'GestorOA',   href: GESTOROA_URL, icon: CalendarCheck, external: true },
   { label: 'Financeiro', icon: DollarSign, children: [
     { label: 'Faturamento',    href: '/sistema/financeiro/faturamento',    icon: DollarSign },
     { label: 'Lançar Entrada', href: '/sistema/financeiro/lancar-entrada',  icon: ArrowDownCircle },
@@ -73,7 +77,7 @@ export default function Sidebar({ email }: { email?: string | null }) {
         const children = item.children.filter(c => podeVer(perms, c.href))
         return children.length ? { ...item, children } : null
       }
-      return podeVer(perms, item.href) ? item : null
+      return (item.external || podeVer(perms, item.href)) ? item : null
     })
     .filter((i): i is NavItem => i !== null)
 
@@ -160,6 +164,15 @@ export default function Sidebar({ email }: { email?: string | null }) {
             )
           }
           const active = pathname === item.href
+          if (item.external) {
+            return (
+              <a key={item.href} href={item.href} target="_blank" rel="noopener noreferrer" onClick={() => { playClick(); setMobileOpen(false) }} className={`${itemBase} justify-between`}
+                style={{ color: '#9ca3af' }}>
+                <span className="flex items-center gap-3"><item.icon size={17} /> {item.label}</span>
+                <span className="text-[10px] uppercase tracking-wide text-gray-600">abrir</span>
+              </a>
+            )
+          }
           if (item.highlight) {
             return (
               <Link key={item.href} href={item.href} onClick={() => { playClick(); setMobileOpen(false) }}

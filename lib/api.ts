@@ -307,6 +307,7 @@ export interface OnboardingCliente {
   id: string; nome: string; whatsapp: string; email: string; interesse: string
   valor_honorario: number | string | null
   onboarding_categoria: string | null; cliente_id: string | null
+  emp_cnpj?: string | null
   cadastro_completo: boolean; checks: string[]
 }
 export function getOnboardingBoard(): Promise<OnboardingCliente[]> {

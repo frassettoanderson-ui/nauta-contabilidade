@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { Loader2, Lock, Check, CheckCircle2, Link2, Rocket, MessageCircle, Pencil, ClipboardCheck, X, ChevronDown, ChevronUp } from 'lucide-react'
+import { Loader2, Lock, Check, CheckCircle2, Link2, Rocket, MessageCircle, Pencil, ClipboardCheck, X, ChevronDown, ChevronUp, Copy, ExternalLink } from 'lucide-react'
 import { getOnboardingBoard, setOnboardingCheck, concluirOnboarding, gerarLinkCadastro, type OnboardingCliente } from '@/lib/api'
 import { SETORES, itensDoSetor, gerenteConcluido, podeEditarSetor, checksEfetivos, setorConcluido, setorItensCompletos, tudoConcluido, doneKey, ITEM_CADASTRO, type SetorId } from '@/lib/onboarding-checklist'
 import { ONBOARDING_CATEGORIAS } from '@/lib/onboarding'
@@ -31,6 +31,20 @@ export default function OnboardingPage() {
   const load = useCallback(() => { getOnboardingBoard().then(setBoard).catch(() => setBoard([])) }, [])
   useEffect(() => { load() }, [load])
   useRealtime(load)
+
+  const [cnpjCopiado, setCnpjCopiado] = useState<string | null>(null)
+  function copiarCnpj(cnpj: string, id: string) {
+    navigator.clipboard.writeText(cnpj.replace(/\D/g, '')).then(() => {
+      setCnpjCopiado(id)
+      setTimeout(() => setCnpjCopiado(c => (c === id ? null : c)), 1500)
+    }).catch(() => {})
+  }
+  // Cartão CNPJ da Receita não aceita CNPJ via URL (tem captcha), então ao abrir
+  // também copiamos o CNPJ para colar no formulário.
+  function abrirCartaoCnpj(cnpj: string) {
+    navigator.clipboard.writeText(cnpj.replace(/\D/g, '')).catch(() => {})
+    window.open('https://solucoes.receita.fazenda.gov.br/servicos/cnpjreva/cnpjreva_solicitacao.asp', '_blank', 'noopener')
+  }
 
   async function toggle(c: OnboardingCliente, itemKey: string, done: boolean) {
     setBusy(itemKey + c.id)
@@ -128,6 +142,17 @@ export default function OnboardingPage() {
                       <MiniBtn title="Cadastro" onClick={() => router.push(`/sistema/clientes/cadastrar?lead=${c.id}&edit=1`)} color="#22c55e"><ClipboardCheck size={15} /></MiniBtn>
                     </div>
                   </div>
+                  {c.emp_cnpj && (
+                    <div className="flex items-center justify-between gap-2 mt-1.5">
+                      <span className="text-gray-400 text-xs font-mono tracking-tight truncate">{c.emp_cnpj}</span>
+                      <div className="flex items-center gap-0.5 shrink-0">
+                        <MiniBtn title={cnpjCopiado === c.id ? 'Copiado!' : 'Copiar CNPJ'} onClick={() => copiarCnpj(c.emp_cnpj!, c.id)} color={cnpjCopiado === c.id ? '#22c55e' : '#9ca3af'}>
+                          {cnpjCopiado === c.id ? <Check size={13} /> : <Copy size={13} />}
+                        </MiniBtn>
+                        <MiniBtn title="Abrir Cartão CNPJ na Receita (copia o CNPJ p/ colar)" onClick={() => abrirCartaoCnpj(c.emp_cnpj!)} color="#0BBCD4"><ExternalLink size={13} /></MiniBtn>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Concluir onboarding — só quando todos os setores concluíram */}

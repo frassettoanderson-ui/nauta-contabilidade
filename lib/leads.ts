@@ -220,6 +220,7 @@ export async function getOnboardingBoard(): Promise<OnboardingCliente[]> {
       valor_honorario: l.valor_honorario ?? null,
       onboarding_categoria: l.onboarding_categoria,
       cliente_id: c ? (c.id as string) : null,
+      emp_cnpj: c ? ((c.emp_cnpj as string) ?? null) : null,
       cadastro_completo: isContratoPronto(c, l),
       checks: checksByLead[l.id] || [],
     }

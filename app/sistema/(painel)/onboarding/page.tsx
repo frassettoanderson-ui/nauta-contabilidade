@@ -128,7 +128,10 @@ export default function OnboardingPage() {
                 {/* Cabeçalho do cliente */}
                 <div className="mb-3 pb-3 border-b" style={{ borderColor: 'var(--sys-surface-4)' }}>
                   <div className="flex items-start justify-between gap-2">
-                    <p className="text-white font-bold leading-tight truncate">{c.nome}</p>
+                    <div className="min-w-0">
+                      <p className="text-white font-bold leading-tight truncate">{c.emp_nome || c.nome}</p>
+                      {c.emp_nome && <p className="text-[11px] text-gray-500 leading-tight truncate mt-0.5">{c.nome}</p>}
+                    </div>
                     <span className="text-[11px] text-gray-500 font-bold shrink-0 mt-0.5">{feitos}/{itens.length}</span>
                   </div>
                   <div className="flex items-center justify-between gap-2 mt-1.5">

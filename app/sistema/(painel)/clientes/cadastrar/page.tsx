@@ -112,6 +112,7 @@ function Wizard() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [savedMsg, setSavedMsg] = useState('')
+  const [exportando, setExportando] = useState(false)
   const [clienteId, setClienteId] = useState<string | undefined>(clienteParam)
   const [linkUrl, setLinkUrl] = useState('')
   const [contrato, setContrato] = useState<ContratoRow | null>(null)
@@ -240,6 +241,23 @@ function Wizard() {
     if (!confirm('Excluir este cliente? Esta ação não pode ser desfeita.')) return
     try { await deleteCliente(clienteId); router.push('/sistema/clientes/consultar') }
     catch { alert('Erro ao excluir.') }
+  }
+
+  async function handleExportar() {
+    if (!clienteId) { alert('Salve o cadastro antes de exportar.'); return }
+    setExportando(true)
+    try {
+      const r = await fetch(`/api/clientes/${clienteId}/exportar`)
+      if (!r.ok) throw new Error()
+      const blob = await r.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `cadastro_${String(emp.emp_nome || cli.cli_nome_completo || 'cliente').replace(/[^a-zA-Z0-9]+/g, '_')}.pdf`
+      document.body.appendChild(a); a.click(); a.remove()
+      URL.revokeObjectURL(url)
+    } catch { alert('Não foi possível exportar o cadastro.') }
+    finally { setExportando(false) }
   }
 
   async function handleEnviarAssinatura() {
@@ -502,6 +520,13 @@ function Wizard() {
             className="inline-flex items-center gap-2 px-4 h-11 rounded-xl text-sm font-semibold"
             style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)', color: '#f87171' }}>
             <Trash2 size={15} /> Excluir
+          </button>
+        )}
+
+        {clienteId && (
+          <button onClick={handleExportar} disabled={exportando}
+            className="inline-flex items-center gap-2 px-4 h-11 rounded-xl text-sm font-semibold text-gray-200 disabled:opacity-60" style={FS}>
+            {exportando ? <Loader2 size={15} className="animate-spin" /> : <Download size={15} />} Exportar Cadastro
           </button>
         )}
 

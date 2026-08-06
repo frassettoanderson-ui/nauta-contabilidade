@@ -102,6 +102,12 @@ const jsonLd = {
     '@type': 'Country',
     name:    'Brazil',
   },
+  legalName: 'Ronchi & Souza Contabilidade LTDA',
+  founder: {
+    '@type':   'Person',
+    name:      'Guilherme Dias Ronchi',
+    jobTitle:  'Contador responsável técnico',
+  },
   hasCredential: [
     {
       '@type':            'EducationalOccupationalCredential',

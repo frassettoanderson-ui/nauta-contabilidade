@@ -111,7 +111,7 @@ export default function Footer() {
               © {new Date().getFullYear()} Nauta Contabilidade. Todos os direitos reservados.
             </p>
             <p className="text-xs text-gray-600 mt-1">
-              Organização contábil registrada no CRC/SC · Responsáveis técnicos: CRCSC-008954/O e CRCSC-041514/O
+              Contador responsável: Guilherme Dias Ronchi · Organização contábil registrada no CRC/SC (nº 008954/O e 041514/O)
             </p>
           </div>
           <div className="flex gap-4 text-xs text-gray-600">

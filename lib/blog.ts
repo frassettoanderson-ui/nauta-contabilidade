@@ -81,6 +81,19 @@ export async function getRelatedPosts(categoriaId: string | null, postId: string
      ORDER BY p.criado_em DESC LIMIT 3`,
     [postId, categoriaId]
   )
+  // completa com posts recentes de outras categorias quando faltar irmão
+  if (res.rows.length < 3) {
+    const exclude = [postId, ...res.rows.map((r: any) => r.id)]
+    const fill = await pool.query(
+      `SELECT p.*, c.id as cat_id, c.nome as cat_nome, c.slug as cat_slug
+       FROM posts p
+       LEFT JOIN categorias c ON p.categoria_id = c.id
+       WHERE p.status = 'publicado' AND p.id != ALL($1)
+       ORDER BY p.criado_em DESC LIMIT $2`,
+      [exclude, 3 - res.rows.length]
+    )
+    res.rows.push(...fill.rows)
+  }
   return Promise.all(res.rows.map(async (row) => {
     const tagsRes = await pool.query(
       `SELECT t.* FROM tags t JOIN posts_tags pt ON t.id = pt.tag_id WHERE pt.post_id = $1`,

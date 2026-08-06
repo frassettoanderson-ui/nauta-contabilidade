@@ -119,8 +119,22 @@ export default function FaqSection({
   const headColor = dark ? '#ffffff' : '#111827'
   const subColor  = dark ? '#9ca3af' : '#6b7280'
 
+  const faqLd = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: items.map(it => ({
+      '@type': 'Question',
+      name: it.q,
+      acceptedAnswer: { '@type': 'Answer', text: it.a },
+    })),
+  }
+
   return (
     <section style={{ background: bg, padding: '5rem 0' }}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }}
+      />
       <div className="max-w-3xl mx-auto px-4 sm:px-6">
 
         <div className="text-center mb-12">

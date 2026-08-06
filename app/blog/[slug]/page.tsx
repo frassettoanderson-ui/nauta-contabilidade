@@ -15,8 +15,14 @@ import Footer from '@/components/Footer'
 export const revalidate = 60
 
 export async function generateStaticParams() {
-  const slugs = await getAllPublishedSlugs()
-  return slugs.map(slug => ({ slug }))
+  try {
+    const slugs = await getAllPublishedSlugs()
+    return slugs.map(slug => ({ slug }))
+  } catch {
+    // Banco indisponível no momento do build: não derruba o deploy.
+    // Os posts continuam sendo renderizados sob demanda (revalidate + dynamicParams).
+    return []
+  }
 }
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
@@ -25,6 +31,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   return {
     title: `${post.titulo} | Nauta Contabilidade`,
     description: post.resumo ?? '',
+    alternates: { canonical: `https://nautacontabilidade.com.br/blog/${post.slug}` },
     openGraph: {
       title: post.titulo,
       description: post.resumo ?? '',

@@ -75,12 +75,26 @@ function FaqItem({ q, a, index }: { q: string; a: string; index: number }) {
   )
 }
 
+const faqLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map(f => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: { '@type': 'Answer', text: f.a },
+  })),
+}
+
 export default function FaqSection() {
   const ref        = useScrollAnimation()
   const sectionRef = useRef<HTMLElement>(null)
 
   return (
     <section id="faq" ref={sectionRef} className="py-24 bg-white relative overflow-hidden" aria-labelledby="faq-heading">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }}
+      />
       <MouseSpotlight containerRef={sectionRef} />
       <FloatingDots   containerRef={sectionRef} />
       <div className="relative z-10 max-w-3xl mx-auto px-4 sm:px-6 lg:px-8" ref={ref}>

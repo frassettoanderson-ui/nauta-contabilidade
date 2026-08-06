@@ -10,7 +10,11 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: 'Nauta Contabilidade Digital | Contabilidade Online para Todo o Brasil',
+  metadataBase: new URL('https://nautacontabilidade.com.br'),
+  title: {
+    default: 'Nauta Contabilidade Digital | Contabilidade Online para Todo o Brasil',
+    template: '%s | Nauta Contabilidade',
+  },
   description:
     'Contabilidade digital e consultiva para MEI, Simples Nacional e Lucro Presumido em todo o Brasil. Troque de contador, abra sua empresa ou deixe de ser MEI com a Nauta.',
   keywords: [
@@ -35,19 +39,14 @@ export const metadata: Metadata = {
     title:       'Nauta Contabilidade Digital | Contabilidade Online para Todo o Brasil',
     description: 'Contabilidade digital e consultiva para MEI, Simples Nacional e Lucro Presumido em todo o Brasil.',
     images: [
-      {
-        url:    '/og-image.jpg',
-        width:  1200,
-        height: 630,
-        alt:    'Nauta Contabilidade Digital',
-      },
+      { url: '/og-image.png', width: 1200, height: 630, alt: 'Nauta Contabilidade Digital' },
     ],
   },
   twitter: {
     card:        'summary_large_image',
     title:       'Nauta Contabilidade Digital | Contabilidade Online para Todo o Brasil',
     description: 'Contabilidade digital e consultiva para MEI, Simples Nacional e Lucro Presumido em todo o Brasil.',
-    images:      ['/og-image.jpg'],
+    images:      ['/og-image.png'],
   },
   icons: {
     icon:    '/icone.png',
@@ -68,7 +67,7 @@ const jsonLd = {
   '@type':      'AccountingService',
   name:         'Nauta Contabilidade',
   url:          'https://nautacontabilidade.com.br',
-  logo:         'https://nautacontabilidade.com.br/logo.svg',
+  logo:         'https://nautacontabilidade.com.br/logo.png',
   foundingDate: '2013',
   description:  'Contabilidade digital e consultiva para todo o Brasil. BPO financeiro 100% interno, contabilidade eleitoral especializada e atendimento 100% online.',
   telephone:    '+55-48-99924-5194',

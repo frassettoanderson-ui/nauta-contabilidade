@@ -60,6 +60,9 @@ export const metadata: Metadata = {
   alternates: {
     canonical: 'https://nautacontabilidade.com.br',
   },
+  verification: {
+    google: 'RZlhiMsyRddLczwUcoxS8DWO0lLHakeQ1PXP3noXgV4',
+  },
 }
 
 const jsonLd = {

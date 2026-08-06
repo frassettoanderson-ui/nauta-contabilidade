@@ -102,7 +102,6 @@ const jsonLd = {
     '@type': 'Country',
     name:    'Brazil',
   },
-  legalName: 'Ronchi & Souza Contabilidade LTDA',
   founder: {
     '@type':   'Person',
     name:      'Guilherme Dias Ronchi',

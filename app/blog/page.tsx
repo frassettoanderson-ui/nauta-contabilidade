@@ -40,8 +40,9 @@ function BlogContent() {
     Object.entries(updates).forEach(([k, v]) => {
       if (v) sp.set(k, v); else sp.delete(k)
     })
-    sp.delete('page')
-    router.push(`/blog?${sp.toString()}`)
+    // mudança de filtro/busca volta pra página 1; paginação mantém a página escolhida
+    if (!('page' in updates)) sp.delete('page')
+    router.push(`/blog?${sp.toString()}`, { scroll: false })
   }
 
   return (

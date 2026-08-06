@@ -4,7 +4,7 @@ import { useState, useCallback } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Calendar, ArrowLeft } from 'lucide-react'
-import Header from '@/components/Header'
+import BlogHeader from '@/components/blog/BlogHeader'
 import Footer from '@/components/Footer'
 import LeadPopup from '@/components/LeadPopup'
 import PostCard from '@/components/blog/PostCard'
@@ -38,7 +38,7 @@ export default function ArticlePageShell({ post, related, date }: Props) {
 
   return (
     <>
-      <Header onOpenLead={openLead} />
+      <BlogHeader />
 
       <main style={{ background: '#0a0918' }}>
         {/* ── Imagem destaque hero ── */}

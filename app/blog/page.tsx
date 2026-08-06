@@ -1,10 +1,9 @@
 'use client'
 
-import { useState, useEffect, useCallback, Suspense } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import Header from '@/components/Header'
+import BlogHeader from '@/components/blog/BlogHeader'
 import Footer from '@/components/Footer'
-import LeadPopup from '@/components/LeadPopup'
 import PostCard from '@/components/blog/PostCard'
 import InnerHero from '@/components/ui/inner-hero'
 import { Search, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react'
@@ -15,9 +14,6 @@ function BlogContent() {
   const router = useRouter()
   const params = useSearchParams()
 
-  const [popupOpen, setPopupOpen] = useState(false)
-  const [interest, setInterest] = useState<string | undefined>()
-  const openLead = useCallback((i?: string) => { setInterest(i); setPopupOpen(true) }, [])
 
   const [categorias, setCategorias] = useState<Categoria[]>([])
   const [result, setResult]         = useState<PaginatedPosts | null>(null)
@@ -56,7 +52,7 @@ function BlogContent() {
 
   return (
     <>
-      <Header onOpenLead={openLead} />
+      <BlogHeader />
       <main>
         <InnerHero
           eyebrow="Blog Nauta"
@@ -189,7 +185,6 @@ function BlogContent() {
         </section>
       </main>
       <Footer />
-      <LeadPopup isOpen={popupOpen} onClose={() => setPopupOpen(false)} interest={interest} />
     </>
   )
 }

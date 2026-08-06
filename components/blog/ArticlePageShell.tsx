@@ -63,13 +63,11 @@ export default function ArticlePageShell({ post, related, date }: Props) {
 
         {/* ── Corpo: 3 colunas ── */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="grid lg:grid-cols-[210px_minmax(0,1fr)_300px] gap-8 xl:gap-12">
+          <div className="grid lg:grid-cols-[210px_minmax(0,1fr)_300px] gap-8 xl:gap-12 items-start">
 
             {/* Índice (esquerda) */}
-            <aside className="hidden lg:block">
-              <div className="sticky top-24">
-                <ArticleTOC headings={headings} />
-              </div>
+            <aside className="hidden lg:block self-start sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto pr-1">
+              <ArticleTOC headings={headings} />
             </aside>
 
             {/* Artigo (centro) */}
@@ -123,10 +121,8 @@ export default function ArticlePageShell({ post, related, date }: Props) {
             </article>
 
             {/* Materiais/CTAs (direita) */}
-            <aside className="hidden lg:block">
-              <div className="sticky top-24">
-                <ArticlePromoSidebar categoriaSlug={post.categoria?.slug} />
-              </div>
+            <aside className="hidden lg:block self-start sticky top-24">
+              <ArticlePromoSidebar categoriaSlug={post.categoria?.slug} />
             </aside>
           </div>
         </div>

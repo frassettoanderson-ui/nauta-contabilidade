@@ -9,7 +9,7 @@ import Footer from '@/components/Footer'
 import LeadPopup from '@/components/LeadPopup'
 import PostCard from '@/components/blog/PostCard'
 import ArticleBody from '@/components/blog/ArticleBody'
-import AuthorByline from '@/components/blog/AuthorByline'
+import AuthorByline, { AuthorBox } from '@/components/blog/AuthorByline'
 import type { PostWithRelations } from '@/types/blog'
 
 interface Props {
@@ -132,6 +132,9 @@ export default function ArticlePageShell({ post, related, date }: Props) {
 
           {/* Conteúdo */}
           <ArticleBody content={post.conteudo ?? ''} />
+
+          {/* Box do autor */}
+          <AuthorBox categoriaSlug={post.categoria?.slug} />
 
           {/* Tags ao final */}
           {post.tags && post.tags.length > 0 && (

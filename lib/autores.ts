@@ -11,13 +11,13 @@ export interface Autor {
 }
 
 export const AUTORES: Record<string, Autor> = {
-  anderson:  { key: 'anderson',  nome: 'Anderson',  setor: 'Comercial',  cargo: 'Setor Comercial' },
-  bruno:     { key: 'bruno',     nome: 'Bruno',     setor: 'Pessoal',    cargo: 'Departamento Pessoal' },
-  erivelton: { key: 'erivelton', nome: 'Erivelton', setor: 'Fiscal',     cargo: 'Setor Fiscal' },
-  izadora:   { key: 'izadora',   nome: 'Izadora',   setor: 'Societário', cargo: 'Setor Societário' },
-  guilherme: { key: 'guilherme', nome: 'Guilherme', setor: 'Financeiro', cargo: 'Setor Financeiro' },
+  anderson:  { key: 'anderson',  nome: 'Anderson',  setor: 'Comercial',  cargo: 'Setor Comercial',      foto: '/equipe/anderson.jpg' },
+  bruno:     { key: 'bruno',     nome: 'Bruno',     setor: 'Pessoal',    cargo: 'Departamento Pessoal', foto: '/equipe/bruno.jpg' },
+  erivelton: { key: 'erivelton', nome: 'Erivelton', setor: 'Fiscal',     cargo: 'Setor Fiscal',         foto: '/equipe/erivelton.jpg' },
+  izadora:   { key: 'izadora',   nome: 'Izadora',   setor: 'Societário', cargo: 'Setor Societário',     foto: '/equipe/izadora.jpg' },
+  guilherme: { key: 'guilherme', nome: 'Guilherme', setor: 'Financeiro', cargo: 'Setor Financeiro',     foto: '/equipe/guilherme.jpg' },
   // ⚠️ confirmar grafia: usuário informou "Erviton" para o Contábil e "Erivelton" para o Fiscal.
-  contabil:  { key: 'contabil',  nome: 'Erviton',   setor: 'Contábil',   cargo: 'Setor Contábil' },
+  contabil:  { key: 'contabil',  nome: 'Erviton',   setor: 'Contábil',   cargo: 'Setor Contábil',       foto: '/equipe/contabil.jpg' },
 }
 
 // Cada categoria do blog puxa o autor do setor correspondente.

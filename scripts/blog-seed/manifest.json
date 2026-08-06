@@ -1,0 +1,110 @@
+{
+  "categorias": [
+    { "nome": "Simples & MEI", "slug": "simples-e-mei" },
+    { "nome": "Tributação", "slug": "tributacao" },
+    { "nome": "Abertura de Empresa", "slug": "abertura-de-empresa" },
+    { "nome": "CLT × PJ", "slug": "clt-x-pj" },
+    { "nome": "Gestão Financeira", "slug": "gestao-financeira" },
+    { "nome": "RH & Folha", "slug": "rh-e-folha" },
+    { "nome": "Contabilidade Eleitoral", "slug": "contabilidade-eleitoral" },
+    { "nome": "Empreendedorismo", "slug": "empreendedorismo" }
+  ],
+  "posts": [
+    {
+      "titulo": "MEI ou Simples Nacional: qual vale mais a pena para o seu negócio?",
+      "slug": "mei-ou-simples-nacional",
+      "resumo": "MEI ou Simples Nacional? Entenda limites, custos e vantagens de cada opção e descubra qual regime combina com o momento do seu negócio — com simulador gratuito.",
+      "categoria": "simples-e-mei",
+      "tags": ["MEI", "Simples Nacional", "Regime Tributário"],
+      "arquivo": "01-mei-ou-simples-nacional.html"
+    },
+    {
+      "titulo": "Fator R do Simples Nacional: o que é e como calcular (Anexo III ou V)",
+      "slug": "fator-r-simples-nacional",
+      "resumo": "O Fator R decide se sua empresa de serviços paga menos imposto no Anexo III ou mais no Anexo V do Simples Nacional. Entenda a regra dos 28% e calcule o seu.",
+      "categoria": "tributacao",
+      "tags": ["Simples Nacional", "Fator R", "Planejamento Tributário"],
+      "arquivo": "02-fator-r-simples-nacional.html"
+    },
+    {
+      "titulo": "Simples Nacional, Lucro Presumido ou Lucro Real: como escolher o regime",
+      "slug": "simples-presumido-ou-real",
+      "resumo": "Escolher o regime tributário errado faz sua empresa pagar imposto a mais o ano inteiro. Entenda as diferenças entre Simples, Presumido e Real e como decidir.",
+      "categoria": "tributacao",
+      "tags": ["Regime Tributário", "Lucro Presumido", "Lucro Real"],
+      "arquivo": "03-simples-presumido-ou-real.html"
+    },
+    {
+      "titulo": "Como abrir uma empresa (CNPJ) do zero: passo a passo em 2026",
+      "slug": "como-abrir-empresa-cnpj",
+      "resumo": "Abrir CNPJ envolve CNAE, natureza jurídica, regime tributário e registros na Junta e na prefeitura. Veja o passo a passo completo para abrir sua empresa sem erro.",
+      "categoria": "abertura-de-empresa",
+      "tags": ["Abrir Empresa", "CNPJ", "Legalização"],
+      "arquivo": "04-como-abrir-empresa-cnpj.html"
+    },
+    {
+      "titulo": "Como deixar de ser MEI e migrar para ME (desenquadramento)",
+      "slug": "deixar-de-ser-mei-virar-me",
+      "resumo": "Estourou o limite do MEI ou precisa de sócio? Entenda quando e como fazer o desenquadramento do MEI e migrar para Microempresa sem cair em pendências.",
+      "categoria": "abertura-de-empresa",
+      "tags": ["MEI", "Desenquadramento", "Abrir Empresa"],
+      "arquivo": "05-deixar-de-ser-mei-virar-me.html"
+    },
+    {
+      "titulo": "CLT ou PJ: o que compensa mais? Compare com simulação",
+      "slug": "clt-ou-pj",
+      "resumo": "Receber como CLT ou abrir um CNPJ para trabalhar como PJ? Compare salário líquido, benefícios, impostos e segurança para decidir o que vale mais a pena.",
+      "categoria": "clt-x-pj",
+      "tags": ["CLT x PJ", "Pró-labore", "Salário Líquido"],
+      "arquivo": "06-clt-ou-pj.html"
+    },
+    {
+      "titulo": "Como trocar de contador sem dor de cabeça (e sem parar a empresa)",
+      "slug": "como-trocar-de-contador",
+      "resumo": "Trocar de contador é mais simples do que parece e pode ser feito a qualquer momento. Veja o passo a passo para migrar sem perder documentos nem prazos.",
+      "categoria": "empreendedorismo",
+      "tags": ["Trocar de Contador", "Contabilidade Digital"],
+      "arquivo": "07-como-trocar-de-contador.html"
+    },
+    {
+      "titulo": "O que é BPO Financeiro e quando vale a pena contratar",
+      "slug": "o-que-e-bpo-financeiro",
+      "resumo": "BPO Financeiro é a terceirização da gestão financeira da empresa: contas a pagar e receber, fluxo de caixa e conciliação. Entenda como funciona e quando contratar.",
+      "categoria": "gestao-financeira",
+      "tags": ["BPO Financeiro", "Gestão Financeira"],
+      "arquivo": "08-o-que-e-bpo-financeiro.html"
+    },
+    {
+      "titulo": "CNAE: o que é e como escolher o código certo para a sua empresa",
+      "slug": "cnae-como-escolher",
+      "resumo": "O CNAE define os impostos que sua empresa paga e as atividades que pode exercer. Entenda o que é, como escolher o código certo e por que errar sai caro.",
+      "categoria": "abertura-de-empresa",
+      "tags": ["CNAE", "Abrir Empresa", "Legalização"],
+      "arquivo": "09-cnae-como-escolher.html"
+    },
+    {
+      "titulo": "Rescisão trabalhista: como calcular as verbas rescisórias",
+      "slug": "como-calcular-rescisao",
+      "resumo": "Demissão com ou sem justa causa, pedido de demissão ou acordo: cada caso muda as verbas rescisórias. Entenda o que entra no cálculo e simule a rescisão.",
+      "categoria": "rh-e-folha",
+      "tags": ["Rescisão", "Folha de Pagamento", "RH"],
+      "arquivo": "10-como-calcular-rescisao.html"
+    },
+    {
+      "titulo": "Planejamento tributário: como pagar menos impostos de forma legal",
+      "slug": "planejamento-tributario",
+      "resumo": "Planejamento tributário é a análise que reduz a carga de impostos da empresa dentro da lei. Entenda os tipos, quando fazer e quanto sua empresa pode economizar.",
+      "categoria": "tributacao",
+      "tags": ["Planejamento Tributário", "Regime Tributário"],
+      "arquivo": "11-planejamento-tributario.html"
+    },
+    {
+      "titulo": "Contabilidade eleitoral: guia da prestação de contas ao TSE",
+      "slug": "contabilidade-eleitoral-guia",
+      "resumo": "Candidatos e partidos são obrigados a prestar contas à Justiça Eleitoral. Entenda o que é a contabilidade eleitoral, prazos, o papel do contador e como não ter contas rejeitadas.",
+      "categoria": "contabilidade-eleitoral",
+      "tags": ["Contabilidade Eleitoral", "Prestação de Contas", "TSE"],
+      "arquivo": "12-contabilidade-eleitoral-guia.html"
+    }
+  ]
+}

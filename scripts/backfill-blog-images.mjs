@@ -43,22 +43,23 @@ function card(titulo, categoria) {
     },
   }, [
     // topo: marca + categoria
-    h('div', { style: { display: 'flex', alignItems: 'center', gap: '16px' } }, [
-      h('div', { style: { width: '14px', height: '40px', background: CYAN, borderRadius: '3px' } }, []),
-      h('div', { style: { fontSize: '26px', fontWeight: 700, letterSpacing: '1px' } }, 'NAUTA CONTABILIDADE'),
-      h('div', { style: { fontSize: '20px', color: CYAN, fontWeight: 700, marginLeft: '8px' } }, '·  ' + cat),
+    h('div', { key: 'top', style: { display: 'flex', alignItems: 'center' } }, [
+      h('div', { key: 'bar', style: { width: '14px', height: '40px', background: CYAN, borderRadius: '3px', marginRight: '16px' } }),
+      h('div', { key: 'brand', style: { display: 'flex', fontSize: '26px', fontWeight: 700, letterSpacing: '1px', marginRight: '16px' } }, 'NAUTA CONTABILIDADE'),
+      h('div', { key: 'cat', style: { display: 'flex', fontSize: '20px', color: CYAN, fontWeight: 700 } }, '·  ' + cat),
     ]),
     // titulo
     h('div', {
+      key: 'title',
       style: {
         display: 'flex', fontSize: titulo.length > 70 ? '52px' : '60px', fontWeight: 800,
         lineHeight: 1.12, letterSpacing: '-1.5px', maxWidth: '1000px',
       },
     }, titulo),
     // rodape
-    h('div', { style: { display: 'flex', alignItems: 'center', gap: '14px', fontSize: '24px', color: MUTED } }, [
-      h('div', { style: { width: '40px', height: '3px', background: CYAN } }, []),
-      h('div', {}, 'nautacontabilidade.com.br'),
+    h('div', { key: 'foot', style: { display: 'flex', alignItems: 'center', fontSize: '24px', color: MUTED } }, [
+      h('div', { key: 'fbar', style: { width: '40px', height: '3px', background: CYAN, marginRight: '14px' } }),
+      h('div', { key: 'furl', style: { display: 'flex' } }, 'nautacontabilidade.com.br'),
     ]),
   ])
 }

@@ -5,28 +5,50 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { Menu, X, ChevronDown } from 'lucide-react'
 
-// ── Menu espelhando a estrutura da Contabilizei, adaptado à Nauta ──
-const MAIS_ACESSADOS = [
-  { label: 'MEI ou Simples Nacional',        href: '/blog/mei-ou-simples-nacional' },
-  { label: 'Como abrir uma empresa (CNPJ)',  href: '/blog/como-abrir-empresa-cnpj' },
-  { label: 'CLT ou PJ: o que compensa?',     href: '/blog/clt-ou-pj' },
-  { label: 'Fator R do Simples Nacional',    href: '/blog/fator-r-simples-nacional' },
-  { label: 'Deixar de ser MEI (virar ME)',   href: '/blog/deixar-de-ser-mei-virar-me' },
-  { label: 'Planejamento tributário',        href: '/blog/planejamento-tributario' },
+type Item = { label: string; href: string; dot?: string }
+
+// ── Atalhos (filtram seções de matérias). Espelham a Contabilizei, adaptados à Nauta ──
+const MAIS_ACESSADOS: Item[] = [
+  { label: 'Abertura de empresa grátis',       href: '/blog/como-abrir-empresa-cnpj' },
+  { label: 'Como ser PJ',                      href: '/blog/clt-ou-pj' },
+  { label: 'Imposto para PJ',                  href: '/blog?busca=PJ' },
+  { label: 'Como abrir uma ME',                href: '/blog/deixar-de-ser-mei-virar-me' },
+  { label: 'Como abrir uma empresa simples',   href: '/blog?busca=Simples' },
+  { label: 'Transformar MEI em ME',            href: '/blog/deixar-de-ser-mei-virar-me' },
+  { label: 'Como abrir um CNPJ',               href: '/blog/como-abrir-empresa-cnpj' },
 ]
 
-const CONTABILIDADE = [
-  { label: 'Simples & MEI',           href: '/blog?categoria=simples-e-mei' },
-  { label: 'Tributação',              href: '/blog?categoria=tributacao' },
-  { label: 'Abertura de Empresa',     href: '/blog?categoria=abertura-de-empresa' },
-  { label: 'CLT × PJ',                href: '/blog?categoria=clt-x-pj' },
-  { label: 'RH & Folha',              href: '/blog?categoria=rh-e-folha' },
-  { label: 'Gestão Financeira',       href: '/blog?categoria=gestao-financeira' },
-  { label: 'Empreendedorismo',        href: '/blog?categoria=empreendedorismo' },
-  { label: 'Contabilidade Eleitoral', href: '/blog?categoria=contabilidade-eleitoral' },
+const CONTABILIDADE: Item[] = [
+  { label: 'Abertura de Empresa',   href: '/blog?categoria=abertura-de-empresa',    dot: '#0BBCD4' },
+  { label: 'Simples Nacional',      href: '/blog?categoria=simples-e-mei',          dot: '#7c6fff' },
+  { label: 'Conteúdos Contábeis',   href: '/blog?categoria=conteudos-contabeis',    dot: '#22c55e' },
+  { label: 'MEI',                   href: '/blog?categoria=simples-e-mei',          dot: '#38bdf8' },
+  { label: 'Comparativo CLT X PJ',  href: '/blog?categoria=clt-x-pj',               dot: '#a855f7' },
+  { label: 'Escolha do CNAE',       href: '/blog?busca=CNAE',                       dot: '#ec4899' },
+  { label: 'Jornada de Quem Faz',   href: '/blog?categoria=empreendedorismo',       dot: '#1e3a8a' },
+  { label: 'Gestão Financeira',     href: '/blog?categoria=gestao-financeira',      dot: '#34d399' },
+  { label: 'Tabelas Contábeis',     href: '/blog?busca=tabela',                     dot: '#84cc16' },
+  { label: 'Tributação',            href: '/blog?categoria=tributacao',             dot: '#65a30d' },
+  { label: 'Empreendedorismo',      href: '/blog?categoria=empreendedorismo',       dot: '#f97316' },
+  { label: 'Recursos Humanos',      href: '/blog?categoria=rh-e-folha',             dot: '#ef4444' },
 ]
 
-const FERRAMENTAS = [
+const AREAS: Item[] = [
+  { label: 'Profissionais da Saúde',    href: '/blog?busca=saúde' },
+  { label: 'Tecnologia da Informação',  href: '/blog?busca=tecnologia' },
+  { label: 'Marketing & Publicidade',   href: '/blog?busca=marketing' },
+  { label: 'Turismo',                   href: '/blog?busca=turismo' },
+  { label: 'Consultoria',               href: '/blog?busca=consultoria' },
+  { label: 'Comércio',                  href: '/blog?busca=comércio' },
+  { label: 'Serviços',                  href: '/blog?busca=serviços' },
+  { label: 'Engenharia',                href: '/blog?busca=engenharia' },
+  { label: 'Arquitetura',               href: '/blog?busca=arquitetura' },
+  { label: 'Medicina',                  href: '/blog?busca=médico' },
+  { label: 'Direito',                   href: '/blog?busca=advogado' },
+  { label: 'Autônomo',                  href: '/blog?busca=autônomo' },
+]
+
+const FERRAMENTAS: Item[] = [
   { label: 'Calculadora Fator R',            href: '/ferramentas/calculadora-fator-r' },
   { label: 'Simulador de Regime Tributário', href: '/ferramentas/simulador-regime-tributario' },
   { label: 'Calculadora Salário Líquido',    href: '/ferramentas/calculadora-salario-liquido' },
@@ -34,25 +56,14 @@ const FERRAMENTAS = [
   { label: 'Ver todas as ferramentas →',     href: '/ferramentas' },
 ]
 
-const AREAS = [
-  { label: 'MEI',                     href: '/quem-atendemos' },
-  { label: 'Simples Nacional',        href: '/quem-atendemos' },
-  { label: 'Lucro Presumido',         href: '/quem-atendemos' },
-  { label: 'Profissionais Liberais',  href: '/quem-atendemos' },
-  { label: 'Comércio e E-commerce',   href: '/quem-atendemos' },
-  { label: 'Tecnologia e Marketing',  href: '/quem-atendemos' },
-  { label: 'Saúde',                   href: '/quem-atendemos' },
-  { label: 'Startups e Inovação',     href: '/quem-atendemos' },
-]
-
-const A_NAUTA = [
-  { label: 'Site da Nauta',      href: '/' },
-  { label: 'Quem atendemos',     href: '/quem-atendemos' },
-  { label: 'Contato',            href: '/contato' },
+const A_NAUTA: Item[] = [
+  { label: 'Site da Nauta',  href: '/' },
+  { label: 'Quem atendemos', href: '/quem-atendemos' },
+  { label: 'Contato',        href: '/contato' },
 ]
 
 type MenuKey = 'mais' | 'contabil' | 'ferramentas' | 'areas' | 'nauta'
-const MENUS: { key: MenuKey; label: string; items: { label: string; href: string }[] }[] = [
+const MENUS: { key: MenuKey; label: string; items: Item[] }[] = [
   { key: 'mais',        label: 'Mais Acessados',   items: MAIS_ACESSADOS },
   { key: 'contabil',    label: 'Contabilidade',    items: CONTABILIDADE },
   { key: 'ferramentas', label: 'Ferramentas',      items: FERRAMENTAS },
@@ -116,11 +127,11 @@ export default function BlogHeader() {
                   <ChevronDown size={13} className={`transition-transform duration-200 ${open === m.key ? 'rotate-180' : ''}`} />
                 </button>
                 {open === m.key && (
-                  <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-64 bg-[#13112a] border border-white/10 rounded-lg shadow-2xl overflow-hidden">
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-64 bg-[#13112a] border border-white/10 rounded-lg shadow-2xl overflow-hidden max-h-[70vh] overflow-y-auto">
                     {m.items.map(it => (
                       <Link key={it.label} href={it.href} onClick={() => setOpen(null)}
-                        className="flex items-center gap-2 px-4 py-2.5 text-sm text-white/60 hover:text-[#0BBCD4] hover:bg-[#0BBCD4]/5 transition-all border-b border-white/5 last:border-0">
-                        <span className="w-1 h-1 rounded-full bg-[#0BBCD4]/50 shrink-0" aria-hidden="true" />
+                        className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-white/60 hover:text-[#0BBCD4] hover:bg-[#0BBCD4]/5 transition-all border-b border-white/5 last:border-0">
+                        <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: it.dot ?? 'rgba(11,188,212,0.4)' }} aria-hidden="true" />
                         {it.label}
                       </Link>
                     ))}
@@ -128,8 +139,6 @@ export default function BlogHeader() {
                 )}
               </div>
             ))}
-
-            {/* Planos (link simples) */}
             <Link href="/contato" className="px-3 py-2 text-sm font-medium text-white/70 hover:text-white hover:bg-white/5 rounded transition-all">
               Planos
             </Link>
@@ -143,7 +152,6 @@ export default function BlogHeader() {
             </Link>
           </div>
 
-          {/* Hambúrguer mobile */}
           <button
             className="xl:hidden p-2 text-white/80 hover:text-white transition-colors"
             onClick={() => setMobileOpen(o => !o)}

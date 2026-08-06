@@ -3,51 +3,119 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Star, Check } from 'lucide-react'
+import { Star, Check, Inbox, Building2, FileText, HandCoins } from 'lucide-react'
 
-const MURAL = [
+type L = { label: string; href: string }
+type Bloco = { titulo: string; links: L[] }
+type Coluna = { Icon: typeof Inbox; blocos: Bloco[] }
+
+const cat = (s: string) => `/blog?categoria=${s}`
+const busca = (s: string) => `/blog?busca=${encodeURIComponent(s)}`
+
+const COLUNAS: Coluna[] = [
   {
-    titulo: 'Categorias',
-    links: [
-      { label: 'Abertura de Empresa', href: '/blog?categoria=abertura-de-empresa' },
-      { label: 'Simples & MEI', href: '/blog?categoria=simples-e-mei' },
-      { label: 'Tributação', href: '/blog?categoria=tributacao' },
-      { label: 'CLT × PJ', href: '/blog?categoria=clt-x-pj' },
-      { label: 'Gestão Financeira', href: '/blog?categoria=gestao-financeira' },
-      { label: 'RH & Folha', href: '/blog?categoria=rh-e-folha' },
-      { label: 'Empreendedorismo', href: '/blog?categoria=empreendedorismo' },
-      { label: 'Contabilidade Eleitoral', href: '/blog?categoria=contabilidade-eleitoral' },
+    Icon: Inbox,
+    blocos: [
+      { titulo: 'Categorias do Blog', links: [
+        { label: 'Abertura de Empresa', href: cat('abertura-de-empresa') },
+        { label: 'Escolha do CNAE', href: busca('CNAE') },
+        { label: 'Simples Nacional', href: cat('simples-e-mei') },
+        { label: 'Tabelas Simples Nacional', href: busca('tabela simples nacional') },
+        { label: 'MEI', href: cat('simples-e-mei') },
+        { label: 'Comparativo CLT X PJ', href: cat('clt-x-pj') },
+        { label: 'Jornada de Quem Faz', href: cat('empreendedorismo') },
+        { label: 'Tributação', href: cat('tributacao') },
+        { label: 'Tabelas Contábeis', href: busca('tabela') },
+        { label: 'Conteúdos Contábeis', href: cat('gestao-financeira') },
+        { label: 'Gestão Financeira', href: cat('gestao-financeira') },
+        { label: 'Empreendedorismo', href: cat('empreendedorismo') },
+        { label: 'Recursos Humanos', href: cat('rh-e-folha') },
+      ]},
+      { titulo: 'Categorias por atividade', links: [
+        { label: 'Autônomo', href: busca('autônomo') }, { label: 'Advogado', href: busca('advogado') },
+        { label: 'Arquiteto', href: busca('arquitetura') }, { label: 'Comércio', href: busca('comércio') },
+        { label: 'Consultoria', href: busca('consultoria') }, { label: 'Engenheiro', href: busca('engenharia') },
+        { label: 'Marketing & Publicidade', href: busca('marketing') }, { label: 'Médico', href: busca('médico') },
+        { label: 'Profissionais da Saúde', href: busca('saúde') }, { label: 'Serviços', href: busca('serviços') },
+        { label: 'Tecnologia da Informação', href: busca('tecnologia') }, { label: 'Turismo', href: busca('turismo') },
+      ]},
     ],
   },
   {
-    titulo: 'Está abrindo sua empresa?',
-    links: [
-      { label: 'Como abrir uma empresa (CNPJ)', href: '/blog/como-abrir-empresa-cnpj' },
-      { label: 'MEI ou Simples Nacional', href: '/blog/mei-ou-simples-nacional' },
-      { label: 'Deixar de ser MEI e virar ME', href: '/blog/deixar-de-ser-mei-virar-me' },
-      { label: 'CNAE: como escolher', href: '/blog/cnae-como-escolher' },
-      { label: 'Abrir empresa com a Nauta', href: '/servicos/legalizacao-societario' },
+    Icon: Building2,
+    blocos: [
+      { titulo: 'Está abrindo sua empresa?', links: [
+        { label: 'Como abrir uma empresa', href: '/blog/como-abrir-empresa-cnpj' },
+        { label: 'Como abrir uma microempresa ME', href: '/blog/deixar-de-ser-mei-virar-me' },
+        { label: 'Como abrir uma empresa Simples Nacional', href: busca('Simples Nacional') },
+        { label: 'Como abrir um CNPJ', href: '/blog/como-abrir-empresa-cnpj' },
+        { label: 'Ideias de negócios', href: cat('empreendedorismo') },
+      ]},
+      { titulo: 'Portes de empresa', links: [
+        { label: 'MEI - Micro Empreendedor Individual', href: '/blog/mei-ou-simples-nacional' },
+        { label: 'ME - Microempresa', href: '/blog/deixar-de-ser-mei-virar-me' },
+        { label: 'EPP - Empresa de Pequeno Porte', href: busca('EPP') },
+      ]},
+      { titulo: 'Natureza Jurídica', links: [
+        { label: 'EI – Empresário Individual', href: busca('empresário individual') },
+        { label: 'EIRELI', href: busca('EIRELI') },
+        { label: 'SLU - Sociedade Limitada Unipessoal', href: busca('SLU') },
+        { label: 'LTDA – Sociedade Limitada', href: '/blog/como-abrir-empresa-cnpj' },
+      ]},
+      { titulo: 'Regimes de tributação', links: [
+        { label: 'Simples Nacional', href: '/blog/simples-presumido-ou-real' },
+        { label: 'Lucro Presumido', href: '/blog/simples-presumido-ou-real' },
+        { label: 'Lucro Real', href: '/blog/simples-presumido-ou-real' },
+      ]},
     ],
   },
   {
-    titulo: 'Ferramentas gratuitas',
-    links: [
-      { label: 'Calculadora Fator R', href: '/ferramentas/calculadora-fator-r' },
-      { label: 'Simulador de Regime Tributário', href: '/ferramentas/simulador-regime-tributario' },
-      { label: 'Calculadora Salário Líquido', href: '/ferramentas/calculadora-salario-liquido' },
-      { label: 'Simulador de Rescisão', href: '/ferramentas/simulador-rescisao' },
-      { label: 'Ver todas as ferramentas', href: '/ferramentas' },
+    Icon: FileText,
+    blocos: [
+      { titulo: 'Tudo sobre CNAE', links: [
+        { label: 'CNAE: o que é?', href: '/blog/cnae-como-escolher' },
+        { label: 'Tabela CNAE completa', href: busca('CNAE') },
+        { label: 'Consulta de CNAE', href: '/ferramentas' },
+        { label: 'CNAEs do Simples Nacional', href: busca('CNAE Simples') },
+        { label: 'CNAEs atendidos pela Nauta', href: '/quem-atendemos' },
+      ]},
+      { titulo: 'Simples Nacional', links: [
+        { label: 'Tabela do Simples Nacional', href: busca('tabela simples') },
+        { label: 'Anexo III do Simples', href: '/blog/fator-r-simples-nacional' },
+        { label: 'Anexo V do Simples', href: '/blog/fator-r-simples-nacional' },
+        { label: 'Fator R do Simples Nacional', href: '/blog/fator-r-simples-nacional' },
+        { label: 'MEI ou Simples Nacional', href: '/blog/mei-ou-simples-nacional' },
+      ]},
+      { titulo: 'MEI', links: [
+        { label: 'Como abrir um MEI', href: '/blog/mei-ou-simples-nacional' },
+        { label: 'Tabela de atividades MEI', href: busca('atividades MEI') },
+        { label: 'Não pode ser MEI?', href: '/blog/deixar-de-ser-mei-virar-me' },
+        { label: 'Como desenquadrar o MEI', href: '/blog/deixar-de-ser-mei-virar-me' },
+      ]},
     ],
   },
   {
-    titulo: 'Universo da Contabilidade',
-    links: [
-      { label: 'Contabilidade Contábil', href: '/servicos/contabil' },
-      { label: 'Serviço Fiscal', href: '/servicos/fiscal' },
-      { label: 'Folha de Pagamento', href: '/servicos/folha-de-pagamento' },
-      { label: 'BPO Financeiro', href: '/servicos/bpo-financeiro' },
-      { label: 'Planejamento Tributário', href: '/servicos/planejamento-tributario' },
-      { label: 'Quem atendemos', href: '/quem-atendemos' },
+    Icon: HandCoins,
+    blocos: [
+      { titulo: 'Autônomos', links: [
+        { label: 'O que é trabalho autônomo?', href: busca('autônomo') },
+        { label: 'INSS Autônomo', href: busca('INSS autônomo') },
+        { label: 'RPA - Recibo de Pagamento Autônomo', href: '/ferramentas' },
+      ]},
+      { titulo: 'Dúvidas entre CLT ou PJ?', links: [
+        { label: 'CLT ou PJ: o que compensa mais?', href: '/blog/clt-ou-pj' },
+        { label: 'Calculadora CLT x PJ', href: '/ferramentas/calculadora-salario-liquido' },
+        { label: 'O que é Pessoa Jurídica?', href: busca('pessoa jurídica') },
+        { label: 'Como ser PJ?', href: '/blog/clt-ou-pj' },
+        { label: 'Contratação PJ', href: busca('contratação PJ') },
+        { label: 'Como pagar menos imposto sendo PJ', href: '/blog/planejamento-tributario' },
+      ]},
+      { titulo: 'Universo da Contabilidade', links: [
+        { label: 'Contador Online', href: '/servicos/contabil' },
+        { label: 'O que é contabilidade digital?', href: '/quem-atendemos' },
+        { label: 'O que faz o contador?', href: '/servicos/contabil' },
+        { label: 'Como trocar de contador', href: '/blog/como-trocar-de-contador' },
+      ]},
     ],
   },
 ]
@@ -69,9 +137,8 @@ export default function BlogFooterSections() {
       })
       if (!r.ok) throw new Error((await r.json()).error || 'Erro')
       setEmail(''); setMsg('Pronto! Você está inscrito. 🎉')
-    } catch (err) {
-      setMsg(err instanceof Error ? err.message : 'Erro ao inscrever.')
-    } finally { setEnviando(false) }
+    } catch (err) { setMsg(err instanceof Error ? err.message : 'Erro ao inscrever.') }
+    finally { setEnviando(false) }
   }
 
   return (
@@ -85,8 +152,7 @@ export default function BlogFooterSections() {
           </div>
           <form onSubmit={assinar} className="flex flex-col sm:flex-row gap-3 lg:w-[520px]">
             <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="seu e-mail"
-              className="flex-1 h-12 rounded-xl px-4 text-sm text-[#0f0e1a] placeholder-gray-500 outline-none"
-              style={{ background: '#fff' }} />
+              className="flex-1 h-12 rounded-xl px-4 text-sm text-[#0f0e1a] placeholder-gray-500 outline-none" style={{ background: '#fff' }} />
             <button type="submit" disabled={enviando}
               className="h-12 px-7 rounded-xl font-bold text-sm text-[#0BBCD4] bg-[#0a0918] hover:bg-black transition-colors disabled:opacity-60 whitespace-nowrap">
               {enviando ? 'Enviando…' : 'Assinar grátis'}
@@ -131,23 +197,31 @@ export default function BlogFooterSections() {
         </div>
       </section>
 
-      {/* ── Mural de recursos ── */}
+      {/* ── Central do Empreendedor (mural) ── */}
       <section style={{ background: '#0a0918', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
-          <h2 className="text-2xl sm:text-3xl font-black text-white text-center mb-10" style={{ letterSpacing: '-0.02em' }}>
-            Central de recursos do empreendedor
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <h2 className="text-2xl sm:text-3xl font-black text-white text-center mb-12" style={{ letterSpacing: '-0.02em' }}>
+            Central do Empreendedor
           </h2>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
-            {MURAL.map(col => (
-              <div key={col.titulo}>
-                <h3 className="text-white font-bold text-sm mb-4">{col.titulo}</h3>
-                <ul className="space-y-2.5">
-                  {col.links.map(l => (
-                    <li key={l.label}>
-                      <Link href={l.href} className="text-sm text-gray-400 hover:text-[#0BBCD4] transition-colors leading-snug">{l.label}</Link>
-                    </li>
-                  ))}
-                </ul>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
+            {COLUNAS.map(({ Icon, blocos }, i) => (
+              <div key={i}>
+                <span className="w-12 h-12 rounded-xl flex items-center justify-center mb-6"
+                  style={{ background: 'rgba(11,188,212,0.10)', border: '1px solid rgba(11,188,212,0.22)' }}>
+                  <Icon size={22} className="text-[#0BBCD4]" />
+                </span>
+                {blocos.map(b => (
+                  <div key={b.titulo} className="mb-6 last:mb-0">
+                    <h3 className="text-white font-bold text-sm mb-3">{b.titulo}</h3>
+                    <ul className="space-y-2">
+                      {b.links.map(l => (
+                        <li key={l.label}>
+                          <Link href={l.href} className="text-sm text-gray-400 hover:text-[#0BBCD4] transition-colors leading-snug">{l.label}</Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
               </div>
             ))}
           </div>

@@ -9,7 +9,14 @@ const TOOLS = [
   { label: 'Calculadora Fator R',           href: '/ferramentas/calculadora-fator-r' },
   { label: 'Simulador de Regime Tributário', href: '/ferramentas/simulador-regime-tributario' },
   { label: 'Calculadora Salário Líquido',    href: '/ferramentas/calculadora-salario-liquido' },
-  { label: 'Simulador Rescisão',             href: '/ferramentas/simulador-rescisao' },
+  { label: 'Simulador de Rescisão',          href: '/ferramentas/simulador-rescisao' },
+  { label: 'Calculadora PJ x CLT',           href: '/ferramentas/calculadora-pj-x-clt' },
+  { label: 'Custo para abrir CNPJ',          href: '/ferramentas/calculadora-custo-abrir-cnpj' },
+  { label: 'Simulador da Reforma Tributária', href: '/ferramentas/calculadora-reforma-tributaria' },
+  { label: 'Consulta de CNAE',               href: '/ferramentas/consulta-cnae' },
+  { label: 'Calculadora de RPA',             href: '/ferramentas/calculadora-rpa' },
+  { label: 'Planilha de Fluxo de Caixa',     href: '/ferramentas/planilha-fluxo-de-caixa' },
+  { label: 'Planilha de Controle Financeiro', href: '/ferramentas/planilha-controle-financeiro' },
 ]
 
 const SERVICES = [

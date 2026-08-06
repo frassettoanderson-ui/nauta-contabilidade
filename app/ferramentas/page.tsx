@@ -5,7 +5,7 @@ import Link from 'next/link'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import LeadPopup from '@/components/LeadPopup'
-import { Calculator, BarChart2, DollarSign, FileText, ArrowRight } from 'lucide-react'
+import { Calculator, BarChart2, DollarSign, FileText, ArrowRight, Scale, Building2, Search, Download } from 'lucide-react'
 import InnerHero from '@/components/ui/inner-hero'
 
 const tools = [
@@ -37,6 +37,55 @@ const tools = [
     href: '/ferramentas/simulador-rescisao',
     tag: 'Trabalhista',
   },
+  {
+    icon: Scale,
+    title: 'Calculadora PJ x CLT',
+    desc: 'Compare quanto sobra como CLT (com benefícios) e como PJ (após impostos) para decidir o que compensa mais.',
+    href: '/ferramentas/calculadora-pj-x-clt',
+    tag: 'Trabalhista',
+  },
+  {
+    icon: Building2,
+    title: 'Custo para abrir CNPJ',
+    desc: 'Estime quanto custa abrir sua empresa conforme o tipo (MEI, ME, LTDA) e a atividade.',
+    href: '/ferramentas/calculadora-custo-abrir-cnpj',
+    tag: 'Abertura',
+  },
+  {
+    icon: BarChart2,
+    title: 'Simulador da Reforma Tributária',
+    desc: 'Estime a carga do novo IVA dual (CBS + IBS) que substitui PIS, COFINS, ISS e ICMS.',
+    href: '/ferramentas/calculadora-reforma-tributaria',
+    tag: 'Tributário',
+  },
+  {
+    icon: Search,
+    title: 'Consulta de CNAE',
+    desc: 'Busque o código CNAE da sua atividade e veja em qual anexo do Simples Nacional ela se enquadra.',
+    href: '/ferramentas/consulta-cnae',
+    tag: 'Abertura',
+  },
+  {
+    icon: FileText,
+    title: 'Calculadora de RPA',
+    desc: 'Calcule o líquido de um Recibo de Pagamento Autônomo com INSS, Imposto de Renda e ISS.',
+    href: '/ferramentas/calculadora-rpa',
+    tag: 'Autônomo',
+  },
+  {
+    icon: Download,
+    title: 'Planilha de Fluxo de Caixa',
+    desc: 'Baixe grátis uma planilha pronta para controlar entradas e saídas do seu negócio mês a mês.',
+    href: '/ferramentas/planilha-fluxo-de-caixa',
+    tag: 'Planilha',
+  },
+  {
+    icon: Download,
+    title: 'Planilha de Controle Financeiro',
+    desc: 'Baixe grátis uma planilha para organizar receitas e despesas com resumo automático.',
+    href: '/ferramentas/planilha-controle-financeiro',
+    tag: 'Planilha',
+  },
 ]
 
 export default function FerramentasPage() {
@@ -53,7 +102,7 @@ export default function FerramentasPage() {
           title={<>Decida com<br /><span style={{ color: '#0BBCD4' }}>dados reais.</span></>}
           description="Calculadoras e simuladores gratuitos para tomar as melhores decisões tributárias e trabalhistas — sem precisar de um contador agora."
           breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Ferramentas' }]}
-          stats={[{ value: '4', label: 'ferramentas gratuitas' }, { value: '+2.000', label: 'usuários' }, { value: '100%', label: 'sem cadastro' }]}
+          stats={[{ value: '11', label: 'ferramentas gratuitas' }, { value: '+2.000', label: 'usuários' }, { value: '100%', label: 'sem cadastro' }]}
         />
 
         <section className="py-20 bg-white">

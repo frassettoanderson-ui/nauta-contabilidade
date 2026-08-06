@@ -49,36 +49,22 @@ export default function BlogHero({ artigos, temas }: { artigos?: number; temas?:
           <span className="text-gray-300">Blog</span>
         </nav>
 
-        <div className="grid lg:grid-cols-2 gap-10 lg:gap-14 items-center">
+        <div className="grid lg:grid-cols-[1.2fr_0.8fr] gap-10 lg:gap-16 items-center">
 
           {/* ── Esquerda: texto ── */}
-          <div>
-            <div className="mb-5">
-              <span className="inline-flex items-center gap-2 text-[11px] font-bold tracking-widest uppercase px-4 py-1.5 rounded-full"
-                style={{ color: '#0BBCD4', background: 'rgba(11,188,212,0.08)', border: '1px solid rgba(11,188,212,0.22)' }}>
-                <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#0BBCD4' }} />
-                Blog Nauta
-              </span>
-            </div>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white leading-[1.05] mb-6" style={{ letterSpacing: '-0.03em' }}>
+          <div className="lg:pr-4">
+            <h1 className="text-5xl sm:text-6xl lg:text-[5.25rem] font-black text-white leading-[0.95] mb-7" style={{ letterSpacing: '-0.045em' }}>
               Conteúdo contábil<br /><span style={{ color: '#0BBCD4' }}>direto ao ponto.</span>
             </h1>
-            <p className="text-gray-400 text-base sm:text-lg leading-relaxed mb-8 max-w-xl" style={{ lineHeight: 1.7 }}>
-              Artigos, guias e análises sobre contabilidade, tributação e gestão financeira escritos por especialistas da Nauta.
+            <p className="text-gray-300 text-lg sm:text-xl leading-relaxed mb-9 max-w-xl">
+              Guias práticos sobre impostos, abertura de empresa, folha e gestão financeira — escritos pelos especialistas da Nauta.
             </p>
-            <div className="flex flex-wrap gap-x-10 gap-y-4">
-              <div className="flex flex-col">
-                <span className="text-2xl font-black" style={{ color: '#0BBCD4' }}>{artigos ?? 12}</span>
-                <span className="text-xs text-gray-500 mt-0.5">artigos publicados</span>
-              </div>
-              <div className="flex flex-col">
-                <span className="text-2xl font-black" style={{ color: '#0BBCD4' }}>{temas ?? 8}</span>
-                <span className="text-xs text-gray-500 mt-0.5">temas</span>
-              </div>
-              <div className="flex flex-col">
-                <span className="text-2xl font-black" style={{ color: '#0BBCD4' }}>Grátis</span>
-                <span className="text-xs text-gray-500 mt-0.5">sem cadastro</span>
-              </div>
+            <div className="flex items-center gap-4 text-sm text-gray-400">
+              <span><strong className="text-white text-base">{artigos ?? 12}</strong> artigos</span>
+              <span className="w-1 h-1 rounded-full bg-white/25" aria-hidden="true" />
+              <span><strong className="text-white text-base">{temas ?? 8}</strong> temas</span>
+              <span className="w-1 h-1 rounded-full bg-white/25" aria-hidden="true" />
+              <span>sempre grátis, sem cadastro</span>
             </div>
           </div>
 

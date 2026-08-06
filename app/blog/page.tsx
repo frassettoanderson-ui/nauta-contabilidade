@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import BlogHeader from '@/components/blog/BlogHeader'
 import Footer from '@/components/Footer'
 import PostCard from '@/components/blog/PostCard'
-import InnerHero from '@/components/ui/inner-hero'
+import BlogHero from '@/components/blog/BlogHero'
 import { Search, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react'
 import { getPosts, getCategorias } from '@/lib/api'
 import type { PostWithRelations, Categoria, PaginatedPosts } from '@/types/blog'
@@ -54,18 +54,7 @@ function BlogContent() {
     <>
       <BlogHeader />
       <main>
-        <InnerHero
-          eyebrow="Blog Nauta"
-          title={<>Conteúdo contábil<br /><span style={{ color: '#0BBCD4' }}>direto ao ponto.</span></>}
-          description="Artigos, guias e análises sobre contabilidade, tributação e gestão financeira escritos por especialistas."
-          breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Blog' }]}
-          stats={result ? [
-            { value: String(result.total), label: 'artigos publicados' },
-            { value: String(categorias.length), label: 'categorias' },
-            { value: 'Grátis', label: 'sem cadastro' },
-          ] : undefined}
-          purpleOrb
-        />
+        <BlogHero artigos={result?.total} temas={categorias.length || undefined} />
 
         <section className="py-12 section-dark min-h-screen">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

@@ -102,6 +102,20 @@ const jsonLd = {
     '@type': 'Country',
     name:    'Brazil',
   },
+  hasCredential: [
+    {
+      '@type':            'EducationalOccupationalCredential',
+      credentialCategory: 'Registro profissional (CRC)',
+      recognizedBy:       { '@type': 'Organization', name: 'Conselho Regional de Contabilidade de Santa Catarina (CRC/SC)' },
+      identifier:         'CRCSC-008954/O',
+    },
+    {
+      '@type':            'EducationalOccupationalCredential',
+      credentialCategory: 'Registro profissional (CRC)',
+      recognizedBy:       { '@type': 'Organization', name: 'Conselho Regional de Contabilidade de Santa Catarina (CRC/SC)' },
+      identifier:         'CRCSC-041514/O',
+    },
+  ],
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -106,9 +106,14 @@ export default function Footer() {
 
         {/* Bottom */}
         <div className="mt-12 pt-8 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center gap-4">
-          <p className="text-xs text-gray-600">
-            © {new Date().getFullYear()} Nauta Contabilidade. Todos os direitos reservados.
-          </p>
+          <div className="text-center sm:text-left">
+            <p className="text-xs text-gray-600">
+              © {new Date().getFullYear()} Nauta Contabilidade. Todos os direitos reservados.
+            </p>
+            <p className="text-xs text-gray-600 mt-1">
+              Organização contábil registrada no CRC/SC · Responsáveis técnicos: CRCSC-008954/O e CRCSC-041514/O
+            </p>
+          </div>
           <div className="flex gap-4 text-xs text-gray-600">
             <Link href="/politica-de-privacidade" className="hover:text-[#0BBCD4] transition-colors">Política de Privacidade</Link>
             <Link href="/termos-de-uso"            className="hover:text-[#0BBCD4] transition-colors">Termos de Uso</Link>

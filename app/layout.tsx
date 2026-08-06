@@ -107,21 +107,19 @@ const jsonLd = {
     '@type':   'Person',
     name:      'Guilherme Dias Ronchi',
     jobTitle:  'Contador responsável técnico',
-  },
-  hasCredential: [
-    {
+    hasCredential: {
       '@type':            'EducationalOccupationalCredential',
-      credentialCategory: 'Registro profissional (CRC)',
-      recognizedBy:       { '@type': 'Organization', name: 'Conselho Regional de Contabilidade de Santa Catarina (CRC/SC)' },
-      identifier:         'CRCSC-008954/O',
-    },
-    {
-      '@type':            'EducationalOccupationalCredential',
-      credentialCategory: 'Registro profissional (CRC)',
+      credentialCategory: 'Registro profissional de contador (CRC)',
       recognizedBy:       { '@type': 'Organization', name: 'Conselho Regional de Contabilidade de Santa Catarina (CRC/SC)' },
       identifier:         'CRCSC-041514/O',
     },
-  ],
+  },
+  hasCredential: {
+    '@type':            'EducationalOccupationalCredential',
+    credentialCategory: 'Registro de organização contábil (CRC)',
+    recognizedBy:       { '@type': 'Organization', name: 'Conselho Regional de Contabilidade de Santa Catarina (CRC/SC)' },
+    identifier:         'CRCSC-008954/O',
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

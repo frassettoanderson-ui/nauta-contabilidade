@@ -102,6 +102,7 @@ const jsonLd = {
     '@type': 'Country',
     name:    'Brazil',
   },
+  legalName: 'Nauta Contabilidade Ltda',
   founder: {
     '@type':   'Person',
     name:      'Guilherme Dias Ronchi',

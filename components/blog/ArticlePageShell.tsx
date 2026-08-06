@@ -14,6 +14,7 @@ import ShareButtons from '@/components/blog/ShareButtons'
 import NautaAdBanner from '@/components/blog/NautaAdBanner'
 import ArticlePromoSidebar from '@/components/blog/ArticlePromoSidebar'
 import CommentSection from '@/components/blog/CommentSection'
+import BlogFooterSections from '@/components/blog/BlogFooterSections'
 import { processArticleHtml, splitForBanner } from '@/lib/article-html'
 import type { PostWithRelations } from '@/types/blog'
 
@@ -143,6 +144,7 @@ export default function ArticlePageShell({ post, related, date }: Props) {
         )}
       </main>
 
+      <BlogFooterSections />
       <Footer />
     </>
   )

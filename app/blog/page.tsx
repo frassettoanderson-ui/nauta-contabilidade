@@ -7,6 +7,7 @@ import Footer from '@/components/Footer'
 import BlogCard from '@/components/blog/BlogCard'
 import BlogSidebar from '@/components/blog/BlogSidebar'
 import BlogHero from '@/components/blog/BlogHero'
+import BlogFooterSections from '@/components/blog/BlogFooterSections'
 import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react'
 import { getPosts, getCategorias } from '@/lib/api'
 import type { PostWithRelations, Categoria, PaginatedPosts } from '@/types/blog'
@@ -121,6 +122,7 @@ function BlogContent() {
           </div>
         </section>
       </main>
+      <BlogFooterSections />
       <Footer />
     </>
   )

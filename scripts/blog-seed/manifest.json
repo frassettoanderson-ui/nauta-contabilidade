@@ -1,13 +1,37 @@
 {
   "categorias": [
-    { "nome": "Simples & MEI", "slug": "simples-e-mei" },
-    { "nome": "Tributação", "slug": "tributacao" },
-    { "nome": "Abertura de Empresa", "slug": "abertura-de-empresa" },
-    { "nome": "CLT × PJ", "slug": "clt-x-pj" },
-    { "nome": "Gestão Financeira", "slug": "gestao-financeira" },
-    { "nome": "RH & Folha", "slug": "rh-e-folha" },
-    { "nome": "Contabilidade Eleitoral", "slug": "contabilidade-eleitoral" },
-    { "nome": "Empreendedorismo", "slug": "empreendedorismo" }
+    {
+      "nome": "Simples & MEI",
+      "slug": "simples-e-mei"
+    },
+    {
+      "nome": "Tributação",
+      "slug": "tributacao"
+    },
+    {
+      "nome": "Abertura de Empresa",
+      "slug": "abertura-de-empresa"
+    },
+    {
+      "nome": "CLT × PJ",
+      "slug": "clt-x-pj"
+    },
+    {
+      "nome": "Gestão Financeira",
+      "slug": "gestao-financeira"
+    },
+    {
+      "nome": "RH & Folha",
+      "slug": "rh-e-folha"
+    },
+    {
+      "nome": "Contabilidade Eleitoral",
+      "slug": "contabilidade-eleitoral"
+    },
+    {
+      "nome": "Empreendedorismo",
+      "slug": "empreendedorismo"
+    }
   ],
   "posts": [
     {
@@ -15,7 +39,11 @@
       "slug": "mei-ou-simples-nacional",
       "resumo": "MEI ou Simples Nacional? Entenda limites, custos e vantagens de cada opção e descubra qual regime combina com o momento do seu negócio — com simulador gratuito.",
       "categoria": "simples-e-mei",
-      "tags": ["MEI", "Simples Nacional", "Regime Tributário"],
+      "tags": [
+        "MEI",
+        "Simples Nacional",
+        "Regime Tributário"
+      ],
       "arquivo": "01-mei-ou-simples-nacional.html"
     },
     {
@@ -23,7 +51,11 @@
       "slug": "fator-r-simples-nacional",
       "resumo": "O Fator R decide se sua empresa de serviços paga menos imposto no Anexo III ou mais no Anexo V do Simples Nacional. Entenda a regra dos 28% e calcule o seu.",
       "categoria": "tributacao",
-      "tags": ["Simples Nacional", "Fator R", "Planejamento Tributário"],
+      "tags": [
+        "Simples Nacional",
+        "Fator R",
+        "Planejamento Tributário"
+      ],
       "arquivo": "02-fator-r-simples-nacional.html"
     },
     {
@@ -31,7 +63,11 @@
       "slug": "simples-presumido-ou-real",
       "resumo": "Escolher o regime tributário errado faz sua empresa pagar imposto a mais o ano inteiro. Entenda as diferenças entre Simples, Presumido e Real e como decidir.",
       "categoria": "tributacao",
-      "tags": ["Regime Tributário", "Lucro Presumido", "Lucro Real"],
+      "tags": [
+        "Regime Tributário",
+        "Lucro Presumido",
+        "Lucro Real"
+      ],
       "arquivo": "03-simples-presumido-ou-real.html"
     },
     {
@@ -39,7 +75,11 @@
       "slug": "como-abrir-empresa-cnpj",
       "resumo": "Abrir CNPJ envolve CNAE, natureza jurídica, regime tributário e registros na Junta e na prefeitura. Veja o passo a passo completo para abrir sua empresa sem erro.",
       "categoria": "abertura-de-empresa",
-      "tags": ["Abrir Empresa", "CNPJ", "Legalização"],
+      "tags": [
+        "Abrir Empresa",
+        "CNPJ",
+        "Legalização"
+      ],
       "arquivo": "04-como-abrir-empresa-cnpj.html"
     },
     {
@@ -47,7 +87,11 @@
       "slug": "deixar-de-ser-mei-virar-me",
       "resumo": "Estourou o limite do MEI ou precisa de sócio? Entenda quando e como fazer o desenquadramento do MEI e migrar para Microempresa sem cair em pendências.",
       "categoria": "abertura-de-empresa",
-      "tags": ["MEI", "Desenquadramento", "Abrir Empresa"],
+      "tags": [
+        "MEI",
+        "Desenquadramento",
+        "Abrir Empresa"
+      ],
       "arquivo": "05-deixar-de-ser-mei-virar-me.html"
     },
     {
@@ -55,7 +99,11 @@
       "slug": "clt-ou-pj",
       "resumo": "Receber como CLT ou abrir um CNPJ para trabalhar como PJ? Compare salário líquido, benefícios, impostos e segurança para decidir o que vale mais a pena.",
       "categoria": "clt-x-pj",
-      "tags": ["CLT x PJ", "Pró-labore", "Salário Líquido"],
+      "tags": [
+        "CLT x PJ",
+        "Pró-labore",
+        "Salário Líquido"
+      ],
       "arquivo": "06-clt-ou-pj.html"
     },
     {
@@ -63,7 +111,10 @@
       "slug": "como-trocar-de-contador",
       "resumo": "Trocar de contador é mais simples do que parece e pode ser feito a qualquer momento. Veja o passo a passo para migrar sem perder documentos nem prazos.",
       "categoria": "empreendedorismo",
-      "tags": ["Trocar de Contador", "Contabilidade Digital"],
+      "tags": [
+        "Trocar de Contador",
+        "Contabilidade Digital"
+      ],
       "arquivo": "07-como-trocar-de-contador.html"
     },
     {
@@ -71,7 +122,10 @@
       "slug": "o-que-e-bpo-financeiro",
       "resumo": "BPO Financeiro é a terceirização da gestão financeira da empresa: contas a pagar e receber, fluxo de caixa e conciliação. Entenda como funciona e quando contratar.",
       "categoria": "gestao-financeira",
-      "tags": ["BPO Financeiro", "Gestão Financeira"],
+      "tags": [
+        "BPO Financeiro",
+        "Gestão Financeira"
+      ],
       "arquivo": "08-o-que-e-bpo-financeiro.html"
     },
     {
@@ -79,7 +133,11 @@
       "slug": "cnae-como-escolher",
       "resumo": "O CNAE define os impostos que sua empresa paga e as atividades que pode exercer. Entenda o que é, como escolher o código certo e por que errar sai caro.",
       "categoria": "abertura-de-empresa",
-      "tags": ["CNAE", "Abrir Empresa", "Legalização"],
+      "tags": [
+        "CNAE",
+        "Abrir Empresa",
+        "Legalização"
+      ],
       "arquivo": "09-cnae-como-escolher.html"
     },
     {
@@ -87,7 +145,11 @@
       "slug": "como-calcular-rescisao",
       "resumo": "Demissão com ou sem justa causa, pedido de demissão ou acordo: cada caso muda as verbas rescisórias. Entenda o que entra no cálculo e simule a rescisão.",
       "categoria": "rh-e-folha",
-      "tags": ["Rescisão", "Folha de Pagamento", "RH"],
+      "tags": [
+        "Rescisão",
+        "Folha de Pagamento",
+        "RH"
+      ],
       "arquivo": "10-como-calcular-rescisao.html"
     },
     {
@@ -95,7 +157,10 @@
       "slug": "planejamento-tributario",
       "resumo": "Planejamento tributário é a análise que reduz a carga de impostos da empresa dentro da lei. Entenda os tipos, quando fazer e quanto sua empresa pode economizar.",
       "categoria": "tributacao",
-      "tags": ["Planejamento Tributário", "Regime Tributário"],
+      "tags": [
+        "Planejamento Tributário",
+        "Regime Tributário"
+      ],
       "arquivo": "11-planejamento-tributario.html"
     },
     {
@@ -103,8 +168,156 @@
       "slug": "contabilidade-eleitoral-guia",
       "resumo": "Candidatos e partidos são obrigados a prestar contas à Justiça Eleitoral. Entenda o que é a contabilidade eleitoral, prazos, o papel do contador e como não ter contas rejeitadas.",
       "categoria": "contabilidade-eleitoral",
-      "tags": ["Contabilidade Eleitoral", "Prestação de Contas", "TSE"],
+      "tags": [
+        "Contabilidade Eleitoral",
+        "Prestação de Contas",
+        "TSE"
+      ],
       "arquivo": "12-contabilidade-eleitoral-guia.html"
+    },
+    {
+      "titulo": "SLU: o que é a Sociedade Limitada Unipessoal e quando vale a pena",
+      "slug": "slu-sociedade-limitada-unipessoal",
+      "resumo": "A SLU permite abrir empresa sozinho com o patrimônio pessoal protegido e sem capital mínimo. Entenda o que é e quando escolher.",
+      "categoria": "abertura-de-empresa",
+      "tags": [
+        "SLU",
+        "Abrir Empresa",
+        "Societário"
+      ],
+      "arquivo": "13-slu-sociedade-limitada-unipessoal.html"
+    },
+    {
+      "titulo": "Natureza jurídica: como escolher (EI, SLU, LTDA)",
+      "slug": "natureza-juridica-como-escolher",
+      "resumo": "MEI, EI, SLU ou LTDA? Entenda cada natureza jurídica e escolha a estrutura certa para abrir sua empresa sem retrabalho.",
+      "categoria": "abertura-de-empresa",
+      "tags": [
+        "Abrir Empresa",
+        "Societário",
+        "CNPJ"
+      ],
+      "arquivo": "14-natureza-juridica-como-escolher.html"
+    },
+    {
+      "titulo": "Limite do MEI: o que acontece se você estourar",
+      "slug": "limite-do-mei-o-que-acontece",
+      "resumo": "Faturou acima de R$ 81 mil como MEI? Entenda os dois cenários de desenquadramento e o que fazer para não pagar imposto a mais.",
+      "categoria": "simples-e-mei",
+      "tags": [
+        "MEI",
+        "Simples Nacional",
+        "Desenquadramento"
+      ],
+      "arquivo": "15-limite-do-mei-o-que-acontece.html"
+    },
+    {
+      "titulo": "MEI pode ter funcionário? Regras e custos",
+      "slug": "mei-pode-ter-funcionario",
+      "resumo": "O MEI pode contratar 1 funcionário. Veja o salário mínimo exigido, os encargos (INSS e FGTS) e as obrigações ao contratar.",
+      "categoria": "simples-e-mei",
+      "tags": [
+        "MEI",
+        "RH",
+        "Folha de Pagamento"
+      ],
+      "arquivo": "16-mei-pode-ter-funcionario.html"
+    },
+    {
+      "titulo": "Como emitir nota fiscal: guia para quem tem CNPJ",
+      "slug": "como-emitir-nota-fiscal",
+      "resumo": "NF-e, NFS-e, NFC-e: entenda os tipos de nota fiscal e o passo a passo para emitir sem erro, inclusive como MEI.",
+      "categoria": "tributacao",
+      "tags": [
+        "Nota Fiscal",
+        "Abrir Empresa",
+        "Fiscal"
+      ],
+      "arquivo": "17-como-emitir-nota-fiscal.html"
+    },
+    {
+      "titulo": "Anexos do Simples Nacional (I a V): entenda de vez",
+      "slug": "anexos-do-simples-nacional",
+      "resumo": "O anexo do Simples define quanto você paga de imposto. Entenda os anexos I a V e como o Fator R muda o Anexo III ou V.",
+      "categoria": "tributacao",
+      "tags": [
+        "Simples Nacional",
+        "Tributação",
+        "Fator R"
+      ],
+      "arquivo": "18-anexos-do-simples-nacional.html"
+    },
+    {
+      "titulo": "Lucro Presumido: quando vale a pena",
+      "slug": "lucro-presumido-quando-vale",
+      "resumo": "Nem sempre o Simples é o mais barato. Entenda quando o Lucro Presumido paga menos imposto e para quem ele é indicado.",
+      "categoria": "tributacao",
+      "tags": [
+        "Lucro Presumido",
+        "Regime Tributário",
+        "Planejamento Tributário"
+      ],
+      "arquivo": "19-lucro-presumido-quando-vale.html"
+    },
+    {
+      "titulo": "Pró-labore: o que é e como definir o valor",
+      "slug": "pro-labore-o-que-e",
+      "resumo": "Pró-labore é a remuneração do sócio pelo trabalho. Entenda a diferença para lucros, o impacto no INSS e no Fator R.",
+      "categoria": "rh-e-folha",
+      "tags": [
+        "Pró-labore",
+        "RH",
+        "INSS"
+      ],
+      "arquivo": "20-pro-labore-o-que-e.html"
+    },
+    {
+      "titulo": "Como calcular o 13º salário",
+      "slug": "como-calcular-13-salario",
+      "resumo": "Aprenda a calcular o 13º salário, entenda os prazos das parcelas e os descontos de INSS e IR. Com exemplo prático.",
+      "categoria": "rh-e-folha",
+      "tags": [
+        "13º Salário",
+        "Folha de Pagamento",
+        "RH"
+      ],
+      "arquivo": "21-como-calcular-13-salario.html"
+    },
+    {
+      "titulo": "Como precificar produtos e serviços",
+      "slug": "como-precificar-produtos-servicos",
+      "resumo": "Precificar é conta, não chute. Entenda custos, impostos, margem e o markup para formar o preço certo do seu negócio.",
+      "categoria": "gestao-financeira",
+      "tags": [
+        "Precificação",
+        "Gestão Financeira",
+        "Empreendedorismo"
+      ],
+      "arquivo": "22-como-precificar-produtos-servicos.html"
+    },
+    {
+      "titulo": "Fluxo de caixa: como controlar o da sua empresa",
+      "slug": "fluxo-de-caixa-como-controlar",
+      "resumo": "Empresa com lucro pode quebrar por falta de caixa. Entenda o fluxo de caixa e como controlá-lo (com planilha grátis).",
+      "categoria": "gestao-financeira",
+      "tags": [
+        "Fluxo de Caixa",
+        "Gestão Financeira",
+        "BPO Financeiro"
+      ],
+      "arquivo": "23-fluxo-de-caixa-como-controlar.html"
+    },
+    {
+      "titulo": "Como separar as finanças pessoais das da empresa",
+      "slug": "separar-financas-pessoais-empresa",
+      "resumo": "Misturar o dinheiro da empresa com o seu gera imposto errado e risco patrimonial. Veja como separar de vez as finanças.",
+      "categoria": "gestao-financeira",
+      "tags": [
+        "Gestão Financeira",
+        "Empreendedorismo",
+        "Pró-labore"
+      ],
+      "arquivo": "24-separar-financas-pessoais-empresa.html"
     }
   ]
 }

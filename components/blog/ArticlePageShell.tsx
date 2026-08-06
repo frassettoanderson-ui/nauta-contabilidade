@@ -3,12 +3,13 @@
 import { useState, useCallback } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Calendar, User, ArrowLeft } from 'lucide-react'
+import { Calendar, ArrowLeft } from 'lucide-react'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import LeadPopup from '@/components/LeadPopup'
 import PostCard from '@/components/blog/PostCard'
 import ArticleBody from '@/components/blog/ArticleBody'
+import AuthorByline from '@/components/blog/AuthorByline'
 import type { PostWithRelations } from '@/types/blog'
 
 interface Props {
@@ -99,10 +100,7 @@ export default function ArticlePageShell({ post, related, date }: Props) {
 
           {/* Meta */}
           <div className="flex flex-wrap items-center gap-x-5 gap-y-2 mb-10 pb-8 border-b border-white/08">
-            <span className="flex items-center gap-1.5 text-sm text-gray-400">
-              <User size={14} className="text-[#0BBCD4]" />
-              {post.autor}
-            </span>
+            <AuthorByline categoriaSlug={post.categoria?.slug} />
             <span className="flex items-center gap-1.5 text-sm text-gray-400">
               <Calendar size={14} className="text-[#0BBCD4]" />
               {date}

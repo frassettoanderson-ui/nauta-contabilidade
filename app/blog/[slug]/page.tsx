@@ -6,6 +6,7 @@ import { Calendar, User, Tag, ArrowLeft, ArrowRight } from 'lucide-react'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { getPostBySlug, getRelatedPosts, getAllPublishedSlugs } from '@/lib/blog'
+import { autorPorCategoria } from '@/lib/autores'
 import PostCard from '@/components/blog/PostCard'
 import ArticleBody from '@/components/blog/ArticleBody'
 import ArticleCTA from '@/components/blog/ArticleCTA'
@@ -60,7 +61,15 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
     headline: post.titulo,
     description: post.resumo,
     image: post.imagem_destaque,
-    author: { '@type': 'Person', name: post.autor },
+    author: {
+      '@type': 'Person',
+      name: autorPorCategoria(post.categoria?.slug).nome,
+      jobTitle: autorPorCategoria(post.categoria?.slug).cargo,
+      worksFor: { '@type': 'Organization', name: 'Nauta Contabilidade' },
+      ...(autorPorCategoria(post.categoria?.slug).foto
+        ? { image: `https://nautacontabilidade.com.br${autorPorCategoria(post.categoria?.slug).foto}` }
+        : {}),
+    },
     publisher: { '@type': 'Organization', name: 'Nauta Contabilidade', url: 'https://nautacontabilidade.com.br' },
     datePublished: post.criado_em,
     dateModified: post.atualizado_em,

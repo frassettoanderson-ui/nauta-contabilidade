@@ -1150,6 +1150,174 @@
         "fator r"
       ],
       "arquivo": "84-cnpj-para-representante-comercial.html"
+    },
+    {
+      "titulo": "Lucro Real: o que é, quem deve e como funciona",
+      "slug": "lucro-real-o-que-e",
+      "resumo": "Entenda o que é o Lucro Real, quem é obrigado, como funciona a apuração pelo lucro contábil e quando esse regime tributário realmente compensa.",
+      "categoria": "tributacao",
+      "tags": [
+        "lucro real",
+        "regime tributário",
+        "IRPJ",
+        "CSLL",
+        "PIS COFINS"
+      ],
+      "arquivo": "85-lucro-real-o-que-e.html"
+    },
+    {
+      "titulo": "IRPJ: o que é e como é calculado",
+      "slug": "irpj-o-que-e",
+      "resumo": "Saiba o que é o IRPJ, como a base muda em cada regime, a alíquota de 15% mais adicional de 10% e a periodicidade do imposto de renda da pessoa jurídica.",
+      "categoria": "tributacao",
+      "tags": [
+        "IRPJ",
+        "imposto de renda pessoa jurídica",
+        "lucro presumido",
+        "lucro real",
+        "alíquota"
+      ],
+      "arquivo": "86-irpj-o-que-e.html"
+    },
+    {
+      "titulo": "Como emitir e pagar o DARF",
+      "slug": "como-emitir-darf",
+      "resumo": "Guia prático de como emitir e pagar o DARF: o que é, uso do SICALC e DARF web, códigos de receita, vencimentos e o cálculo do DARF em atraso.",
+      "categoria": "tributacao",
+      "tags": [
+        "DARF",
+        "SICALC",
+        "Receita Federal",
+        "código de receita",
+        "impostos federais"
+      ],
+      "arquivo": "87-como-emitir-darf.html"
+    },
+    {
+      "titulo": "Imposto de Renda para quem tem empresa (sócio)",
+      "slug": "imposto-de-renda-para-quem-tem-empresa",
+      "resumo": "Imposto de Renda para quem tem empresa: como o sócio declara pró-labore, lucros isentos, quotas e bens na DIRPF, e os erros que caem na malha.",
+      "categoria": "tributacao",
+      "tags": [
+        "imposto de renda",
+        "sócio",
+        "pró-labore",
+        "distribuição de lucros",
+        "DIRPF"
+      ],
+      "arquivo": "88-imposto-de-renda-para-quem-tem-empresa.html"
+    },
+    {
+      "titulo": "Carnê-Leão: o que é e quem precisa pagar",
+      "slug": "carne-leao-o-que-e",
+      "resumo": "Carnê-Leão: o que é, quem precisa pagar o recolhimento mensal, alíquotas até 27,5%, integração com a DIRPF e quando compensa abrir CNPJ.",
+      "categoria": "tributacao",
+      "tags": [
+        "carnê-leão",
+        "autônomo",
+        "imposto de renda",
+        "IRPF",
+        "profissional liberal"
+      ],
+      "arquivo": "89-carne-leao-o-que-e.html"
+    },
+    {
+      "titulo": "Elisão fiscal: como pagar menos imposto de forma legal",
+      "slug": "elisao-fiscal-pagar-menos-imposto",
+      "resumo": "Elisão fiscal: como pagar menos imposto de forma legal, a diferença para a sonegação, exemplos com regime, Fator R e pró-labore x lucros.",
+      "categoria": "tributacao",
+      "tags": [
+        "elisão fiscal",
+        "planejamento tributário",
+        "pagar menos imposto",
+        "fator R",
+        "evasão fiscal"
+      ],
+      "arquivo": "90-elisao-fiscal-pagar-menos-imposto.html"
+    },
+    {
+      "titulo": "Impostos federais, estaduais e municipais: entenda cada um",
+      "slug": "impostos-federais-estaduais-municipais",
+      "resumo": "Guia claro sobre impostos federais, estaduais e municipais: veja quais tributos cada ente cobra, exemplos práticos e como o Simples unifica tudo.",
+      "categoria": "tributacao",
+      "tags": [
+        "impostos",
+        "tributos federais",
+        "ICMS",
+        "ISS",
+        "simples nacional"
+      ],
+      "arquivo": "91-impostos-federais-estaduais-municipais.html"
+    },
+    {
+      "titulo": "Imposto de Renda: quem precisa declarar e prazos",
+      "slug": "imposto-de-renda-2026-quem-declara",
+      "resumo": "Imposto de Renda descomplicado: descubra quem precisa declarar, os prazos, o que muda para quem tem empresa e como evitar multa por atraso.",
+      "categoria": "tributacao",
+      "tags": [
+        "imposto de renda",
+        "declaração IRPF",
+        "obrigatoriedade",
+        "restituição",
+        "multa por atraso"
+      ],
+      "arquivo": "92-imposto-de-renda-2026-quem-declara.html"
+    },
+    {
+      "titulo": "Nota fiscal, recibo e cupom fiscal: qual a diferença",
+      "slug": "nota-fiscal-recibo-cupom-diferenca",
+      "resumo": "Nota fiscal, recibo e cupom fiscal não são a mesma coisa: entenda o valor legal de cada um, quando usar e por que o recibo não substitui a nota.",
+      "categoria": "tributacao",
+      "tags": [
+        "nota fiscal",
+        "recibo",
+        "cupom fiscal",
+        "emissão de nota",
+        "documentos fiscais"
+      ],
+      "arquivo": "93-nota-fiscal-recibo-cupom-diferenca.html"
+    },
+    {
+      "titulo": "IRRF: o que é o imposto de renda retido na fonte",
+      "slug": "irrf-imposto-retido-na-fonte",
+      "resumo": "Entenda o IRRF, o imposto de renda retido na fonte: quem retém, a tabela progressiva, retenção entre empresas e como declarar e compensar o valor.",
+      "categoria": "tributacao",
+      "tags": [
+        "irrf",
+        "imposto de renda",
+        "retenção na fonte",
+        "fonte pagadora",
+        "tributação"
+      ],
+      "arquivo": "94-irrf-imposto-retido-na-fonte.html"
+    },
+    {
+      "titulo": "ISS: o que é e como funciona o imposto sobre serviços",
+      "slug": "iss-o-que-e",
+      "resumo": "Saiba o que é o ISS, o imposto sobre serviços municipal: alíquotas de 2% a 5%, retenção na fonte, inscrição municipal e como ele entra no Simples Nacional.",
+      "categoria": "tributacao",
+      "tags": [
+        "iss",
+        "imposto sobre serviços",
+        "imposto municipal",
+        "prestação de serviços",
+        "simples nacional"
+      ],
+      "arquivo": "95-iss-o-que-e.html"
+    },
+    {
+      "titulo": "ICMS: o que é e como funciona",
+      "slug": "icms-o-que-e",
+      "resumo": "Descubra o que é o ICMS, o imposto estadual sobre mercadorias: não cumulatividade, substituição tributária, DIFAL e como funciona dentro do Simples Nacional.",
+      "categoria": "tributacao",
+      "tags": [
+        "icms",
+        "imposto estadual",
+        "substituição tributária",
+        "difal",
+        "não cumulatividade"
+      ],
+      "arquivo": "96-icms-o-que-e.html"
     }
   ]
 }

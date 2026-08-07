@@ -2462,6 +2462,174 @@
         "regularização"
       ],
       "arquivo": "180-reativar-mei-baixado.html"
+    },
+    {
+      "titulo": "CNPJ para enfermeiro: como abrir e pagar menos imposto",
+      "slug": "cnpj-para-enfermeiro",
+      "resumo": "CNPJ para enfermeiro: por que não é MEI, como o Simples e o Fator R reduzem o imposto em plantões e home care, e o que a contabilidade resolve.",
+      "categoria": "setores-e-profissoes",
+      "tags": [
+        "cnpj para enfermeiro",
+        "enfermeiro pj",
+        "simples nacional",
+        "fator r",
+        "home care"
+      ],
+      "arquivo": "181-cnpj-para-enfermeiro.html"
+    },
+    {
+      "titulo": "CNPJ para veterinário: abertura e regime",
+      "slug": "cnpj-para-veterinario",
+      "resumo": "CNPJ para veterinário: por que não é MEI, como escolher CNAE, Simples Nacional e Fator R (Anexo III x V) e emitir nota na clínica ou domicílio.",
+      "categoria": "setores-e-profissoes",
+      "tags": [
+        "cnpj para veterinario",
+        "veterinario pj",
+        "simples nacional",
+        "fator r",
+        "clinica veterinaria"
+      ],
+      "arquivo": "182-cnpj-para-veterinario.html"
+    },
+    {
+      "titulo": "CNPJ para contador: como abrir o próprio escritório",
+      "slug": "cnpj-para-contador",
+      "resumo": "CNPJ para contador: como abrir o próprio escritório contábil, registro no CRC, CNAE, Simples Nacional e Fator R para pagar menos imposto legalmente.",
+      "categoria": "setores-e-profissoes",
+      "tags": [
+        "cnpj para contador",
+        "abrir escritorio contabil",
+        "crc",
+        "simples nacional",
+        "fator r"
+      ],
+      "arquivo": "183-cnpj-para-contador.html"
+    },
+    {
+      "titulo": "CNPJ para corretor de seguros: como abrir",
+      "slug": "cnpj-para-corretor-de-seguros",
+      "resumo": "CNPJ para corretor de seguros: registro SUSEP, CNAE certo, Simples Nacional, Fator R e como emitir nota das comissões pagando menos imposto.",
+      "categoria": "setores-e-profissoes",
+      "tags": [
+        "corretor de seguros",
+        "cnpj",
+        "susep",
+        "simples nacional",
+        "fator r"
+      ],
+      "arquivo": "184-cnpj-para-corretor-de-seguros.html"
+    },
+    {
+      "titulo": "CNPJ para personal trainer: MEI ou PJ?",
+      "slug": "cnpj-para-personal-trainer",
+      "resumo": "CNPJ para personal trainer: veja se compensa ser MEI ou PJ no Simples, o registro CREF, o Fator R e como emitir nota de aulas e consultoria.",
+      "categoria": "setores-e-profissoes",
+      "tags": [
+        "personal trainer",
+        "cnpj",
+        "mei",
+        "cref",
+        "fator r"
+      ],
+      "arquivo": "185-cnpj-para-personal-trainer.html"
+    },
+    {
+      "titulo": "CNPJ para fotógrafo: MEI ou empresa?",
+      "slug": "cnpj-para-fotografo",
+      "resumo": "CNPJ para fotógrafo: quando ser MEI, quando virar ME, o CNAE de fotografia e como emitir nota de ensaios e eventos pagando menos imposto.",
+      "categoria": "setores-e-profissoes",
+      "tags": [
+        "fotógrafo",
+        "cnpj",
+        "mei",
+        "microempresa",
+        "cnae fotografia"
+      ],
+      "arquivo": "186-cnpj-para-fotografo.html"
+    },
+    {
+      "titulo": "CNPJ para salão de beleza: como abrir",
+      "slug": "cnpj-para-salao-de-beleza",
+      "resumo": "CNPJ para salão de beleza: veja MEI ou ME, Lei do Salão Parceiro, CNAE, nota e contratação. Formalize e pague menos imposto com segurança.",
+      "categoria": "setores-e-profissoes",
+      "tags": [
+        "CNPJ",
+        "salão de beleza",
+        "MEI",
+        "salão parceiro",
+        "Simples Nacional"
+      ],
+      "arquivo": "187-cnpj-para-salao-de-beleza.html"
+    },
+    {
+      "titulo": "CNPJ para esteticista: MEI ou empresa?",
+      "slug": "cnpj-para-esteticista",
+      "resumo": "CNPJ para esteticista: veja quando dá para ser MEI, quando abrir clínica de estética (ME), o CNAE certo e como o Fator R reduz seu imposto.",
+      "categoria": "setores-e-profissoes",
+      "tags": [
+        "CNPJ",
+        "esteticista",
+        "MEI",
+        "clínica de estética",
+        "Fator R"
+      ],
+      "arquivo": "188-cnpj-para-esteticista.html"
+    },
+    {
+      "titulo": "CNPJ para professor particular: como formalizar",
+      "slug": "cnpj-para-professor-particular",
+      "resumo": "CNPJ para professor particular: aulas, reforço e curso com MEI ou ME, o CNAE de ensino certo, emissão de nota e Fator R para pagar menos imposto.",
+      "categoria": "setores-e-profissoes",
+      "tags": [
+        "CNPJ",
+        "professor particular",
+        "MEI",
+        "aulas particulares",
+        "Fator R"
+      ],
+      "arquivo": "189-cnpj-para-professor-particular.html"
+    },
+    {
+      "titulo": "CNPJ para produtor de eventos: como abrir",
+      "slug": "cnpj-para-produtor-de-eventos",
+      "resumo": "CNPJ para produtor de eventos: veja CNAE certo, MEI ou ME, nota fiscal e como contratar freelancers com segurança no dia do evento.",
+      "categoria": "setores-e-profissoes",
+      "tags": [
+        "produtor de eventos",
+        "CNPJ",
+        "MEI",
+        "CNAE",
+        "nota fiscal"
+      ],
+      "arquivo": "190-cnpj-para-produtor-de-eventos.html"
+    },
+    {
+      "titulo": "CNPJ para tradutor: MEI ou PJ?",
+      "slug": "cnpj-para-tradutor",
+      "resumo": "CNPJ para tradutor: entenda se pode ser MEI, o CNAE certo, exportação de serviço para o exterior e como emitir nota fiscal.",
+      "categoria": "setores-e-profissoes",
+      "tags": [
+        "tradutor",
+        "CNPJ",
+        "MEI",
+        "exportação de serviço",
+        "CNAE"
+      ],
+      "arquivo": "191-cnpj-para-tradutor.html"
+    },
+    {
+      "titulo": "CNPJ para designer: como formalizar",
+      "slug": "cnpj-para-designer",
+      "resumo": "CNPJ para designer: descubra se pode ser MEI, o CNAE certo, como o Fator R reduz imposto e como lidar com clientes recorrentes.",
+      "categoria": "setores-e-profissoes",
+      "tags": [
+        "designer",
+        "CNPJ",
+        "MEI",
+        "Fator R",
+        "design gráfico"
+      ],
+      "arquivo": "192-cnpj-para-designer.html"
     }
   ]
 }

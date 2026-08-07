@@ -648,6 +648,171 @@
         "regularização"
       ],
       "arquivo": "48-multa-do-mei.html"
+    },
+    {
+      "titulo": "O que é o Simples Nacional: guia completo",
+      "slug": "o-que-e-simples-nacional",
+      "resumo": "Entenda o que é o Simples Nacional, quem pode optar, o limite de R$ 4,8 milhões, os tributos no DAS e quando o regime não vale a pena.",
+      "categoria": "simples-e-mei",
+      "tags": [
+        "simples nacional",
+        "regime tributário",
+        "ME e EPP",
+        "DAS",
+        "abrir empresa"
+      ],
+      "arquivo": "49-o-que-e-simples-nacional.html"
+    },
+    {
+      "titulo": "Como calcular o Simples Nacional (alíquota efetiva)",
+      "slug": "como-calcular-simples-nacional",
+      "resumo": "Aprenda a calcular o Simples Nacional: RBT12, alíquota nominal x efetiva, parcela a deduzir e a fórmula do DAS com exemplo numérico completo.",
+      "categoria": "simples-e-mei",
+      "tags": [
+        "simples nacional",
+        "alíquota efetiva",
+        "RBT12",
+        "cálculo de imposto",
+        "anexos"
+      ],
+      "arquivo": "50-como-calcular-simples-nacional.html"
+    },
+    {
+      "titulo": "DAS do Simples Nacional: como emitir e pagar",
+      "slug": "das-simples-nacional-como-pagar",
+      "resumo": "Saiba como emitir e pagar o DAS do Simples Nacional: PGDAS-D, geração da guia, vencimento dia 20, juros por atraso e diferença para o DAS-MEI.",
+      "categoria": "simples-e-mei",
+      "tags": [
+        "DAS",
+        "simples nacional",
+        "PGDAS-D",
+        "vencimento",
+        "como pagar imposto"
+      ],
+      "arquivo": "51-das-simples-nacional-como-pagar.html"
+    },
+    {
+      "titulo": "Limite do Simples Nacional: faturamento e sublimite",
+      "slug": "limite-simples-nacional",
+      "resumo": "Entenda o limite do Simples Nacional de R$ 4,8 milhões, o sublimite de R$ 3,6 mi (ICMS/ISS) e o que acontece ao estourar o teto.",
+      "categoria": "simples-e-mei",
+      "tags": [
+        "simples nacional",
+        "limite de faturamento",
+        "sublimite",
+        "regime tributario"
+      ],
+      "arquivo": "52-limite-simples-nacional.html"
+    },
+    {
+      "titulo": "Exclusão do Simples Nacional: motivos e como evitar",
+      "slug": "exclusao-simples-nacional",
+      "resumo": "Exclusão do Simples Nacional: veja os motivos (débitos, excesso de faturamento, atividade vedada), prazos do Termo de Exclusão e como regularizar.",
+      "categoria": "simples-e-mei",
+      "tags": [
+        "simples nacional",
+        "exclusao",
+        "termo de exclusao",
+        "debitos tributarios"
+      ],
+      "arquivo": "53-exclusao-simples-nacional.html"
+    },
+    {
+      "titulo": "Como migrar para o Simples Nacional (opção/adesão)",
+      "slug": "como-migrar-para-simples-nacional",
+      "resumo": "Como migrar para o Simples Nacional: prazo de opção em janeiro, requisitos, débitos pendentes, opção na abertura e quando a mudança vale a pena.",
+      "categoria": "simples-e-mei",
+      "tags": [
+        "simples nacional",
+        "migrar simples nacional",
+        "opcao simples",
+        "adesao"
+      ],
+      "arquivo": "54-como-migrar-para-simples-nacional.html"
+    },
+    {
+      "titulo": "Quais impostos o Simples Nacional unifica",
+      "slug": "impostos-simples-nacional",
+      "resumo": "Entenda quais impostos o Simples Nacional unifica no DAS: os 8 tributos como IRPJ, ICMS e ISS, e o que fica de fora, como FGTS e ICMS-ST.",
+      "categoria": "simples-e-mei",
+      "tags": [
+        "simples nacional",
+        "das",
+        "impostos",
+        "tributos",
+        "icms"
+      ],
+      "arquivo": "55-impostos-simples-nacional.html"
+    },
+    {
+      "titulo": "Como distribuir lucros no Simples Nacional (isento de IR)",
+      "slug": "distribuicao-lucros-simples-nacional",
+      "resumo": "Distribuição de lucros no Simples Nacional é isenta de IR. Veja o limite pela presunção, o papel da escrituração e a diferença para o pró-labore.",
+      "categoria": "simples-e-mei",
+      "tags": [
+        "distribuição de lucros",
+        "simples nacional",
+        "pró-labore",
+        "imposto de renda",
+        "escrituração"
+      ],
+      "arquivo": "56-distribuicao-lucros-simples-nacional.html"
+    },
+    {
+      "titulo": "Parcelamento do Simples Nacional: como negociar dívidas",
+      "slug": "parcelamento-simples-nacional",
+      "resumo": "Parcelamento do Simples Nacional em até 60x: como pedir no e-CAC, valor mínimo da parcela, o programa RELP e como evitar a exclusão do regime.",
+      "categoria": "simples-e-mei",
+      "tags": [
+        "parcelamento",
+        "simples nacional",
+        "e-cac",
+        "relp",
+        "dívidas"
+      ],
+      "arquivo": "57-parcelamento-simples-nacional.html"
+    },
+    {
+      "titulo": "DEFIS: a declaração anual do Simples Nacional",
+      "slug": "defis-simples-nacional",
+      "resumo": "DEFIS: entenda a declaração anual do Simples Nacional para ME e EPP, o prazo até 31/03, o que ela informa e o que acontece se você não entregar.",
+      "categoria": "simples-e-mei",
+      "tags": [
+        "DEFIS",
+        "Simples Nacional",
+        "obrigações acessórias",
+        "ME e EPP",
+        "declaração anual"
+      ],
+      "arquivo": "58-defis-simples-nacional.html"
+    },
+    {
+      "titulo": "Substituição tributária no Simples Nacional: o que muda",
+      "slug": "substituicao-tributaria-simples-nacional",
+      "resumo": "Substituição tributária no Simples Nacional: entenda o ICMS-ST, como segregar receita para não pagar ICMS duas vezes e quais produtos são afetados.",
+      "categoria": "simples-e-mei",
+      "tags": [
+        "substituição tributária",
+        "ICMS-ST",
+        "Simples Nacional",
+        "segregação de receita",
+        "ICMS"
+      ],
+      "arquivo": "59-substituicao-tributaria-simples-nacional.html"
+    },
+    {
+      "titulo": "Tributação monofásica no Simples: como pagar menos PIS/COFINS",
+      "slug": "tributacao-monofasica-simples-nacional",
+      "resumo": "Tributação monofásica no Simples Nacional: aprenda a segregar receita de PIS/COFINS, quais produtos são monofásicos e como economizar no seu DAS.",
+      "categoria": "simples-e-mei",
+      "tags": [
+        "tributação monofásica",
+        "PIS/COFINS",
+        "Simples Nacional",
+        "segregação de receita",
+        "economia tributária"
+      ],
+      "arquivo": "60-tributacao-monofasica-simples-nacional.html"
     }
   ]
 }

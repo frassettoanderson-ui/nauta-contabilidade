@@ -1486,6 +1486,162 @@
         "CBS"
       ],
       "arquivo": "108-nota-fiscal-reforma-tributaria.html"
+    },
+    {
+      "titulo": "Capital de giro: o que é e como calcular",
+      "slug": "capital-de-giro-o-que-e",
+      "resumo": "Entenda o que é capital de giro, como calcular a NCG e o ciclo financeiro, e reconheça os sinais de aperto no caixa da sua empresa.",
+      "categoria": "gestao-financeira",
+      "tags": [
+        "capital de giro",
+        "NCG",
+        "ciclo financeiro",
+        "fluxo de caixa"
+      ],
+      "arquivo": "109-capital-de-giro-o-que-e.html"
+    },
+    {
+      "titulo": "Margem de lucro: o que é e como calcular",
+      "slug": "margem-de-lucro-como-calcular",
+      "resumo": "Aprenda como calcular a margem de lucro, a diferença entre margem bruta e líquida, com exemplo numérico e o que é uma margem saudável.",
+      "categoria": "gestao-financeira",
+      "tags": [
+        "margem de lucro",
+        "margem bruta",
+        "margem líquida",
+        "precificação"
+      ],
+      "arquivo": "110-margem-de-lucro-como-calcular.html"
+    },
+    {
+      "titulo": "Margem de contribuição: o que é e para que serve",
+      "slug": "margem-de-contribuicao",
+      "resumo": "Descubra o que é margem de contribuição, como usá-la no ponto de equilíbrio e em decisões de mix de produtos, com fórmula e exemplo prático.",
+      "categoria": "gestao-financeira",
+      "tags": [
+        "margem de contribuição",
+        "ponto de equilíbrio",
+        "custos variáveis",
+        "precificação"
+      ],
+      "arquivo": "111-margem-de-contribuicao.html"
+    },
+    {
+      "titulo": "Ponto de equilíbrio: como calcular o faturamento mínimo",
+      "slug": "ponto-de-equilibrio",
+      "resumo": "Saiba o que é ponto de equilíbrio e como calcular o faturamento mínimo da sua empresa com a fórmula de custos fixos e margem de contribuição.",
+      "categoria": "gestao-financeira",
+      "tags": [
+        "ponto de equilibrio",
+        "faturamento minimo",
+        "margem de contribuicao",
+        "custos fixos"
+      ],
+      "arquivo": "112-ponto-de-equilibrio.html"
+    },
+    {
+      "titulo": "Diferença entre faturamento e lucro",
+      "slug": "faturamento-x-lucro",
+      "resumo": "Entenda a diferença entre faturamento e lucro, por que faturar muito não significa lucrar e como custos, despesas e impostos afetam o resultado.",
+      "categoria": "gestao-financeira",
+      "tags": [
+        "faturamento",
+        "lucro",
+        "receita bruta",
+        "margem de lucro"
+      ],
+      "arquivo": "113-faturamento-x-lucro.html"
+    },
+    {
+      "titulo": "Planejamento financeiro empresarial: guia para pequenas empresas",
+      "slug": "planejamento-financeiro-empresarial",
+      "resumo": "Guia de planejamento financeiro empresarial para pequenas empresas: orçamento, projeção de caixa, metas, separação PF/PJ e acompanhamento mensal.",
+      "categoria": "gestao-financeira",
+      "tags": [
+        "planejamento financeiro",
+        "orcamento empresarial",
+        "projecao de caixa",
+        "pequenas empresas"
+      ],
+      "arquivo": "114-planejamento-financeiro-empresarial.html"
+    },
+    {
+      "titulo": "Reserva financeira da empresa: por que e como formar",
+      "slug": "reserva-financeira-empresa",
+      "resumo": "Entenda o que é a reserva financeira da empresa, quanto guardar em meses de custo fixo, onde deixar e como construir aos poucos.",
+      "categoria": "gestao-financeira",
+      "tags": [
+        "reserva financeira",
+        "reserva de emergência",
+        "capital de giro",
+        "fluxo de caixa"
+      ],
+      "arquivo": "115-reserva-financeira-empresa.html"
+    },
+    {
+      "titulo": "Como quitar as dívidas da empresa: passo a passo",
+      "slug": "como-quitar-dividas-empresa",
+      "resumo": "Como quitar as dívidas da empresa em um passo a passo prático: mapear, priorizar juros, renegociar, cortar custos e evitar novas dívidas.",
+      "categoria": "gestao-financeira",
+      "tags": [
+        "quitar dívidas",
+        "dívidas da empresa",
+        "renegociação",
+        "juros"
+      ],
+      "arquivo": "116-como-quitar-dividas-empresa.html"
+    },
+    {
+      "titulo": "Relatórios financeiros essenciais para decidir",
+      "slug": "relatorios-financeiros-essenciais",
+      "resumo": "Conheça os relatórios financeiros essenciais para decidir: fluxo de caixa, DRE, contas a pagar e receber, indicadores e periodicidade.",
+      "categoria": "gestao-financeira",
+      "tags": [
+        "relatórios financeiros",
+        "DRE",
+        "fluxo de caixa",
+        "indicadores financeiros"
+      ],
+      "arquivo": "117-relatorios-financeiros-essenciais.html"
+    },
+    {
+      "titulo": "Como conseguir capital de giro para a empresa",
+      "slug": "como-conseguir-capital-de-giro",
+      "resumo": "Veja como conseguir capital de giro: fontes, cuidados com juros e quando faz sentido buscar crédito sem sufocar o caixa da empresa.",
+      "categoria": "gestao-financeira",
+      "tags": [
+        "capital de giro",
+        "crédito empresarial",
+        "fluxo de caixa",
+        "antecipação de recebíveis"
+      ],
+      "arquivo": "118-como-conseguir-capital-de-giro.html"
+    },
+    {
+      "titulo": "Contas a pagar e a receber: como organizar",
+      "slug": "contas-a-pagar-e-receber",
+      "resumo": "Aprenda a organizar contas a pagar e a receber: controle de prazos, régua de cobrança e conciliação com o fluxo de caixa da empresa.",
+      "categoria": "gestao-financeira",
+      "tags": [
+        "contas a pagar e receber",
+        "régua de cobrança",
+        "fluxo de caixa",
+        "inadimplência"
+      ],
+      "arquivo": "119-contas-a-pagar-e-receber.html"
+    },
+    {
+      "titulo": "Conciliação bancária: o que é e como fazer",
+      "slug": "conciliacao-bancaria-o-que-e",
+      "resumo": "Entenda o que é conciliação bancária, como fazer passo a passo, os erros que ela evita e com que frequência conciliar o caixa da empresa.",
+      "categoria": "gestao-financeira",
+      "tags": [
+        "conciliação bancária",
+        "controle financeiro",
+        "fluxo de caixa",
+        "extrato bancário"
+      ],
+      "arquivo": "120-conciliacao-bancaria-o-que-e.html"
     }
   ]
 }

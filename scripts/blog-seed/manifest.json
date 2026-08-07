@@ -483,6 +483,171 @@
         "INPI"
       ],
       "arquivo": "36-nome-empresarial-razao-social-nome-fantasia.html"
+    },
+    {
+      "titulo": "Como abrir um MEI: passo a passo grátis",
+      "slug": "como-abrir-mei",
+      "resumo": "Veja como abrir um MEI grátis: pré-requisitos, passo a passo no Portal do Empreendedor, emissão do CCMEI e o que fazer depois de formalizar.",
+      "categoria": "simples-e-mei",
+      "tags": [
+        "MEI",
+        "abrir empresa",
+        "Portal do Empreendedor",
+        "CNPJ",
+        "formalização"
+      ],
+      "arquivo": "37-como-abrir-mei.html"
+    },
+    {
+      "titulo": "Como emitir nota fiscal como MEI",
+      "slug": "como-emitir-nota-fiscal-mei",
+      "resumo": "Aprenda como emitir nota fiscal como MEI: quando é obrigatório, diferença entre PJ e PF, NFS-e nacional, inscrição municipal e passo a passo.",
+      "categoria": "simples-e-mei",
+      "tags": [
+        "MEI",
+        "nota fiscal",
+        "NFS-e",
+        "inscrição municipal",
+        "emissão de nota"
+      ],
+      "arquivo": "38-como-emitir-nota-fiscal-mei.html"
+    },
+    {
+      "titulo": "DAS do MEI: o que é e como pagar o boleto",
+      "slug": "das-mei-como-pagar",
+      "resumo": "Entenda o DAS do MEI: o que é o DAS-SIMEI, valor fixo mensal, como emitir o boleto no PGMEI, vencimento dia 20 e o que fazer em caso de atraso.",
+      "categoria": "simples-e-mei",
+      "tags": [
+        "MEI",
+        "DAS",
+        "DAS-SIMEI",
+        "PGMEI",
+        "impostos"
+      ],
+      "arquivo": "39-das-mei-como-pagar.html"
+    },
+    {
+      "titulo": "Declaração Anual do MEI (DASN-SIMEI): como fazer",
+      "slug": "declaracao-anual-mei-dasn",
+      "resumo": "Declaração Anual do MEI (DASN-SIMEI): entenda o que é, o prazo até 31/05, como declarar seu faturamento e o que acontece se você não entregar.",
+      "categoria": "simples-e-mei",
+      "tags": [
+        "MEI",
+        "DASN-SIMEI",
+        "declaração anual",
+        "Simples Nacional",
+        "obrigações fiscais"
+      ],
+      "arquivo": "40-declaracao-anual-mei-dasn.html"
+    },
+    {
+      "titulo": "Desenquadramento do MEI: o que é e quando acontece",
+      "slug": "desenquadramento-mei",
+      "resumo": "Desenquadramento do MEI: veja os motivos (faturamento, atividade, sócio), a diferença entre saída por opção e obrigatória e como virar ME no Simples.",
+      "categoria": "simples-e-mei",
+      "tags": [
+        "MEI",
+        "desenquadramento",
+        "Microempresa",
+        "Simples Nacional",
+        "limite do MEI"
+      ],
+      "arquivo": "41-desenquadramento-mei.html"
+    },
+    {
+      "titulo": "Como dar baixa no MEI (cancelar): passo a passo",
+      "slug": "como-cancelar-mei",
+      "resumo": "Como cancelar o MEI: passo a passo pelo Portal do Empreendedor, por que as dívidas continuam, a DASN de baixa e como reabrir o CNPJ depois.",
+      "categoria": "simples-e-mei",
+      "tags": [
+        "MEI",
+        "cancelar MEI",
+        "baixa MEI",
+        "Portal do Empreendedor",
+        "encerrar CNPJ"
+      ],
+      "arquivo": "42-como-cancelar-mei.html"
+    },
+    {
+      "titulo": "Quem pode ser MEI? Atividades permitidas e proibidas",
+      "slug": "quem-pode-ser-mei",
+      "resumo": "Descubra quem pode ser MEI: requisitos de faturamento, regras de sócio e servidor, atividades permitidas e proibidas e o que fazer com profissões regulamentadas.",
+      "categoria": "simples-e-mei",
+      "tags": [
+        "MEI",
+        "atividades permitidas",
+        "abrir empresa",
+        "requisitos MEI"
+      ],
+      "arquivo": "43-quem-pode-ser-mei.html"
+    },
+    {
+      "titulo": "CNAE do MEI: como escolher e adicionar atividades",
+      "slug": "cnae-mei-atividades",
+      "resumo": "Entenda o CNAE do MEI: o que é, diferença entre atividade principal e secundárias, como incluir até 15 ocupações e ajustar quando o negócio cresce.",
+      "categoria": "simples-e-mei",
+      "tags": [
+        "CNAE MEI",
+        "atividades MEI",
+        "atividade secundária",
+        "Portal do Empreendedor"
+      ],
+      "arquivo": "44-cnae-mei-atividades.html"
+    },
+    {
+      "titulo": "MEI e INSS: aposentadoria e benefícios do microempreendedor",
+      "slug": "mei-inss-aposentadoria",
+      "resumo": "Saiba como o MEI contribui para o INSS: aposentadoria por idade, auxílio-doença, salário-maternidade e como complementar para se aposentar por tempo de contribuição.",
+      "categoria": "simples-e-mei",
+      "tags": [
+        "MEI INSS",
+        "aposentadoria MEI",
+        "benefícios MEI",
+        "contribuição previdenciária"
+      ],
+      "arquivo": "45-mei-inss-aposentadoria.html"
+    },
+    {
+      "titulo": "Como alterar os dados do MEI (atividade, endereço, nome fantasia)",
+      "slug": "como-alterar-mei",
+      "resumo": "Aprenda como alterar os dados do MEI no Portal do Empreendedor: mudar CNAE, endereço e nome fantasia passo a passo e quando chamar um contador.",
+      "categoria": "simples-e-mei",
+      "tags": [
+        "MEI",
+        "alteração cadastral",
+        "Portal do Empreendedor",
+        "CNAE",
+        "nome fantasia"
+      ],
+      "arquivo": "46-como-alterar-mei.html"
+    },
+    {
+      "titulo": "Obrigações do MEI: o que cumprir todo mês e todo ano",
+      "slug": "obrigacoes-do-mei",
+      "resumo": "Conheça as obrigações do MEI: DAS mensal, DASN anual, relatório de receitas, nota fiscal e limite de faturamento para manter seu CNPJ em dia.",
+      "categoria": "simples-e-mei",
+      "tags": [
+        "MEI",
+        "obrigações do MEI",
+        "DAS",
+        "DASN-SIMEI",
+        "nota fiscal"
+      ],
+      "arquivo": "47-obrigacoes-do-mei.html"
+    },
+    {
+      "titulo": "Multa do MEI: como funciona e como regularizar as dívidas",
+      "slug": "multa-do-mei",
+      "resumo": "Entenda a multa do MEI por DASN e DAS em atraso, os juros aplicados e como regularizar dívidas com parcelamento antes do risco de baixa do CNPJ.",
+      "categoria": "simples-e-mei",
+      "tags": [
+        "MEI",
+        "multa do MEI",
+        "DAS atrasado",
+        "parcelamento",
+        "regularização"
+      ],
+      "arquivo": "48-multa-do-mei.html"
     }
   ]
 }

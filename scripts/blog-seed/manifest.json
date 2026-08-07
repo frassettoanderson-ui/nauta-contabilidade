@@ -318,6 +318,171 @@
         "Pró-labore"
       ],
       "arquivo": "24-separar-financas-pessoais-empresa.html"
+    },
+    {
+      "titulo": "Quanto custa abrir uma empresa? Veja todos os custos",
+      "slug": "quanto-custa-abrir-empresa",
+      "resumo": "Quanto custa abrir uma empresa? Veja taxas de registro, honorários contábeis, alvará e certificado digital, com exemplos reais de valores por etapa.",
+      "categoria": "abertura-de-empresa",
+      "tags": [
+        "abrir empresa",
+        "custos",
+        "cnpj",
+        "certificado digital",
+        "junta comercial"
+      ],
+      "arquivo": "25-quanto-custa-abrir-empresa.html"
+    },
+    {
+      "titulo": "Como abrir uma ME (Microempresa): passo a passo",
+      "slug": "como-abrir-me",
+      "resumo": "Como abrir uma ME (Microempresa) passo a passo: o que é, limite de faturamento de R$ 360 mil, diferença para MEI e EPP e as etapas do registro.",
+      "categoria": "abertura-de-empresa",
+      "tags": [
+        "abrir ME",
+        "microempresa",
+        "simples nacional",
+        "faturamento",
+        "registro de empresa"
+      ],
+      "arquivo": "26-como-abrir-me.html"
+    },
+    {
+      "titulo": "Como abrir empresa online: passo a passo pela internet",
+      "slug": "como-abrir-empresa-online",
+      "resumo": "Como abrir empresa online pela internet: gov.br, Junta Digital, certificado digital, papel do contador e prazos reais do processo digital de abertura.",
+      "categoria": "abertura-de-empresa",
+      "tags": [
+        "abrir empresa online",
+        "gov.br",
+        "junta digital",
+        "certificado digital",
+        "cnpj"
+      ],
+      "arquivo": "27-como-abrir-empresa-online.html"
+    },
+    {
+      "titulo": "Posso abrir empresa em endereço residencial?",
+      "slug": "abrir-empresa-endereco-residencial",
+      "resumo": "Posso abrir empresa em endereço residencial? Veja quando é permitido, regras de zoneamento, condomínio, atividades liberadas e impacto no IPTU.",
+      "categoria": "abertura-de-empresa",
+      "tags": [
+        "endereço residencial",
+        "abrir empresa",
+        "zoneamento",
+        "home office",
+        "alvará"
+      ],
+      "arquivo": "28-abrir-empresa-endereco-residencial.html"
+    },
+    {
+      "titulo": "Cartão CNPJ: o que é, para que serve e como emitir",
+      "slug": "cartao-cnpj-o-que-e",
+      "resumo": "Cartão CNPJ: o que é, quais dados mostra, como emitir grátis na Receita Federal e em quais situações esse comprovante é exigido da sua empresa.",
+      "categoria": "abertura-de-empresa",
+      "tags": [
+        "cartão CNPJ",
+        "comprovante de inscrição",
+        "Receita Federal",
+        "situação cadastral",
+        "CNPJ"
+      ],
+      "arquivo": "29-cartao-cnpj-o-que-e.html"
+    },
+    {
+      "titulo": "Como abrir empresa de prestação de serviços",
+      "slug": "abrir-empresa-prestacao-servicos",
+      "resumo": "Como abrir empresa de prestação de serviços: escolha do CNAE, ISS e nota fiscal, inscrição municipal e os regimes Simples e Fator R.",
+      "categoria": "abertura-de-empresa",
+      "tags": [
+        "prestação de serviços",
+        "abrir empresa",
+        "ISS",
+        "Fator R",
+        "CNAE de serviços"
+      ],
+      "arquivo": "30-abrir-empresa-prestacao-servicos.html"
+    },
+    {
+      "titulo": "EIRELI: o que era e o que aconteceu (virou SLU)",
+      "slug": "eireli-o-que-e",
+      "resumo": "EIRELI: entenda o que foi, o capital de 100 salários mínimos, a extinção e a conversão automática em SLU e o que fazer hoje.",
+      "categoria": "abertura-de-empresa",
+      "tags": [
+        "EIRELI",
+        "SLU",
+        "natureza jurídica",
+        "abertura de empresa"
+      ],
+      "arquivo": "31-eireli-o-que-e.html"
+    },
+    {
+      "titulo": "Capital social: o que é e quanto colocar ao abrir a empresa",
+      "slug": "capital-social-o-que-e",
+      "resumo": "Capital social: o que é, para que serve, como integralizar e como definir o valor certo ao abrir sua empresa sem cair no mito do valor alto.",
+      "categoria": "abertura-de-empresa",
+      "tags": [
+        "capital social",
+        "abertura de empresa",
+        "contrato social",
+        "integralização"
+      ],
+      "arquivo": "32-capital-social-o-que-e.html"
+    },
+    {
+      "titulo": "CNPJ para e-commerce: como abrir empresa de loja virtual",
+      "slug": "cnpj-para-ecommerce",
+      "resumo": "CNPJ para e-commerce: veja o CNAE de comércio eletrônico, regime tributário, nota fiscal, substituição tributária e endereço para abrir sua loja virtual.",
+      "categoria": "abertura-de-empresa",
+      "tags": [
+        "e-commerce",
+        "CNPJ",
+        "loja virtual",
+        "comércio eletrônico",
+        "abertura de empresa"
+      ],
+      "arquivo": "33-cnpj-para-ecommerce.html"
+    },
+    {
+      "titulo": "Contrato social: o que é e para que serve",
+      "slug": "contrato-social-o-que-e",
+      "resumo": "Entenda o que é o contrato social, suas cláusulas essenciais, objeto social, quotas, administrador e como funcionam as alterações contratuais da empresa.",
+      "categoria": "abertura-de-empresa",
+      "tags": [
+        "contrato social",
+        "abertura de empresa",
+        "sociedade",
+        "objeto social"
+      ],
+      "arquivo": "34-contrato-social-o-que-e.html"
+    },
+    {
+      "titulo": "Inscrição estadual e municipal: quando a empresa precisa",
+      "slug": "inscricao-estadual-municipal",
+      "resumo": "Saiba a diferença entre inscrição estadual e municipal, quem precisa de cada uma (ICMS x ISS) e como obter esses registros para sua empresa funcionar.",
+      "categoria": "abertura-de-empresa",
+      "tags": [
+        "inscrição estadual",
+        "inscrição municipal",
+        "ICMS",
+        "ISS",
+        "abertura de empresa"
+      ],
+      "arquivo": "35-inscricao-estadual-municipal.html"
+    },
+    {
+      "titulo": "Razão social x nome fantasia: como escolher o nome da empresa",
+      "slug": "nome-empresarial-razao-social-nome-fantasia",
+      "resumo": "Razão social x nome fantasia: entenda a diferença, as regras da Junta Comercial, a busca de nome e como proteger sua marca no INPI ao escolher o nome da empresa.",
+      "categoria": "abertura-de-empresa",
+      "tags": [
+        "razão social",
+        "nome fantasia",
+        "nome empresarial",
+        "registro de marca",
+        "INPI"
+      ],
+      "arquivo": "36-nome-empresarial-razao-social-nome-fantasia.html"
     }
   ]
 }

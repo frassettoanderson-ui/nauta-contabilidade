@@ -1642,6 +1642,166 @@
         "extrato bancário"
       ],
       "arquivo": "120-conciliacao-bancaria-o-que-e.html"
+    },
+    {
+      "titulo": "Como começar um negócio do zero: passo a passo",
+      "slug": "como-comecar-um-negocio",
+      "resumo": "Como começar um negócio do zero: valide a ideia, conheça o público, monte um plano simples, abra o CNPJ e conquiste os primeiros clientes.",
+      "categoria": "empreendedorismo",
+      "tags": [
+        "empreendedorismo",
+        "abrir empresa",
+        "cnpj",
+        "primeiros passos"
+      ],
+      "arquivo": "121-como-comecar-um-negocio.html"
+    },
+    {
+      "titulo": "Plano de negócios: o que é e como fazer",
+      "slug": "plano-de-negocios-como-fazer",
+      "resumo": "Plano de negócios: entenda para que serve e como fazer, com resumo, análise de mercado, marketing, operação e finanças de forma prática.",
+      "categoria": "empreendedorismo",
+      "tags": [
+        "plano de negócios",
+        "empreendedorismo",
+        "análise de mercado",
+        "planejamento"
+      ],
+      "arquivo": "122-plano-de-negocios-como-fazer.html"
+    },
+    {
+      "titulo": "Modelo de negócio e Canvas: como estruturar",
+      "slug": "modelo-de-negocio-canvas",
+      "resumo": "Modelo de negócio e Canvas: entenda os 9 blocos, como preencher e exemplos práticos para estruturar sua empresa em uma única página.",
+      "categoria": "empreendedorismo",
+      "tags": [
+        "modelo de negócio",
+        "canvas",
+        "empreendedorismo",
+        "estratégia"
+      ],
+      "arquivo": "123-modelo-de-negocio-canvas.html"
+    },
+    {
+      "titulo": "Como registrar uma marca no INPI",
+      "slug": "como-registrar-uma-marca",
+      "resumo": "Aprenda como registrar uma marca no INPI: busca de anterioridade, classes de Nice, processo, custos e prazos para proteger o nome do seu negócio.",
+      "categoria": "empreendedorismo",
+      "tags": [
+        "registro de marca",
+        "INPI",
+        "propriedade intelectual",
+        "proteção de marca"
+      ],
+      "arquivo": "124-como-registrar-uma-marca.html"
+    },
+    {
+      "titulo": "Ideias de negócios lucrativos para começar",
+      "slug": "ideias-de-negocios-lucrativos",
+      "resumo": "Descubra ideias de negócios lucrativos e os critérios para escolher a sua: demanda, baixo custo e escalabilidade, com exemplos práticos e como formalizar.",
+      "categoria": "empreendedorismo",
+      "tags": [
+        "ideias de negócios",
+        "empreendedorismo",
+        "negócio próprio",
+        "renda extra"
+      ],
+      "arquivo": "125-ideias-de-negocios-lucrativos.html"
+    },
+    {
+      "titulo": "Como empreender gastando pouco",
+      "slug": "como-empreender-gastando-pouco",
+      "resumo": "Veja como empreender gastando pouco: comece enxuto com MEI, valide antes de investir, trabalhe de casa e use ferramentas gratuitas para reduzir custos.",
+      "categoria": "empreendedorismo",
+      "tags": [
+        "empreender gastando pouco",
+        "MEI",
+        "custo baixo",
+        "home office"
+      ],
+      "arquivo": "126-como-empreender-gastando-pouco.html"
+    },
+    {
+      "titulo": "Empreendedorismo digital: como começar",
+      "slug": "empreendedorismo-digital",
+      "resumo": "Empreendedorismo digital: conheça os modelos, veja como formalizar, emitir nota e entender a tributação para começar seu negócio online com segurança.",
+      "categoria": "empreendedorismo",
+      "tags": [
+        "empreendedorismo digital",
+        "negócio online",
+        "MEI",
+        "nota fiscal"
+      ],
+      "arquivo": "127-empreendedorismo-digital.html"
+    },
+    {
+      "titulo": "Como abrir uma franquia: o que avaliar",
+      "slug": "como-abrir-uma-franquia",
+      "resumo": "Como abrir uma franquia com segurança: entenda taxas, royalties, a COF, o contrato, o investimento total e os prós e contras antes de assinar.",
+      "categoria": "empreendedorismo",
+      "tags": [
+        "franquia",
+        "como abrir franquia",
+        "royalties",
+        "COF",
+        "investimento"
+      ],
+      "arquivo": "128-como-abrir-uma-franquia.html"
+    },
+    {
+      "titulo": "Como montar uma startup no Brasil",
+      "slug": "como-montar-uma-startup",
+      "resumo": "Como montar uma startup no Brasil: da ideia ao MVP, natureza jurídica, sociedade com vesting, captação e regimes tributários para escalar com segurança.",
+      "categoria": "empreendedorismo",
+      "tags": [
+        "startup",
+        "como montar startup",
+        "MVP",
+        "vesting",
+        "captação"
+      ],
+      "arquivo": "129-como-montar-uma-startup.html"
+    },
+    {
+      "titulo": "Características de um bom empreendedor",
+      "slug": "caracteristicas-do-empreendedor",
+      "resumo": "Conheça as principais características do empreendedor de sucesso: resiliência, visão, disciplina financeira e como desenvolver cada uma delas.",
+      "categoria": "empreendedorismo",
+      "tags": [
+        "empreendedorismo",
+        "características do empreendedor",
+        "resiliência",
+        "mentalidade"
+      ],
+      "arquivo": "130-caracteristicas-do-empreendedor.html"
+    },
+    {
+      "titulo": "Como fidelizar clientes e vender mais",
+      "slug": "como-fidelizar-clientes",
+      "resumo": "Aprenda como fidelizar clientes com atendimento, pós-venda, programa de fidelidade e valor percebido para vender mais e crescer.",
+      "categoria": "empreendedorismo",
+      "tags": [
+        "empreendedorismo",
+        "fidelizar clientes",
+        "pós-venda",
+        "atendimento",
+        "vendas"
+      ],
+      "arquivo": "131-como-fidelizar-clientes.html"
+    },
+    {
+      "titulo": "Por que e como formalizar seu negócio",
+      "slug": "formalizar-o-negocio",
+      "resumo": "Entenda por que formalizar seu negócio com CNPJ: vantagens, MEI x ME, riscos da informalidade e o passo a passo para regularizar.",
+      "categoria": "empreendedorismo",
+      "tags": [
+        "empreendedorismo",
+        "formalizar negócio",
+        "CNPJ",
+        "MEI",
+        "abrir empresa"
+      ],
+      "arquivo": "132-formalizar-o-negocio.html"
     }
   ]
 }

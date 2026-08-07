@@ -2134,6 +2134,169 @@
         "nota fiscal"
       ],
       "arquivo": "156-cnae-x-codigo-de-servico.html"
+    },
+    {
+      "titulo": "Como abrir uma LTDA (Sociedade Limitada): passo a passo",
+      "slug": "como-abrir-empresa-ltda",
+      "resumo": "Como abrir uma LTDA passo a passo: sócios e quotas, contrato social, responsabilidade limitada, registro na Junta e escolha do regime tributário.",
+      "categoria": "abertura-de-empresa",
+      "tags": [
+        "LTDA",
+        "sociedade limitada",
+        "abrir empresa",
+        "contrato social"
+      ],
+      "arquivo": "157-como-abrir-empresa-ltda.html"
+    },
+    {
+      "titulo": "Tipos de empresa no Brasil: qual escolher",
+      "slug": "tipos-de-empresa-no-brasil",
+      "resumo": "Tipos de empresa no Brasil: entenda MEI, EI, SLU, LTDA e S/A e a diferença entre natureza jurídica, porte e regime para escolher o melhor formato.",
+      "categoria": "abertura-de-empresa",
+      "tags": [
+        "tipos de empresa",
+        "MEI",
+        "SLU",
+        "LTDA",
+        "natureza jurídica"
+      ],
+      "arquivo": "158-tipos-de-empresa-no-brasil.html"
+    },
+    {
+      "titulo": "Documentos para abrir empresa: lista completa",
+      "slug": "documentos-para-abrir-empresa",
+      "resumo": "Documentos para abrir empresa: lista completa dos papéis dos sócios, comprovante de endereço, CNAE e contrato social que o contador vai pedir.",
+      "categoria": "abertura-de-empresa",
+      "tags": [
+        "documentos abrir empresa",
+        "CNAE",
+        "contrato social",
+        "abertura de CNPJ"
+      ],
+      "arquivo": "159-documentos-para-abrir-empresa.html"
+    },
+    {
+      "titulo": "Junta Comercial: o que é e o papel no registro",
+      "slug": "junta-comercial-o-que-e",
+      "resumo": "Junta Comercial: o que é, como registra abertura, alteração e baixa de empresa, o NIRE, a integração com a Receita e os prazos do registro.",
+      "categoria": "abertura-de-empresa",
+      "tags": [
+        "junta comercial",
+        "registro de empresa",
+        "NIRE",
+        "redesim"
+      ],
+      "arquivo": "160-junta-comercial-o-que-e.html"
+    },
+    {
+      "titulo": "Holding patrimonial: o que é e vantagens",
+      "slug": "holding-patrimonial-o-que-e",
+      "resumo": "Holding patrimonial: o que é, como protege bens, facilita a sucessão e reduz impostos sobre aluguéis e dividendos, e quando ela vale a pena.",
+      "categoria": "abertura-de-empresa",
+      "tags": [
+        "holding patrimonial",
+        "planejamento sucessório",
+        "proteção patrimonial",
+        "sucessão"
+      ],
+      "arquivo": "161-holding-patrimonial-o-que-e.html"
+    },
+    {
+      "titulo": "LTDA x S/A: diferenças entre os tipos societários",
+      "slug": "ltda-x-sa",
+      "resumo": "LTDA x S/A: diferenças entre os tipos societários em capital, quotas e ações, governança, custos e quando cada estrutura vale a pena.",
+      "categoria": "abertura-de-empresa",
+      "tags": [
+        "LTDA",
+        "sociedade anônima",
+        "tipos societários",
+        "sociedade limitada"
+      ],
+      "arquivo": "162-ltda-x-sa.html"
+    },
+    {
+      "titulo": "Como abrir uma empresa de consultoria",
+      "slug": "como-abrir-empresa-de-consultoria",
+      "resumo": "Guia para abrir empresa de consultoria: CNAE certo, SLU ou LTDA, Simples Nacional, Fator R, emissão de nota fiscal e contratos que protegem.",
+      "categoria": "abertura-de-empresa",
+      "tags": [
+        "consultoria",
+        "CNAE",
+        "SLU",
+        "Simples Nacional",
+        "Fator R"
+      ],
+      "arquivo": "163-como-abrir-empresa-de-consultoria.html"
+    },
+    {
+      "titulo": "Dá para abrir empresa com nome sujo (CPF negativado)?",
+      "slug": "abrir-empresa-com-nome-sujo",
+      "resumo": "Dá para abrir empresa com nome sujo? Sim: veja como abrir CNPJ com CPF negativado, impactos na conta PJ e no crédito, cuidados e como se organizar.",
+      "categoria": "abertura-de-empresa",
+      "tags": [
+        "nome sujo",
+        "CPF negativado",
+        "abrir CNPJ",
+        "conta PJ",
+        "crédito"
+      ],
+      "arquivo": "164-abrir-empresa-com-nome-sujo.html"
+    },
+    {
+      "titulo": "Sócios: tipos, responsabilidades e como definir",
+      "slug": "socios-tipos-e-responsabilidades",
+      "resumo": "Sócios: entenda tipos e responsabilidades, sócio administrador x quotista, participação, pró-labore x lucros, acordo de sócios e entrada e saída.",
+      "categoria": "abertura-de-empresa",
+      "tags": [
+        "sócios",
+        "acordo de sócios",
+        "pró-labore",
+        "distribuição de lucros",
+        "contrato social"
+      ],
+      "arquivo": "165-socios-tipos-e-responsabilidades.html"
+    },
+    {
+      "titulo": "Alvará de funcionamento: o que é e como obter",
+      "slug": "alvara-de-funcionamento",
+      "resumo": "Entenda o que é o alvará de funcionamento, quem precisa, licenças exigidas e quando atividades de baixo risco têm dispensa na prefeitura.",
+      "categoria": "abertura-de-empresa",
+      "tags": [
+        "alvará de funcionamento",
+        "licenças",
+        "prefeitura",
+        "vigilância sanitária",
+        "baixo risco"
+      ],
+      "arquivo": "166-alvara-de-funcionamento.html"
+    },
+    {
+      "titulo": "Certificado digital (e-CNPJ): o que é e para que serve",
+      "slug": "certificado-digital-e-cnpj",
+      "resumo": "Saiba o que é o certificado digital e-CNPJ, diferenças entre e-CPF, A1 e A3, para que serve, como emitir, custo e validade do documento.",
+      "categoria": "abertura-de-empresa",
+      "tags": [
+        "certificado digital",
+        "e-CNPJ",
+        "e-CPF",
+        "A1",
+        "A3"
+      ],
+      "arquivo": "167-certificado-digital-e-cnpj.html"
+    },
+    {
+      "titulo": "Planejamento para abrir empresa: o que definir antes",
+      "slug": "planejamento-para-abrir-empresa",
+      "resumo": "Checklist de planejamento para abrir empresa: atividade e CNAE, natureza jurídica, sócios, regime tributário, capital, custos e obrigações.",
+      "categoria": "abertura-de-empresa",
+      "tags": [
+        "planejamento",
+        "abrir empresa",
+        "CNAE",
+        "natureza jurídica",
+        "regime tributário"
+      ],
+      "arquivo": "168-planejamento-para-abrir-empresa.html"
     }
   ]
 }

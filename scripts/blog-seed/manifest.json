@@ -1318,6 +1318,174 @@
         "não cumulatividade"
       ],
       "arquivo": "96-icms-o-que-e.html"
+    },
+    {
+      "titulo": "O que é a Reforma Tributária: guia completo",
+      "slug": "o-que-e-reforma-tributaria",
+      "resumo": "Entenda o que é a Reforma Tributária, o modelo de IVA dual, o que muda no dia a dia e como funciona a transição gradual até 2033.",
+      "categoria": "tributacao",
+      "tags": [
+        "reforma tributária",
+        "IVA dual",
+        "CBS",
+        "IBS",
+        "transição"
+      ],
+      "arquivo": "97-o-que-e-reforma-tributaria.html"
+    },
+    {
+      "titulo": "IVA, CBS e IBS: os novos impostos explicados",
+      "slug": "iva-cbs-ibs-o-que-e",
+      "resumo": "IVA, CBS e IBS explicados de forma simples: o IVA dual, o que cada imposto unifica, a não cumulatividade plena e a alíquota estimada.",
+      "categoria": "tributacao",
+      "tags": [
+        "IVA",
+        "CBS",
+        "IBS",
+        "não cumulatividade",
+        "reforma tributária"
+      ],
+      "arquivo": "98-iva-cbs-ibs-o-que-e.html"
+    },
+    {
+      "titulo": "Imposto Seletivo (imposto do pecado): o que é",
+      "slug": "imposto-seletivo-o-que-e",
+      "resumo": "O que é o Imposto Seletivo, o chamado imposto do pecado: sobre quais produtos incide, seu objetivo extrafiscal e quem realmente paga a conta.",
+      "categoria": "tributacao",
+      "tags": [
+        "imposto seletivo",
+        "imposto do pecado",
+        "extrafiscalidade",
+        "reforma tributária"
+      ],
+      "arquivo": "99-imposto-seletivo-o-que-e.html"
+    },
+    {
+      "titulo": "Reforma Tributária e o Simples Nacional: o que muda",
+      "slug": "reforma-tributaria-simples-nacional",
+      "resumo": "Reforma Tributária e o Simples Nacional: entenda o que muda, a opção de recolher IBS/CBS por fora e como isso gera crédito ao seu cliente.",
+      "categoria": "tributacao",
+      "tags": [
+        "reforma tributária",
+        "simples nacional",
+        "ibs",
+        "cbs",
+        "crédito tributário"
+      ],
+      "arquivo": "100-reforma-tributaria-simples-nacional.html"
+    },
+    {
+      "titulo": "Reforma Tributária e o MEI: o que muda",
+      "slug": "reforma-tributaria-mei",
+      "resumo": "Reforma Tributária e o MEI: veja o que muda, por que o DAS-SIMEI segue igual, o crédito limitado ao cliente e a nova figura do nanoempreendedor.",
+      "categoria": "tributacao",
+      "tags": [
+        "reforma tributária",
+        "mei",
+        "das-simei",
+        "nanoempreendedor",
+        "ibs cbs"
+      ],
+      "arquivo": "101-reforma-tributaria-mei.html"
+    },
+    {
+      "titulo": "Reforma Tributária para prestadores de serviços",
+      "slug": "reforma-tributaria-prestadores-servicos",
+      "resumo": "Reforma Tributária para prestadores de serviços: por que a carga tende a subir, o impacto por regime e como precificar e planejar com segurança.",
+      "categoria": "tributacao",
+      "tags": [
+        "reforma tributária",
+        "prestadores de serviços",
+        "planejamento tributário",
+        "ibs",
+        "cbs"
+      ],
+      "arquivo": "102-reforma-tributaria-prestadores-servicos.html"
+    },
+    {
+      "titulo": "Reforma Tributária: o que muda para quem tem CNPJ",
+      "slug": "reforma-tributaria-cnpj-o-que-muda",
+      "resumo": "Reforma Tributária para quem tem CNPJ: entenda IBS e CBS, sistema de créditos, split payment e como adaptar sistemas e notas fiscais na transição.",
+      "categoria": "tributacao",
+      "tags": [
+        "reforma tributaria",
+        "CNPJ",
+        "IBS",
+        "CBS",
+        "split payment"
+      ],
+      "arquivo": "103-reforma-tributaria-cnpj-o-que-muda.html"
+    },
+    {
+      "titulo": "Quais impostos serão extintos com a Reforma",
+      "slug": "impostos-extintos-reforma-tributaria",
+      "resumo": "Impostos extintos na Reforma Tributária: veja como PIS, COFINS, IPI, ICMS e ISS dão lugar a CBS e IBS, o que permanece e o cronograma gradual.",
+      "categoria": "tributacao",
+      "tags": [
+        "reforma tributaria",
+        "impostos extintos",
+        "PIS",
+        "COFINS",
+        "ICMS",
+        "ISS"
+      ],
+      "arquivo": "104-impostos-extintos-reforma-tributaria.html"
+    },
+    {
+      "titulo": "Crédito tributário e não cumulatividade na Reforma",
+      "slug": "credito-tributario-nao-cumulatividade",
+      "resumo": "Crédito tributário e não cumulatividade na Reforma: entenda o crédito de IBS e CBS, como aproveitar créditos das compras e o impacto no preço final.",
+      "categoria": "tributacao",
+      "tags": [
+        "reforma tributaria",
+        "credito tributario",
+        "nao cumulatividade",
+        "IBS",
+        "CBS"
+      ],
+      "arquivo": "105-credito-tributario-nao-cumulatividade.html"
+    },
+    {
+      "titulo": "A transição da Reforma Tributária: como será o cronograma",
+      "slug": "transicao-reforma-tributaria-prazos",
+      "resumo": "Entenda o cronograma da transição da Reforma Tributária: fases gradual de 2026 até 2033 e o que sua empresa deve fazer em cada etapa.",
+      "categoria": "tributacao",
+      "tags": [
+        "reforma tributária",
+        "transição",
+        "CBS",
+        "IBS",
+        "cronograma"
+      ],
+      "arquivo": "106-transicao-reforma-tributaria-prazos.html"
+    },
+    {
+      "titulo": "Imposto sobre aluguel na Reforma Tributária: o que muda",
+      "slug": "imposto-sobre-aluguel-reforma-tributaria",
+      "resumo": "Imposto sobre aluguel na Reforma Tributária: veja quando incide IBS/CBS na locação, quem é afetado e como planejar para pagar menos.",
+      "categoria": "tributacao",
+      "tags": [
+        "reforma tributária",
+        "aluguel",
+        "locação de imóveis",
+        "IBS",
+        "CBS"
+      ],
+      "arquivo": "107-imposto-sobre-aluguel-reforma-tributaria.html"
+    },
+    {
+      "titulo": "Nota fiscal na Reforma Tributária: o padrão nacional",
+      "slug": "nota-fiscal-reforma-tributaria",
+      "resumo": "Nota fiscal na Reforma Tributária: conheça o padrão nacional da NFS-e, os novos campos de IBS/CBS e como adequar seu sistema.",
+      "categoria": "tributacao",
+      "tags": [
+        "reforma tributária",
+        "nota fiscal",
+        "NFS-e",
+        "IBS",
+        "CBS"
+      ],
+      "arquivo": "108-nota-fiscal-reforma-tributaria.html"
     }
   ]
 }

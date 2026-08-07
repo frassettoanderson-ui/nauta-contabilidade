@@ -813,6 +813,171 @@
         "economia tributária"
       ],
       "arquivo": "60-tributacao-monofasica-simples-nacional.html"
+    },
+    {
+      "titulo": "Como ser PJ: guia completo para virar pessoa jurídica",
+      "slug": "como-ser-pj",
+      "resumo": "Como ser PJ na prática: abrir CNPJ, escolher CNAE e regime, emitir nota, obrigações mensais e quando virar pessoa jurídica compensa de verdade.",
+      "categoria": "clt-x-pj",
+      "tags": [
+        "ser pj",
+        "abrir cnpj",
+        "simples nacional",
+        "cnae",
+        "prestador de servicos"
+      ],
+      "arquivo": "61-como-ser-pj.html"
+    },
+    {
+      "titulo": "Como transformar salário CLT em PJ (quanto pedir)",
+      "slug": "clt-para-pj-como-transformar",
+      "resumo": "Sair do CLT para PJ? Aprenda a somar FGTS, 13º, férias e INSS para calcular quanto pedir como PJ e não sair no prejuízo, com exemplo numérico real.",
+      "categoria": "clt-x-pj",
+      "tags": [
+        "clt para pj",
+        "quanto pedir pj",
+        "salario pj",
+        "encargos clt",
+        "negociacao pj"
+      ],
+      "arquivo": "62-clt-para-pj-como-transformar.html"
+    },
+    {
+      "titulo": "Como pagar menos imposto sendo PJ",
+      "slug": "como-pagar-menos-imposto-sendo-pj",
+      "resumo": "Como pagar menos imposto sendo PJ de forma legal: regime certo, Fator R, pró-labore mínimo com distribuição de lucros isenta e planejamento tributário.",
+      "categoria": "clt-x-pj",
+      "tags": [
+        "pagar menos imposto pj",
+        "fator r",
+        "pro-labore",
+        "distribuicao de lucros",
+        "planejamento tributario"
+      ],
+      "arquivo": "63-como-pagar-menos-imposto-sendo-pj.html"
+    },
+    {
+      "titulo": "Vínculo empregatício e PJ: o que caracteriza a pejotização",
+      "slug": "vinculo-empregaticio-pj",
+      "resumo": "Vínculo empregatício e PJ: entenda pessoalidade, habitualidade, subordinação e onerosidade e saiba como evitar a pejotização irregular com segurança.",
+      "categoria": "clt-x-pj",
+      "tags": [
+        "pejotização",
+        "vínculo empregatício",
+        "PJ",
+        "CLT",
+        "subordinação"
+      ],
+      "arquivo": "64-vinculo-empregaticio-pj.html"
+    },
+    {
+      "titulo": "PJ tem direito a férias, 13º e FGTS?",
+      "slug": "pj-direitos-ferias-13-fgts",
+      "resumo": "PJ tem direito a férias, 13º e FGTS? Descubra por que esses benefícios não valem e como se organizar sozinho para reservar e proteger sua renda.",
+      "categoria": "clt-x-pj",
+      "tags": [
+        "PJ",
+        "férias",
+        "13º salário",
+        "FGTS",
+        "previdência"
+      ],
+      "arquivo": "65-pj-direitos-ferias-13-fgts.html"
+    },
+    {
+      "titulo": "Riscos de ser PJ: o que avaliar antes de aceitar",
+      "slug": "riscos-de-ser-pj",
+      "resumo": "Riscos de ser PJ: avalie estabilidade, benefícios, impostos e gestão do negócio antes de aceitar e saiba quando não vale a pena trocar a CLT.",
+      "categoria": "clt-x-pj",
+      "tags": [
+        "riscos de ser PJ",
+        "PJ",
+        "CLT",
+        "regime tributário",
+        "planejamento"
+      ],
+      "arquivo": "66-riscos-de-ser-pj.html"
+    },
+    {
+      "titulo": "Conta bancária PJ: o que é e vale a pena?",
+      "slug": "conta-pj-vale-a-pena",
+      "resumo": "Conta PJ vale a pena? Entenda o que é, por que separar dinheiro pessoal do da empresa, tarifas x contas digitais grátis e como escolher a melhor.",
+      "categoria": "clt-x-pj",
+      "tags": [
+        "conta pj",
+        "conta bancária empresa",
+        "organização financeira",
+        "cnpj",
+        "bpo financeiro"
+      ],
+      "arquivo": "67-conta-pj-vale-a-pena.html"
+    },
+    {
+      "titulo": "Pró-labore x dividendos: qual a diferença e como retirar",
+      "slug": "pro-labore-x-dividendos",
+      "resumo": "Pró-labore x dividendos: entenda a diferença, por que a distribuição de lucros é isenta de IR e como combinar as retiradas para pagar menos imposto.",
+      "categoria": "clt-x-pj",
+      "tags": [
+        "pró-labore",
+        "dividendos",
+        "distribuição de lucros",
+        "retirada de sócio",
+        "planejamento tributário"
+      ],
+      "arquivo": "68-pro-labore-x-dividendos.html"
+    },
+    {
+      "titulo": "Posso ser CLT e PJ ao mesmo tempo?",
+      "slug": "clt-e-pj-ao-mesmo-tempo",
+      "resumo": "Ser CLT e PJ ao mesmo tempo é permitido? Veja os cuidados com o contrato, como fica a tributação dos dois e o teto do INSS para não pagar em dobro.",
+      "categoria": "clt-x-pj",
+      "tags": [
+        "clt e pj",
+        "acumular clt e pj",
+        "tributação pj",
+        "inss",
+        "renda extra"
+      ],
+      "arquivo": "69-clt-e-pj-ao-mesmo-tempo.html"
+    },
+    {
+      "titulo": "Contrato PJ: como fazer e o que não pode ter",
+      "slug": "contrato-pj-como-fazer",
+      "resumo": "Contrato PJ: veja as cláusulas essenciais e o que evitar para não caracterizar vínculo empregatício e proteger sua prestação de serviços.",
+      "categoria": "clt-x-pj",
+      "tags": [
+        "contrato pj",
+        "prestação de serviços",
+        "vínculo empregatício",
+        "cnpj"
+      ],
+      "arquivo": "70-contrato-pj-como-fazer.html"
+    },
+    {
+      "titulo": "Quanto custa ser PJ? Impostos e contador",
+      "slug": "quanto-custa-ser-pj",
+      "resumo": "Quanto custa ser PJ? Veja impostos do Simples, honorários contábeis, INSS sobre pró-labore e o comparativo real com a CLT.",
+      "categoria": "clt-x-pj",
+      "tags": [
+        "quanto custa ser pj",
+        "impostos pj",
+        "simples nacional",
+        "honorários contábeis"
+      ],
+      "arquivo": "71-quanto-custa-ser-pj.html"
+    },
+    {
+      "titulo": "Como negociar um bom salário sendo PJ",
+      "slug": "negociar-salario-pj",
+      "resumo": "Como negociar salário sendo PJ: calcule o valor mínimo, some benefícios que você perde e use argumentos que fecham um bom acordo.",
+      "categoria": "clt-x-pj",
+      "tags": [
+        "negociar salário pj",
+        "salário pj",
+        "clt x pj",
+        "valor pj"
+      ],
+      "arquivo": "72-negociar-salario-pj.html"
     }
   ]
 }

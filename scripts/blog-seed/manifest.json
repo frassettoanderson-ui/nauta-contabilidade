@@ -1802,6 +1802,174 @@
         "abrir empresa"
       ],
       "arquivo": "132-formalizar-o-negocio.html"
+    },
+    {
+      "titulo": "Como calcular a folha de pagamento",
+      "slug": "como-calcular-folha-de-pagamento",
+      "resumo": "Aprenda como calcular a folha de pagamento passo a passo: proventos, descontos de INSS e IRRF, salário líquido e encargos, com exemplo numérico.",
+      "categoria": "rh-e-folha",
+      "tags": [
+        "folha de pagamento",
+        "salário líquido",
+        "INSS",
+        "IRRF",
+        "FGTS"
+      ],
+      "arquivo": "133-como-calcular-folha-de-pagamento.html"
+    },
+    {
+      "titulo": "Encargos trabalhistas: quanto custa um funcionário",
+      "slug": "encargos-trabalhistas",
+      "resumo": "Descubra quanto custa um funcionário CLT: encargos trabalhistas como FGTS, INSS patronal, 13º e férias elevam o total a cerca de 1,7x o salário.",
+      "categoria": "rh-e-folha",
+      "tags": [
+        "encargos trabalhistas",
+        "custo do funcionário",
+        "FGTS",
+        "INSS patronal",
+        "13º salário"
+      ],
+      "arquivo": "134-encargos-trabalhistas.html"
+    },
+    {
+      "titulo": "FGTS: o que é e como funciona",
+      "slug": "fgts-o-que-e",
+      "resumo": "Entenda o que é o FGTS e como funciona: depósito de 8%, conta vinculada, regras de saque, saque-aniversário, multa de 40% e como consultar o saldo.",
+      "categoria": "rh-e-folha",
+      "tags": [
+        "FGTS",
+        "fundo de garantia",
+        "saque FGTS",
+        "multa de 40%",
+        "saque-aniversário"
+      ],
+      "arquivo": "135-fgts-o-que-e.html"
+    },
+    {
+      "titulo": "Férias CLT: como calcular e as regras",
+      "slug": "ferias-clt-como-calcular",
+      "resumo": "Como calcular férias CLT: período aquisitivo, terço constitucional, abono e faltas, com exemplo prático para conferir seu direito.",
+      "categoria": "rh-e-folha",
+      "tags": [
+        "férias",
+        "CLT",
+        "folha de pagamento",
+        "direitos trabalhistas",
+        "terço constitucional"
+      ],
+      "arquivo": "136-ferias-clt-como-calcular.html"
+    },
+    {
+      "titulo": "Horas extras: como calcular",
+      "slug": "horas-extras-como-calcular",
+      "resumo": "Como calcular horas extras: adicional de 50% e 100%, valor da hora, reflexos no DSR e banco de horas, com exemplo numérico completo.",
+      "categoria": "rh-e-folha",
+      "tags": [
+        "horas extras",
+        "folha de pagamento",
+        "DSR",
+        "banco de horas",
+        "CLT"
+      ],
+      "arquivo": "137-horas-extras-como-calcular.html"
+    },
+    {
+      "titulo": "INSS do funcionário: tabela e cálculo",
+      "slug": "inss-do-funcionario",
+      "resumo": "INSS do funcionário: entenda o desconto progressivo por faixa, o teto, o INSS patronal e como aparece no holerite, com exemplo.",
+      "categoria": "rh-e-folha",
+      "tags": [
+        "INSS",
+        "folha de pagamento",
+        "holerite",
+        "desconto progressivo",
+        "previdência"
+      ],
+      "arquivo": "138-inss-do-funcionario.html"
+    },
+    {
+      "titulo": "Aviso prévio: como funciona (trabalhado e indenizado)",
+      "slug": "aviso-previo",
+      "resumo": "Aviso prévio: entenda o prazo de 30 dias mais 3 por ano, a diferença entre trabalhado e indenizado, a redução de jornada e quando é devido.",
+      "categoria": "rh-e-folha",
+      "tags": [
+        "aviso prévio",
+        "rescisão",
+        "CLT",
+        "demissão",
+        "folha de pagamento"
+      ],
+      "arquivo": "139-aviso-previo.html"
+    },
+    {
+      "titulo": "eSocial: o que é e quem deve enviar",
+      "slug": "esocial-o-que-e",
+      "resumo": "eSocial: o que é, quais são os eventos (admissão, folha, afastamentos), quem é obrigado a enviar (inclusive doméstico), prazos e por que estar em dia.",
+      "categoria": "rh-e-folha",
+      "tags": [
+        "eSocial",
+        "folha de pagamento",
+        "obrigações trabalhistas",
+        "empregador doméstico",
+        "FGTS"
+      ],
+      "arquivo": "140-esocial-o-que-e.html"
+    },
+    {
+      "titulo": "Admissão de funcionário: passo a passo e documentos",
+      "slug": "admissao-de-funcionario",
+      "resumo": "Admissão de funcionário: passo a passo com documentos, exame admissional, registro na CTPS digital, envio ao eSocial, contrato e o papel do contador.",
+      "categoria": "rh-e-folha",
+      "tags": [
+        "admissão",
+        "contratação",
+        "CTPS digital",
+        "eSocial",
+        "folha de pagamento"
+      ],
+      "arquivo": "141-admissao-de-funcionario.html"
+    },
+    {
+      "titulo": "Salário-família: o que é e quem tem direito",
+      "slug": "salario-familia",
+      "resumo": "Salário-família: entenda quem tem direito, o valor por cota, o limite de renda e como solicitar esse benefício por filho na folha.",
+      "categoria": "rh-e-folha",
+      "tags": [
+        "salário-família",
+        "folha de pagamento",
+        "benefícios",
+        "INSS",
+        "RH"
+      ],
+      "arquivo": "142-salario-familia.html"
+    },
+    {
+      "titulo": "Vale-transporte e vale-alimentação: regras e descontos",
+      "slug": "vale-transporte-e-alimentacao",
+      "resumo": "Vale-transporte e vale-alimentação: veja o que é obrigatório, o desconto de até 6%, o PAT e a natureza não salarial dos benefícios.",
+      "categoria": "rh-e-folha",
+      "tags": [
+        "vale-transporte",
+        "vale-alimentação",
+        "benefícios",
+        "folha de pagamento",
+        "PAT"
+      ],
+      "arquivo": "143-vale-transporte-e-alimentacao.html"
+    },
+    {
+      "titulo": "Jornada de trabalho: regras, banco de horas e escala",
+      "slug": "jornada-de-trabalho",
+      "resumo": "Jornada de trabalho: limites de 8h e 44h, intervalos, hora extra, banco de horas, escala 12x36 e controle de ponto explicados.",
+      "categoria": "rh-e-folha",
+      "tags": [
+        "jornada de trabalho",
+        "banco de horas",
+        "hora extra",
+        "escala 12x36",
+        "controle de ponto"
+      ],
+      "arquivo": "144-jornada-de-trabalho.html"
     }
   ]
 }

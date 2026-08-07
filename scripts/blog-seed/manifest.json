@@ -2297,6 +2297,171 @@
         "regime tributário"
       ],
       "arquivo": "168-planejamento-para-abrir-empresa.html"
+    },
+    {
+      "titulo": "MEI precisa de conta PJ?",
+      "slug": "mei-precisa-de-conta-pj",
+      "resumo": "MEI precisa de conta PJ? Não é obrigatório, mas separar as finanças traz clareza. Veja conta pessoal x empresarial e opções digitais grátis.",
+      "categoria": "simples-e-mei",
+      "tags": [
+        "MEI",
+        "conta PJ",
+        "conta empresarial",
+        "finanças"
+      ],
+      "arquivo": "169-mei-precisa-de-conta-pj.html"
+    },
+    {
+      "titulo": "MEI tem direito a FGTS, seguro-desemprego e PIS?",
+      "slug": "mei-direitos-trabalhistas",
+      "resumo": "MEI tem direito a FGTS, seguro-desemprego e PIS? Entenda por que não, e quais benefícios do INSS o MEI garante, como aposentadoria e auxílios.",
+      "categoria": "simples-e-mei",
+      "tags": [
+        "MEI",
+        "FGTS",
+        "seguro-desemprego",
+        "PIS",
+        "INSS"
+      ],
+      "arquivo": "170-mei-direitos-trabalhistas.html"
+    },
+    {
+      "titulo": "Posso ser CLT e MEI ao mesmo tempo?",
+      "slug": "mei-e-clt-ao-mesmo-tempo",
+      "resumo": "Posso ser CLT e MEI ao mesmo tempo? Sim, é permitido. Veja os cuidados com vínculo empregatício, tributação e INSS para não errar.",
+      "categoria": "simples-e-mei",
+      "tags": [
+        "MEI",
+        "CLT",
+        "vínculo empregatício",
+        "tributação",
+        "INSS"
+      ],
+      "arquivo": "171-mei-e-clt-ao-mesmo-tempo.html"
+    },
+    {
+      "titulo": "Profissional liberal pode ser MEI?",
+      "slug": "mei-para-profissional-liberal",
+      "resumo": "Profissional liberal pode ser MEI? Veja quais atividades entram, por que profissões regulamentadas ficam de fora e as alternativas como SLU e Simples.",
+      "categoria": "simples-e-mei",
+      "tags": [
+        "MEI",
+        "profissional liberal",
+        "profissão regulamentada",
+        "SLU"
+      ],
+      "arquivo": "172-mei-para-profissional-liberal.html"
+    },
+    {
+      "titulo": "MEI precisa de inscrição estadual?",
+      "slug": "mei-precisa-de-inscricao-estadual",
+      "resumo": "MEI precisa de inscrição estadual? Comércio e indústria (ICMS) sim, serviços (ISS) não. Veja quando é obrigatória, como obter e o papel do SINTEGRA.",
+      "categoria": "simples-e-mei",
+      "tags": [
+        "MEI",
+        "inscrição estadual",
+        "ICMS",
+        "ISS",
+        "SINTEGRA"
+      ],
+      "arquivo": "173-mei-precisa-de-inscricao-estadual.html"
+    },
+    {
+      "titulo": "MEI precisa de certificado digital para emitir nota?",
+      "slug": "mei-precisa-de-certificado-digital",
+      "resumo": "MEI precisa de certificado digital para emitir nota? Na NFS-e nacional não; veja quando o e-CNPJ é exigido para NF-e de produto e quanto custa.",
+      "categoria": "simples-e-mei",
+      "tags": [
+        "MEI",
+        "certificado digital",
+        "e-CNPJ",
+        "nota fiscal",
+        "NFS-e"
+      ],
+      "arquivo": "174-mei-precisa-de-certificado-digital.html"
+    },
+    {
+      "titulo": "Posso abrir MEI com nome sujo (CPF negativado)?",
+      "slug": "mei-com-nome-sujo",
+      "resumo": "Nome sujo não impede abrir MEI: a abertura é gratuita e não consulta SPC/Serasa. Veja impactos e cuidados com CPF negativado.",
+      "categoria": "simples-e-mei",
+      "tags": [
+        "MEI",
+        "nome sujo",
+        "CPF negativado",
+        "SPC Serasa",
+        "formalização"
+      ],
+      "arquivo": "175-mei-com-nome-sujo.html"
+    },
+    {
+      "titulo": "MEI precisa de contador?",
+      "slug": "mei-precisa-de-contador",
+      "resumo": "MEI precisa de contador? Não é obrigatório por lei, mas há momentos em que o apoio contábil protege seu negócio. Entenda quando vale.",
+      "categoria": "simples-e-mei",
+      "tags": [
+        "MEI",
+        "contador",
+        "obrigações do MEI",
+        "desenquadramento"
+      ],
+      "arquivo": "176-mei-precisa-de-contador.html"
+    },
+    {
+      "titulo": "MEI pode prestar serviço para outra empresa (PJ)?",
+      "slug": "mei-prestar-servico-para-empresa",
+      "resumo": "MEI pode prestar serviço para empresa (PJ) sim, mas atenção ao risco de pejotização. Veja boas práticas e como emitir nota fiscal.",
+      "categoria": "simples-e-mei",
+      "tags": [
+        "MEI",
+        "prestar serviço",
+        "pejotização",
+        "vínculo empregatício",
+        "nota fiscal"
+      ],
+      "arquivo": "177-mei-prestar-servico-para-empresa.html"
+    },
+    {
+      "titulo": "Documentos necessários para abrir MEI",
+      "slug": "documentos-para-abrir-mei",
+      "resumo": "Veja quais documentos para abrir MEI você precisa: CPF, RG, título de eleitor, conta gov.br e a atividade certa, com passo a passo rápido.",
+      "categoria": "simples-e-mei",
+      "tags": [
+        "MEI",
+        "abrir MEI",
+        "documentos",
+        "formalização",
+        "gov.br"
+      ],
+      "arquivo": "178-documentos-para-abrir-mei.html"
+    },
+    {
+      "titulo": "MEI pode ter sócio?",
+      "slug": "mei-pode-ter-socio",
+      "resumo": "MEI pode ter sócio? Não: o MEI é individual. Entenda por que e como migrar para SLU ou LTDA quando o negócio ganha um segundo dono.",
+      "categoria": "simples-e-mei",
+      "tags": [
+        "MEI",
+        "sócio",
+        "SLU",
+        "LTDA",
+        "sociedade"
+      ],
+      "arquivo": "179-mei-pode-ter-socio.html"
+    },
+    {
+      "titulo": "Como reabrir (reativar) um MEI baixado",
+      "slug": "reativar-mei-baixado",
+      "resumo": "Quer reativar MEI baixado? Ele não religa: é preciso novo registro, e as dívidas antigas permanecem. Veja o passo a passo para reabrir com segurança.",
+      "categoria": "simples-e-mei",
+      "tags": [
+        "MEI",
+        "reativar MEI",
+        "MEI baixado",
+        "reabrir MEI",
+        "regularização"
+      ],
+      "arquivo": "180-reativar-mei-baixado.html"
     }
   ]
 }

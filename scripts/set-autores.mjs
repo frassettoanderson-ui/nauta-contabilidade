@@ -29,6 +29,7 @@ const NOME_POR_CATEGORIA = {
   'empreendedorismo':        'Anderson',
   'contabilidade-eleitoral': 'Erviton',
   'setores-e-profissoes':    'Anderson',
+  'cnae':                    'Erivelton',
 }
 
 async function main() {

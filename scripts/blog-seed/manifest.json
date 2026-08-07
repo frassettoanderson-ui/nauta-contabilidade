@@ -35,6 +35,10 @@
     {
       "nome": "Setores & Profissões",
       "slug": "setores-e-profissoes"
+    },
+    {
+      "nome": "Escolha do CNAE",
+      "slug": "cnae"
     }
   ],
   "posts": [
@@ -1970,6 +1974,166 @@
         "controle de ponto"
       ],
       "arquivo": "144-jornada-de-trabalho.html"
+    },
+    {
+      "titulo": "O que é CNAE e para que serve",
+      "slug": "o-que-e-cnae",
+      "resumo": "CNAE é a Classificação Nacional de Atividades Econômicas: entenda a estrutura do código, onde ele aparece no CNPJ e por que impacta seus impostos.",
+      "categoria": "cnae",
+      "tags": [
+        "cnae",
+        "classificação de atividades",
+        "cnpj",
+        "tributação"
+      ],
+      "arquivo": "145-o-que-e-cnae.html"
+    },
+    {
+      "titulo": "Como consultar o CNAE de uma empresa",
+      "slug": "como-consultar-cnae-de-empresa",
+      "resumo": "Aprenda a consultar o CNAE de uma empresa pelo Cartão CNPJ na Receita, verificar CNPJ de terceiros e ler o CNAE principal e os secundários.",
+      "categoria": "cnae",
+      "tags": [
+        "cnae",
+        "consulta cnae",
+        "cartão cnpj",
+        "receita federal"
+      ],
+      "arquivo": "146-como-consultar-cnae-de-empresa.html"
+    },
+    {
+      "titulo": "Como mudar o CNAE da empresa (alteração)",
+      "slug": "como-mudar-o-cnae",
+      "resumo": "Saiba quando e como mudar o CNAE da empresa: impacto no regime e nos tributos, o processo na Junta e na Receita e o papel do contador na alteração.",
+      "categoria": "cnae",
+      "tags": [
+        "cnae",
+        "alteração de cnae",
+        "junta comercial",
+        "regime tributário"
+      ],
+      "arquivo": "147-como-mudar-o-cnae.html"
+    },
+    {
+      "titulo": "Quantos CNAEs uma empresa pode ter",
+      "slug": "quantos-cnaes-pode-ter-empresa",
+      "resumo": "Descubra quantos CNAEs uma empresa pode ter: 1 principal e vários secundários, o limite prático, regras do MEI e o cuidado com o impacto tributário.",
+      "categoria": "cnae",
+      "tags": [
+        "cnae",
+        "cnae secundario",
+        "mei",
+        "abertura de empresa"
+      ],
+      "arquivo": "148-quantos-cnaes-pode-ter-empresa.html"
+    },
+    {
+      "titulo": "CNAE principal e secundário: qual a diferença",
+      "slug": "cnae-principal-e-secundario",
+      "resumo": "Entenda a diferença entre CNAE principal e secundário, como definir a atividade preponderante e o impacto tributário de cada código no seu CNPJ.",
+      "categoria": "cnae",
+      "tags": [
+        "cnae",
+        "cnae principal",
+        "cnae secundario",
+        "atividade preponderante"
+      ],
+      "arquivo": "149-cnae-principal-e-secundario.html"
+    },
+    {
+      "titulo": "Erros ao escolher o CNAE (e como evitar)",
+      "slug": "erros-ao-escolher-cnae",
+      "resumo": "Conheça os principais erros ao escolher o CNAE — genérico demais, impacto tributário ignorado, copiar concorrente — e como acertar com o contador.",
+      "categoria": "cnae",
+      "tags": [
+        "cnae",
+        "erros cnae",
+        "escolher cnae",
+        "impacto tributario"
+      ],
+      "arquivo": "150-erros-ao-escolher-cnae.html"
+    },
+    {
+      "titulo": "CNAE divergente da atividade: riscos",
+      "slug": "cnae-divergente-da-atividade",
+      "resumo": "CNAE divergente da atividade real gera imposto errado, autuação e barreira em licitação. Veja os riscos e como regularizar o cadastro da empresa.",
+      "categoria": "cnae",
+      "tags": [
+        "CNAE",
+        "regularização",
+        "fiscalização",
+        "atividade econômica"
+      ],
+      "arquivo": "151-cnae-divergente-da-atividade.html"
+    },
+    {
+      "titulo": "CNAE e o anexo do Simples Nacional: a ligação",
+      "slug": "cnae-e-anexo-simples-nacional",
+      "resumo": "O CNAE indica o anexo do Simples Nacional e define a alíquota. Entenda a ligação, o papel do Fator R e veja exemplos por tipo de atividade.",
+      "categoria": "cnae",
+      "tags": [
+        "CNAE",
+        "Simples Nacional",
+        "anexos",
+        "Fator R"
+      ],
+      "arquivo": "152-cnae-e-anexo-simples-nacional.html"
+    },
+    {
+      "titulo": "Como o CNAE afeta os impostos da empresa",
+      "slug": "cnae-e-impostos",
+      "resumo": "O CNAE define a atividade, o regime possível e as alíquotas. Veja como ele afeta ISS, ICMS e substituição tributária e por que escolher certo.",
+      "categoria": "cnae",
+      "tags": [
+        "CNAE",
+        "impostos",
+        "ICMS",
+        "ISS",
+        "regime tributário"
+      ],
+      "arquivo": "153-cnae-e-impostos.html"
+    },
+    {
+      "titulo": "Qual CNAE para e-commerce",
+      "slug": "cnae-para-ecommerce",
+      "resumo": "Qual CNAE para e-commerce usar: comércio varejista pela internet, atividade principal x produtos, marketplace e dropshipping sem erro.",
+      "categoria": "cnae",
+      "tags": [
+        "cnae",
+        "e-commerce",
+        "loja virtual",
+        "comércio varejista",
+        "dropshipping"
+      ],
+      "arquivo": "154-cnae-para-ecommerce.html"
+    },
+    {
+      "titulo": "Tabela CNAE: como consultar e usar",
+      "slug": "tabela-cnae-como-consultar",
+      "resumo": "Tabela CNAE: o que é (IBGE/Concla), sua estrutura em seção, divisão, grupo, classe e subclasse, e como consultar a atividade certa.",
+      "categoria": "cnae",
+      "tags": [
+        "cnae",
+        "tabela cnae",
+        "ibge",
+        "concla",
+        "consulta cnae"
+      ],
+      "arquivo": "155-tabela-cnae-como-consultar.html"
+    },
+    {
+      "titulo": "CNAE x código de serviço municipal: qual a diferença",
+      "slug": "cnae-x-codigo-de-servico",
+      "resumo": "CNAE x código de serviço municipal: entenda a diferença entre atividade federal e ISS pela LC 116 na emissão da nota fiscal.",
+      "categoria": "cnae",
+      "tags": [
+        "cnae",
+        "código de serviço",
+        "iss",
+        "lc 116",
+        "nota fiscal"
+      ],
+      "arquivo": "156-cnae-x-codigo-de-servico.html"
     }
   ]
 }

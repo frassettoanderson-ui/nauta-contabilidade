@@ -31,6 +31,7 @@ export const CATEGORIA_AUTOR: Record<string, string> = {
   'empreendedorismo':         'anderson',
   'contabilidade-eleitoral':  'contabil',
   'setores-e-profissoes':     'anderson',
+  'cnae':                     'erivelton',
 }
 
 export function autorPorCategoria(slug?: string | null): Autor {

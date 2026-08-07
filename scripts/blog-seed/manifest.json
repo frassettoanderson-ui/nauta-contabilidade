@@ -31,6 +31,10 @@
     {
       "nome": "Empreendedorismo",
       "slug": "empreendedorismo"
+    },
+    {
+      "nome": "Setores & Profissões",
+      "slug": "setores-e-profissoes"
     }
   ],
   "posts": [
@@ -978,6 +982,174 @@
         "valor pj"
       ],
       "arquivo": "72-negociar-salario-pj.html"
+    },
+    {
+      "titulo": "CNPJ para médico: como abrir e pagar menos imposto",
+      "slug": "cnpj-para-medico",
+      "resumo": "CNPJ para médico reduz imposto de até 27,5% (PF) para 6-15% no Simples. Entenda Fator R, equiparação hospitalar, plantões e consultório.",
+      "categoria": "setores-e-profissoes",
+      "tags": [
+        "cnpj para médico",
+        "médico pj",
+        "simples nacional",
+        "fator r",
+        "equiparação hospitalar"
+      ],
+      "arquivo": "73-cnpj-para-medico.html"
+    },
+    {
+      "titulo": "CNPJ para advogado: sociedade unipessoal e vantagens",
+      "slug": "cnpj-para-advogado",
+      "resumo": "CNPJ para advogado via Sociedade Unipessoal de Advocacia: registro na OAB, dispensa de alvará e economia no Simples com o Fator R.",
+      "categoria": "setores-e-profissoes",
+      "tags": [
+        "cnpj para advogado",
+        "sociedade unipessoal de advocacia",
+        "SUA",
+        "simples nacional",
+        "fator r"
+      ],
+      "arquivo": "74-cnpj-para-advogado.html"
+    },
+    {
+      "titulo": "CNPJ para dentista: PF ou PJ, quanto economiza",
+      "slug": "cnpj-para-dentista",
+      "resumo": "CNPJ para dentista: compare PF (até 27,5%) e PJ no Simples (6-15%), entenda o Fator R, a emissão de nota e quanto dá para economizar.",
+      "categoria": "setores-e-profissoes",
+      "tags": [
+        "cnpj para dentista",
+        "dentista pj",
+        "simples nacional",
+        "fator r",
+        "odontologia"
+      ],
+      "arquivo": "75-cnpj-para-dentista.html"
+    },
+    {
+      "titulo": "CNPJ para psicólogo: como abrir e o melhor regime",
+      "slug": "cnpj-para-psicologo",
+      "resumo": "CNPJ para psicólogo: veja como abrir, quando o Simples Nacional compensa e como o Fator R garante o Anexo III (6%) para atendimento clínico e online.",
+      "categoria": "setores-e-profissoes",
+      "tags": [
+        "psicólogo",
+        "CNPJ",
+        "Simples Nacional",
+        "Fator R",
+        "contabilidade"
+      ],
+      "arquivo": "76-cnpj-para-psicologo.html"
+    },
+    {
+      "titulo": "CNPJ para TI e desenvolvedor: Fator R e economia",
+      "slug": "cnpj-para-ti-desenvolvedor",
+      "resumo": "CNPJ para TI e desenvolvedor: use o Fator R para cair no Anexo III (6%), feche contratos com empresas e exporte serviços pagando menos imposto.",
+      "categoria": "setores-e-profissoes",
+      "tags": [
+        "TI",
+        "desenvolvedor",
+        "CNPJ",
+        "Fator R",
+        "exportação de serviços"
+      ],
+      "arquivo": "77-cnpj-para-ti-desenvolvedor.html"
+    },
+    {
+      "titulo": "CNPJ para engenheiro: como abrir e tributar",
+      "slug": "cnpj-para-engenheiro",
+      "resumo": "CNPJ para engenheiro: como abrir, escolher o CNAE de engenharia, aplicar o Fator R no Simples e conciliar ART e registro no CREA pagando menos imposto.",
+      "categoria": "setores-e-profissoes",
+      "tags": [
+        "engenheiro",
+        "CNPJ",
+        "Simples Nacional",
+        "Fator R",
+        "CREA"
+      ],
+      "arquivo": "78-cnpj-para-engenheiro.html"
+    },
+    {
+      "titulo": "CNPJ para arquiteto: abertura e regime tributário",
+      "slug": "cnpj-para-arquiteto",
+      "resumo": "CNPJ para arquiteto: veja como abrir, escolher o CNAE e usar o Simples e o Fator R para pagar menos imposto que como pessoa física.",
+      "categoria": "setores-e-profissoes",
+      "tags": [
+        "arquiteto",
+        "cnpj",
+        "simples nacional",
+        "fator r",
+        "abertura de empresa"
+      ],
+      "arquivo": "79-cnpj-para-arquiteto.html"
+    },
+    {
+      "titulo": "CNPJ para nutricionista: como abrir e emitir nota",
+      "slug": "cnpj-para-nutricionista",
+      "resumo": "CNPJ para nutricionista: aprenda a abrir a empresa, escolher o regime com Fator R e emitir nota no consultório ou no atendimento online.",
+      "categoria": "setores-e-profissoes",
+      "tags": [
+        "nutricionista",
+        "cnpj",
+        "simples nacional",
+        "fator r",
+        "nota fiscal"
+      ],
+      "arquivo": "80-cnpj-para-nutricionista.html"
+    },
+    {
+      "titulo": "CNPJ para fisioterapeuta: PJ e Fator R",
+      "slug": "cnpj-para-fisioterapeuta",
+      "resumo": "CNPJ para fisioterapeuta: entenda PJ x PF, o Fator R, o atendimento domiciliar ou em clínica e como emitir nota para pagar menos imposto.",
+      "categoria": "setores-e-profissoes",
+      "tags": [
+        "fisioterapeuta",
+        "cnpj",
+        "simples nacional",
+        "fator r",
+        "pj"
+      ],
+      "arquivo": "81-cnpj-para-fisioterapeuta.html"
+    },
+    {
+      "titulo": "CNPJ para agência de marketing e publicidade",
+      "slug": "cnpj-para-marketing-publicidade",
+      "resumo": "CNPJ para marketing e publicidade: veja CNAE, Simples Nacional, Fator R e como agência e freelancer pagam menos imposto emitindo nota fiscal.",
+      "categoria": "setores-e-profissoes",
+      "tags": [
+        "marketing",
+        "publicidade",
+        "cnpj",
+        "simples nacional",
+        "fator r"
+      ],
+      "arquivo": "82-cnpj-para-marketing-publicidade.html"
+    },
+    {
+      "titulo": "CNPJ para corretor de imóveis: como abrir",
+      "slug": "cnpj-para-corretor-de-imoveis",
+      "resumo": "CNPJ para corretor de imóveis: como abrir, registro no CRECI, CNAE de corretagem, Simples Nacional e como emitir nota das comissões pagando menos imposto.",
+      "categoria": "setores-e-profissoes",
+      "tags": [
+        "corretor de imóveis",
+        "cnpj",
+        "creci",
+        "simples nacional",
+        "corretagem"
+      ],
+      "arquivo": "83-cnpj-para-corretor-de-imoveis.html"
+    },
+    {
+      "titulo": "CNPJ para representante comercial: regime e impostos",
+      "slug": "cnpj-para-representante-comercial",
+      "resumo": "CNPJ para representante comercial: entenda o registro no CORE, o CNAE, o Simples Nacional, o Fator R e como tributar comissões pagando menos imposto.",
+      "categoria": "setores-e-profissoes",
+      "tags": [
+        "representante comercial",
+        "cnpj",
+        "core",
+        "simples nacional",
+        "fator r"
+      ],
+      "arquivo": "84-cnpj-para-representante-comercial.html"
     }
   ]
 }

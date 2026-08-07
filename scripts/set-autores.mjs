@@ -28,6 +28,7 @@ const NOME_POR_CATEGORIA = {
   'gestao-financeira':       'Guilherme',
   'empreendedorismo':        'Anderson',
   'contabilidade-eleitoral': 'Erviton',
+  'setores-e-profissoes':    'Anderson',
 }
 
 async function main() {

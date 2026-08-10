@@ -108,6 +108,14 @@ export async function getAllPublishedSlugs(): Promise<string[]> {
   return res.rows.map((r) => r.slug)
 }
 
+// Para o sitemap: slug + data de modificação (lastmod real por post).
+export async function getPublishedForSitemap(): Promise<{ slug: string; atualizado_em: string }[]> {
+  const res = await pool.query(
+    `SELECT slug, atualizado_em FROM posts WHERE status = 'publicado' ORDER BY atualizado_em DESC`
+  )
+  return res.rows.map((r) => ({ slug: r.slug, atualizado_em: r.atualizado_em }))
+}
+
 export async function getCategorias(): Promise<Categoria[]> {
   const res = await pool.query(`SELECT * FROM categorias ORDER BY nome`)
   return res.rows

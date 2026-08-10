@@ -77,9 +77,22 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
     mainEntityOfPage: { '@type': 'WebPage', '@id': `https://nautacontabilidade.com.br/blog/${post.slug}` },
   }
 
+  const breadcrumbLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Início', item: 'https://nautacontabilidade.com.br' },
+      { '@type': 'ListItem', position: 2, name: 'Blog', item: 'https://nautacontabilidade.com.br/blog' },
+      ...(post.categoria
+        ? [{ '@type': 'ListItem', position: 3, name: post.categoria.nome, item: `https://nautacontabilidade.com.br/blog?categoria=${post.categoria.slug}` }]
+        : []),
+      { '@type': 'ListItem', position: post.categoria ? 4 : 3, name: post.titulo, item: `https://nautacontabilidade.com.br/blog/${post.slug}` },
+    ],
+  }
+
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify([jsonLd, breadcrumbLd]) }} />
 
       {/* Header precisa de client state — usamos um wrapper client */}
       <ArticlePageClient post={post} related={related} date={date} />

@@ -15,6 +15,33 @@ import Footer from '@/components/Footer'
 
 export const revalidate = 60
 
+// Extrai perguntas (H2 em forma de pergunta) + a resposta seguinte do HTML do
+// artigo, para emitir FAQPage (bom para featured snippet / AEO). Só usa H2 que
+// são de fato perguntas e cuja resposta tem conteúdo — casa com o texto visível.
+const stripTags = (s: string) => s.replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ')
+const decodeEntities = (s: string) =>
+  s.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+   .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&aacute;/g, 'á')
+const isPergunta = (q: string) =>
+  /\?\s*$/.test(q) ||
+  /^(o que|como|quando|quem|qual|quais|por que|porque|onde|quanto|quantos|quantas|vale a pena|d[áa] para|posso|preciso|é |devo|quais s[ãa]o)/i.test(q.trim())
+
+function extrairFaq(html?: string | null): { q: string; a: string }[] {
+  if (!html) return []
+  const parts = html.split(/<h2[^>]*>/i)
+  const faqs: { q: string; a: string }[] = []
+  for (let i = 1; i < parts.length; i++) {
+    const seg = parts[i]
+    const end = seg.toLowerCase().indexOf('</h2>')
+    if (end < 0) continue
+    const q = decodeEntities(stripTags(seg.slice(0, end))).replace(/\s+/g, ' ').trim()
+    const a = decodeEntities(stripTags(seg.slice(end + 5))).replace(/\s+/g, ' ').trim()
+    if (!q || !isPergunta(q) || a.length < 40) continue
+    faqs.push({ q, a: a.slice(0, 700) })
+  }
+  return faqs
+}
+
 export async function generateStaticParams() {
   try {
     const slugs = await getAllPublishedSlugs()
@@ -90,9 +117,22 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
     ],
   }
 
+  const faqs = extrairFaq(post.conteudo)
+  const faqLd = faqs.length >= 2 ? {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map(f => ({
+      '@type': 'Question',
+      name: f.q,
+      acceptedAnswer: { '@type': 'Answer', text: f.a },
+    })),
+  } : null
+
+  const graph = faqLd ? [jsonLd, breadcrumbLd, faqLd] : [jsonLd, breadcrumbLd]
+
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify([jsonLd, breadcrumbLd]) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(graph) }} />
 
       {/* Header precisa de client state — usamos um wrapper client */}
       <ArticlePageClient post={post} related={related} date={date} />

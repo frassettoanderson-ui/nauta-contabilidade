@@ -17,8 +17,21 @@ export default function ToolShell({
   wide?: boolean
 }) {
   const [popupOpen, setPopupOpen] = useState(false)
+  const appName = typeof titulo === 'string' ? titulo : crumb
+  const appLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebApplication',
+    name: appName,
+    description: descricao,
+    applicationCategory: 'FinanceApplication',
+    operatingSystem: 'Web',
+    isAccessibleForFree: true,
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'BRL' },
+    provider: { '@type': 'Organization', name: 'Nauta Contabilidade', url: 'https://nautacontabilidade.com.br' },
+  }
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(appLd) }} />
       <Header onOpenLead={() => setPopupOpen(true)} />
       <main style={{ background: '#0a0918', minHeight: '100vh' }}>
         <InnerHero

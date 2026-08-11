@@ -38,20 +38,24 @@ export async function insertLead(lead: {
   etapa?: string; classificacao?: number
   responsavel_id?: string | null; responsavel_nome?: string | null
   origem?: string | null
+  empresa_id?: string | null
 }) {
+  // Sem empresa (ex.: lead vindo do site público) -> cai na Nauta.
   const res = await pool.query(
-    `INSERT INTO leads (nome, whatsapp, email, interesse, etapa, classificacao, responsavel_id, responsavel_nome, origem)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
+    `INSERT INTO leads (nome, whatsapp, email, interesse, etapa, classificacao, responsavel_id, responsavel_nome, origem, empresa_id)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, COALESCE($10, (SELECT id FROM empresas WHERE slug = 'nauta'))) RETURNING *`,
     [lead.nome, lead.whatsapp, lead.email, lead.interesse, lead.etapa ?? 'novo', lead.classificacao ?? 0,
-     lead.responsavel_id ?? null, lead.responsavel_nome ?? null, lead.origem ?? null]
+     lead.responsavel_id ?? null, lead.responsavel_nome ?? null, lead.origem ?? null, lead.empresa_id ?? null]
   )
   emitCrmChange()
   return res.rows[0]
 }
 
-export async function getLeads(opts?: { userId?: string; role?: string }) {
+export async function getLeads(opts: { userId?: string; role?: string; empresaId: string }) {
   // admin/gerente veem todos; comercial (e demais) veem apenas os seus
-  const verTodos = !opts || opts.role === 'admin' || opts.role === 'gerente'
+  const verTodos = opts.role === 'admin' || opts.role === 'gerente'
+  const params: unknown[] = [opts.empresaId]
+  if (!verTodos) params.push(opts.userId)
   const res = await pool.query(
     `SELECT l.*,
       (SELECT COUNT(*) FROM lead_lembretes ll
@@ -60,15 +64,16 @@ export async function getLeads(opts?: { userId?: string; role?: string }) {
       (SELECT status FROM contratos c WHERE c.lead_id = l.id ORDER BY c.criado_em DESC LIMIT 1) AS contrato_status
      FROM leads l
      WHERE COALESCE(l.em_onboarding, false) = false
-       ${verTodos ? '' : 'AND l.responsavel_id = $1'}
+       AND l.empresa_id = $1
+       ${verTodos ? '' : 'AND l.responsavel_id = $2'}
      ORDER BY l.criado_em DESC`,
-    verTodos ? [] : [opts!.userId]
+    params
   )
   const leads = res.rows
 
   // Anexa info de cadastro (id + completude) por lead
-  const cli = await pool.query(`SELECT * FROM clientes WHERE lead_id IS NOT NULL`)
-  const soc = await pool.query(`SELECT * FROM cliente_socios`)
+  const cli = await pool.query(`SELECT * FROM clientes WHERE lead_id IS NOT NULL AND empresa_id = $1`, [opts.empresaId])
+  const soc = await pool.query(`SELECT * FROM cliente_socios WHERE empresa_id = $1`, [opts.empresaId])
   const sociosByCliente: Record<string, unknown[]> = {}
   for (const s of soc.rows) {
     (sociosByCliente[s.cliente_id] ||= []).push(s)
@@ -138,13 +143,13 @@ export async function iniciarOnboarding(leadId: string, categoria: string) {
 }
 
 /** Lista os leads em onboarding de uma categoria. */
-export async function getOnboardingLeads(categoria: string) {
+export async function getOnboardingLeads(categoria: string, empresaId: string) {
   const res = await pool.query(
     `SELECT id, nome, whatsapp, email, interesse, classificacao, onboarding_etapa, criado_em
        FROM leads
-      WHERE em_onboarding = true AND onboarding_categoria = $1
+      WHERE em_onboarding = true AND onboarding_categoria = $1 AND empresa_id = $2
       ORDER BY criado_em DESC`,
-    [categoria]
+    [categoria, empresaId]
   )
   return res.rows
 }
@@ -186,11 +191,13 @@ export interface OnboardingCliente {
 }
 
 /** Clientes no onboarding (não concluídos) com os itens já marcados. */
-export async function getOnboardingBoard(): Promise<OnboardingCliente[]> {
+export async function getOnboardingBoard(empresaId: string): Promise<OnboardingCliente[]> {
   const res = await pool.query(
     `SELECT l.* FROM leads l
       WHERE l.em_onboarding = true AND COALESCE(l.onboarding_concluido, false) = false
-      ORDER BY l.criado_em ASC`
+        AND l.empresa_id = $1
+      ORDER BY l.criado_em ASC`,
+    [empresaId]
   )
   const leads = res.rows
   const ids = leads.map(r => r.id)
@@ -203,7 +210,7 @@ export async function getOnboardingBoard(): Promise<OnboardingCliente[]> {
 
   // Cadastro do cliente (id + completude)
   const cli = await pool.query(`SELECT * FROM clientes WHERE lead_id = ANY($1)`, [ids])
-  const soc = await pool.query(`SELECT * FROM cliente_socios`)
+  const soc = await pool.query(`SELECT * FROM cliente_socios WHERE empresa_id = $1`, [empresaId])
   const sociosByCliente: Record<string, unknown[]> = {}
   for (const s of soc.rows) (sociosByCliente[s.cliente_id] ||= []).push(s)
   const cliByLead: Record<string, Record<string, unknown>> = {}
@@ -257,7 +264,7 @@ export async function concluirOnboarding(leadId: string, valor?: number | null, 
 
 // ─── FINANCEIRO ──────────────────────────────────────────────────────────
 
-export async function listFinanceiro() {
+export async function listFinanceiro(empresaId: string) {
   const res = await pool.query(
     `SELECT
         l.id AS lead_id, l.nome AS lead_nome, l.whatsapp, l.email,
@@ -270,7 +277,8 @@ export async function listFinanceiro() {
         ) AS responsavel
      FROM leads l
      LEFT JOIN clientes c ON c.lead_id = l.id
-     WHERE l.financeiro_ativo = true`
+     WHERE l.financeiro_ativo = true AND l.empresa_id = $1`,
+    [empresaId]
   )
   const rows = res.rows
   const ids = rows.map(r => r.lead_id)

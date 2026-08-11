@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { getOnboardingBoard } from '@/lib/leads'
+import { empresaAtivaId } from '@/lib/tenant'
 import { gerenteConcluido, itensDoSetor, checksEfetivos, type SetorId } from '@/lib/onboarding-checklist'
 
 export const dynamic = 'force-dynamic'
@@ -13,7 +14,9 @@ export async function GET() {
   if (!session) return NextResponse.json({ temNovos: false })
 
   try {
-    const board = await getOnboardingBoard()
+    const empresaId = await empresaAtivaId()
+    if (!empresaId) return NextResponse.json({ temNovos: false })
+    const board = await getOnboardingBoard(empresaId)
     const ehGestor = role === 'admin' || role === 'gerente'
 
     const novos = board.filter(c => {

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { setOnboardingCheck, getOnboardingBoard } from '@/lib/leads'
+import { empresaAtivaId } from '@/lib/tenant'
 import { podeEditarSetor, gerenteConcluido, checksEfetivos, setorItensCompletos, doneKey, ITEM_CADASTRO, type SetorId } from '@/lib/onboarding-checklist'
 
 export const dynamic = 'force-dynamic'
@@ -10,6 +11,8 @@ export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions)
   const su = session?.user as unknown as { role?: string; name?: string } | undefined
   if (!session || !su) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
+  const empresaId = await empresaAtivaId()
+  if (!empresaId) return NextResponse.json({ error: 'Sem empresa ativa' }, { status: 403 })
 
   const { leadId, itemKey, done } = await req.json()
   if (!leadId || !itemKey) return NextResponse.json({ error: 'Parâmetros faltando' }, { status: 400 })
@@ -31,7 +34,7 @@ export async function POST(req: NextRequest) {
 
   // Gating: setores não-gerente só liberam após o gerente concluir
   if (setor !== 'gerente') {
-    const board = await getOnboardingBoard()
+    const board = await getOnboardingBoard(empresaId)
     const cli = board.find(c => c.id === leadId)
     const efetivos = cli ? checksEfetivos(cli.checks, cli.cadastro_completo) : []
     if (!cli || !gerenteConcluido(cli.onboarding_categoria ?? '', efetivos)) {
@@ -41,7 +44,7 @@ export async function POST(req: NextRequest) {
 
   // Para concluir um setor, todos os itens dele precisam estar marcados
   if (ehMarcadorDone && done) {
-    const board = await getOnboardingBoard()
+    const board = await getOnboardingBoard(empresaId)
     const cli = board.find(c => c.id === leadId)
     const efetivos = cli ? checksEfetivos(cli.checks, cli.cadastro_completo) : []
     if (!cli || !setorItensCompletos(setor, cli.onboarding_categoria ?? '', efetivos)) {

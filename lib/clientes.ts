@@ -17,7 +17,7 @@ const SOCIO_COLS = [
 
 type AnyObj = Record<string, unknown>
 
-export async function listClientes() {
+export async function listClientes(empresaId: string) {
   const res = await pool.query(
     `SELECT
         c.id, c.lead_id, c.emp_nome, c.emp_telefone, c.emp_cidade_estado, c.emp_regime, c.criado_em,
@@ -30,13 +30,17 @@ export async function listClientes() {
         l.interesse AS lead_interesse
      FROM clientes c
      LEFT JOIN leads l ON l.id = c.lead_id
-     ORDER BY c.criado_em DESC`
+     WHERE c.empresa_id = $1
+     ORDER BY c.criado_em DESC`,
+    [empresaId]
   )
   return res.rows
 }
 
-export async function getClienteByLead(leadId: string) {
-  const res = await pool.query(`SELECT id FROM clientes WHERE lead_id = $1 LIMIT 1`, [leadId])
+export async function getClienteByLead(leadId: string, empresaId?: string) {
+  const res = empresaId
+    ? await pool.query(`SELECT id FROM clientes WHERE lead_id = $1 AND empresa_id = $2 LIMIT 1`, [leadId, empresaId])
+    : await pool.query(`SELECT id FROM clientes WHERE lead_id = $1 LIMIT 1`, [leadId])
   if (!res.rows[0]) return null
   return getCliente(res.rows[0].id)
 }
@@ -51,19 +55,27 @@ export async function getCliente(id: string) {
 // Converte string vazia/undefined em null (evita erro em colunas numéricas/boolean)
 const norm = (v: unknown) => (v === '' || v === undefined ? null : v)
 
-export async function saveCliente(payload: AnyObj & { id?: string; lead_id?: string; socios?: AnyObj[] }) {
+export async function saveCliente(payload: AnyObj & { id?: string; lead_id?: string; socios?: AnyObj[] }, empresaId?: string) {
   const cliData = CLI_COLS.map(c => norm(payload[c]))
   let clienteId = payload.id as string | undefined
 
   if (clienteId) {
     const sets = CLI_COLS.map((c, i) => `${c} = $${i + 2}`).join(', ')
-    await pool.query(`UPDATE clientes SET ${sets}, atualizado_em = NOW() WHERE id = $1`, [clienteId, ...cliData])
+    if (empresaId) {
+      // guard por empresa: não atualiza cliente de outro escritório
+      await pool.query(
+        `UPDATE clientes SET ${sets}, atualizado_em = NOW() WHERE id = $1 AND empresa_id = $${CLI_COLS.length + 2}`,
+        [clienteId, ...cliData, empresaId]
+      )
+    } else {
+      await pool.query(`UPDATE clientes SET ${sets}, atualizado_em = NOW() WHERE id = $1`, [clienteId, ...cliData])
+    }
   } else {
-    const cols = ['lead_id', ...CLI_COLS]
+    const cols = ['lead_id', 'empresa_id', ...CLI_COLS]
     const ph = cols.map((_, i) => `$${i + 1}`).join(', ')
     const res = await pool.query(
       `INSERT INTO clientes (${cols.join(', ')}) VALUES (${ph}) RETURNING id`,
-      [payload.lead_id ?? null, ...cliData]
+      [payload.lead_id ?? null, empresaId ?? null, ...cliData]
     )
     clienteId = res.rows[0].id
   }

@@ -13,14 +13,16 @@ export interface DashboardData {
   vencidosSerie: number[]
 }
 
-export async function getDashboard(): Promise<DashboardData> {
+export async function getDashboard(empresaId: string): Promise<DashboardData> {
   const leads = (await pool.query(
-    `SELECT id, valor_honorario, honorario_vencimento FROM leads WHERE financeiro_ativo = true`
+    `SELECT id, valor_honorario, honorario_vencimento FROM leads WHERE financeiro_ativo = true AND empresa_id = $1`,
+    [empresaId]
   )).rows
 
   const pagamentos = (await pool.query(
     `SELECT lead_id, to_char(competencia,'YYYY-MM') AS comp, valor, to_char(pago_em,'YYYY-MM') AS pago_mes
-       FROM financeiro_pagamentos`
+       FROM financeiro_pagamentos WHERE empresa_id = $1`,
+    [empresaId]
   )).rows
 
   const paidByLead: Record<string, Set<string>> = {}

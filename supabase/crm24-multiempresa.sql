@@ -58,3 +58,7 @@ BEGIN
     EXECUTE format('CREATE INDEX IF NOT EXISTS idx_%s_empresa ON %I (empresa_id)', t, t);
   END LOOP;
 END $$;
+
+-- 4) Acesso do usuário do app (roda como postgres/superusuário) -----------
+GRANT SELECT, INSERT, UPDATE, DELETE ON empresas        TO nauta_user;
+GRANT SELECT, INSERT, UPDATE, DELETE ON usuario_empresas TO nauta_user;

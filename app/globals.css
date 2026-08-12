@@ -22,32 +22,33 @@
    .sys-theme = escuro (padrão) · .sys-theme.theme-light = claro
    ═══════════════════════════════════════════ */
 .sys-theme {
-  --sys-bg:         #0a0918;
-  --sys-sidebar:    #0c0b18;
-  --sys-modal:      #13111f;
-  --sys-surface:    rgba(255,255,255,0.03);
-  --sys-surface-2:  rgba(255,255,255,0.04);
-  --sys-surface-3:  rgba(255,255,255,0.05);
-  --sys-surface-4:  rgba(255,255,255,0.06);
-  --sys-border:     rgba(255,255,255,0.08);
-  --sys-border-2:   rgba(255,255,255,0.10);
-  --sys-border-soft:rgba(255,255,255,0.06);
   /* Cor de destaque da empresa ativa (o layout do painel sobrescreve --sys-accent inline).
      --sys-accent-2 é o tom escuro (gradientes/hover), derivado automaticamente. */
   --sys-accent:     #0BBCD4;
   --sys-accent-2:   color-mix(in srgb, var(--sys-accent) 85%, #000);
+  /* Base tingida pela cor da empresa: cada empresa tem fundo/sidebar/modais próprios. */
+  --sys-bg:         color-mix(in srgb, var(--sys-accent) 9%,  #07060e);
+  --sys-sidebar:    color-mix(in srgb, var(--sys-accent) 20%, #0a0912);
+  --sys-modal:      color-mix(in srgb, var(--sys-accent) 12%, #121020);
+  --sys-surface:    color-mix(in srgb, var(--sys-accent) 6%,  transparent);
+  --sys-surface-2:  color-mix(in srgb, var(--sys-accent) 9%,  transparent);
+  --sys-surface-3:  color-mix(in srgb, var(--sys-accent) 12%, transparent);
+  --sys-surface-4:  color-mix(in srgb, var(--sys-accent) 15%, transparent);
+  --sys-border:     color-mix(in srgb, var(--sys-accent) 16%, transparent);
+  --sys-border-2:   color-mix(in srgb, var(--sys-accent) 22%, transparent);
+  --sys-border-soft:color-mix(in srgb, var(--sys-accent) 12%, transparent);
 }
 .sys-theme.theme-light {
-  --sys-bg:         #f1f5f9;
-  --sys-sidebar:    #ffffff;
-  --sys-modal:      #ffffff;
-  --sys-surface:    rgba(15,23,42,0.03);
-  --sys-surface-2:  rgba(15,23,42,0.04);
-  --sys-surface-3:  rgba(15,23,42,0.06);
-  --sys-surface-4:  rgba(15,23,42,0.07);
-  --sys-border:     rgba(15,23,42,0.12);
-  --sys-border-2:   rgba(15,23,42,0.16);
-  --sys-border-soft:rgba(15,23,42,0.08);
+  --sys-bg:         color-mix(in srgb, var(--sys-accent) 12%, #eef2f7);
+  --sys-sidebar:    color-mix(in srgb, var(--sys-accent) 8%,  #ffffff);
+  --sys-modal:      color-mix(in srgb, var(--sys-accent) 5%,  #ffffff);
+  --sys-surface:    color-mix(in srgb, var(--sys-accent) 7%,  transparent);
+  --sys-surface-2:  color-mix(in srgb, var(--sys-accent) 10%, transparent);
+  --sys-surface-3:  color-mix(in srgb, var(--sys-accent) 13%, transparent);
+  --sys-surface-4:  color-mix(in srgb, var(--sys-accent) 16%, transparent);
+  --sys-border:     color-mix(in srgb, var(--sys-accent) 22%, #cbd5e1);
+  --sys-border-2:   color-mix(in srgb, var(--sys-accent) 30%, #cbd5e1);
+  --sys-border-soft:color-mix(in srgb, var(--sys-accent) 16%, #cbd5e1);
 }
 /* Texto: remapeia as classes Tailwind no tema claro (cobre todas as telas) */
 .sys-theme.theme-light .text-white   { color: #0f172a !important; }

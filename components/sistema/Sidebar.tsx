@@ -130,13 +130,9 @@ export default function Sidebar({ email }: { email?: string | null }) {
 
   const content = (
     <div className="flex flex-col h-full">
-      <div className="flex items-center justify-between px-5 h-16 border-b border-white/8 shrink-0">
-        <Link href="/sistema"><Image src={logoSrc} alt="Nauta" width={130} height={40} className="h-8 w-auto object-contain" /></Link>
-        <button onClick={() => setMobileOpen(false)} className="lg:hidden p-1 text-gray-400" aria-label="Fechar menu"><X size={20} /></button>
-      </div>
-
-      <div className="px-3 pt-3 shrink-0">
-        <EmpresaSwitcher />
+      <div className="flex items-center gap-2 px-3 h-16 border-b border-white/8 shrink-0">
+        <div className="flex-1 min-w-0"><EmpresaSwitcher /></div>
+        <button onClick={() => setMobileOpen(false)} className="lg:hidden p-1 text-gray-400 shrink-0" aria-label="Fechar menu"><X size={20} /></button>
       </div>
 
       <nav className="flex-1 overflow-y-auto p-3 space-y-1">

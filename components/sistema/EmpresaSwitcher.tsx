@@ -36,7 +36,7 @@ export default function EmpresaSwitcher() {
   }
 
   const dot = (cor: string) => (
-    <span className="inline-block w-2.5 h-2.5 rounded-full shrink-0" style={{ background: cor }} />
+    <span className="inline-block w-3 h-3 rounded-full shrink-0" style={{ background: cor, boxShadow: `0 0 0 3px ${cor}22` }} />
   )
 
   // Só um botão estático quando o usuário enxerga uma única empresa.
@@ -48,12 +48,12 @@ export default function EmpresaSwitcher() {
         type="button"
         onClick={() => !soUma && setOpen(o => !o)}
         disabled={soUma || trocando}
-        className="flex items-center gap-2 w-full min-w-0 px-2.5 py-1.5 rounded-lg text-left transition-colors"
-        style={{ background: 'rgba(255,255,255,0.04)', cursor: soUma ? 'default' : 'pointer', opacity: trocando ? 0.6 : 1 }}
+        className="flex items-center gap-2.5 w-full min-w-0 px-3 py-2.5 rounded-xl text-left transition-colors"
+        style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', cursor: soUma ? 'default' : 'pointer', opacity: trocando ? 0.6 : 1 }}
       >
         {dot(ativa.cor_accent)}
-        <span className="flex-1 min-w-0 truncate text-[13px] font-semibold text-gray-100">{ativa.nome}</span>
-        {!soUma && <ChevronsUpDown size={14} className="text-gray-400 shrink-0" />}
+        <span className="flex-1 min-w-0 truncate text-sm font-semibold text-gray-100">{ativa.nome}</span>
+        {!soUma && <ChevronsUpDown size={15} className="text-gray-400 shrink-0" />}
       </button>
 
       {open && !soUma && (
@@ -68,7 +68,7 @@ export default function EmpresaSwitcher() {
                 key={e.id}
                 type="button"
                 onClick={() => trocar(e.id)}
-                className="flex items-center gap-2 w-full px-2.5 py-2 rounded-lg text-left text-[13px] hover:bg-white/[0.06] transition-colors"
+                className="flex items-center gap-2.5 w-full px-3 py-2.5 rounded-lg text-left text-sm hover:bg-white/[0.06] transition-colors"
                 style={{ color: sel ? '#fff' : '#cbd5e1' }}
               >
                 {dot(e.cor_accent)}

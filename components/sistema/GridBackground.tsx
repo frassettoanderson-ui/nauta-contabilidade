@@ -56,8 +56,8 @@ export default function GridBackground() {
         style={{
           transition: 'transform 0.15s ease-out',
           backgroundImage: `
-            linear-gradient(rgba(11,188,212,0.10) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(11,188,212,0.10) 1px, transparent 1px)
+            linear-gradient(color-mix(in srgb, var(--sys-accent) 10%, transparent) 1px, transparent 1px),
+            linear-gradient(90deg, color-mix(in srgb, var(--sys-accent) 10%, transparent) 1px, transparent 1px)
           `,
           backgroundSize: '46px 46px',
         }}
@@ -71,7 +71,7 @@ export default function GridBackground() {
       {/* Orb teal suave (topo) */}
       <div
         className="absolute -top-24 -left-16 w-[420px] h-[360px] pointer-events-none"
-        style={{ background: 'radial-gradient(ellipse, rgba(11,188,212,0.08) 0%, transparent 70%)' }}
+        style={{ background: 'radial-gradient(ellipse, color-mix(in srgb, var(--sys-accent) 8%, transparent) 0%, transparent 70%)' }}
       />
 
       {/* Vinheta para focar no centro */}

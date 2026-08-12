@@ -39,7 +39,7 @@ export default function CriarUsuarioPage() {
     <div className="p-6 lg:p-8 max-w-md">
       <div className="mb-8">
         <h1 className="text-2xl font-black text-white flex items-center gap-2" style={{ letterSpacing: '-0.02em' }}>
-          <UserPlus size={22} className="text-[#0BBCD4]" /> Criar usuário
+          <UserPlus size={22} className="text-[color:var(--sys-accent)]" /> Criar usuário
         </h1>
         <p className="text-gray-500 text-sm mt-0.5">O usuário definirá a senha definitiva no primeiro acesso</p>
       </div>
@@ -69,7 +69,7 @@ export default function CriarUsuarioPage() {
 
         <button type="submit" disabled={loading || !username.trim() || !password}
           className="w-full h-11 font-bold text-white rounded-xl flex items-center justify-center gap-2 disabled:opacity-50 transition-all hover:-translate-y-0.5"
-          style={{ background: 'linear-gradient(135deg, #0BBCD4, #0999ae)' }}>
+          style={{ background: 'linear-gradient(135deg, var(--sys-accent), var(--sys-accent-2))' }}>
           {loading ? <Loader2 size={16} className="animate-spin" /> : 'Criar usuário'}
         </button>
       </form>

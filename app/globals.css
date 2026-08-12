@@ -28,6 +28,10 @@
   --sys-border:     rgba(255,255,255,0.08);
   --sys-border-2:   rgba(255,255,255,0.10);
   --sys-border-soft:rgba(255,255,255,0.06);
+  /* Cor de destaque da empresa ativa (o layout do painel sobrescreve --sys-accent inline).
+     --sys-accent-2 é o tom escuro (gradientes/hover), derivado automaticamente. */
+  --sys-accent:     #0BBCD4;
+  --sys-accent-2:   color-mix(in srgb, var(--sys-accent) 85%, #000);
 }
 .sys-theme.theme-light {
   --sys-bg:         #f1f5f9;

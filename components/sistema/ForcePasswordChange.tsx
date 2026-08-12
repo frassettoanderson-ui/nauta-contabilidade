@@ -50,8 +50,8 @@ export default function ForcePasswordChange() {
       <div className="relative z-10 w-full max-w-md rounded-2xl p-7"
         style={{ background: 'rgba(15,14,26,0.95)', border: '1px solid var(--sys-border-2)', boxShadow: '0 24px 64px rgba(0,0,0,0.5)' }}>
         <div className="flex flex-col items-center text-center mb-6">
-          <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-3" style={{ background: 'rgba(11,188,212,0.12)', border: '1px solid rgba(11,188,212,0.25)' }}>
-            <ShieldCheck size={22} className="text-[#0BBCD4]" />
+          <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-3" style={{ background: 'color-mix(in srgb, var(--sys-accent) 12%, transparent)', border: '1px solid color-mix(in srgb, var(--sys-accent) 25%, transparent)' }}>
+            <ShieldCheck size={22} className="text-[color:var(--sys-accent)]" />
           </div>
           <h2 className="text-lg font-black text-white">Defina uma nova senha</h2>
           <p className="text-gray-500 text-sm mt-1">Por segurança, redefina a senha do seu primeiro acesso.</p>
@@ -99,7 +99,7 @@ export default function ForcePasswordChange() {
 
           <button type="submit" disabled={!canSubmit}
             className="w-full h-12 font-bold text-white rounded-xl flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0"
-            style={{ background: 'linear-gradient(135deg, #0BBCD4, #0999ae)', boxShadow: '0 8px 28px rgba(11,188,212,0.25)' }}>
+            style={{ background: 'linear-gradient(135deg, var(--sys-accent), var(--sys-accent-2))', boxShadow: '0 8px 28px color-mix(in srgb, var(--sys-accent) 25%, transparent)' }}>
             {loading ? <Loader2 size={18} className="animate-spin" /> : 'Salvar nova senha'}
           </button>
         </form>

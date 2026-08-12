@@ -72,7 +72,7 @@ export default function DashboardPage() {
   useEffect(() => { getDashboard().then(setD).catch(() => setErro(true)) }, [])
 
   if (erro) return <div className="p-8 text-gray-500">Não foi possível carregar a dashboard.</div>
-  if (!d) return <div className="flex justify-center py-24"><Loader2 size={26} className="animate-spin text-[#0BBCD4]" /></div>
+  if (!d) return <div className="flex justify-center py-24"><Loader2 size={26} className="animate-spin text-[color:var(--sys-accent)]" /></div>
 
   const mRecebido = melhor(d.recebidoSerie, d.meses)
   const mReceber = melhor(d.aReceberSerie, d.meses)

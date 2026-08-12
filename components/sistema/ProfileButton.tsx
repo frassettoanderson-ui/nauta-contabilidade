@@ -40,11 +40,11 @@ export default function ProfileButton() {
       <div className="hidden lg:block fixed top-4 right-5 z-40">
         <button onClick={() => setOpen(true)} aria-label="Meu perfil"
           className="w-11 h-11 rounded-full overflow-hidden flex items-center justify-center transition-all hover:scale-105"
-          style={{ background: 'var(--sys-surface-3)', border: '2px solid rgba(11,188,212,0.5)' }}>
+          style={{ background: 'var(--sys-surface-3)', border: '2px solid color-mix(in srgb, var(--sys-accent) 50%, transparent)' }}>
           {perfil?.foto_url
             // eslint-disable-next-line @next/next/no-img-element
             ? <img src={perfil.foto_url} alt="Perfil" className="w-full h-full object-cover" />
-            : <User size={20} className="text-[#0BBCD4]" />}
+            : <User size={20} className="text-[color:var(--sys-accent)]" />}
         </button>
       </div>
 
@@ -95,11 +95,11 @@ function PerfilModal({ perfil, onClose, onSaved }: { perfil: PerfilRow; onClose:
         {/* Foto */}
         <div className="flex flex-col items-center mb-5">
           <label className="relative w-24 h-24 rounded-full overflow-hidden cursor-pointer flex items-center justify-center group"
-            style={{ background: 'var(--sys-surface-3)', border: '2px solid rgba(11,188,212,0.5)' }}>
+            style={{ background: 'var(--sys-surface-3)', border: '2px solid color-mix(in srgb, var(--sys-accent) 50%, transparent)' }}>
             {foto
               // eslint-disable-next-line @next/next/no-img-element
               ? <img src={foto} alt="Foto" className="w-full h-full object-cover" />
-              : <User size={34} className="text-[#0BBCD4]" />}
+              : <User size={34} className="text-[color:var(--sys-accent)]" />}
             <span className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity">
               {uploading ? <Loader2 size={20} className="animate-spin text-white" /> : <Camera size={20} className="text-white" />}
             </span>
@@ -127,7 +127,7 @@ function PerfilModal({ perfil, onClose, onSaved }: { perfil: PerfilRow; onClose:
           <button onClick={onClose} className="px-4 h-11 rounded-xl text-sm text-gray-300" style={FS}>Cancelar</button>
           <button onClick={salvar} disabled={saving || uploading}
             className="inline-flex items-center gap-2 px-5 h-11 rounded-xl text-sm font-bold text-white disabled:opacity-60"
-            style={{ background: 'linear-gradient(135deg, #0BBCD4, #0999ae)' }}>
+            style={{ background: 'linear-gradient(135deg, var(--sys-accent), var(--sys-accent-2))' }}>
             {saving ? <Loader2 size={15} className="animate-spin" /> : <><Save size={15} /> Salvar</>}
           </button>
         </div>

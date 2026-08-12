@@ -83,7 +83,7 @@ export default function LancarEntradaPage() {
 
       {/* Lista */}
       {lancs === null ? (
-        <div className="flex justify-center py-16"><Loader2 size={22} className="animate-spin text-[#0BBCD4]" /></div>
+        <div className="flex justify-center py-16"><Loader2 size={22} className="animate-spin text-[color:var(--sys-accent)]" /></div>
       ) : lancs.length === 0 ? (
         <p className="text-gray-600 text-sm text-center py-12">Nenhuma entrada lançada.</p>
       ) : (

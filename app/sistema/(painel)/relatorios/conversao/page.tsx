@@ -6,7 +6,7 @@ import { getLeads, type LeadRow } from '@/lib/api'
 import { ETAPA_LABEL } from '@/lib/crm-config'
 
 const ORDEM = ['novo', 'contato', 'negociacao', 'fechado', 'perdido']
-const COR: Record<string, string> = { novo: '#0BBCD4', contato: '#7c6fff', negociacao: '#f59e0b', fechado: '#22c55e', perdido: '#ef4444' }
+const COR: Record<string, string> = { novo: 'var(--sys-accent)', contato: '#7c6fff', negociacao: '#f59e0b', fechado: '#22c55e', perdido: '#ef4444' }
 
 export default function ConversaoPage() {
   const [leads, setLeads] = useState<LeadRow[] | null>(null)
@@ -22,13 +22,13 @@ export default function ConversaoPage() {
     <div className="p-6 lg:p-8 max-w-4xl">
       <div className="mb-8">
         <h1 className="text-2xl font-black text-white flex items-center gap-2" style={{ letterSpacing: '-0.02em' }}>
-          <TrendingUp size={22} className="text-[#0BBCD4]" /> Conversão
+          <TrendingUp size={22} className="text-[color:var(--sys-accent)]" /> Conversão
         </h1>
         <p className="text-gray-500 text-sm mt-0.5">Desempenho do funil comercial</p>
       </div>
 
       {leads === null ? (
-        <div className="flex justify-center py-20"><Loader2 size={24} className="animate-spin text-[#0BBCD4]" /></div>
+        <div className="flex justify-center py-20"><Loader2 size={24} className="animate-spin text-[color:var(--sys-accent)]" /></div>
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">

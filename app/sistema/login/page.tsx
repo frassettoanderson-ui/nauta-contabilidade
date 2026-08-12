@@ -53,8 +53,8 @@ export default function SistemaLoginPage() {
 
   const fieldStyle = (name: string) => ({
     background: 'rgba(255,255,255,0.04)',
-    border: `1px solid ${focus === name ? 'rgba(11,188,212,0.6)' : 'rgba(255,255,255,0.10)'}`,
-    boxShadow: focus === name ? '0 0 0 4px rgba(11,188,212,0.10)' : 'none',
+    border: `1px solid ${focus === name ? 'color-mix(in srgb, var(--sys-accent) 60%, transparent)' : 'rgba(255,255,255,0.10)'}`,
+    boxShadow: focus === name ? '0 0 0 4px color-mix(in srgb, var(--sys-accent) 10%, transparent)' : 'none',
   })
 
   return (
@@ -73,7 +73,7 @@ export default function SistemaLoginPage() {
             priority
             style={{ filter: 'drop-shadow(0 8px 24px rgba(0,0,0,0.5))' }}
           />
-          <p className="mt-4 text-xs font-bold uppercase tracking-[0.2em] text-[#0BBCD4]">
+          <p className="mt-4 text-xs font-bold uppercase tracking-[0.2em] text-[color:var(--sys-accent)]">
             Sistema de Gestão
           </p>
         </div>
@@ -157,8 +157,8 @@ export default function SistemaLoginPage() {
               disabled={loading}
               className="group w-full h-12 font-bold text-white rounded-xl flex items-center justify-center gap-2 transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] disabled:opacity-60"
               style={{
-                background: 'linear-gradient(135deg, #0BBCD4, #0999ae)',
-                boxShadow: '0 8px 28px rgba(11,188,212,0.28)',
+                background: 'linear-gradient(135deg, var(--sys-accent), var(--sys-accent-2))',
+                boxShadow: '0 8px 28px color-mix(in srgb, var(--sys-accent) 28.0%, transparent)',
               }}
             >
               {loading
@@ -170,10 +170,10 @@ export default function SistemaLoginPage() {
 
           {/* Links */}
           <div className="flex items-center justify-between mt-5 text-xs">
-            <Link href="/sistema/criar-usuario" className="text-gray-400 hover:text-[#0BBCD4] transition-colors">
+            <Link href="/sistema/criar-usuario" className="text-gray-400 hover:text-[color:var(--sys-accent)] transition-colors">
               Criar usuário
             </Link>
-            <Link href="/sistema/recuperar-senha" className="text-gray-400 hover:text-[#0BBCD4] transition-colors">
+            <Link href="/sistema/recuperar-senha" className="text-gray-400 hover:text-[color:var(--sys-accent)] transition-colors">
               Recuperar senha
             </Link>
           </div>

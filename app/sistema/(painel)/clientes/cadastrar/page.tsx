@@ -43,7 +43,7 @@ function FileField({ label, url, onUpload, disabled }: { label: string; url?: st
     <div>
       <label className="block text-xs font-semibold text-gray-400 mb-1.5">{label}</label>
       <label className={`flex items-center gap-2 h-10 px-3.5 rounded-lg text-sm ${disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`} style={FS}>
-        {busy ? <Loader2 size={15} className="animate-spin text-[#0BBCD4]" /> : url ? <FileText size={15} className="text-[#22c55e]" /> : <Upload size={15} className="text-gray-500" />}
+        {busy ? <Loader2 size={15} className="animate-spin text-[color:var(--sys-accent)]" /> : url ? <FileText size={15} className="text-[#22c55e]" /> : <Upload size={15} className="text-gray-500" />}
         <span className={url ? 'text-[#22c55e]' : 'text-gray-500'}>{busy ? 'Enviando...' : url ? 'Arquivo enviado ✓' : 'Selecionar arquivo'}</span>
         <input type="file" className="hidden" disabled={disabled} onChange={handle} />
       </label>
@@ -61,7 +61,7 @@ function fileKind(s: string) {
 function FileTile({ nome, url, onDelete, restrito }: { nome: string; url: string; onDelete?: () => void; restrito?: boolean }) {
   const kind = fileKind(nome + ' ' + url)
   const Icon = kind === 'img' ? FileImage : FileText
-  const color = restrito ? '#fbbf24' : kind === 'pdf' ? '#ef4444' : kind === 'img' ? '#22c55e' : '#0BBCD4'
+  const color = restrito ? '#fbbf24' : kind === 'pdf' ? '#ef4444' : kind === 'img' ? '#22c55e' : 'var(--sys-accent)'
   return (
     <div className="relative flex flex-col items-center text-center p-3 pt-7 rounded-xl transition-colors hover:bg-white/[0.04]"
       title={restrito ? 'Restrito · admin/gerente' : undefined}>
@@ -283,7 +283,7 @@ function Wizard() {
     finally { setSaving(false) }
   }
 
-  if (loading) return <div className="flex justify-center py-24"><Loader2 size={24} className="animate-spin text-[#0BBCD4]" /></div>
+  if (loading) return <div className="flex justify-center py-24"><Loader2 size={24} className="animate-spin text-[color:var(--sys-accent)]" /></div>
 
   const socioIdx = step - 2
   const socioBloqueado = (socioIdx === 1 && !socio2Ativo) || (socioIdx === 2 && !socio3Ativo)
@@ -295,7 +295,7 @@ function Wizard() {
       <h1 className="text-2xl font-black text-white mb-1" style={{ letterSpacing: '-0.02em' }}>Cadastro de cliente</h1>
       <p className="text-gray-500 text-sm mb-2">{leadId ? 'Vinculado ao lead selecionado' : clienteId ? 'Editando cadastro existente' : 'Novo cadastro'}</p>
       {tipo && (
-        <p className="text-xs mb-5 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg" style={{ background: 'rgba(11,188,212,0.1)', border: '1px solid rgba(11,188,212,0.25)', color: '#0BBCD4' }}>
+        <p className="text-xs mb-5 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg" style={{ background: 'color-mix(in srgb, var(--sys-accent) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--sys-accent) 25%, transparent)', color: 'var(--sys-accent)' }}>
           Contrato: <b>{TIPO_LABEL[tipo]}</b> · campos com <span className="text-red-400">*</span> são obrigatórios
         </p>
       )}
@@ -305,8 +305,8 @@ function Wizard() {
         {PASSOS.map((p, i) => (
           <button key={p} onClick={() => setStep(i)}
             className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
-            style={{ background: step === i ? 'rgba(11,188,212,0.15)' : 'var(--sys-surface-2)', color: step === i ? '#0BBCD4' : '#6b7280', border: step === i ? '1px solid rgba(11,188,212,0.3)' : '1px solid transparent' }}>
-            <span className="w-5 h-5 rounded-full flex items-center justify-center text-[10px]" style={{ background: step >= i ? '#0BBCD4' : 'var(--sys-border-2)', color: step >= i ? '#fff' : '#9ca3af' }}>
+            style={{ background: step === i ? 'color-mix(in srgb, var(--sys-accent) 15%, transparent)' : 'var(--sys-surface-2)', color: step === i ? 'var(--sys-accent)' : '#6b7280', border: step === i ? '1px solid color-mix(in srgb, var(--sys-accent) 30%, transparent)' : '1px solid transparent' }}>
+            <span className="w-5 h-5 rounded-full flex items-center justify-center text-[10px]" style={{ background: step >= i ? 'var(--sys-accent)' : 'var(--sys-border-2)', color: step >= i ? '#fff' : '#9ca3af' }}>
               {p === 'Arquivos' ? <Folder size={11} /> : i + 1}
             </span>
             {p}
@@ -352,14 +352,14 @@ function Wizard() {
                 {[['Sim', true], ['Não', false]].map(([l, val]) => (
                   <button key={String(l)} type="button" disabled={readOnly} onClick={() => setEmpK('emp_usa_glp', val)}
                     className="flex-1 h-10 rounded-lg text-sm font-bold transition-all"
-                    style={{ background: emp.emp_usa_glp === val ? '#0BBCD4' : 'var(--sys-surface-3)', color: emp.emp_usa_glp === val ? '#fff' : '#9ca3af', border: '1px solid var(--sys-border-2)' }}>
+                    style={{ background: emp.emp_usa_glp === val ? 'var(--sys-accent)' : 'var(--sys-surface-3)', color: emp.emp_usa_glp === val ? '#fff' : '#9ca3af', border: '1px solid var(--sys-border-2)' }}>
                     {l as string}
                   </button>
                 ))}
               </div>
             </div>
-            <label className="col-span-12 flex items-center gap-2 cursor-pointer p-2.5 rounded-xl" style={{ background: 'rgba(11,188,212,0.06)', border: '1px solid rgba(11,188,212,0.2)' }}>
-              <input type="checkbox" checked={propEhSocio1} disabled={readOnly} onChange={e => togglePropSocio1(e.target.checked)} className="w-4 h-4 accent-[#0BBCD4]" />
+            <label className="col-span-12 flex items-center gap-2 cursor-pointer p-2.5 rounded-xl" style={{ background: 'color-mix(in srgb, var(--sys-accent) 6%, transparent)', border: '1px solid color-mix(in srgb, var(--sys-accent) 20%, transparent)' }}>
+              <input type="checkbox" checked={propEhSocio1} disabled={readOnly} onChange={e => togglePropSocio1(e.target.checked)} className="w-4 h-4 accent-[var(--sys-accent)]" />
               <span className="text-sm text-gray-300">O proprietário do imóvel é o Sócio 1 (preenche nome e CPF automaticamente)</span>
             </label>
           </div>
@@ -368,20 +368,20 @@ function Wizard() {
         {step >= 2 && step <= 4 && (
           <>
             {socioIdx === 0 && (
-              <label className="flex items-center gap-2 mb-2 cursor-pointer p-3 rounded-xl" style={{ background: 'rgba(11,188,212,0.06)', border: '1px solid rgba(11,188,212,0.2)' }}>
-                <input type="checkbox" checked={usarCliente} disabled={readOnly} onChange={e => toggleUsarCliente(e.target.checked)} className="w-4 h-4 accent-[#0BBCD4]" />
+              <label className="flex items-center gap-2 mb-2 cursor-pointer p-3 rounded-xl" style={{ background: 'color-mix(in srgb, var(--sys-accent) 6%, transparent)', border: '1px solid color-mix(in srgb, var(--sys-accent) 20%, transparent)' }}>
+                <input type="checkbox" checked={usarCliente} disabled={readOnly} onChange={e => toggleUsarCliente(e.target.checked)} className="w-4 h-4 accent-[var(--sys-accent)]" />
                 <span className="text-sm text-gray-300">Usar os dados do cliente como Sócio 1</span>
               </label>
             )}
             {socioIdx === 1 && (
               <label className="flex items-center gap-2 mb-2 cursor-pointer p-3 rounded-xl" style={{ background: 'var(--sys-surface-2)', border: '1px solid var(--sys-border-2)' }}>
-                <input type="checkbox" checked={socio2Ativo} disabled={readOnly} onChange={e => setSocio2Ativo(e.target.checked)} className="w-4 h-4 accent-[#0BBCD4]" />
+                <input type="checkbox" checked={socio2Ativo} disabled={readOnly} onChange={e => setSocio2Ativo(e.target.checked)} className="w-4 h-4 accent-[var(--sys-accent)]" />
                 <span className="text-sm text-gray-300">Adicionar Sócio 2</span>
               </label>
             )}
             {socioIdx === 2 && (
               <label className="flex items-center gap-2 mb-2 cursor-pointer p-3 rounded-xl" style={{ background: 'var(--sys-surface-2)', border: '1px solid var(--sys-border-2)' }}>
-                <input type="checkbox" checked={socio3Ativo} disabled={readOnly} onChange={e => setSocio3Ativo(e.target.checked)} className="w-4 h-4 accent-[#0BBCD4]" />
+                <input type="checkbox" checked={socio3Ativo} disabled={readOnly} onChange={e => setSocio3Ativo(e.target.checked)} className="w-4 h-4 accent-[var(--sys-accent)]" />
                 <span className="text-sm text-gray-300">Adicionar Sócio 3</span>
               </label>
             )}
@@ -442,7 +442,7 @@ function Wizard() {
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <p className="text-xs font-bold uppercase tracking-wide text-gray-400">Arquivos enviados</p>
-                    <label className="inline-flex items-center gap-1.5 text-xs font-bold px-3 h-9 rounded-lg cursor-pointer text-white" style={{ background: 'linear-gradient(135deg, #0BBCD4, #0999ae)' }}>
+                    <label className="inline-flex items-center gap-1.5 text-xs font-bold px-3 h-9 rounded-lg cursor-pointer text-white" style={{ background: 'linear-gradient(135deg, var(--sys-accent), var(--sys-accent-2))' }}>
                       {uploadingArq ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />} Enviar arquivo
                       <input type="file" className="hidden" onChange={handleUploadArquivo} disabled={uploadingArq} />
                     </label>
@@ -504,7 +504,7 @@ function Wizard() {
         {readOnly ? (
           <button onClick={() => setReadOnly(false)}
             className="inline-flex items-center gap-2 px-4 h-11 rounded-xl text-sm font-bold text-white"
-            style={{ background: 'linear-gradient(135deg, #0BBCD4, #0999ae)' }}>
+            style={{ background: 'linear-gradient(135deg, var(--sys-accent), var(--sys-accent-2))' }}>
             <Pencil size={15} /> Editar
           </button>
         ) : (
@@ -537,7 +537,7 @@ function Wizard() {
 
         {step < PASSOS.length - 1 && (
           <button onClick={() => setStep(s => Math.min(PASSOS.length - 1, s + 1))}
-            className="inline-flex items-center gap-2 px-5 h-11 rounded-xl text-sm font-bold text-white" style={{ background: 'linear-gradient(135deg, #0BBCD4, #0999ae)' }}>
+            className="inline-flex items-center gap-2 px-5 h-11 rounded-xl text-sm font-bold text-white" style={{ background: 'linear-gradient(135deg, var(--sys-accent), var(--sys-accent-2))' }}>
             Próximo <ArrowRight size={15} />
           </button>
         )}
@@ -547,7 +547,7 @@ function Wizard() {
       {linkUrl && (
         <div className="mt-3 flex items-center gap-2 p-2.5 rounded-xl max-w-xl" style={{ background: 'var(--sys-surface-2)', border: '1px solid var(--sys-border-2)' }}>
           <span className="text-xs text-gray-300 truncate flex-1">{linkUrl}</span>
-          <button onClick={() => navigator.clipboard?.writeText(linkUrl)} className="text-[#0BBCD4] hover:text-white" title="Copiar"><Copy size={14} /></button>
+          <button onClick={() => navigator.clipboard?.writeText(linkUrl)} className="text-[color:var(--sys-accent)] hover:text-white" title="Copiar"><Copy size={14} /></button>
         </div>
       )}
     </div>
@@ -556,7 +556,7 @@ function Wizard() {
 
 export default function CadastrarClientePage() {
   return (
-    <Suspense fallback={<div className="flex justify-center py-24"><Loader2 size={24} className="animate-spin text-[#0BBCD4]" /></div>}>
+    <Suspense fallback={<div className="flex justify-center py-24"><Loader2 size={24} className="animate-spin text-[color:var(--sys-accent)]" /></div>}>
       <Wizard />
     </Suspense>
   )

@@ -142,7 +142,7 @@ export default function Sidebar({ email }: { email?: string | null }) {
             const activeChild = item.children.some(c => pathname === c.href)
             return (
               <div key={item.label}>
-                <button onClick={() => toggleGroup(item.label)} className={`${itemBase} w-full justify-between`} style={{ color: activeChild ? 'var(--sys-accent, #0BBCD4)' : '#9ca3af' }}>
+                <button onClick={() => toggleGroup(item.label)} className={`${itemBase} w-full justify-between`} style={{ color: activeChild ? 'var(--sys-accent)' : '#9ca3af' }}>
                   <span className="flex items-center gap-3"><item.icon size={17} /> {item.label}
                     {item.label === 'Comercial' && comNovos && <span className="onb-badge">Novo</span>}
                   </span>
@@ -154,7 +154,7 @@ export default function Sidebar({ email }: { email?: string | null }) {
                       const active = pathname === c.href
                       return (
                         <Link key={c.href} href={c.href} onClick={() => setMobileOpen(false)} className={itemBase}
-                          style={{ background: active ? 'color-mix(in srgb, var(--sys-accent, #0BBCD4) 12%, transparent)' : 'transparent', color: active ? 'var(--sys-accent, #0BBCD4)' : '#9ca3af', border: active ? '1px solid color-mix(in srgb, var(--sys-accent, #0BBCD4) 22%, transparent)' : '1px solid transparent' }}>
+                          style={{ background: active ? 'color-mix(in srgb, var(--sys-accent) 12%, transparent)' : 'transparent', color: active ? 'var(--sys-accent)' : '#9ca3af', border: active ? '1px solid color-mix(in srgb, var(--sys-accent) 22%, transparent)' : '1px solid transparent' }}>
                           <c.icon size={16} /> {c.label}
                         </Link>
                       )
@@ -187,7 +187,7 @@ export default function Sidebar({ email }: { email?: string | null }) {
           }
           return (
             <Link key={item.href} href={item.href} onClick={() => { playClick(); setMobileOpen(false) }} className={itemBase}
-              style={{ background: active ? 'color-mix(in srgb, var(--sys-accent, #0BBCD4) 12%, transparent)' : 'transparent', color: active ? 'var(--sys-accent, #0BBCD4)' : '#9ca3af', border: active ? '1px solid color-mix(in srgb, var(--sys-accent, #0BBCD4) 22%, transparent)' : '1px solid transparent' }}>
+              style={{ background: active ? 'color-mix(in srgb, var(--sys-accent) 12%, transparent)' : 'transparent', color: active ? 'var(--sys-accent)' : '#9ca3af', border: active ? '1px solid color-mix(in srgb, var(--sys-accent) 22%, transparent)' : '1px solid transparent' }}>
               <item.icon size={17} /> {item.label}
             </Link>
           )

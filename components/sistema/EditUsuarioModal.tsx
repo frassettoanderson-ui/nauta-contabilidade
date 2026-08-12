@@ -68,7 +68,7 @@ export default function EditUsuarioModal({ user, onClose, onSaved }: { user: Usu
         </div>
 
         {gerenteTotal ? (
-          <p className="text-sm p-4 rounded-xl" style={{ background: 'rgba(11,188,212,0.08)', border: '1px solid rgba(11,188,212,0.2)', color: '#0BBCD4' }}>
+          <p className="text-sm p-4 rounded-xl" style={{ background: 'color-mix(in srgb, var(--sys-accent) 8%, transparent)', border: '1px solid color-mix(in srgb, var(--sys-accent) 20%, transparent)', color: 'var(--sys-accent)' }}>
             Gerente tem acesso a todos os menus do sistema.
           </p>
         ) : (
@@ -81,13 +81,13 @@ export default function EditUsuarioModal({ user, onClose, onSaved }: { user: Usu
                 return (
                   <div key={g.grupo} className="rounded-xl p-3" style={{ background: 'var(--sys-surface)', border: '1px solid var(--sys-surface-4)' }}>
                     <label className="flex items-center gap-2 cursor-pointer mb-2">
-                      <input type="checkbox" checked={todosMarcados} onChange={() => toggleGrupo(hrefs, todosMarcados)} className="w-4 h-4 accent-[#0BBCD4]" />
+                      <input type="checkbox" checked={todosMarcados} onChange={() => toggleGrupo(hrefs, todosMarcados)} className="w-4 h-4 accent-[var(--sys-accent)]" />
                       <span className="text-sm font-bold text-gray-200">{g.grupo}</span>
                     </label>
                     <div className="grid sm:grid-cols-2 gap-x-4 gap-y-1.5 pl-6">
                       {g.itens.map(it => (
                         <label key={it.href} className="flex items-center gap-2 cursor-pointer">
-                          <input type="checkbox" checked={perms.includes(it.href)} onChange={() => toggle(it.href)} className="w-4 h-4 accent-[#0BBCD4]" />
+                          <input type="checkbox" checked={perms.includes(it.href)} onChange={() => toggle(it.href)} className="w-4 h-4 accent-[var(--sys-accent)]" />
                           <span className="text-sm text-gray-400">{it.label}</span>
                         </label>
                       ))}
@@ -103,7 +103,7 @@ export default function EditUsuarioModal({ user, onClose, onSaved }: { user: Usu
           <button onClick={onClose} className="px-4 h-11 rounded-xl text-sm text-gray-300" style={FS}>Cancelar</button>
           <button onClick={salvar} disabled={saving}
             className="inline-flex items-center gap-2 px-5 h-11 rounded-xl text-sm font-bold text-white disabled:opacity-60"
-            style={{ background: 'linear-gradient(135deg, #0BBCD4, #0999ae)' }}>
+            style={{ background: 'linear-gradient(135deg, var(--sys-accent), var(--sys-accent-2))' }}>
             {saving ? <Loader2 size={15} className="animate-spin" /> : <><Save size={15} /> Salvar</>}
           </button>
         </div>

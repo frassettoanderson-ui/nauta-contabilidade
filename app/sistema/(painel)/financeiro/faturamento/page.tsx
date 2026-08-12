@@ -74,7 +74,7 @@ export default function FinanceiroPage() {
     <div className="p-6 lg:p-8">
       <div className="flex items-center justify-between mb-5 gap-4 flex-wrap">
         <div>
-          <h1 className="text-2xl font-black text-white flex items-center gap-2" style={{ letterSpacing: '-0.02em' }}><DollarSign size={22} className="text-[#0BBCD4]" /> Faturamento</h1>
+          <h1 className="text-2xl font-black text-white flex items-center gap-2" style={{ letterSpacing: '-0.02em' }}><DollarSign size={22} className="text-[color:var(--sys-accent)]" /> Faturamento</h1>
           <p className="text-gray-500 text-sm mt-0.5">{rows === null ? 'Carregando...' : `${filtered.length} cliente(s) · honorários`}</p>
         </div>
         <div className="relative">
@@ -89,7 +89,7 @@ export default function FinanceiroPage() {
         {FILTROS.map(f => {
           const ativo = filtro === f.id
           const n = f.id === 'todos' ? base.length : cont[f.id]
-          const cor = f.id === 'todos' ? '#0BBCD4' : STATUS[f.id].color
+          const cor = f.id === 'todos' ? 'var(--sys-accent)' : STATUS[f.id].color
           return (
             <button key={f.id} onClick={() => setFiltro(f.id)}
               className="inline-flex items-center gap-2 px-3.5 h-9 rounded-lg text-sm font-bold transition-all"
@@ -102,7 +102,7 @@ export default function FinanceiroPage() {
       </div>
 
       {rows === null ? (
-        <div className="flex justify-center py-20"><Loader2 size={24} className="animate-spin text-[#0BBCD4]" /></div>
+        <div className="flex justify-center py-20"><Loader2 size={24} className="animate-spin text-[color:var(--sys-accent)]" /></div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-20 text-gray-600">
           <DollarSign size={32} className="mx-auto mb-3 opacity-40" />
@@ -218,7 +218,7 @@ function CobrancaModal({ row, onClose, onChanged }: { row: Row; onClose: () => v
         <p className="text-sm text-gray-500 mb-5">{nome} · honorário {money(row.valor_honorario)}/mês</p>
 
         {loading ? (
-          <div className="flex justify-center py-10"><Loader2 size={22} className="animate-spin text-[#0BBCD4]" /></div>
+          <div className="flex justify-center py-10"><Loader2 size={22} className="animate-spin text-[color:var(--sys-accent)]" /></div>
         ) : (
           <div className="grid md:grid-cols-2 gap-5">
             {/* Pagamentos */}
@@ -265,7 +265,7 @@ function CobrancaModal({ row, onClose, onChanged }: { row: Row; onClose: () => v
                   return (
                     <div key={ev.id} className="p-2 rounded-lg text-sm" style={{ background: 'var(--sys-surface-3)' }}>
                       <div className="flex items-center gap-1.5 text-[11px] text-gray-400">
-                        <Icon size={12} className="text-[#0BBCD4]" /> <b className="text-gray-300">{T?.label ?? ev.tipo}</b>
+                        <Icon size={12} className="text-[color:var(--sys-accent)]" /> <b className="text-gray-300">{T?.label ?? ev.tipo}</b>
                         <span className="ml-auto">{format(new Date(ev.criado_em), 'dd/MM HH:mm', { locale: ptBR })}</span>
                       </div>
                       <p className="text-gray-200 text-xs mt-1 whitespace-pre-wrap">{ev.descricao}</p>
@@ -280,7 +280,7 @@ function CobrancaModal({ row, onClose, onChanged }: { row: Row; onClose: () => v
                   {TIPOS.map(t => (
                     <button key={t.id} onClick={() => setTipo(t.id)} title={t.label}
                       className="flex-1 h-8 rounded-lg flex items-center justify-center"
-                      style={{ background: tipo === t.id ? 'rgba(11,188,212,0.15)' : 'var(--sys-surface-3)', border: `1px solid ${tipo === t.id ? 'rgba(11,188,212,0.4)' : 'var(--sys-border-2)'}`, color: tipo === t.id ? '#0BBCD4' : '#9ca3af' }}>
+                      style={{ background: tipo === t.id ? 'color-mix(in srgb, var(--sys-accent) 15%, transparent)' : 'var(--sys-surface-3)', border: `1px solid ${tipo === t.id ? 'color-mix(in srgb, var(--sys-accent) 40%, transparent)' : 'var(--sys-border-2)'}`, color: tipo === t.id ? 'var(--sys-accent)' : '#9ca3af' }}>
                       <t.icon size={14} />
                     </button>
                   ))}
@@ -291,7 +291,7 @@ function CobrancaModal({ row, onClose, onChanged }: { row: Row; onClose: () => v
                   <label className="block text-[11px] text-gray-500 mb-0.5">Prazo prometido (opcional)</label>
                   <input type="date" value={prazo} onChange={e => setPrazo(e.target.value)} className={FIELD} style={{ ...FS, colorScheme: 'dark' }} />
                 </div>
-                <button onClick={salvarEvento} disabled={saving} className="w-full h-9 rounded-lg text-xs font-bold text-white inline-flex items-center justify-center gap-1.5 disabled:opacity-60" style={{ background: 'linear-gradient(135deg, #0BBCD4, #0999ae)' }}>
+                <button onClick={salvarEvento} disabled={saving} className="w-full h-9 rounded-lg text-xs font-bold text-white inline-flex items-center justify-center gap-1.5 disabled:opacity-60" style={{ background: 'linear-gradient(135deg, var(--sys-accent), var(--sys-accent-2))' }}>
                   <Plus size={13} /> Registrar acionamento
                 </button>
               </div>

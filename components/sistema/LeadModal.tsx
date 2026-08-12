@@ -128,7 +128,7 @@ export default function LeadModal({ leadId, onClose, onChanged, mode = 'view' }:
       <div className="relative z-10 w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl"
         style={{ background: '#0f0e1a', border: '1px solid var(--sys-border-2)', boxShadow: '0 24px 64px rgba(0,0,0,0.5)' }}>
         {!d ? (
-          <div className="flex justify-center py-20"><Loader2 size={24} className="animate-spin text-[#0BBCD4]" /></div>
+          <div className="flex justify-center py-20"><Loader2 size={24} className="animate-spin text-[color:var(--sys-accent)]" /></div>
         ) : (
           <div className="p-6">
             {/* Header */}
@@ -153,7 +153,7 @@ export default function LeadModal({ leadId, onClose, onChanged, mode = 'view' }:
                     </button>
                   )
                 })()}
-                {!editing && <button onClick={startEdit} className="w-10 h-10 rounded-xl flex items-center justify-center text-gray-300 hover:text-[#0BBCD4] hover:bg-white/5" title="Editar"><Pencil size={18} /></button>}
+                {!editing && <button onClick={startEdit} className="w-10 h-10 rounded-xl flex items-center justify-center text-gray-300 hover:text-[color:var(--sys-accent)] hover:bg-white/5" title="Editar"><Pencil size={18} /></button>}
                 <button onClick={remover} className="w-10 h-10 rounded-xl flex items-center justify-center text-gray-400 hover:text-red-400 hover:bg-red-500/10" title="Excluir"><Trash2 size={18} /></button>
                 <button onClick={onClose} className="w-10 h-10 rounded-xl flex items-center justify-center text-gray-400 hover:text-white"><X size={20} /></button>
               </div>
@@ -172,7 +172,7 @@ export default function LeadModal({ leadId, onClose, onChanged, mode = 'view' }:
                   {INTERESSES.map(i => <option key={i} value={i}>{i}</option>)}
                 </select>
                 <div className="flex gap-2">
-                  <button onClick={saveEdit} disabled={busy} className="flex-1 h-10 rounded-xl font-bold text-white flex items-center justify-center gap-2" style={{ background: 'linear-gradient(135deg, #0BBCD4, #0999ae)' }}>
+                  <button onClick={saveEdit} disabled={busy} className="flex-1 h-10 rounded-xl font-bold text-white flex items-center justify-center gap-2" style={{ background: 'linear-gradient(135deg, var(--sys-accent), var(--sys-accent-2))' }}>
                     {busy ? <Loader2 size={15} className="animate-spin" /> : <><Save size={15} /> Salvar</>}
                   </button>
                   <button onClick={() => setEditing(false)} className="px-4 h-10 rounded-xl text-sm text-gray-400" style={FS}>Cancelar</button>
@@ -235,7 +235,7 @@ export default function LeadModal({ leadId, onClose, onChanged, mode = 'view' }:
               <>
                 {/* Lembretes */}
                 <div className="mb-5">
-                  <p className="text-sm font-bold text-white mb-3 flex items-center gap-2"><Bell size={15} className="text-[#0BBCD4]" /> Lembretes</p>
+                  <p className="text-sm font-bold text-white mb-3 flex items-center gap-2"><Bell size={15} className="text-[color:var(--sys-accent)]" /> Lembretes</p>
                   <div className="space-y-2 mb-3">
                     <input value={lembDesc} onChange={e => setLembDesc(e.target.value)} placeholder="Pendência..."
                       className="w-full h-10 px-3 rounded-lg text-sm text-white placeholder-gray-600 outline-none" style={FS} />
@@ -244,8 +244,8 @@ export default function LeadModal({ leadId, onClose, onChanged, mode = 'view' }:
                         className="flex-1 h-10 px-2 rounded-lg text-xs text-white outline-none" style={{ ...FS, colorScheme: 'dark' }} />
                       <input type="time" value={lembHora} onChange={e => setLembHora(e.target.value)}
                         className="h-10 px-2 rounded-lg text-xs text-white outline-none" style={{ ...FS, colorScheme: 'dark' }} />
-                      <button onClick={addLemb} disabled={busy} className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'rgba(11,188,212,0.15)', border: '1px solid rgba(11,188,212,0.25)' }}>
-                        <Plus size={16} className="text-[#0BBCD4]" />
+                      <button onClick={addLemb} disabled={busy} className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'color-mix(in srgb, var(--sys-accent) 15%, transparent)', border: '1px solid color-mix(in srgb, var(--sys-accent) 25%, transparent)' }}>
+                        <Plus size={16} className="text-[color:var(--sys-accent)]" />
                       </button>
                     </div>
                   </div>
@@ -280,8 +280,8 @@ export default function LeadModal({ leadId, onClose, onChanged, mode = 'view' }:
                   <div className="flex gap-2 mb-3">
                     <textarea value={novaAtiv} onChange={e => setNovaAtiv(e.target.value)} rows={2} placeholder="O que foi tratado com o cliente..."
                       className="flex-1 px-3 py-2 rounded-lg text-sm text-white placeholder-gray-600 outline-none resize-none" style={FS} />
-                    <button onClick={addAtiv} disabled={busy || !novaAtiv.trim()} className="w-10 rounded-lg flex items-center justify-center shrink-0 disabled:opacity-40" style={{ background: 'rgba(11,188,212,0.15)', border: '1px solid rgba(11,188,212,0.25)' }}>
-                      {busy ? <Loader2 size={15} className="animate-spin text-[#0BBCD4]" /> : <Send size={15} className="text-[#0BBCD4]" />}
+                    <button onClick={addAtiv} disabled={busy || !novaAtiv.trim()} className="w-10 rounded-lg flex items-center justify-center shrink-0 disabled:opacity-40" style={{ background: 'color-mix(in srgb, var(--sys-accent) 15%, transparent)', border: '1px solid color-mix(in srgb, var(--sys-accent) 25%, transparent)' }}>
+                      {busy ? <Loader2 size={15} className="animate-spin text-[color:var(--sys-accent)]" /> : <Send size={15} className="text-[color:var(--sys-accent)]" />}
                     </button>
                   </div>
                   <div className="space-y-2.5">

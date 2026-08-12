@@ -94,12 +94,12 @@ export default function OnboardingPage() {
   return (
     <div className="p-6 lg:p-8">
       <h1 className="text-2xl font-black text-white mb-1 flex items-center gap-2" style={{ letterSpacing: '-0.02em' }}>
-        <Rocket size={22} className="text-[#0BBCD4]" /> Onboarding
+        <Rocket size={22} className="text-[color:var(--sys-accent)]" /> Onboarding
       </h1>
       <p className="text-gray-500 text-sm mb-6">Clientes em processo. Marque os itens do seu setor conforme conclui.</p>
 
       {board === null ? (
-        <div className="flex justify-center py-20"><Loader2 size={24} className="animate-spin text-[#0BBCD4]" /></div>
+        <div className="flex justify-center py-20"><Loader2 size={24} className="animate-spin text-[color:var(--sys-accent)]" /></div>
       ) : board.length === 0 ? (
         <div className="rounded-2xl p-10 text-center" style={{ background: 'var(--sys-surface)', border: '1px solid var(--sys-border)' }}>
           <p className="text-gray-400 text-sm">Nenhum cliente em onboarding no momento.</p>
@@ -135,7 +135,7 @@ export default function OnboardingPage() {
                     <span className="text-[11px] text-gray-500 font-bold shrink-0 mt-0.5">{feitos}/{itens.length}</span>
                   </div>
                   <div className="flex items-center justify-between gap-2 mt-1.5">
-                    <span className="text-[#0BBCD4] text-xs truncate">{catLabel(c.onboarding_categoria)}</span>
+                    <span className="text-[color:var(--sys-accent)] text-xs truncate">{catLabel(c.onboarding_categoria)}</span>
                     <div className="flex items-center gap-0.5 shrink-0">
                       <a title="WhatsApp" href={waLink(c.whatsapp)} target="_blank" rel="noopener noreferrer"
                         className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors hover:bg-green-500/15" style={{ color: '#25D366' }}>
@@ -152,7 +152,7 @@ export default function OnboardingPage() {
                         <MiniBtn title={cnpjCopiado === c.id ? 'Copiado!' : 'Copiar CNPJ'} onClick={() => copiarCnpj(c.emp_cnpj!, c.id)} color={cnpjCopiado === c.id ? '#22c55e' : '#9ca3af'}>
                           {cnpjCopiado === c.id ? <Check size={13} /> : <Copy size={13} />}
                         </MiniBtn>
-                        <MiniBtn title="Abrir Cartão CNPJ na Receita (copia o CNPJ p/ colar)" onClick={() => abrirCartaoCnpj(c.emp_cnpj!)} color="#0BBCD4"><ExternalLink size={13} /></MiniBtn>
+                        <MiniBtn title="Abrir Cartão CNPJ na Receita (copia o CNPJ p/ colar)" onClick={() => abrirCartaoCnpj(c.emp_cnpj!)} color="var(--sys-accent)"><ExternalLink size={13} /></MiniBtn>
                       </div>
                     </div>
                   )}

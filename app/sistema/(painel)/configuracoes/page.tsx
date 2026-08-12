@@ -9,7 +9,7 @@ function Toggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => void 
   return (
     <button onClick={() => onChange(!on)} role="switch" aria-checked={on}
       className="relative w-12 h-7 rounded-full transition-colors shrink-0"
-      style={{ background: on ? '#0BBCD4' : 'var(--sys-border-2)' }}>
+      style={{ background: on ? 'var(--sys-accent)' : 'var(--sys-border-2)' }}>
       <span className="absolute top-0.5 left-0.5 w-6 h-6 rounded-full bg-white transition-transform"
         style={{ transform: on ? 'translateX(20px)' : 'translateX(0)' }} />
     </button>
@@ -48,7 +48,7 @@ export default function ConfiguracoesPage() {
     <div className="p-6 lg:p-8 max-w-2xl">
       <div className="mb-8">
         <h1 className="text-2xl font-black text-white flex items-center gap-2" style={{ letterSpacing: '-0.02em' }}>
-          <Settings size={22} className="text-[#0BBCD4]" /> Configurações
+          <Settings size={22} className="text-[color:var(--sys-accent)]" /> Configurações
         </h1>
         <p className="text-gray-500 text-sm mt-0.5">Preferências e ajustes do sistema</p>
       </div>
@@ -59,7 +59,7 @@ export default function ConfiguracoesPage() {
           style={{ background: 'var(--sys-surface)', border: '1px solid var(--sys-border)' }}>
           <div className="flex items-center gap-3">
             <span className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'var(--sys-surface-3)' }}>
-              {tema === 'light' ? <Sun size={18} className="text-amber-400" /> : <Moon size={18} className="text-[#0BBCD4]" />}
+              {tema === 'light' ? <Sun size={18} className="text-amber-400" /> : <Moon size={18} className="text-[color:var(--sys-accent)]" />}
             </span>
             <div>
               <p className="text-sm font-bold text-white">Tema {tema === 'light' ? 'claro' : 'escuro'}</p>
@@ -74,7 +74,7 @@ export default function ConfiguracoesPage() {
           style={{ background: 'var(--sys-surface)', border: '1px solid var(--sys-border)' }}>
           <div className="flex items-center gap-3">
             <span className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'var(--sys-surface-3)' }}>
-              {som ? <Volume2 size={18} className="text-[#0BBCD4]" /> : <VolumeX size={18} className="text-gray-500" />}
+              {som ? <Volume2 size={18} className="text-[color:var(--sys-accent)]" /> : <VolumeX size={18} className="text-gray-500" />}
             </span>
             <div>
               <p className="text-sm font-bold text-white">Sons do sistema</p>

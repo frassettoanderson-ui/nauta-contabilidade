@@ -30,7 +30,7 @@ export default function PainelLayout({ children }: { children: React.ReactNode }
   if (status !== 'authenticated') {
     return (
       <div className={`${themeClass} min-h-screen flex items-center justify-center`} style={{ background: 'var(--sys-bg)' }}>
-        <Loader2 size={28} className="animate-spin text-[#0BBCD4]" />
+        <Loader2 size={28} className="animate-spin text-[color:var(--sys-accent)]" />
       </div>
     )
   }

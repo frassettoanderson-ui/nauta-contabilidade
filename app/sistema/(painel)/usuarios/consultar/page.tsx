@@ -41,12 +41,12 @@ export default function ConsultarUsuariosPage() {
   return (
     <div className="p-6 lg:p-8 max-w-4xl">
       <h1 className="text-2xl font-black text-white mb-1 flex items-center gap-2" style={{ letterSpacing: '-0.02em' }}>
-        <UserCog size={22} className="text-[#0BBCD4]" /> Usuários
+        <UserCog size={22} className="text-[color:var(--sys-accent)]" /> Usuários
       </h1>
       <p className="text-gray-500 text-sm mb-6">Gerencie cargos, permissões de menu e senhas.</p>
 
       {loading ? (
-        <div className="flex justify-center py-20"><Loader2 size={24} className="animate-spin text-[#0BBCD4]" /></div>
+        <div className="flex justify-center py-20"><Loader2 size={24} className="animate-spin text-[color:var(--sys-accent)]" /></div>
       ) : (
         <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--sys-surface)', border: '1px solid var(--sys-border)' }}>
           {users.map((u, i) => (
@@ -55,7 +55,7 @@ export default function ConsultarUsuariosPage() {
               <div className="min-w-0">
                 <p className="text-sm font-bold text-white truncate">{u.username}</p>
                 <div className="flex items-center gap-2 mt-0.5">
-                  <span className="text-[11px] font-bold px-2 py-0.5 rounded-full" style={{ background: 'rgba(11,188,212,0.12)', color: '#0BBCD4' }}>
+                  <span className="text-[11px] font-bold px-2 py-0.5 rounded-full" style={{ background: 'color-mix(in srgb, var(--sys-accent) 12%, transparent)', color: 'var(--sys-accent)' }}>
                     {ROLE_LABEL[u.role] ?? u.role}
                   </span>
                   {u.must_change_password && <span className="text-[11px] text-amber-400">senha pendente de troca</span>}

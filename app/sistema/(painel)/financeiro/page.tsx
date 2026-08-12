@@ -6,5 +6,5 @@ import { Loader2 } from 'lucide-react'
 export default function FinanceiroIndex() {
   const router = useRouter()
   useEffect(() => { router.replace('/sistema/financeiro/faturamento') }, [router])
-  return <div className="flex justify-center py-24"><Loader2 size={24} className="animate-spin text-[#0BBCD4]" /></div>
+  return <div className="flex justify-center py-24"><Loader2 size={24} className="animate-spin text-[color:var(--sys-accent)]" /></div>
 }

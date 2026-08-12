@@ -31,7 +31,7 @@ export default function ConsultarClientesPage() {
     <div className="p-6 lg:p-8">
       <div className="flex items-center justify-between mb-8 gap-4 flex-wrap">
         <div>
-          <h1 className="text-2xl font-black text-white flex items-center gap-2" style={{ letterSpacing: '-0.02em' }}><Users size={22} className="text-[#0BBCD4]" /> Clientes</h1>
+          <h1 className="text-2xl font-black text-white flex items-center gap-2" style={{ letterSpacing: '-0.02em' }}><Users size={22} className="text-[color:var(--sys-accent)]" /> Clientes</h1>
           <p className="text-gray-500 text-sm mt-0.5">{clientes === null ? 'Carregando...' : `${filtered.length} cliente(s) cadastrado(s)`}</p>
         </div>
         <div className="relative">
@@ -42,7 +42,7 @@ export default function ConsultarClientesPage() {
       </div>
 
       {clientes === null ? (
-        <div className="flex justify-center py-20"><Loader2 size={24} className="animate-spin text-[#0BBCD4]" /></div>
+        <div className="flex justify-center py-20"><Loader2 size={24} className="animate-spin text-[color:var(--sys-accent)]" /></div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-20 text-gray-600">
           <Building2 size={32} className="mx-auto mb-3 opacity-40" />
@@ -72,7 +72,7 @@ export default function ConsultarClientesPage() {
                     <td className="px-4 py-3 text-gray-500">{c.criado_em ? format(new Date(s(c.criado_em)), 'dd/MM/yyyy', { locale: ptBR }) : '—'}</td>
                     <td className="px-4 py-3">
                       {c.emp_regime
-                        ? <span className="text-[11px] font-bold px-2 py-0.5 rounded-full" style={{ background: 'rgba(11,188,212,0.12)', color: '#0BBCD4' }}>{s(c.emp_regime)}</span>
+                        ? <span className="text-[11px] font-bold px-2 py-0.5 rounded-full" style={{ background: 'color-mix(in srgb, var(--sys-accent) 12%, transparent)', color: 'var(--sys-accent)' }}>{s(c.emp_regime)}</span>
                         : <span className="text-gray-600">—</span>}
                     </td>
                     <td className="px-4 py-3 text-gray-400">{s(c.lead_origem) || '—'}</td>

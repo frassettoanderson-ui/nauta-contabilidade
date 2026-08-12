@@ -9,7 +9,7 @@ import { ETAPA_LABEL } from '@/lib/crm-config'
 import { useRealtime } from '@/components/sistema/useRealtime'
 
 const ETAPA_COLOR: Record<string, string> = {
-  novo: '#0BBCD4', contato: '#7c6fff', negociacao: '#f59e0b', fechado: '#22c55e', perdido: '#ef4444',
+  novo: 'var(--sys-accent)', contato: '#7c6fff', negociacao: '#f59e0b', fechado: '#22c55e', perdido: '#ef4444',
 }
 
 export default function LeadsPage() {
@@ -51,7 +51,7 @@ export default function LeadsPage() {
       </div>
 
       {leads === null ? (
-        <div className="flex justify-center py-20"><Loader2 size={24} className="animate-spin text-[#0BBCD4]" /></div>
+        <div className="flex justify-center py-20"><Loader2 size={24} className="animate-spin text-[color:var(--sys-accent)]" /></div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-20 text-gray-600">
           <Inbox size={32} className="mx-auto mb-3 opacity-40" />
@@ -94,7 +94,7 @@ export default function LeadsPage() {
                 </a>
                 <a href={`mailto:${l.email}`}
                   className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors hover:bg-white/8" title="E-mail">
-                  <Mail size={14} className="text-gray-400 hover:text-[#0BBCD4]" />
+                  <Mail size={14} className="text-gray-400 hover:text-[color:var(--sys-accent)]" />
                 </a>
               </div>
             </div>

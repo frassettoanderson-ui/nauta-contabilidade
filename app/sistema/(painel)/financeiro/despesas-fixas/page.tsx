@@ -56,7 +56,7 @@ export default function DespesasFixasPage() {
           <label className="block text-[11px] font-semibold text-gray-400 mb-1">Dia venc.</label>
           <div className="flex gap-2">
             <input type="number" min="1" max="31" value={dia} onChange={e => setDia(e.target.value)} placeholder="10" className={FIELD} style={FS} />
-            <button onClick={salvar} disabled={saving} className="h-10 px-3 rounded-lg text-white shrink-0 inline-flex items-center disabled:opacity-60" style={{ background: 'linear-gradient(135deg, #0BBCD4, #0999ae)' }}>
+            <button onClick={salvar} disabled={saving} className="h-10 px-3 rounded-lg text-white shrink-0 inline-flex items-center disabled:opacity-60" style={{ background: 'linear-gradient(135deg, var(--sys-accent), var(--sys-accent-2))' }}>
               {saving ? <Loader2 size={15} className="animate-spin" /> : <Plus size={16} />}
             </button>
           </div>
@@ -64,7 +64,7 @@ export default function DespesasFixasPage() {
       </div>
 
       {rows === null ? (
-        <div className="flex justify-center py-16"><Loader2 size={22} className="animate-spin text-[#0BBCD4]" /></div>
+        <div className="flex justify-center py-16"><Loader2 size={22} className="animate-spin text-[color:var(--sys-accent)]" /></div>
       ) : rows.length === 0 ? (
         <p className="text-gray-600 text-sm text-center py-12">Nenhuma despesa fixa cadastrada.</p>
       ) : (

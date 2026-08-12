@@ -18,12 +18,12 @@ export default function HistoricoChatPage() {
   return (
     <div className="p-6 lg:p-8 max-w-4xl">
       <h1 className="text-2xl font-black text-white mb-1 flex items-center gap-2" style={{ letterSpacing: '-0.02em' }}>
-        <MessageCircle size={22} className="text-[#0BBCD4]" /> Histórico de chat
+        <MessageCircle size={22} className="text-[color:var(--sys-accent)]" /> Histórico de chat
       </h1>
       <p className="text-gray-500 text-sm mb-6">Atendimentos do site encerrados.</p>
 
       {rows === null ? (
-        <div className="flex justify-center py-20"><Loader2 size={24} className="animate-spin text-[#0BBCD4]" /></div>
+        <div className="flex justify-center py-20"><Loader2 size={24} className="animate-spin text-[color:var(--sys-accent)]" /></div>
       ) : rows.length === 0 ? (
         <p className="text-gray-600 text-sm text-center py-16">Nenhum atendimento encerrado ainda.</p>
       ) : (
@@ -66,14 +66,14 @@ function VerConversa({ conversa, onClose }: { conversa: ChatHistorico; onClose: 
           <button onClick={onClose} className="text-gray-400 hover:text-white"><X size={20} /></button>
         </div>
         <div className="flex-1 overflow-y-auto p-4 space-y-2">
-          {msgs === null ? <div className="flex justify-center py-8"><Loader2 size={20} className="animate-spin text-[#0BBCD4]" /></div>
+          {msgs === null ? <div className="flex justify-center py-8"><Loader2 size={20} className="animate-spin text-[color:var(--sys-accent)]" /></div>
             : msgs.map(m => {
               const visit = m.autor_tipo === 'visitante'
               const bot = m.autor_tipo === 'bot'
               if (bot) return <p key={m.id} className="text-center text-[11px] text-gray-500 whitespace-pre-wrap py-1">{m.texto}</p>
               return (
                 <div key={m.id} className={`flex ${visit ? 'justify-start' : 'justify-end'}`}>
-                  <div className="max-w-[80%] rounded-2xl px-3 py-2 text-sm" style={{ background: visit ? 'var(--sys-surface-3)' : 'linear-gradient(135deg, #0BBCD4, #0999ae)' }}>
+                  <div className="max-w-[80%] rounded-2xl px-3 py-2 text-sm" style={{ background: visit ? 'var(--sys-surface-3)' : 'linear-gradient(135deg, var(--sys-accent), var(--sys-accent-2))' }}>
                     {!visit && <p className="text-[10px] text-white/70 mb-0.5">{m.autor_nome}</p>}
                     <p className={visit ? 'text-gray-200' : 'text-white'}>{m.texto}</p>
                   </div>

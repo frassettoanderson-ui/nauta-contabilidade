@@ -13,7 +13,7 @@ import FecharNegociacaoModal from '@/components/sistema/FecharNegociacaoModal'
 import { useRealtime } from '@/components/sistema/useRealtime'
 
 const ORIGEM_COR: Record<string, { bg: string; color: string }> = {
-  'Site':        { bg: 'rgba(11,188,212,0.15)',  color: '#0BBCD4' },
+  'Site':        { bg: 'color-mix(in srgb, var(--sys-accent) 15%, transparent)',  color: 'var(--sys-accent)' },
   'WhatsApp':    { bg: 'rgba(37,211,102,0.15)',  color: '#25D366' },
   'Facebook':    { bg: 'rgba(24,119,242,0.15)',  color: '#1877F2' },
   'Instagram':   { bg: 'rgba(225,48,108,0.15)',  color: '#E1306C' },
@@ -116,13 +116,13 @@ export default function KanbanPage() {
             <h1 className="text-xl lg:text-2xl font-black text-white leading-snug" style={{ letterSpacing: '-0.02em' }}>
               &ldquo;{versiculo.texto}&rdquo;
             </h1>
-            <p className="text-[#0BBCD4] text-sm font-semibold mt-1">{versiculo.ref}</p>
+            <p className="text-[color:var(--sys-accent)] text-sm font-semibold mt-1">{versiculo.ref}</p>
           </>
         )}
       </div>
 
       {leads === null ? (
-        <div className="flex justify-center py-20"><Loader2 size={24} className="animate-spin text-[#0BBCD4]" /></div>
+        <div className="flex justify-center py-20"><Loader2 size={24} className="animate-spin text-[color:var(--sys-accent)]" /></div>
       ) : (
         <div className="flex gap-5 overflow-x-auto pb-4">
           {ETAPAS.map(col => {
@@ -142,7 +142,7 @@ export default function KanbanPage() {
                   <span className="text-xs text-gray-500 ml-auto">{cards.length}</span>
                 </div>
                 <div className="space-y-2.5 rounded-2xl p-2.5 min-h-[62vh] transition-colors duration-200"
-                  style={{ background: isOver ? 'rgba(11,188,212,0.07)' : 'rgba(255,255,255,0.02)', border: `1px solid ${isOver ? 'rgba(11,188,212,0.35)' : 'var(--sys-surface-4)'}` }}>
+                  style={{ background: isOver ? 'color-mix(in srgb, var(--sys-accent) 7.0%, transparent)' : 'rgba(255,255,255,0.02)', border: `1px solid ${isOver ? 'color-mix(in srgb, var(--sys-accent) 35%, transparent)' : 'var(--sys-surface-4)'}` }}>
                   {cards.map(l => {
                     const dragging = dragId === l.id
                     const fechado = col.id === 'fechado'
@@ -164,11 +164,11 @@ export default function KanbanPage() {
                           background: temPend
                             ? 'linear-gradient(160deg, #2a2238 0%, #1d1733 100%)'
                             : 'linear-gradient(160deg, #1d1a3a 0%, #16142b 100%)',
-                          border: `1px solid ${temPend ? 'rgba(245,158,11,0.5)' : dragging ? 'rgba(11,188,212,0.5)' : 'var(--sys-border)'}`,
+                          border: `1px solid ${temPend ? 'rgba(245,158,11,0.5)' : dragging ? 'color-mix(in srgb, var(--sys-accent) 50%, transparent)' : 'var(--sys-border)'}`,
                           borderLeft: temPend ? '3px solid #f59e0b' : undefined,
                           transform: dragging ? 'scale(1.04) rotate(-1.5deg)' : 'scale(1)',
                           boxShadow: dragging
-                            ? '0 18px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(11,188,212,0.3)'
+                            ? '0 18px 40px rgba(0,0,0,0.5), 0 0 0 1px color-mix(in srgb, var(--sys-accent) 30%, transparent)'
                             : emChamas
                             ? undefined
                             : '0 4px 10px rgba(0,0,0,0.35), 0 1px 2px rgba(0,0,0,0.3)',
@@ -194,7 +194,7 @@ export default function KanbanPage() {
                         </div>
 
                         <p className="text-white text-base font-bold leading-tight truncate">{l.nome}</p>
-                        {l.interesse && <p className="text-[#0BBCD4] text-xs mt-1 truncate">{l.interesse}</p>}
+                        {l.interesse && <p className="text-[color:var(--sys-accent)] text-xs mt-1 truncate">{l.interesse}</p>}
                         <div className="mt-3"><ClassBar value={l.classificacao ?? 0} size="md" /></div>
 
                         {/* Ações rápidas */}
@@ -226,17 +226,17 @@ export default function KanbanPage() {
                               </p>
                             )}
                             {l.negociacao_obs && (
-                              <p className="text-[11px] text-gray-500 mb-2 whitespace-pre-wrap border-l-2 border-[#0BBCD4]/50 pl-2">{String(l.negociacao_obs)}</p>
+                              <p className="text-[11px] text-gray-500 mb-2 whitespace-pre-wrap border-l-2 border-[color:var(--sys-accent)]/50 pl-2">{String(l.negociacao_obs)}</p>
                             )}
                             <button onClick={() => setFecharLead(l)}
-                              className="inline-flex items-center gap-1 mb-2 text-[11px] font-bold text-gray-500 hover:text-[#0BBCD4]">
+                              className="inline-flex items-center gap-1 mb-2 text-[11px] font-bold text-gray-500 hover:text-[color:var(--sys-accent)]">
                               <Pencil size={11} /> Editar honorário / abertura / observação
                             </button>
                             {l.cadastro_completo ? (
                               l.contrato_autentique_status === 'assinado' ? (
                                 <button onClick={() => handleIniciarOnboarding(l)}
                                   className="w-full flex items-center justify-center gap-1.5 h-9 rounded-lg text-xs font-bold text-white onb-start-btn"
-                                  style={{ background: 'linear-gradient(135deg, #0BBCD4, #6355e0)' }}>
+                                  style={{ background: 'linear-gradient(135deg, var(--sys-accent), #6355e0)' }}>
                                   <Rocket size={14} /> Iniciar Onboarding
                                 </button>
                               ) : (
@@ -280,9 +280,9 @@ export default function KanbanPage() {
           <div className="w-44 shrink-0">
             <div className="flex items-center gap-2 mb-3 px-1 h-[18px]" />
             <button onClick={() => setAdding(true)}
-              className="w-full min-h-[62vh] rounded-2xl flex flex-col items-center justify-center gap-3 text-sm font-bold transition-all hover:bg-[rgba(11,188,212,0.05)]"
-              style={{ border: '2px dashed var(--sys-border-2)', color: '#0BBCD4', background: 'transparent' }}>
-              <span className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #0BBCD4, #0999ae)', boxShadow: '0 4px 16px rgba(11,188,212,0.25)' }}>
+              className="w-full min-h-[62vh] rounded-2xl flex flex-col items-center justify-center gap-3 text-sm font-bold transition-all hover:bg-[color-mix(in srgb, var(--sys-accent) 5%, transparent)]"
+              style={{ border: '2px dashed var(--sys-border-2)', color: 'var(--sys-accent)', background: 'transparent' }}>
+              <span className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, var(--sys-accent), var(--sys-accent-2))', boxShadow: '0 4px 16px color-mix(in srgb, var(--sys-accent) 25%, transparent)' }}>
                 <Plus size={22} className="text-white" />
               </span>
               Adicionar lead

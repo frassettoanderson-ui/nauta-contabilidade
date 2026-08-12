@@ -36,7 +36,7 @@ export default function AddLeadModal({ onClose, onCreated }: { onClose: () => vo
       <div className="relative z-10 w-full max-w-md rounded-2xl p-6"
         style={{ background: 'rgba(15,14,26,0.97)', border: '1px solid var(--sys-border-2)' }}>
         <div className="flex items-center justify-between mb-5">
-          <h2 className="text-lg font-black text-white flex items-center gap-2"><UserPlus size={18} className="text-[#0BBCD4]" /> Adicionar lead</h2>
+          <h2 className="text-lg font-black text-white flex items-center gap-2"><UserPlus size={18} className="text-[color:var(--sys-accent)]" /> Adicionar lead</h2>
           <button onClick={onClose} className="text-gray-500 hover:text-white"><X size={20} /></button>
         </div>
 
@@ -63,7 +63,7 @@ export default function AddLeadModal({ onClose, onCreated }: { onClose: () => vo
 
           <button type="submit" disabled={saving || !form.nome.trim()}
             className="w-full h-11 font-bold text-white rounded-xl flex items-center justify-center gap-2 disabled:opacity-50 transition-all hover:-translate-y-0.5"
-            style={{ background: 'linear-gradient(135deg, #0BBCD4, #0999ae)' }}>
+            style={{ background: 'linear-gradient(135deg, var(--sys-accent), var(--sys-accent-2))' }}>
             {saving ? <Loader2 size={16} className="animate-spin" /> : 'Adicionar'}
           </button>
         </form>

@@ -11,6 +11,10 @@
   --dark:          #0f0e1a;
   --dark-2:        #1a1830;
   --dark-3:        #232140;
+  /* Default global do accent (telas pré-login não têm .sys-theme).
+     O painel sobrescreve --sys-accent inline pela cor da empresa ativa. */
+  --sys-accent:    #0BBCD4;
+  --sys-accent-2:  color-mix(in srgb, var(--sys-accent) 85%, #000);
 }
 
 /* ═══════════════════════════════════════════

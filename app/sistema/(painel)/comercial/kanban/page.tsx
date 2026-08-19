@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Loader2, Plus, Bell, Check, XCircle, FileText, MessageCircle, Pencil, ClipboardCheck, AlertCircle, Rocket } from 'lucide-react'
-import { getLeads, updateLead, iniciarOnboarding, cancelarAssinatura, type LeadRow } from '@/lib/api'
+import { getLeads, updateLead, iniciarOnboarding, cancelarAssinatura, marcarAssinaturaManual, type LeadRow } from '@/lib/api'
 import { ETAPAS } from '@/lib/crm-config'
 import { versiculoAleatorio, type Versiculo } from '@/lib/versiculos'
 import ClassBar from '@/components/sistema/ClassBar'
@@ -83,6 +83,31 @@ export default function KanbanPage() {
       load()
     } catch {
       alert('Não foi possível iniciar. Verifique se o interesse do lead é uma categoria válida (não pode ser "Outro").')
+    }
+  }
+
+  // Assinatura manual: anexa comprovante e marca o contrato como assinado
+  const fileRef = useRef<HTMLInputElement>(null)
+  const manualLeadRef = useRef<string | null>(null)
+  const [manualBusy, setManualBusy] = useState<string | null>(null)
+  function pickManual(l: LeadRow) {
+    manualLeadRef.current = l.id
+    fileRef.current?.click()
+  }
+  async function onManualFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    const leadId = manualLeadRef.current
+    if (!file || !leadId) return
+    if (!confirm('Anexar este comprovante e considerar o contrato ASSINADO manualmente? Isso libera o Onboarding deste cliente.')) return
+    setManualBusy(leadId)
+    try {
+      await marcarAssinaturaManual(leadId, file)
+      load()
+    } catch {
+      alert('Não foi possível marcar a assinatura manual. Verifique o arquivo (PNG, JPG ou PDF, até 15MB).')
+    } finally {
+      setManualBusy(null)
     }
   }
 
@@ -252,6 +277,12 @@ export default function KanbanPage() {
                                       <XCircle size={12} /> Cancelar envio
                                     </button>
                                   )}
+                                  {l.contrato_status && (
+                                    <button onClick={() => pickManual(l)} disabled={manualBusy === l.id}
+                                      className="w-full flex items-center justify-center gap-1 mt-1.5 text-[11px] font-bold text-gray-500 hover:text-[color:var(--sys-accent)] disabled:opacity-60">
+                                      {manualBusy === l.id ? <Loader2 size={12} className="animate-spin" /> : <ClipboardCheck size={12} />} Marcar assinatura manual (anexar comprovante)
+                                    </button>
+                                  )}
                                 </>
                               )
                             ) : (
@@ -291,6 +322,7 @@ export default function KanbanPage() {
         </div>
       )}
 
+      <input ref={fileRef} type="file" accept="image/png,image/jpeg,application/pdf" className="hidden" onChange={onManualFile} />
       {adding && <AddLeadModal onClose={() => setAdding(false)} onCreated={() => load()} />}
       {openId && <LeadModal leadId={openId} mode={modalMode} onClose={() => setOpenId(null)} onChanged={load} />}
       {fecharLead && <FecharNegociacaoModal lead={fecharLead} onClose={() => setFecharLead(null)} onConfirmed={load} />}

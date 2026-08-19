@@ -455,6 +455,12 @@ export function iniciarOnboarding(leadId: string, categoria?: string): Promise<{
     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ leadId, categoria }),
   }).then(r => json(r))
 }
+export function marcarAssinaturaManual(leadId: string, file: File): Promise<{ ok: boolean; contratoId?: string }> {
+  const fd = new FormData()
+  fd.append('leadId', leadId)
+  fd.append('file', file)
+  return fetch('/api/contratos/assinatura-manual', { method: 'POST', body: fd }).then(r => json(r))
+}
 
 // ─── PERFIL ──────────────────────────────────────────────────────────────────
 

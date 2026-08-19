@@ -16,6 +16,29 @@ export async function getContratoByLead(leadId: string) {
   return res.rows[0] || null
 }
 
+/**
+ * Assinatura MANUAL (fora da Autentique): o cliente não conseguiu assinar
+ * eletronicamente, então anexamos um comprovante (imagem/PDF) e consideramos
+ * o contrato assinado, liberando o onboarding. Registra a via manual de forma
+ * explícita (não finge que veio da Autentique).
+ */
+export async function marcarAssinaturaManual(leadId: string, fileUrl: string) {
+  let contrato = await getContratoByLead(leadId)
+  if (!contrato) contrato = await gerarContrato(leadId) // gera o documento se ainda não existir
+  await pool.query(
+    `UPDATE contratos
+       SET status = 'assinado',
+           autentique_status = 'assinado',
+           autentique_url = $1,
+           assinado_url = $1,
+           autentique_id = COALESCE(autentique_id, 'assinatura-manual')
+     WHERE id = $2`,
+    [fileUrl, contrato.id]
+  )
+  emitCrmChange()
+  return { ok: true, contratoId: contrato.id }
+}
+
 async function loadLogos(): Promise<ContratoLogos> {
   const logos: ContratoLogos = {}
   try {

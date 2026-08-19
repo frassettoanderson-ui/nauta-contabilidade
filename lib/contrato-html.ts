@@ -23,6 +23,11 @@ const linha = (label: string, value: unknown) =>
 /** HTML do contrato (papel timbrado Nauta), conforme o tipo derivado do interesse. */
 export function buildContratoHtml(cliente: Obj, lead: Obj, logos: ContratoLogos = {}): string {
   const tipo = tipoFromInteresse(lead?.interesse) || 3
+  // Foro: padrão Imbituba/SC. Exceções por lead (demanda 2026-08-17).
+  const FORO_OVERRIDE: Record<string, string> = {
+    '53a11d2e-bcfa-46a2-a8de-8f2c2043c02c': 'Baixo Guandu/ES', // Jean Carlos Correa
+  }
+  const foroComarca = FORO_OVERRIDE[String(lead?.id)] ?? 'Imbituba/SC'
   const comEmpresa = usaEmpresa(tipo)
   const comAbertura = usaAbertura(tipo) && Number(lead?.valor_abertura) > 0
   const socios: Obj[] = (cliente.socios || []).filter((s: Obj) => s && (s.nome_completo || s.cpf))
@@ -252,7 +257,7 @@ export function buildContratoHtml(cliente: Obj, lead: Obj, logos: ContratoLogos 
       <p>Atribui-se executividade ao presente instrumento, assinado por duas testemunhas, por força do art. 784, inciso III, do Código de Processo Civil.</p>`)}
 
     ${Cl(10, '– DO FORO', `
-      <p>Fica eleito o foro da comarca de Imbituba/SC para dirimir as questões oriundas deste instrumento, renunciando as partes a qualquer outro, por mais privilegiado que seja.</p>`)}
+      <p>Fica eleito o foro da comarca de ${foroComarca} para dirimir as questões oriundas deste instrumento, renunciando as partes a qualquer outro, por mais privilegiado que seja.</p>`)}
 
     <p style="margin-top:14pt">E, por estarem assim justas e contratadas, as partes assinam o presente instrumento em 2 (duas) vias de igual teor.</p>
     <p style="text-align:center; margin-top:10pt">${dataExtenso()}</p>

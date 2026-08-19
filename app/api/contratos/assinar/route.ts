@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { gerarContrato, getContratoByLead } from '@/lib/contrato-gen'
-import { criarDocumento, assinarDocumento } from '@/lib/autentique'
+import { criarDocumento, assinarDocumento, criarLinkAssinatura } from '@/lib/autentique'
 import { getClienteByLead } from '@/lib/clientes'
 import pool from '@/lib/db'
 import { readFile } from 'fs/promises'
@@ -58,13 +58,28 @@ export async function POST(req: NextRequest) {
     // 5. Assina imediatamente como Nauta via API (usa o id do documento)
     await assinarDocumento(doc.id)
 
-    // 6. Salva autentique_id e status no DB
+    // Link de assinatura do cliente (para copiar / enviar por WhatsApp).
+    // Pega o signatário que NÃO é a Nauta (só há 2: Nauta + cliente) e gera o
+    // short_link oficial via Autentique — a entrega por e-mail continua valendo.
+    const signerCliente = (doc.signatures || []).find(
+      s => (s.email || '').toLowerCase() !== 'contato@nautacontabilidade.com.br'
+    )
+    let linkAssinatura: string | null = null
+    if (signerCliente?.public_id) {
+      try {
+        linkAssinatura = await criarLinkAssinatura(signerCliente.public_id)
+      } catch (e) {
+        console.error('[ASSINAR] Falha ao gerar link de assinatura:', e)
+      }
+    }
+
+    // 6. Salva autentique_id, status e link de assinatura no DB
     await pool.query(
-      `UPDATE contratos SET autentique_id = $1, autentique_status = 'pendente', status = 'aguardando_assinatura' WHERE id = $2`,
-      [doc.id, contrato.id]
+      `UPDATE contratos SET autentique_id = $1, autentique_status = 'pendente', status = 'aguardando_assinatura', link_assinatura = $3 WHERE id = $2`,
+      [doc.id, contrato.id, linkAssinatura]
     )
 
-    return NextResponse.json({ ok: true, autentique_id: doc.id })
+    return NextResponse.json({ ok: true, autentique_id: doc.id, link_assinatura: linkAssinatura })
   } catch (e) {
     console.error('[ASSINAR]', e)
     return NextResponse.json({ error: e instanceof Error ? e.message : 'Erro ao enviar para assinatura' }, { status: 500 })

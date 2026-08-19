@@ -7,7 +7,7 @@ import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import {
   X, Loader2, MessageCircle, Mail, Trash2, Send, Bell, Check, Plus, CalendarClock,
-  Pencil, Save, FileText, ClipboardCheck,
+  Pencil, Save, FileText, ClipboardCheck, Copy,
 } from 'lucide-react'
 import {
   getLeadDetail, updateLead, deleteLead, addAtividade, addLembrete, toggleLembrete, deleteLembrete,
@@ -28,6 +28,7 @@ export default function LeadModal({ leadId, onClose, onChanged, mode = 'view' }:
   const [contrato, setContrato] = useState<ContratoRow | null>(null)
   const [gerandoContrato, setGerandoContrato] = useState(false)
   const [enviandoAssinatura, setEnviandoAssinatura] = useState(false)
+  const [linkCopiado, setLinkCopiado] = useState(false)
   const [editing, setEditing] = useState(false)
   const [edit, setEdit] = useState({ nome: '', whatsapp: '', email: '', interesse: '' })
   const [novaAtiv, setNovaAtiv] = useState('')
@@ -308,10 +309,24 @@ export default function LeadModal({ leadId, onClose, onChanged, mode = 'view' }:
                               <ClipboardCheck size={16} /> Baixar contrato assinado
                             </a>
                           ) : contrato.autentique_status === 'pendente' ? (
-                            <div className="w-full h-11 rounded-xl font-bold flex items-center justify-center gap-2 text-sm"
-                              style={{ background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.3)', color: '#fbbf24' }}>
-                              <Loader2 size={15} className="animate-spin" /> Aguardando assinatura do sócio…
-                            </div>
+                            <>
+                              <div className="w-full h-11 rounded-xl font-bold flex items-center justify-center gap-2 text-sm"
+                                style={{ background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.3)', color: '#fbbf24' }}>
+                                <Loader2 size={15} className="animate-spin" /> Aguardando assinatura do sócio…
+                              </div>
+                              {contrato.link_assinatura && (
+                                <button
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(contrato.link_assinatura!)
+                                    setLinkCopiado(true)
+                                    setTimeout(() => setLinkCopiado(false), 2000)
+                                  }}
+                                  className="w-full h-11 rounded-xl font-bold text-white flex items-center justify-center gap-2"
+                                  style={{ background: '#25D366' }}>
+                                  {linkCopiado ? <><Check size={16} /> Link copiado!</> : <><Copy size={16} /> Copiar link de assinatura</>}
+                                </button>
+                              )}
+                            </>
                           ) : (
                             <a href={contrato.pdf_url || '#'} target="_blank" rel="noopener noreferrer"
                               className="w-full h-11 rounded-xl font-bold text-white flex items-center justify-center gap-2" style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)' }}>

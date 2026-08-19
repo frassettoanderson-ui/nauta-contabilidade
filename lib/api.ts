@@ -126,6 +126,7 @@ export interface ContratoRow {
   id: string; lead_id: string; tipo: number; status: string
   pdf_url: string | null; assinado_url: string | null; criado_em: string
   autentique_id?: string | null; autentique_status?: string | null; autentique_url?: string | null
+  link_assinatura?: string | null
 }
 export function getContratoByLead(leadId: string): Promise<ContratoRow | null> {
   return fetch(`/api/contratos?lead=${leadId}`).then(r => json<ContratoRow | null>(r))

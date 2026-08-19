@@ -118,3 +118,20 @@ export async function consultarDocumento(documentId: string) {
   `)
   return (data as Record<string, unknown>).document
 }
+
+/**
+ * Gera um link de assinatura (short_link) para uma assinatura já existente,
+ * SEM alterar a forma de entrega — o signatário continua recebendo por e-mail.
+ * Recebe o public_id da ASSINATURA (não do documento).
+ */
+export async function criarLinkAssinatura(signaturePublicId: string): Promise<string | null> {
+  const data = await gql(`
+    mutation {
+      createLinkToSignature(public_id: "${signaturePublicId}") {
+        short_link
+      }
+    }
+  `)
+  const link = (data as Record<string, unknown>).createLinkToSignature as { short_link?: string } | null
+  return link?.short_link ?? null
+}

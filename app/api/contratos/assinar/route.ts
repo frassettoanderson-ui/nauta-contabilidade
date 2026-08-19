@@ -37,12 +37,16 @@ export async function POST(req: NextRequest) {
     const socios: Array<{ nome_completo?: string; email?: string }> = (cliente.socios as Array<{ nome_completo?: string; email?: string }>) || []
     const socio1 = socios[0]
     // Busca e-mail na ordem: e-mail do sócio → e-mail do cliente (cli_email) → e-mail da empresa
-    const emailSocio = (socio1?.email as string)
-      || (cliente.cli_email as string)
-      || (cliente.emp_email as string)
+    // Limpa espaços/caractere invisível: a Autentique recusa e-mail com espaço como "format_is_invalid".
+    const emailSocio = String(
+      (socio1?.email as string) || (cliente.cli_email as string) || (cliente.emp_email as string) || ''
+    ).trim().replace(/\s+/g, '').toLowerCase()
     if (!emailSocio) throw new Error('E-mail não encontrado no cadastro. Preencha o e-mail na aba Dados do Cliente.')
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailSocio)) {
+      throw new Error(`E-mail do cliente inválido: "${emailSocio}". Corrija na aba Dados do Cliente e envie novamente.`)
+    }
 
-    const nomeSocio = (socio1?.nome_completo as string) || (cliente.cli_nome_completo as string) || 'Sócio 1'
+    const nomeSocio = String((socio1?.nome_completo as string) || (cliente.cli_nome_completo as string) || 'Sócio 1').trim()
     const nomeEmpresa = (cliente.emp_nome as string) || 'Cliente'
 
     // 4. Cria documento no Autentique com 2 signatários: Nauta + Sócio 1

@@ -3,11 +3,12 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { Loader2, Lock, Check, CheckCircle2, Link2, Rocket, MessageCircle, Pencil, ClipboardCheck, X, ChevronDown, ChevronUp, Copy, ExternalLink } from 'lucide-react'
+import { Loader2, Lock, Check, CheckCircle2, Link2, Rocket, MessageCircle, Pencil, ClipboardCheck, X, ChevronDown, ChevronUp, Copy, ExternalLink, Clock } from 'lucide-react'
 import { getOnboardingBoard, setOnboardingCheck, concluirOnboarding, gerarLinkCadastro, type OnboardingCliente } from '@/lib/api'
 import { SETORES, itensDoSetor, gerenteConcluido, podeEditarSetor, checksEfetivos, setorConcluido, setorItensCompletos, tudoConcluido, doneKey, ITEM_CADASTRO, type SetorId } from '@/lib/onboarding-checklist'
 import { ONBOARDING_CATEGORIAS } from '@/lib/onboarding'
 import { useRealtime } from '@/components/sistema/useRealtime'
+import AnotacoesModal from '@/components/sistema/AnotacoesModal'
 import LeadModal from '@/components/sistema/LeadModal'
 
 const catLabel = (slug: string | null) =>
@@ -25,6 +26,7 @@ export default function OnboardingPage() {
   const [busy, setBusy] = useState<string | null>(null)
   const [editId, setEditId] = useState<string | null>(null)
   const [concluindo, setConcluindo] = useState<OnboardingCliente | null>(null)
+  const [anotacoesLead, setAnotacoesLead] = useState<{ id: string; nome: string } | null>(null)
   const [expandidos, setExpandidos] = useState<Set<string>>(new Set())
   const toggleExpandir = (id: string) => setExpandidos(s => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n })
 
@@ -142,6 +144,7 @@ export default function OnboardingPage() {
                         <MessageCircle size={15} />
                       </a>
                       <MiniBtn title="Editar lead" onClick={() => setEditId(c.id)}><Pencil size={14} /></MiniBtn>
+                      <MiniBtn title="Anotações do cliente" onClick={() => setAnotacoesLead({ id: c.id, nome: c.emp_nome || c.nome })} color="var(--sys-accent)"><Clock size={14} /></MiniBtn>
                       <MiniBtn title="Cadastro" onClick={() => router.push(`/sistema/clientes/cadastrar?lead=${c.id}&edit=1`)} color="#22c55e"><ClipboardCheck size={15} /></MiniBtn>
                     </div>
                   </div>
@@ -258,6 +261,7 @@ export default function OnboardingPage() {
       )}
 
       {editId && <LeadModal leadId={editId} mode="edit" onClose={() => setEditId(null)} onChanged={load} />}
+      {anotacoesLead && <AnotacoesModal leadId={anotacoesLead.id} nome={anotacoesLead.nome} onClose={() => setAnotacoesLead(null)} />}
       {concluindo && <ConcluirModal cliente={concluindo} onClose={() => setConcluindo(null)} onConfirm={confirmarConclusao} />}
     </div>
   )

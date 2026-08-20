@@ -149,7 +149,23 @@ function Wizard() {
       // Determina o tipo de contrato pelo interesse do lead
       const lid = leadId || (data?.lead_id as string | undefined)
       if (lid) {
-        try { const lead = await getLeadDetail(lid); setTipo(tipoFromInteresse(lead.interesse)) } catch {}
+        try {
+          const lead = await getLeadDetail(lid)
+          setTipo(tipoFromInteresse(lead.interesse))
+          // Lead recém-fechado ainda sem cadastro: pré-preenche com o que já temos no lead
+          // (nome, e-mail, telefone) para não digitar duas vezes.
+          if (!data) {
+            const nome = String(lead.nome || '').trim()
+            const email = String(lead.email || '').trim().replace(/\s+/g, '')
+            const tel = String(lead.whatsapp || '').trim()
+            if (nome || email) {
+              setCli(c => ({ ...c, ...(nome ? { cli_nome_completo: nome } : {}), ...(email ? { cli_email: email } : {}) }))
+            }
+            if (nome || email || tel) {
+              setEmp(e => ({ ...e, ...(nome ? { emp_proprietario_nome: nome } : {}), ...(email ? { emp_email: email } : {}), ...(tel ? { emp_telefone: tel } : {}) }))
+            }
+          }
+        } catch {}
         try { const c = await getContratoByLead(lid); setContrato(c) } catch {}
       }
       setLoading(false)

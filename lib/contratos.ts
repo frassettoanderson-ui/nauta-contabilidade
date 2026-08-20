@@ -34,15 +34,14 @@ export const usaAbertura = (tipo: number) => tipo !== 3
 type Obj = Record<string, unknown>
 const filled = (v: unknown) => String(v ?? '').trim() !== ''
 
-const REQ_PESSOA_T1 = ['cli_nome_completo', 'cli_cpf', 'cli_rg', 'cli_endereco', 'cli_bairro', 'cli_cidade_estado', 'cli_cep']
-const REQ_EMPRESA = ['emp_nome', 'emp_cnpj', 'emp_endereco', 'emp_bairro', 'emp_cidade_estado', 'emp_cep', 'emp_email', 'emp_telefone']
-const REQ_PESSOA_EMP = ['cli_nome_completo', 'cli_cpf']
+// Dados MÍNIMOS de pessoa para gerar o contrato. O restante do cadastro
+// (empresa, endereço completo, sócios...) é preenchido depois pelo cliente,
+// via link enviado na etapa de onboarding.
+const REQ_CONTRATO = ['cli_nome_completo', 'cli_cpf', 'cli_rg', 'cli_endereco', 'cli_email', 'cli_nascimento']
 
-/** Campos (cliente/empresa) obrigatórios para o tipo de contrato. */
-export function requiredKeysFor(tipo: number | null): string[] {
-  if (tipo === 1) return REQ_PESSOA_T1
-  if (tipo === 2 || tipo === 3 || tipo === 4) return [...REQ_EMPRESA, ...REQ_PESSOA_EMP]
-  return []
+/** Campos obrigatórios para gerar o contrato (mesmos para todos os tipos). */
+export function requiredKeysFor(_tipo: number | null): string[] {
+  return REQ_CONTRATO
 }
 /** Campos do sócio obrigatórios (quando o sócio está ativo). */
 export const REQ_SOCIO = ['nome_completo', 'cpf']
@@ -53,12 +52,7 @@ export function isContratoPronto(cliente: Obj | null | undefined, lead: Obj | nu
   if (!tipo || !cliente) return false
   if (!(Number(lead?.valor_honorario) > 0)) return false // honorário definido no fechamento
 
-  if (tipo === 1) {
-    for (const k of REQ_PESSOA_T1) if (!filled(cliente[k])) return false
-  } else {
-    for (const k of REQ_EMPRESA) if (!filled(cliente[k])) return false
-    for (const k of REQ_PESSOA_EMP) if (!filled(cliente[k])) return false
-  }
+  for (const k of REQ_CONTRATO) if (!filled(cliente[k])) return false
 
   // sócios preenchidos (fiadores) precisam de nome + CPF
   const socios = ((cliente.socios as Obj[]) || []).filter(s => s && (filled(s.nome_completo) || filled(s.cpf)))

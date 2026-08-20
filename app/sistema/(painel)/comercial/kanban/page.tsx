@@ -10,6 +10,7 @@ import ClassBar from '@/components/sistema/ClassBar'
 import AddLeadModal from '@/components/sistema/AddLeadModal'
 import LeadModal from '@/components/sistema/LeadModal'
 import FecharNegociacaoModal from '@/components/sistema/FecharNegociacaoModal'
+import DadosContratoModal from '@/components/sistema/DadosContratoModal'
 import { useRealtime } from '@/components/sistema/useRealtime'
 
 const ORIGEM_COR: Record<string, { bg: string; color: string }> = {
@@ -43,6 +44,7 @@ export default function KanbanPage() {
   const [dragId, setDragId] = useState<string | null>(null)
   const [overCol, setOverCol] = useState<string | null>(null)
   const [fecharLead, setFecharLead] = useState<LeadRow | null>(null)
+  const [dadosContrato, setDadosContrato] = useState<LeadRow | null>(null)
 
   const [versiculo, setVersiculo] = useState<Versiculo | null>(null)
 
@@ -287,12 +289,14 @@ export default function KanbanPage() {
                               )
                             ) : (
                               <>
-                                <button disabled className="w-full flex items-center justify-center gap-1.5 h-8 rounded-lg text-xs font-bold text-gray-500 cursor-not-allowed" style={{ background: 'var(--sys-surface-3)' }}>
-                                  <FileText size={13} /> Gerar contrato
+                                <button onClick={() => setDadosContrato(l)}
+                                  className="w-full flex items-center justify-center gap-1.5 h-9 rounded-lg text-xs font-bold text-white"
+                                  style={{ background: 'linear-gradient(135deg, var(--sys-accent), #6355e0)' }}>
+                                  <FileText size={13} /> Preencher dados do contrato
                                 </button>
                                 <button onClick={() => router.push(`/sistema/clientes/cadastrar?lead=${l.id}&edit=1`)}
-                                  className="w-full flex items-center justify-center gap-1 mt-1.5 text-[11px] font-bold text-red-400 animate-pulse">
-                                  <AlertCircle size={11} /> Cadastro do cliente incompleto, clique aqui
+                                  className="w-full flex items-center justify-center gap-1 mt-1.5 text-[11px] font-bold text-gray-500 hover:text-[color:var(--sys-accent)]">
+                                  <AlertCircle size={11} /> Abrir cadastro completo
                                 </button>
                               </>
                             )}
@@ -326,6 +330,7 @@ export default function KanbanPage() {
       {adding && <AddLeadModal onClose={() => setAdding(false)} onCreated={() => load()} />}
       {openId && <LeadModal leadId={openId} mode={modalMode} onClose={() => setOpenId(null)} onChanged={load} />}
       {fecharLead && <FecharNegociacaoModal lead={fecharLead} onClose={() => setFecharLead(null)} onConfirmed={load} />}
+      {dadosContrato && <DadosContratoModal lead={dadosContrato} onClose={() => setDadosContrato(null)} onSaved={load} />}
     </div>
   )
 }

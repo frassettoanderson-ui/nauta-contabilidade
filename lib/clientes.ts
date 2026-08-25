@@ -20,7 +20,7 @@ type AnyObj = Record<string, unknown>
 export async function listClientes(empresaId: string) {
   const res = await pool.query(
     `SELECT
-        c.id, c.lead_id, c.emp_nome, c.emp_telefone, c.emp_cidade_estado, c.emp_regime, c.criado_em,
+        c.id, c.lead_id, c.emp_nome, c.emp_cnpj, c.emp_telefone, c.emp_cidade_estado, c.emp_regime, c.criado_em, c.situacao,
         COALESCE(
           (SELECT s.nome_completo FROM cliente_socios s
             WHERE s.cliente_id = c.id ORDER BY s.ordem ASC LIMIT 1),
@@ -43,6 +43,18 @@ export async function getClienteByLead(leadId: string, empresaId?: string) {
     : await pool.query(`SELECT id FROM clientes WHERE lead_id = $1 LIMIT 1`, [leadId])
   if (!res.rows[0]) return null
   return getCliente(res.rows[0].id)
+}
+
+const SITUACOES = ['ativo', 'em_processo', 'inativo']
+export async function setSituacaoCliente(id: string, situacao: string, empresaId?: string) {
+  if (!SITUACOES.includes(situacao)) throw new Error('Situação inválida')
+  if (empresaId) {
+    await pool.query(`UPDATE clientes SET situacao = $2 WHERE id = $1 AND empresa_id = $3`, [id, situacao, empresaId])
+  } else {
+    await pool.query(`UPDATE clientes SET situacao = $2 WHERE id = $1`, [id, situacao])
+  }
+  emitCrmChange()
+  return { ok: true }
 }
 
 export async function getCliente(id: string) {

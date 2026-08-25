@@ -261,6 +261,11 @@ export function getCliente(id: string): Promise<Record<string, unknown>> {
 export function listClientes(): Promise<Record<string, unknown>[]> {
   return fetch('/api/clientes').then(r => json<Record<string, unknown>[]>(r))
 }
+export function setSituacaoCliente(id: string, situacao: string): Promise<{ ok: boolean }> {
+  return fetch(`/api/clientes/${id}/situacao`, {
+    method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ situacao }),
+  }).then(r => json(r))
+}
 
 export function deleteCliente(id: string): Promise<void> {
   return fetch(`/api/clientes/${id}`, { method: 'DELETE' }).then(r => json(r)).then(() => undefined)

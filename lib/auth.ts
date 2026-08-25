@@ -54,12 +54,30 @@ export const authOptions: NextAuthOptions = {
         const empresas = await getEmpresasDoUsuario(u.id)
         token.empresas = empresas
         token.empresaId = empresas[0]?.id ?? null
+        token.refreshedAt = Date.now()
       }
-      // Atualiza tokens antigos (pré-multiempresa) sem exigir novo login.
-      if (!user && token.uid && !token.empresas) {
-        const empresas = await getEmpresasDoUsuario(token.uid as string)
-        token.empresas = empresas
-        token.empresaId = empresas[0]?.id ?? null
+      // Sessão já existente: relê cargo/permissões/empresas do banco periodicamente
+      // (ou na 1ª vez após a atualização), para refletir mudanças de cargo/permissão
+      // e a criação de empresas SEM exigir novo login.
+      if (!user && token.uid) {
+        const agora = Date.now()
+        const ultima = (token.refreshedAt as number | undefined) ?? 0
+        if (!token.empresas || agora - ultima > 30_000) {
+          try {
+            const res = await pool.query('SELECT role, menu_perms, must_change_password FROM admin_users WHERE id = $1', [token.uid])
+            const u = res.rows[0]
+            if (u) {
+              token.role = u.role || 'gerente'
+              token.menuPerms = u.menu_perms ?? null
+              token.mustChangePassword = !!u.must_change_password
+            }
+            const empresas = await getEmpresasDoUsuario(token.uid as string)
+            token.empresas = empresas
+            const atual = token.empresaId as string | null
+            token.empresaId = atual && empresas.some(e => e.id === atual) ? atual : (empresas[0]?.id ?? null)
+            token.refreshedAt = agora
+          } catch { /* mantém o token atual se o banco oscilar */ }
+        }
       }
       if (trigger === 'update') {
         if (session?.mustChangePassword === false) token.mustChangePassword = false

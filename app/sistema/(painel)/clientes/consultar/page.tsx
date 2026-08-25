@@ -49,7 +49,16 @@ export default function ConsultarClientesPage() {
 
   const contagem = (k: string) => (clientes ?? []).filter(c => (s(c.situacao) || 'ativo') === k).length
 
-  const COLS = ['Empresa', 'CNPJ', 'Responsável', 'Telefone', 'Cidade', 'UF', 'Cadastro', 'Tipo', 'Situação']
+  const COLS: { label: string; w: string }[] = [
+    { label: 'Empresa', w: '19%' },
+    { label: 'CNPJ', w: '15%' },
+    { label: 'Responsável', w: '16%' },
+    { label: 'Telefone', w: '12%' },
+    { label: 'Cidade', w: '13%' },
+    { label: 'UF', w: '5%' },
+    { label: 'Cadastro', w: '9%' },
+    { label: 'Situação', w: '11%' },
+  ]
 
   const chip = (key: 'todos' | 'ativo' | 'em_processo' | 'inativo', label: string, cor?: string) => {
     const ativo = filtroSit === key
@@ -97,11 +106,14 @@ export default function ConsultarClientesPage() {
         </div>
       ) : (
         <div className="rounded-2xl overflow-x-auto" style={{ border: '1px solid var(--sys-border)', background: 'var(--sys-surface)' }}>
-          <table className="w-full text-sm whitespace-nowrap">
+          <table className="w-full text-sm table-fixed">
+            <colgroup>
+              {COLS.map(col => <col key={col.label} style={{ width: col.w }} />)}
+            </colgroup>
             <thead>
               <tr style={{ borderBottom: '1px solid var(--sys-border)' }}>
                 {COLS.map(col => (
-                  <th key={col} className="text-left text-[11px] font-bold uppercase tracking-wide text-gray-500 px-4 py-3">{col}</th>
+                  <th key={col.label} className="text-left text-[11px] font-bold uppercase tracking-wide text-gray-500 px-3 py-3 truncate">{col.label}</th>
                 ))}
               </tr>
             </thead>
@@ -110,28 +122,24 @@ export default function ConsultarClientesPage() {
                 const { cidade, uf } = parseCidadeEstado(s(c.emp_cidade_estado))
                 const sit = s(c.situacao) || 'ativo'
                 const cfg = SIT[sit] ?? SIT.ativo
+                const nome = s(c.emp_nome) || s(c.responsavel) || '—'
                 return (
                   <tr key={s(c.id)} style={{ borderBottom: '1px solid var(--sys-surface-4)' }}>
-                    <td className="px-4 py-3">
-                      <button onClick={() => router.push(`/sistema/clientes/cadastrar?cliente=${c.id}`)}
-                        className="font-semibold text-white hover:text-[color:var(--sys-accent)] hover:underline text-left">
-                        {s(c.emp_nome) || s(c.responsavel) || '—'}
+                    <td className="px-3 py-3">
+                      <button onClick={() => router.push(`/sistema/clientes/cadastrar?cliente=${c.id}`)} title={nome}
+                        className="block w-full truncate text-left font-semibold text-white hover:text-[color:var(--sys-accent)] hover:underline">
+                        {nome}
                       </button>
                     </td>
-                    <td className="px-4 py-3 text-gray-400 font-mono text-xs">{s(c.emp_cnpj) || '—'}</td>
-                    <td className="px-4 py-3 text-gray-300">{s(c.responsavel) || '—'}</td>
-                    <td className="px-4 py-3 text-gray-400">{s(c.emp_telefone) || '—'}</td>
-                    <td className="px-4 py-3 text-gray-400">{cidade || '—'}</td>
-                    <td className="px-4 py-3 text-gray-400">{uf || '—'}</td>
-                    <td className="px-4 py-3 text-gray-500">{c.criado_em ? format(new Date(s(c.criado_em)), 'dd/MM/yyyy', { locale: ptBR }) : '—'}</td>
-                    <td className="px-4 py-3">
-                      {c.emp_regime
-                        ? <span className="text-[11px] font-bold px-2 py-0.5 rounded-full" style={{ background: 'color-mix(in srgb, var(--sys-accent) 12%, transparent)', color: 'var(--sys-accent)' }}>{s(c.emp_regime)}</span>
-                        : <span className="text-gray-600">—</span>}
-                    </td>
-                    <td className="px-4 py-3">
+                    <td className="px-3 py-3 text-gray-400 font-mono text-xs truncate">{s(c.emp_cnpj) || '—'}</td>
+                    <td className="px-3 py-3 text-gray-300 truncate" title={s(c.responsavel)}>{s(c.responsavel) || '—'}</td>
+                    <td className="px-3 py-3 text-gray-400 truncate">{s(c.emp_telefone) || '—'}</td>
+                    <td className="px-3 py-3 text-gray-400 truncate" title={cidade}>{cidade || '—'}</td>
+                    <td className="px-3 py-3 text-gray-400">{uf || '—'}</td>
+                    <td className="px-3 py-3 text-gray-500 truncate">{c.criado_em ? format(new Date(s(c.criado_em)), 'dd/MM/yyyy', { locale: ptBR }) : '—'}</td>
+                    <td className="px-3 py-3">
                       <select value={sit} onChange={e => mudarSituacao(s(c.id), e.target.value)}
-                        className="h-8 pl-2.5 pr-7 rounded-lg text-xs font-bold outline-none cursor-pointer appearance-none"
+                        className="w-full h-8 pl-2.5 pr-6 rounded-lg text-xs font-bold outline-none cursor-pointer appearance-none"
                         style={{ background: cfg.bg, color: cfg.color, border: `1px solid color-mix(in srgb, ${cfg.color} 35%, transparent)` }}>
                         {SIT_KEYS.map(k => <option key={k} value={k} style={{ background: '#13111f', color: '#fff' }}>{SIT[k].label}</option>)}
                       </select>

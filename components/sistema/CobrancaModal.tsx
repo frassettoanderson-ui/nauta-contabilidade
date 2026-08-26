@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { X, Loader2, Copy, Check, Pencil } from 'lucide-react'
-import { getClienteByLead, type OnboardingCliente } from '@/lib/api'
+import { getClienteByLead, getLeadDetail } from '@/lib/api'
 
 const brl = (v: unknown) => {
   const n = Number(v)
@@ -14,20 +14,26 @@ const dataBr = (iso: string) => {
   return d && m && a ? `${d}/${m}/${a}` : iso
 }
 
-export default function CobrancaModal({ cliente, onClose }: { cliente: OnboardingCliente; onClose: () => void }) {
-  const [nome, setNome] = useState(cliente.emp_nome || cliente.nome || '')
-  const [cnpj, setCnpj] = useState(cliente.emp_cnpj || '')
-  const [whatsapp, setWhatsapp] = useState(cliente.whatsapp || '')
-  const [email, setEmail] = useState(cliente.email || '')
-  const [valor, setValor] = useState(brl(cliente.valor_honorario))
+export default function CobrancaModal({ leadId, nome: nomeInit, cnpj: cnpjInit, onClose }: { leadId: string; nome?: string; cnpj?: string; onClose: () => void }) {
+  const [nome, setNome] = useState(nomeInit || '')
+  const [cnpj, setCnpj] = useState(cnpjInit || '')
+  const [whatsapp, setWhatsapp] = useState('')
+  const [email, setEmail] = useState('')
+  const [valor, setValor] = useState('')
   const [vencimento, setVencimento] = useState('') // 1º vencimento não existe no sistema
   const [editando, setEditando] = useState(false)
   const [copiado, setCopiado] = useState(false)
 
-  // Enriquecer com dados do cadastro (e-mail/CNPJ da empresa quando houver)
+  // Puxa do sistema: WhatsApp/e-mail/honorário do lead + e-mail/CNPJ do cadastro
   useEffect(() => {
     let vivo = true
-    getClienteByLead(cliente.id).then(c => {
+    getLeadDetail(leadId).then(d => {
+      if (!vivo) return
+      setWhatsapp(v => v || String(d.whatsapp ?? ''))
+      setEmail(v => v || String(d.email ?? ''))
+      setValor(v => v || brl(d.valor_honorario))
+    }).catch(() => {})
+    getClienteByLead(leadId).then(c => {
       if (!vivo || !c) return
       setNome(v => v || String(c.emp_nome ?? c.cli_nome_completo ?? ''))
       setCnpj(v => v || String(c.emp_cnpj ?? ''))
@@ -35,7 +41,7 @@ export default function CobrancaModal({ cliente, onClose }: { cliente: Onboardin
       if (mail) setEmail(mail)
     }).catch(() => {})
     return () => { vivo = false }
-  }, [cliente.id])
+  }, [leadId])
 
   const campos = [
     { label: 'Nome da empresa', val: nome, set: setNome, type: 'text' },

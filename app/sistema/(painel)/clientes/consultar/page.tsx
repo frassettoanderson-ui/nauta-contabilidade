@@ -4,9 +4,10 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import { Loader2, Search, Users, Building2 } from 'lucide-react'
+import { Loader2, Search, Users, Building2, DollarSign } from 'lucide-react'
 import { listClientes, setSituacaoCliente } from '@/lib/api'
 import { parseCidadeEstado } from '@/lib/form-masks'
+import CobrancaModal from '@/components/sistema/CobrancaModal'
 
 type Cli = Record<string, unknown>
 
@@ -24,6 +25,7 @@ export default function ConsultarClientesPage() {
   const [clientes, setClientes] = useState<Cli[] | null>(null)
   const [busca, setBusca] = useState('')
   const [filtroSit, setFiltroSit] = useState<'todos' | 'ativo' | 'em_processo' | 'inativo'>('todos')
+  const [cobranca, setCobranca] = useState<{ leadId: string; nome: string; cnpj: string } | null>(null)
 
   useEffect(() => { listClientes().then(setClientes).catch(() => setClientes([])) }, [])
 
@@ -50,13 +52,14 @@ export default function ConsultarClientesPage() {
   const contagem = (k: string) => (clientes ?? []).filter(c => (s(c.situacao) || 'ativo') === k).length
 
   const COLS: { label: string; w: string }[] = [
-    { label: 'Empresa', w: '19%' },
-    { label: 'CNPJ', w: '15%' },
-    { label: 'Responsável', w: '16%' },
-    { label: 'Telefone', w: '12%' },
-    { label: 'Cidade', w: '13%' },
-    { label: 'UF', w: '5%' },
-    { label: 'Cadastro', w: '9%' },
+    { label: 'Empresa', w: '16%' },
+    { label: 'CNPJ', w: '14%' },
+    { label: 'Responsável', w: '14%' },
+    { label: 'Telefone', w: '11%' },
+    { label: 'Cidade', w: '12%' },
+    { label: 'UF', w: '4%' },
+    { label: 'Cadastro', w: '8%' },
+    { label: 'Cobrança', w: '10%' },
     { label: 'Situação', w: '11%' },
   ]
 
@@ -138,6 +141,14 @@ export default function ConsultarClientesPage() {
                     <td className="px-3 py-3 text-gray-400">{uf || '—'}</td>
                     <td className="px-3 py-3 text-gray-500 truncate">{c.criado_em ? format(new Date(s(c.criado_em)), 'dd/MM/yyyy', { locale: ptBR }) : '—'}</td>
                     <td className="px-3 py-3">
+                      <button onClick={() => setCobranca({ leadId: s(c.lead_id), nome: s(c.emp_nome), cnpj: s(c.emp_cnpj) })}
+                        title="Cadastrar cobrança"
+                        className="inline-flex items-center gap-1 h-8 px-2.5 rounded-lg text-xs font-bold whitespace-nowrap"
+                        style={{ background: 'rgba(239,68,68,0.14)', border: '1px solid rgba(239,68,68,0.45)', color: '#f87171' }}>
+                        <DollarSign size={13} /> Cobrança
+                      </button>
+                    </td>
+                    <td className="px-3 py-3">
                       <select value={sit} onChange={e => mudarSituacao(s(c.id), e.target.value)}
                         className="w-full h-8 pl-2.5 pr-6 rounded-lg text-xs font-bold outline-none cursor-pointer appearance-none"
                         style={{ background: cfg.bg, color: cfg.color, border: `1px solid color-mix(in srgb, ${cfg.color} 35%, transparent)` }}>
@@ -151,6 +162,8 @@ export default function ConsultarClientesPage() {
           </table>
         </div>
       )}
+
+      {cobranca && <CobrancaModal leadId={cobranca.leadId} nome={cobranca.nome} cnpj={cobranca.cnpj} onClose={() => setCobranca(null)} />}
     </div>
   )
 }

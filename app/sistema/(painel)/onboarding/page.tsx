@@ -3,13 +3,12 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { Loader2, Lock, Check, CheckCircle2, Link2, Rocket, MessageCircle, Pencil, ClipboardCheck, X, ChevronDown, ChevronUp, Copy, ExternalLink, Clock, DollarSign } from 'lucide-react'
+import { Loader2, Lock, Check, CheckCircle2, Link2, Rocket, MessageCircle, Pencil, ClipboardCheck, X, ChevronDown, ChevronUp, Copy, ExternalLink, Clock } from 'lucide-react'
 import { getOnboardingBoard, setOnboardingCheck, concluirOnboarding, gerarLinkCadastro, type OnboardingCliente } from '@/lib/api'
 import { SETORES, itensDoSetor, gerenteConcluido, podeEditarSetor, checksEfetivos, setorConcluido, setorItensCompletos, tudoConcluido, doneKey, ITEM_CADASTRO, type SetorId } from '@/lib/onboarding-checklist'
 import { ONBOARDING_CATEGORIAS } from '@/lib/onboarding'
 import { useRealtime } from '@/components/sistema/useRealtime'
 import AnotacoesModal from '@/components/sistema/AnotacoesModal'
-import CobrancaModal from '@/components/sistema/CobrancaModal'
 import LeadModal from '@/components/sistema/LeadModal'
 
 const catLabel = (slug: string | null) =>
@@ -28,7 +27,6 @@ export default function OnboardingPage() {
   const [editId, setEditId] = useState<string | null>(null)
   const [concluindo, setConcluindo] = useState<OnboardingCliente | null>(null)
   const [anotacoesLead, setAnotacoesLead] = useState<{ id: string; nome: string } | null>(null)
-  const [cobrancaCliente, setCobrancaCliente] = useState<OnboardingCliente | null>(null)
   const [expandidos, setExpandidos] = useState<Set<string>>(new Set())
   const toggleExpandir = (id: string) => setExpandidos(s => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n })
 
@@ -163,12 +161,6 @@ export default function OnboardingPage() {
                   )}
                 </div>
 
-                <button onClick={() => setCobrancaCliente(c)}
-                  className="w-full mb-4 inline-flex items-center justify-center gap-1.5 h-9 rounded-lg text-sm font-bold transition-colors"
-                  style={{ background: 'rgba(239,68,68,0.14)', border: '1px solid rgba(239,68,68,0.45)', color: '#f87171' }}>
-                  <DollarSign size={15} /> Cadastrar Cobrança
-                </button>
-
                 {/* Concluir onboarding — só quando todos os setores concluíram */}
                 {ehGestor && prontoConcluir && (
                   <button onClick={() => setConcluindo(c)}
@@ -270,7 +262,6 @@ export default function OnboardingPage() {
 
       {editId && <LeadModal leadId={editId} mode="edit" onClose={() => setEditId(null)} onChanged={load} />}
       {anotacoesLead && <AnotacoesModal leadId={anotacoesLead.id} nome={anotacoesLead.nome} onClose={() => setAnotacoesLead(null)} />}
-      {cobrancaCliente && <CobrancaModal cliente={cobrancaCliente} onClose={() => setCobrancaCliente(null)} />}
       {concluindo && <ConcluirModal cliente={concluindo} onClose={() => setConcluindo(null)} onConfirm={confirmarConclusao} />}
     </div>
   )

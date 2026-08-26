@@ -35,12 +35,10 @@ export default function PainelLayout({ children }: { children: React.ReactNode }
     )
   }
 
-  const su = session.user as unknown as { mustChangePassword?: boolean; empresaAtiva?: { cor_accent?: string } | null }
-  const mustChange = su?.mustChangePassword
-  const accent = su?.empresaAtiva?.cor_accent || '#0BBCD4'
+  const mustChange = (session.user as unknown as { mustChangePassword?: boolean })?.mustChangePassword
 
   return (
-    <div className={`${themeClass} min-h-screen`} style={{ background: 'var(--sys-bg)', ['--sys-accent' as string]: accent }}>
+    <div className={`${themeClass} min-h-screen`} style={{ background: 'var(--sys-bg)' }}>
       <Sidebar email={session.user?.email} />
       <ProfileButton />
       <ChatButton />

@@ -69,7 +69,25 @@ export async function getCliente(id: string) {
 // Converte string vazia/undefined em null (evita erro em colunas numéricas/boolean)
 const norm = (v: unknown) => (v === '' || v === undefined ? null : v)
 
+// Pares de campos que representam o MESMO dado (pessoa ↔ empresa). Preenchemos o
+// slot vazio com o par já preenchido, para o dado aparecer prefillado em qualquer
+// etapa (popup de contrato, link de cadastro do onboarding, etc.).
+const PARES_UNIFICADOS: [string, string][] = [
+  ['cli_nome_completo', 'emp_proprietario_nome'],
+  ['cli_email', 'emp_email'],
+  ['cli_endereco', 'emp_endereco'],
+  ['cli_bairro', 'emp_bairro'],
+  ['cli_cep', 'emp_cep'],
+  ['cli_cidade_estado', 'emp_cidade_estado'],
+]
+
 export async function saveCliente(payload: AnyObj & { id?: string; lead_id?: string; socios?: AnyObj[] }, empresaId?: string) {
+  for (const [a, b] of PARES_UNIFICADOS) {
+    const va = String(payload[a] ?? '').trim()
+    const vb = String(payload[b] ?? '').trim()
+    if (va && !vb) payload[b] = payload[a]
+    else if (vb && !va) payload[a] = payload[b]
+  }
   const cliData = CLI_COLS.map(c => norm(payload[c]))
   let clienteId = payload.id as string | undefined
 

@@ -114,6 +114,24 @@ export async function updateLead(id: string, fields: Record<string, unknown>) {
   const sets = keys.map((k, i) => `${k} = $${i + 2}`).join(', ')
   const values = keys.map(k => fields[k])
   await pool.query(`UPDATE leads SET ${sets} WHERE id = $1`, [id, ...values])
+
+  // Unificação de contato: espelha nome/whatsapp/email do lead no cadastro do cliente,
+  // para que o mesmo dado apareça em todas as telas (fonte única de contato = o lead).
+  if ('nome' in fields || 'whatsapp' in fields || 'email' in fields) {
+    const tel = 'whatsapp' in fields ? (fields.whatsapp ?? null) : null
+    const mail = 'email' in fields ? (fields.email ?? null) : null
+    const nome = 'nome' in fields ? (fields.nome ?? null) : null
+    await pool.query(
+      `UPDATE clientes SET
+         emp_telefone = COALESCE($2, emp_telefone),
+         emp_email    = COALESCE($3, emp_email),
+         cli_email    = COALESCE($3, cli_email),
+         cli_nome_completo     = COALESCE(NULLIF(cli_nome_completo, ''), $4),
+         emp_proprietario_nome = COALESCE(NULLIF(emp_proprietario_nome, ''), $4)
+       WHERE lead_id = $1`,
+      [id, tel, mail, nome]
+    )
+  }
   emitCrmChange()
 }
 

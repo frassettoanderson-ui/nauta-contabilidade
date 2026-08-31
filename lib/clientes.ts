@@ -20,11 +20,13 @@ type AnyObj = Record<string, unknown>
 export async function listClientes(empresaId: string) {
   const res = await pool.query(
     `SELECT
-        c.id, c.lead_id, c.emp_nome, c.emp_cnpj, c.emp_telefone, c.emp_cidade_estado, c.emp_regime, c.criado_em, c.situacao,
+        c.id, c.lead_id, c.emp_nome, c.emp_cnpj, c.emp_cidade_estado, c.emp_regime, c.criado_em, c.situacao,
+        COALESCE(NULLIF(c.emp_telefone, ''), l.whatsapp) AS emp_telefone,
         COALESCE(
           (SELECT s.nome_completo FROM cliente_socios s
             WHERE s.cliente_id = c.id ORDER BY s.ordem ASC LIMIT 1),
-          c.cli_nome_completo
+          NULLIF(c.cli_nome_completo, ''),
+          l.nome
         ) AS responsavel,
         l.origem    AS lead_origem,
         l.interesse AS lead_interesse
@@ -103,6 +105,22 @@ export async function saveCliente(payload: AnyObj & { id?: string; lead_id?: str
     const vals = [clienteId, i + 1, ...SOCIO_COLS.map(c => norm(s[c]))]
     const ph = cols.map((_, j) => `$${j + 1}`).join(', ')
     await pool.query(`INSERT INTO cliente_socios (${cols.join(', ')}) VALUES (${ph})`, vals)
+  }
+
+  // Unificação de contato: espelha os dados de contato do cadastro de volta no lead
+  // (fonte única de contato). Só sobrescreve o lead quando o valor do cadastro existe.
+  {
+    const tel = String(payload.emp_telefone ?? '')
+    const mail = String(payload.emp_email ?? payload.cli_email ?? '')
+    const nome = String(payload.cli_nome_completo ?? payload.emp_proprietario_nome ?? '')
+    await pool.query(
+      `UPDATE leads SET
+         whatsapp = COALESCE(NULLIF($2, ''), whatsapp),
+         email    = COALESCE(NULLIF($3, ''), email),
+         nome     = COALESCE(NULLIF($4, ''), nome)
+       WHERE id = (SELECT lead_id FROM clientes WHERE id = $1)`,
+      [clienteId, tel, mail, nome]
+    )
   }
 
   emitCrmChange()

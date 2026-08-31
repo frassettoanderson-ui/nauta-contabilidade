@@ -344,6 +344,14 @@ function Wizard() {
                   />
                 </div>
               ))}
+              {/* Telefone unificado (mesmo valor da empresa e do WhatsApp do lead) */}
+              <div className={colSpan(4)}>
+                <SmartField label="Telefone / WhatsApp" type="phone"
+                  value={(emp.emp_telefone as string) || ''}
+                  onChange={v => setEmpK('emp_telefone', v)}
+                  disabled={readOnly}
+                />
+              </div>
             </div>
             <PessoaUploads docKey="cli_doc_url" certKey="cli_cert_url" senhaKey="cli_cert_senha" data={cli} set={setCliK} disabled={readOnly} />
           </>

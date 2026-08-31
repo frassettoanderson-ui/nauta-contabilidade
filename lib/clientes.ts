@@ -82,6 +82,21 @@ const PARES_UNIFICADOS: [string, string][] = [
 ]
 
 export async function saveCliente(payload: AnyObj & { id?: string; lead_id?: string; socios?: AnyObj[] }, empresaId?: string) {
+  // Puxa o contato do lead (fonte única) para preencher os campos de contato que
+  // estiverem vazios no cliente — o popup do contrato, por ex., não coleta telefone.
+  const leadIdContato = (payload.lead_id as string)
+    || (payload.id ? (await pool.query(`SELECT lead_id FROM clientes WHERE id = $1`, [payload.id])).rows[0]?.lead_id : null)
+  if (leadIdContato) {
+    const lr = await pool.query(`SELECT nome, whatsapp, email FROM leads WHERE id = $1`, [leadIdContato])
+    const lead = lr.rows[0]
+    if (lead) {
+      const fill = (k: string, v: unknown) => { if (v && !String(payload[k] ?? '').trim()) payload[k] = v }
+      fill('emp_telefone', lead.whatsapp)
+      fill('emp_email', lead.email); fill('cli_email', lead.email)
+      fill('cli_nome_completo', lead.nome); fill('emp_proprietario_nome', lead.nome)
+    }
+  }
+
   for (const [a, b] of PARES_UNIFICADOS) {
     const va = String(payload[a] ?? '').trim()
     const vb = String(payload[b] ?? '').trim()

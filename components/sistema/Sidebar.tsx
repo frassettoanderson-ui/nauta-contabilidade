@@ -11,7 +11,7 @@ import { getSomAtivo, getTema, onPrefsChange } from '@/lib/sys-prefs'
 import RocketIcon from './RocketIcon'
 import {
   Users, UserPlus, Search, FileText, FilePlus, FileClock, FileSearch,
-  Briefcase, LayoutGrid, Inbox, BarChart3, TrendingUp, Calculator, UserCog,
+  Briefcase, LayoutGrid, Inbox, BarChart3, TrendingUp, Calculator, UserCog, Building2,
   Rocket, Settings, DollarSign, LayoutDashboard, MessageCircle,
   ArrowDownCircle, ArrowUpCircle, Repeat, CalendarCheck,
   LogOut, ChevronDown, Menu, X, type LucideIcon,
@@ -42,6 +42,7 @@ const NAV: NavItem[] = [
   ] },
   { label: 'Relatórios', icon: BarChart3, children: [
     { label: 'Conversão', href: '/sistema/relatorios/conversao', icon: TrendingUp },
+    { label: 'Empresas', href: '/sistema/relatorios/empresas', icon: Building2 },
   ] },
   { label: 'Fiscal',     href: '/sistema/fiscal',     icon: Calculator },
   { label: 'Pessoal',    href: '/sistema/pessoal',    icon: Users },

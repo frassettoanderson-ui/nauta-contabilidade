@@ -32,6 +32,7 @@ export default function CobrancaModal({ leadId, nome: nomeInit, cnpj: cnpjInit, 
       setWhatsapp(v => v || String(d.whatsapp ?? ''))
       setEmail(v => v || String(d.email ?? ''))
       setValor(v => v || brl(d.valor_honorario))
+      setVencimento(v => v || String((d as { honorario_vencimento?: string }).honorario_vencimento ?? '').slice(0, 10))
     }).catch(() => {})
     getClienteByLead(leadId).then(c => {
       if (!vivo || !c) return

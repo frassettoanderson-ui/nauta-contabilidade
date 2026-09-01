@@ -11,6 +11,7 @@ export default function FecharNegociacaoModal({ lead, onClose, onConfirmed }: { 
   const editando = lead.etapa === 'fechado'
   const [honorario, setHonorario] = useState(lead.valor_honorario != null ? String(lead.valor_honorario) : '')
   const [abertura, setAbertura] = useState(lead.valor_abertura != null ? String(lead.valor_abertura) : '')
+  const [vencimento, setVencimento] = useState(lead.honorario_vencimento ? String(lead.honorario_vencimento).slice(0, 10) : '')
   const [obs, setObs] = useState(lead.negociacao_obs ?? '')
   const [saving, setSaving] = useState(false)
 
@@ -22,6 +23,7 @@ export default function FecharNegociacaoModal({ lead, onClose, onConfirmed }: { 
         etapa: 'fechado',
         valor_honorario: Number(honorario),
         valor_abertura: abertura.trim() ? Number(abertura) : 0,
+        honorario_vencimento: vencimento || null,
         negociacao_obs: obs.trim() || null,
       })
       onConfirmed(); onClose()
@@ -52,6 +54,10 @@ export default function FecharNegociacaoModal({ lead, onClose, onConfirmed }: { 
               <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 text-sm">R$</span>
               <input type="number" min="0" step="0.01" value={abertura} onChange={e => setAbertura(e.target.value)} placeholder="0,00" className={FIELD} style={FS} />
             </div>
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-gray-400 mb-1.5">Vencimento do 1º honorário <span className="text-gray-600">(usado no faturamento)</span></label>
+            <input type="date" value={vencimento} onChange={e => setVencimento(e.target.value)} className={FIELD.replace('pl-9', 'px-4')} style={FS} />
           </div>
           <div>
             <label className="block text-xs font-semibold text-gray-400 mb-1.5">Observações da negociação <span className="text-gray-600">(opcional)</span></label>

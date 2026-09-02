@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { Loader2, TrendingUp, Clock, AlertTriangle, ArrowUp, ArrowDown, Users, DollarSign, Award, Repeat } from 'lucide-react'
 import { getDashboard, type DashboardData } from '@/lib/api'
+import { useRealtime } from '@/components/sistema/useRealtime'
 import type { ReactNode } from 'react'
 
 const brl = (n: number) => `R$ ${Number(n || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
@@ -93,7 +94,11 @@ export default function DashboardPage() {
   const [d, setD] = useState<DashboardData | null>(null)
   const [erro, setErro] = useState(false)
 
-  useEffect(() => { getDashboard().then(setD).catch(() => setErro(true)) }, [])
+  const load = () => getDashboard().then(d => { setD(d); setErro(false) }).catch(() => setErro(true))
+  useEffect(() => { load() }, [])
+  // Atualização automática: tempo real (quando alguém mexe) + fallback a cada 60s
+  useRealtime(() => load())
+  useEffect(() => { const t = setInterval(load, 60000); return () => clearInterval(t) }, [])
 
   if (erro) return <div className="p-8 text-gray-500">Não foi possível carregar a dashboard.</div>
   if (!d) return <div className="flex justify-center py-24"><Loader2 size={26} className="animate-spin text-[color:var(--sys-accent)]" /></div>

@@ -114,6 +114,7 @@ export interface LeadRow {
   responsavel_id?: string | null
   responsavel_nome?: string | null
   origem?: string | null
+  indicado_por?: string | null
   contrato_status?: string | null
   contrato_autentique_status?: string | null
 }

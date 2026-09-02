@@ -20,6 +20,7 @@ const ORIGEM_COR: Record<string, { bg: string; color: string }> = {
   'Instagram':   { bg: 'rgba(225,48,108,0.15)',  color: '#E1306C' },
   'Anúncio':     { bg: 'rgba(251,191,36,0.15)',  color: '#FBBF24' },
   'Google':      { bg: 'rgba(234,67,53,0.15)',   color: '#EA4335' },
+  'Indicação':   { bg: 'rgba(20,184,166,0.15)',  color: '#14B8A6' },
   'Espontâneo':  { bg: 'rgba(168,85,247,0.15)',  color: '#A855F7' },
   'Outro':       { bg: 'rgba(156,163,175,0.15)', color: '#9CA3AF' },
 }

@@ -37,6 +37,7 @@ export async function POST(req: NextRequest) {
       responsavel_id: u?.id ?? null,
       responsavel_nome: u?.name ?? null,
       origem: body.origem ?? null,
+      indicado_por: body.indicado_por ?? null,
       empresa_id: empresaId,
     })
 

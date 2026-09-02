@@ -10,18 +10,24 @@ const FIELD_SEL = 'w-full h-11 px-4 rounded-xl text-sm text-white placeholder-gr
 const FS = { background: 'var(--sys-surface-3)', border: '1px solid var(--sys-border-2)' }
 
 export default function AddLeadModal({ onClose, onCreated }: { onClose: () => void; onCreated: (l: LeadRow) => void }) {
-  const ORIGENS = ['Site', 'WhatsApp', 'Facebook', 'Instagram', 'Anúncio', 'Google', 'Espontâneo', 'Outro']
+  const ORIGENS = ['Site', 'WhatsApp', 'Facebook', 'Instagram', 'Anúncio', 'Google', 'Indicação', 'Espontâneo', 'Outro']
 
-  const [form, setForm] = useState({ nome: '', whatsapp: '', email: '', interesse: '', origem: '' })
+  const [form, setForm] = useState({ nome: '', whatsapp: '', email: '', interesse: '', origem: '', indicado_por: '' })
   const [saving, setSaving] = useState(false)
   const set = (k: string, v: unknown) => setForm(f => ({ ...f, [k]: v }))
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!form.nome.trim()) return
+    if (form.origem === 'Indicação' && !form.indicado_por.trim()) { alert('Informe quem indicou.'); return }
     setSaving(true)
     try {
-      const lead = await createLead({ ...form, interesse: form.interesse || 'Não informado', origem: form.origem || null })
+      const lead = await createLead({
+        ...form,
+        interesse: form.interesse || 'Não informado',
+        origem: form.origem || null,
+        indicado_por: form.origem === 'Indicação' ? form.indicado_por.trim() : null,
+      })
       onCreated(lead)
       onClose()
     } catch {
@@ -60,6 +66,13 @@ export default function AddLeadModal({ onClose, onCreated }: { onClose: () => vo
               {ORIGENS.map(o => <option key={o} value={o}>{o}</option>)}
             </select>
           </div>
+
+          {form.origem === 'Indicação' && (
+            <div>
+              <label className="block text-xs font-semibold text-gray-400 mb-1.5">Quem indicou? <span className="text-red-400">*</span></label>
+              <input className={FIELD} style={FS} placeholder="Nome de quem indicou" value={form.indicado_por} onChange={e => set('indicado_por', e.target.value)} />
+            </div>
+          )}
 
           <button type="submit" disabled={saving || !form.nome.trim()}
             className="w-full h-11 font-bold text-white rounded-xl flex items-center justify-center gap-2 disabled:opacity-50 transition-all hover:-translate-y-0.5"

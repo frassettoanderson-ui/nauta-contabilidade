@@ -208,6 +208,7 @@ export default function LeadModal({ leadId, onClose, onChanged, mode = 'view' }:
                   <p className="text-gray-400"><span className="text-gray-600">WhatsApp:</span> {d.whatsapp || '—'}</p>
                   <p className="text-gray-400"><span className="text-gray-600">E-mail:</span> {d.email || '—'}</p>
                   <p className="text-gray-400"><span className="text-gray-600">Criado em:</span> {format(new Date(d.criado_em), 'dd/MM/yyyy', { locale: ptBR })}</p>
+                  {d.indicado_por && <p className="text-gray-400"><span className="text-gray-600">Indicado por:</span> {d.indicado_por}</p>}
                 </div>
 
                 {/* Responsável */}

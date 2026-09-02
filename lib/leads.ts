@@ -38,14 +38,15 @@ export async function insertLead(lead: {
   etapa?: string; classificacao?: number
   responsavel_id?: string | null; responsavel_nome?: string | null
   origem?: string | null
+  indicado_por?: string | null
   empresa_id?: string | null
 }) {
   // Sem empresa (ex.: lead vindo do site público) -> cai na Nauta.
   const res = await pool.query(
-    `INSERT INTO leads (nome, whatsapp, email, interesse, etapa, classificacao, responsavel_id, responsavel_nome, origem, empresa_id)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, COALESCE($10, (SELECT id FROM empresas WHERE slug = 'nauta'))) RETURNING *`,
+    `INSERT INTO leads (nome, whatsapp, email, interesse, etapa, classificacao, responsavel_id, responsavel_nome, origem, indicado_por, empresa_id)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, COALESCE($11, (SELECT id FROM empresas WHERE slug = 'nauta'))) RETURNING *`,
     [lead.nome, lead.whatsapp, lead.email, lead.interesse, lead.etapa ?? 'novo', lead.classificacao ?? 0,
-     lead.responsavel_id ?? null, lead.responsavel_nome ?? null, lead.origem ?? null, lead.empresa_id ?? null]
+     lead.responsavel_id ?? null, lead.responsavel_nome ?? null, lead.origem ?? null, lead.indicado_por ?? null, lead.empresa_id ?? null]
   )
   emitCrmChange()
   return res.rows[0]

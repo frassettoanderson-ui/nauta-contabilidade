@@ -32,6 +32,15 @@ export async function getDashboard(empresaId: string): Promise<DashboardData> {
     [empresaId]
   )).rows
 
+  // Base ampla p/ métricas de honorário/vencimento: inclui clientes já fechados
+  // (com vencimento definido) mesmo antes de virarem financeiro_ativo (senão o
+  // "1º honorário" e as projeções escondem quem fechou e ainda está no onboarding).
+  const leadsBilling = (await pool.query(
+    `SELECT id, valor_honorario, honorario_vencimento FROM leads
+      WHERE empresa_id = $1 AND valor_honorario > 0 AND honorario_vencimento IS NOT NULL`,
+    [empresaId]
+  )).rows
+
   const pagamentos = (await pool.query(
     `SELECT lead_id, to_char(competencia,'YYYY-MM') AS comp, valor, to_char(pago_em,'YYYY-MM') AS pago_mes
        FROM financeiro_pagamentos WHERE empresa_id = $1`,
@@ -124,7 +133,7 @@ export async function getDashboard(empresaId: string): Promise<DashboardData> {
   const vencimentosNoMes = (yy: number, mm: number) => {
     const alvo = new Date(yy, mm, 1)
     let s = 0
-    for (const l of leads) {
+    for (const l of leadsBilling) {
       const v = new Date(l.honorario_vencimento)
       if (isNaN(v.getTime())) continue
       if (new Date(v.getFullYear(), v.getMonth(), 1) <= alvo) s += Number(l.valor_honorario || 0)
@@ -134,7 +143,7 @@ export async function getDashboard(empresaId: string): Promise<DashboardData> {
   // Primeiros honorários = leads cujo 1º vencimento cai no mês.
   const primeiroHonMes = (yy: number, mm: number, apenasPagos = false) => {
     let s = 0
-    for (const l of leads) {
+    for (const l of leadsBilling) {
       const v = new Date(l.honorario_vencimento)
       if (isNaN(v.getTime())) continue
       if (v.getFullYear() === yy && v.getMonth() === mm) {

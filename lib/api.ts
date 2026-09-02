@@ -380,6 +380,15 @@ export interface DashboardData {
   resultadoMes: number; recebidoSerie: number[]
   aReceberMes: number; aReceberSerie: number[]
   vencidosCount: number; vencidosSerie: number[]
+  labels: { anterior: string; atual: string; seguinte: string }
+  clientesNovos: {
+    anterior: number; atual: number; projecao: number
+    projecaoMaiorQueAnterior: boolean
+    diasUteisDecorridos: number; diasUteisTotais: number
+  }
+  faturamento: { mesAtual: number; projecaoMesAtual: number; mesAnterior: number; projecaoMesSeguinte: number }
+  primeiroHonorario: { anterior: number; atualEsperado: number; atualRealizado: number; seguinte: number }
+  recorrencia: { anteriorRealizado: number; atualEsperado: number; atualRealizado: number; seguinteEsperado: number }
 }
 export function getDashboard(): Promise<DashboardData> {
   return fetch('/api/dashboard').then(r => json<DashboardData>(r))

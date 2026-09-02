@@ -1,10 +1,34 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Loader2, TrendingUp, Clock, AlertTriangle } from 'lucide-react'
+import { Loader2, TrendingUp, Clock, AlertTriangle, ArrowUp, ArrowDown, Users, DollarSign, Award, Repeat } from 'lucide-react'
 import { getDashboard, type DashboardData } from '@/lib/api'
+import type { ReactNode } from 'react'
 
 const brl = (n: number) => `R$ ${Number(n || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+
+// Card de estatística — texto sempre centralizado.
+function Stat({ label, valor, sub, cor }: { label: string; valor: string; sub?: ReactNode; cor?: string }) {
+  return (
+    <div className="flex-1 min-w-[190px] max-w-[300px] rounded-2xl p-5 text-center flex flex-col items-center justify-center"
+      style={{ background: 'var(--sys-surface)', border: '1px solid var(--sys-border)' }}>
+      <p className="text-gray-400 text-[11px] font-bold uppercase tracking-wide">{label}</p>
+      <p className="text-2xl font-black mt-1.5" style={{ color: cor || '#fff', letterSpacing: '-0.02em' }}>{valor}</p>
+      {sub && <div className="text-xs text-gray-500 mt-1.5 leading-snug">{sub}</div>}
+    </div>
+  )
+}
+
+function Secao({ titulo, icon: Icon, children }: { titulo: string; icon: typeof Users; children: ReactNode }) {
+  return (
+    <div className="mt-8">
+      <h2 className="text-sm font-black text-white uppercase tracking-wide mb-3 flex items-center justify-center gap-2">
+        <Icon size={16} className="text-[color:var(--sys-accent)]" /> {titulo}
+      </h2>
+      <div className="flex flex-wrap justify-center gap-3">{children}</div>
+    </div>
+  )
+}
 
 function melhor(serie: number[], meses: string[]) {
   if (!serie?.length) return null
@@ -98,6 +122,45 @@ export default function DashboardPage() {
           sub={mVencidos ? `Pico: ${mVencidos.mes} · ${mVencidos.valor} cliente(s)` : undefined}
           serie={d.vencidosSerie} meses={d.meses} icon={AlertTriangle} from="#6d28d9" to="#db2777" />
       </div>
+
+      {/* Clientes novos */}
+      <Secao titulo="Clientes novos" icon={Users}>
+        <Stat label={`Novos em ${d.labels.anterior}`} valor={String(d.clientesNovos.anterior)} sub="mês anterior" />
+        <Stat label={`Novos em ${d.labels.atual}`} valor={String(d.clientesNovos.atual)} sub="até agora" cor="var(--sys-accent)" />
+        <Stat label={`Projeção ${d.labels.atual}`} valor={String(d.clientesNovos.projecao)}
+          cor={d.clientesNovos.projecaoMaiorQueAnterior ? '#22c55e' : '#f87171'}
+          sub={<>
+            <span className="inline-flex items-center gap-1 font-semibold" style={{ color: d.clientesNovos.projecaoMaiorQueAnterior ? '#22c55e' : '#f87171' }}>
+              {d.clientesNovos.projecaoMaiorQueAnterior ? <ArrowUp size={12} /> : <ArrowDown size={12} />}
+              {d.clientesNovos.projecaoMaiorQueAnterior ? 'acima' : 'abaixo'} de {d.labels.anterior} ({d.clientesNovos.anterior})
+            </span>
+            <br />{d.clientesNovos.diasUteisDecorridos}/{d.clientesNovos.diasUteisTotais} dias úteis
+          </>} />
+      </Secao>
+
+      {/* Faturamento */}
+      <Secao titulo="Faturamento" icon={DollarSign}>
+        <Stat label={`Faturamento ${d.labels.atual} (pago)`} valor={brl(d.faturamento.mesAtual)} cor="#22c55e" sub="marcados como pago" />
+        <Stat label={`Projeção ${d.labels.atual}`} valor={brl(d.faturamento.projecaoMesAtual)} sub="honorários a vencer no mês" />
+        <Stat label={`Faturamento ${d.labels.anterior}`} valor={brl(d.faturamento.mesAnterior)} sub="realizado" />
+        <Stat label={`Projeção ${d.labels.seguinte}`} valor={brl(d.faturamento.projecaoMesSeguinte)} sub="vencimentos do mês seguinte" />
+      </Secao>
+
+      {/* Primeiros honorários */}
+      <Secao titulo="Primeiros honorários" icon={Award}>
+        <Stat label={`${d.labels.anterior} (realizado)`} valor={brl(d.primeiroHonorario.anterior)} />
+        <Stat label={`${d.labels.atual}`} valor={brl(d.primeiroHonorario.atualEsperado)}
+          sub={<>esperado · <b className="text-gray-300">realizado {brl(d.primeiroHonorario.atualRealizado)}</b></>} cor="var(--sys-accent)" />
+        <Stat label={`${d.labels.seguinte} (esperado)`} valor={brl(d.primeiroHonorario.seguinte)} />
+      </Secao>
+
+      {/* Recorrência 10% */}
+      <Secao titulo="Recorrência Nauta (10%)" icon={Repeat}>
+        <Stat label={`${d.labels.anterior} (realizado)`} valor={brl(d.recorrencia.anteriorRealizado)} cor="#22c55e" />
+        <Stat label={`${d.labels.atual}`} valor={brl(d.recorrencia.atualEsperado)}
+          sub={<>esperado · <b className="text-gray-300">realizado {brl(d.recorrencia.atualRealizado)}</b></>} cor="var(--sys-accent)" />
+        <Stat label={`${d.labels.seguinte} (esperado)`} valor={brl(d.recorrencia.seguinteEsperado)} />
+      </Secao>
     </div>
   )
 }

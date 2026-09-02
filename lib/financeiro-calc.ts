@@ -29,8 +29,29 @@ function feriadosDoAno(y: number): Set<string> {
   s.add(ymd(addDays(p, -47))) // Carnaval terça
   s.add(ymd(addDays(p, -2)))  // Sexta-feira Santa
   s.add(ymd(addDays(p, 60)))  // Corpus Christi
+  // Municipais de Imbituba/SC (edite aqui se precisar acrescentar/ajustar) — [mês, dia]
+  for (const [mm, dd] of FERIADOS_IMBITUBA) {
+    s.add(`${y}-${String(mm).padStart(2, '0')}-${String(dd).padStart(2, '0')}`)
+  }
   cacheFeriados[y] = s
   return s
+}
+
+// Feriados municipais de Imbituba/SC. Confirme/complete com o usuário.
+export const FERIADOS_IMBITUBA: [number, number][] = [
+  [12, 8], // Imaculada Conceição (padroeira) — feriado municipal
+]
+
+/** Conta os dias úteis (seg–sex, fora feriados) entre início e fim, inclusive. */
+export function contarDiasUteis(inicio: Date, fim: Date): number {
+  let n = 0
+  const d = new Date(inicio.getFullYear(), inicio.getMonth(), inicio.getDate())
+  const end = new Date(fim.getFullYear(), fim.getMonth(), fim.getDate())
+  while (d <= end) {
+    if (isDiaUtil(d)) n++
+    d.setDate(d.getDate() + 1)
+  }
+  return n
 }
 
 export function isDiaUtil(d: Date): boolean {

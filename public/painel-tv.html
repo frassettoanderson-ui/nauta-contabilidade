@@ -1,0 +1,399 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nauta Contabilidade — Central de Operações</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#080B22; --bg2:#0B1030;
+    --surface:#111737; --surface2:#161E44;
+    --line:rgba(255,255,255,.07); --line2:rgba(255,255,255,.12);
+    --teal:#25C7E0; --teal-dim:rgba(37,199,224,.14);
+    --indigo:#8A8AE6; --indigo-dim:rgba(138,138,230,.14);
+    --text:#EAF0FF; --muted:#8B93C4; --faint:#5B6398;
+    --green:#37D6A2; --amber:#F6B34C; --red:#FF6D82;
+    --r:16px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  html,body{height:100%; background:#000; overflow:hidden; font-family:'Inter',system-ui,sans-serif}
+  #viewport{width:100vw; height:100vh; display:flex; align-items:center; justify-content:center; background:#000}
+
+  #stage{
+    width:1920px; height:1080px; flex:0 0 auto; position:relative; color:var(--text);
+    background:
+      radial-gradient(1200px 700px at 82% -10%, rgba(37,199,224,.10), transparent 60%),
+      radial-gradient(1100px 800px at 8% 115%, rgba(138,138,230,.10), transparent 60%),
+      linear-gradient(160deg,#080B22 0%,#0B1030 55%,#080B22 100%);
+    padding:22px 32px; overflow:hidden;
+    display:grid; grid-template-rows:84px 150px 1fr 56px; gap:18px;
+    font-variant-numeric:tabular-nums;
+  }
+  /* faint sonar rings behind everything */
+  .bgfx{position:absolute; inset:0; overflow:hidden; pointer-events:none; z-index:0}
+  .ring{position:absolute; right:-160px; top:-160px; width:640px; height:640px; border-radius:50%;
+    border:1px solid rgba(37,199,224,.10)}
+  .ring:nth-child(2){inset:auto; right:-40px; top:-40px; width:400px; height:400px; border-color:rgba(37,199,224,.07)}
+  #stage>*{position:relative; z-index:1}
+  #stage>.bgfx{position:absolute; z-index:0}
+
+  /* ---------- HEADER ---------- */
+  header{display:flex; align-items:center; gap:22px}
+  .brand{display:flex; align-items:center; gap:14px}
+  .mark{width:52px; height:52px; flex:0 0 auto}
+  .brand h1{font-family:'Space Grotesk'; font-size:24px; font-weight:600; letter-spacing:.5px; line-height:1}
+  .brand h1 b{color:var(--teal)}
+  .brand .sub{font-size:11px; letter-spacing:4px; color:var(--muted); margin-top:4px}
+  .hcenter{flex:1; text-align:center}
+  .hcenter .eyebrow{font-size:12px; letter-spacing:5px; color:var(--faint); text-transform:uppercase}
+  .hcenter .ttl{font-family:'Space Grotesk'; font-size:22px; font-weight:500; margin-top:3px; letter-spacing:.5px}
+  .hright{display:flex; align-items:center; gap:26px}
+  .clock{font-family:'Space Grotesk'; font-size:40px; font-weight:600; line-height:1; letter-spacing:1px}
+  .clock small{display:block; font-family:'Inter'; font-size:12px; font-weight:500; letter-spacing:2px; color:var(--muted); text-align:right; margin-top:6px; text-transform:capitalize}
+  .live{display:flex; align-items:center; gap:9px; background:rgba(255,109,130,.10); border:1px solid rgba(255,109,130,.35);
+    padding:9px 15px; border-radius:999px; font-size:13px; font-weight:600; letter-spacing:2px; color:#FF9AA8}
+  .live .dot{width:10px; height:10px; border-radius:50%; background:var(--red); box-shadow:0 0 0 0 rgba(255,109,130,.6); animation:pulse 1.8s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,109,130,.55)}70%{box-shadow:0 0 0 14px rgba(255,109,130,0)}100%{box-shadow:0 0 0 0 rgba(255,109,130,0)}}
+
+  /* ---------- KPI ROW ---------- */
+  .kpis{display:grid; grid-template-columns:repeat(6,1fr); gap:18px}
+  .kpi{background:linear-gradient(180deg,var(--surface),rgba(17,23,55,.55)); border:1px solid var(--line);
+    border-radius:var(--r); padding:18px 20px; display:flex; flex-direction:column; justify-content:space-between; position:relative; overflow:hidden}
+  .kpi::before{content:""; position:absolute; left:0; top:0; bottom:0; width:4px; background:var(--teal); opacity:.85}
+  .kpi.i::before{background:var(--indigo)} .kpi.g::before{background:var(--green)}
+  .kpi.a::before{background:var(--amber)} .kpi.r::before{background:var(--red)}
+  .kpi .lab{font-size:12.5px; color:var(--muted); letter-spacing:.4px; display:flex; align-items:center; gap:7px}
+  .kpi .val{font-family:'Space Grotesk'; font-size:34px; font-weight:600; line-height:1; margin-top:8px}
+  .kpi .val .cur{font-size:18px; color:var(--muted); font-weight:500; margin-right:3px}
+  .kpi .foot{display:flex; align-items:center; justify-content:space-between; margin-top:10px}
+  .trend{font-size:12.5px; font-weight:600; display:flex; align-items:center; gap:4px}
+  .trend.up{color:var(--green)} .trend.down{color:var(--red)} .trend.warn{color:var(--amber)}
+  .spark{opacity:.9}
+
+  /* ---------- MAIN GRID ---------- */
+  .main{display:grid; grid-template-columns:repeat(12,1fr); grid-template-rows:1fr 232px; gap:20px}
+  .card{background:linear-gradient(180deg,var(--surface),rgba(17,23,55,.5)); border:1px solid var(--line);
+    border-radius:var(--r); padding:20px 22px; display:flex; flex-direction:column; min-height:0}
+  .card > .ch{display:flex; align-items:baseline; justify-content:space-between; margin-bottom:14px}
+  .card .ch .t{font-family:'Space Grotesk'; font-size:16px; font-weight:600; letter-spacing:.3px}
+  .card .ch .m{font-size:12px; color:var(--muted)}
+
+  .a-chart{grid-column:1 / 8; grid-row:1}
+  .a-meta{grid-column:8 / 13; grid-row:1}
+  .a-ind{grid-column:1 / 13; grid-row:2}
+
+  /* faturamento chart */
+  .chartwrap{flex:1; position:relative; min-height:0}
+  .legend{display:flex; gap:18px; font-size:12px; color:var(--muted)}
+  .legend i{display:inline-block; width:11px; height:11px; border-radius:3px; margin-right:6px; vertical-align:-1px}
+  svg.plot{width:100%; height:100%; display:block; overflow:visible}
+  .bar{fill:url(#gbar)}
+  .barghost{fill:rgba(138,138,230,.14)}
+  .xlab{fill:var(--faint); font-size:11px; font-family:'Inter'}
+  .ylab{fill:var(--faint); font-size:10.5px}
+  .gridline{stroke:rgba(255,255,255,.05)}
+
+  /* meta gauge */
+  .gauge{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px}
+  .gauge .pct{font-family:'Space Grotesk'; font-size:44px; font-weight:600}
+  .metarow{display:flex; gap:12px; width:100%; margin-top:8px}
+  .metabox{flex:1; background:var(--surface2); border:1px solid var(--line); border-radius:12px; padding:12px 13px}
+  .metabox .k{font-size:11.5px; color:var(--muted)} 
+  .metabox .v{font-family:'Space Grotesk'; font-size:20px; font-weight:600; margin-top:5px}
+  .metabox .v small{font-size:12px; color:var(--muted)}
+
+  /* atendimento queue */
+  .a-queue .ch .m{display:flex; align-items:center; gap:6px}
+  .qsplit{flex:1; display:flex; flex-direction:column; min-height:0; gap:14px}
+  .qsec{display:flex; flex-direction:column; min-height:0}
+  .qhead{display:flex; align-items:center; justify-content:space-between; margin-bottom:9px}
+  .qhead .lh{font-size:12.5px; letter-spacing:1px; text-transform:uppercase; color:var(--muted); display:flex; align-items:center; gap:8px}
+  .qhead .cnt{font-family:'Space Grotesk'; font-weight:600; font-size:15px; background:var(--teal-dim); color:var(--teal); border-radius:8px; padding:2px 10px}
+  .qhead .cnt.i{background:var(--indigo-dim); color:var(--indigo)}
+  .qlist{display:flex; flex-direction:column; gap:8px; overflow:hidden}
+  .qitem{display:flex; align-items:center; gap:11px; background:var(--surface2); border:1px solid var(--line);
+    border-radius:12px; padding:9px 12px; animation:slidein .5s ease}
+  @keyframes slidein{from{opacity:0; transform:translateX(14px)}to{opacity:1; transform:none}}
+  .av{width:34px; height:34px; flex:0 0 auto; border-radius:9px; display:flex; align-items:center; justify-content:center;
+    font-family:'Space Grotesk'; font-weight:600; font-size:13px; color:#0B1030}
+  .qitem .nm{flex:1; min-width:0}
+  .qitem .nm .n{font-size:13.5px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .qitem .nm .s{font-size:11.5px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .qitem .rt{font-family:'Space Grotesk'; font-size:13px; font-weight:600; text-align:right; flex:0 0 auto}
+  .qitem .rt small{display:block; font-family:'Inter'; font-size:10px; color:var(--faint); font-weight:500}
+  .prog{height:4px; border-radius:3px; background:rgba(255,255,255,.08); margin-top:6px; overflow:hidden}
+  .prog i{display:block; height:100%; background:linear-gradient(90deg,var(--indigo),var(--teal))}
+
+  /* obrigações */
+  .obr{flex:1; display:flex; flex-direction:column; justify-content:center; gap:11px}
+  .obrrow{display:grid; grid-template-columns:1fr auto; gap:6px 14px; align-items:center}
+  .obrrow .name{font-size:13.5px}
+  .obrrow .name span{color:var(--muted); font-size:11.5px; display:block; margin-top:1px}
+  .obrrow .num{font-family:'Space Grotesk'; font-size:17px; font-weight:600; text-align:right}
+  .obrrow .track{grid-column:1 / 3; height:6px; border-radius:4px; background:rgba(255,255,255,.07); overflow:hidden}
+  .obrrow .track i{display:block; height:100%; border-radius:4px}
+
+  /* indicadores */
+  .ind{flex:1; display:grid; grid-template-columns:repeat(4,1fr); gap:16px}
+  .indbox{background:var(--surface2); border:1px solid var(--line); border-radius:14px; padding:15px 16px; display:flex; flex-direction:column; justify-content:space-between}
+  .indbox .k{font-size:12px; color:var(--muted); line-height:1.3}
+  .indbox .v{font-family:'Space Grotesk'; font-size:30px; font-weight:600; margin-top:6px; line-height:1}
+  .indbox .d{font-size:11.5px; margin-top:7px; font-weight:600}
+
+  /* ---------- TICKER ---------- */
+  .ticker{display:flex; align-items:center; background:linear-gradient(90deg,var(--surface2),rgba(22,30,68,.4));
+    border:1px solid var(--line); border-radius:12px; overflow:hidden}
+  .ticker .tag{flex:0 0 auto; background:var(--teal); color:#06213b; font-weight:700; font-size:12.5px; letter-spacing:2px;
+    padding:0 20px; height:100%; display:flex; align-items:center; gap:9px}
+  .ticker .track{flex:1; overflow:hidden; white-space:nowrap; position:relative; height:100%}
+  .ticker .move{display:inline-block; padding-left:100%; animation:scroll 46s linear infinite; height:100%; line-height:56px}
+  .ticker .move span{margin:0 46px; font-size:14px; color:var(--text)}
+  .ticker .move span b{color:var(--teal)} .ticker .move span em{color:var(--amber); font-style:normal}
+  @keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-100%)}}
+
+  @media (prefers-reduced-motion: reduce){*{animation:none!important}}
+</style>
+
+<div id="viewport"><div id="stage">
+  <div class="bgfx"><div class="ring"></div><div class="ring"></div></div>
+
+  <!-- HEADER -->
+  <header>
+    <div class="brand">
+      <svg class="mark" viewBox="0 0 100 100" fill="none">
+        <path d="M18 44a32 32 0 0 1 64 0" stroke="#25C7E0" stroke-width="6" stroke-linecap="round"/>
+        <path d="M50 16v28M50 16l20 24" stroke="#25C7E0" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M22 56h56M27 66h46M33 76h34" stroke="#25C7E0" stroke-width="6" stroke-linecap="round"/>
+      </svg>
+      <div>
+        <h1><b>Nauta</b> Contabilidade</h1>
+        <div class="sub">CONTABILIDADE</div>
+      </div>
+    </div>
+    <div class="hcenter">
+      <div class="eyebrow">Central de Operações</div>
+      <div class="ttl">Monitor em tempo real</div>
+    </div>
+    <div class="hright">
+      <div class="live"><span class="dot"></span> AO VIVO</div>
+      <div class="clock" id="clock">--:--:--<small id="date">—</small></div>
+    </div>
+  </header>
+
+  <!-- KPI ROW -->
+  <div class="kpis">
+    <div class="kpi i">
+      <div class="lab">Clientes ativos</div>
+      <div class="val" id="k-clientes">342</div>
+      <div class="foot"><span class="trend up" id="k-clientes-t">▲ 6 no mês</span>
+        <svg class="spark" width="70" height="26" id="sp1"></svg></div>
+    </div>
+    <div class="kpi r">
+      <div class="lab">Clientes em atraso</div>
+      <div class="val" id="k-atraso">18</div>
+      <div class="foot"><span class="trend warn" id="k-atraso-t">R$ 42.180 em aberto</span>
+        <svg class="spark" width="70" height="26" id="sp2"></svg></div>
+    </div>
+    <div class="kpi g">
+      <div class="lab">Faturamento realizado</div>
+      <div class="val"><span class="cur">R$</span><span id="k-real">487.320</span></div>
+      <div class="foot"><span class="trend up" id="k-real-t">▲ 4,2% vs. ontem</span>
+        <svg class="spark" width="70" height="26" id="sp3"></svg></div>
+    </div>
+    <div class="kpi">
+      <div class="lab">Faturamento esperado</div>
+      <div class="val"><span class="cur">R$</span><span id="k-esp">610.000</span></div>
+      <div class="foot"><span class="trend" style="color:var(--muted)" id="k-esp-t">meta do mês</span>
+        <svg class="spark" width="70" height="26" id="sp4"></svg></div>
+    </div>
+    <div class="kpi i">
+      <div class="lab">Recorrência Nauta (10%)</div>
+      <div class="val"><span class="cur">R$</span><span id="k-recreal">0</span></div>
+      <div class="foot"><span class="trend" style="color:var(--muted)" id="k-recreal-t">esperado —</span>
+        <svg class="spark" width="70" height="26" id="sp5"></svg></div>
+    </div>
+    <div class="kpi g">
+      <div class="lab">Clientes novos (mês)</div>
+      <div class="val" id="k-novos">0</div>
+      <div class="foot"><span class="trend up" id="k-novos-t">projeção —</span>
+        <svg class="spark" width="70" height="26" id="sp6"></svg></div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <!-- FATURAMENTO CHART -->
+    <div class="card a-chart">
+      <div class="ch">
+        <div class="t">Faturamento realizado × esperado</div>
+        <div class="legend">
+          <span><i style="background:linear-gradient(180deg,#37D6A2,#25C7E0)"></i>Realizado</span>
+          <span><i style="background:rgba(138,138,230,.6)"></i>Esperado</span>
+        </div>
+      </div>
+      <div class="chartwrap"><svg class="plot" id="plot" viewBox="0 0 860 360" preserveAspectRatio="none"></svg></div>
+    </div>
+
+    <!-- META DO MÊS -->
+    <div class="card a-meta">
+      <div class="ch"><div class="t">Meta do mês</div><div class="m" id="meta-month">Agosto / 2026</div></div>
+      <div class="gauge">
+        <svg width="200" height="120" viewBox="0 0 200 120">
+          <path d="M20 110 A80 80 0 0 1 180 110" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="16" stroke-linecap="round"/>
+          <path id="gaugeArc" d="M20 110 A80 80 0 0 1 180 110" fill="none" stroke="url(#gg)" stroke-width="16" stroke-linecap="round"
+            stroke-dasharray="251" stroke-dashoffset="251"/>
+          <defs><linearGradient id="gg" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#8A8AE6"/><stop offset="1" stop-color="#25C7E0"/></linearGradient></defs>
+        </svg>
+        <div class="pct" id="gauge-pct">0%</div>
+        <div class="m" style="color:var(--muted); font-size:12.5px">da meta atingida</div>
+      </div>
+      <div class="metarow">
+        <div class="metabox"><div class="k">Falta para a meta</div><div class="v"><small>R$</small> <span id="meta-falta">122.680</span></div></div>
+        <div class="metabox"><div class="k">Projeção fim do mês</div><div class="v"><small>R$</small> <span id="meta-proj">638.400</span></div></div>
+      </div>
+    </div>
+
+    <!-- INDICADORES -->
+    <div class="card a-ind">
+      <div class="ch"><div class="t">Indicadores do mês</div><div class="m">visão geral do escritório</div></div>
+      <div class="ind">
+        <div class="indbox"><div class="k">Novos clientes</div><div class="v" style="color:var(--green)" id="i-novos">0</div><div class="d" style="color:var(--muted)" id="i-novos-d">mês atual</div></div>
+        <div class="indbox"><div class="k">Projeção de fechamento</div><div class="v" style="color:var(--teal)" id="i-proj">0</div><div class="d" style="color:var(--muted)">clientes no mês</div></div>
+        <div class="indbox"><div class="k">1º honorário do mês</div><div class="v"><span style="font-size:16px;color:var(--muted)">R$ </span><span id="i-prim">0</span></div><div class="d" style="color:var(--muted)">novos contratos</div></div>
+        <div class="indbox"><div class="k">Recorrência esperada</div><div class="v" style="color:var(--indigo)"><span style="font-size:16px;color:var(--muted)">R$ </span><span id="i-recesp">0</span></div><div class="d" style="color:var(--muted)">10% do esperado</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TICKER -->
+  <div class="ticker">
+    <div class="tag"><span style="width:8px;height:8px;border-radius:50%;background:#06213b;display:inline-block"></span> AVISOS</div>
+    <div class="track"><div class="move" id="ticker"></div></div>
+  </div>
+
+</div></div>
+
+<script>
+/* ---------- fit 1920x1080 to any screen ---------- */
+function fit(){
+  const s=document.getElementById('stage');
+  const k=Math.min(innerWidth/1920, innerHeight/1080);
+  s.style.transform='scale('+k+')';
+  s.style.transformOrigin='center center';
+}
+addEventListener('resize',fit); fit();
+
+/* ---------- helpers ---------- */
+const $=id=>document.getElementById(id);
+const rand=(a,b)=>a+Math.random()*(b-a);
+const ri=(a,b)=>Math.floor(rand(a,b+1));
+const fmt=n=>Math.round(n).toLocaleString('pt-BR');
+const pick=a=>a[ri(0,a.length-1)];
+
+/* ---------- clock ---------- */
+const dias=['domingo','segunda-feira','terça-feira','quarta-feira','quinta-feira','sexta-feira','sábado'];
+const meses=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+function tick(){
+  const d=new Date();
+  const p=x=>String(x).padStart(2,'0');
+  $('clock').firstChild.nodeValue=`${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+  $('date').textContent=`${dias[d.getDay()]}, ${d.getDate()} ${meses[d.getMonth()]} ${d.getFullYear()}`;
+}
+setInterval(tick,1000); tick();
+
+/* ---------- sparklines ---------- */
+function spark(id,color,seed){
+  const svg=$(id), w=70,h=26,n=14; let pts=[];
+  for(let i=0;i<n;i++) pts.push(rand(6,20));
+  function draw(){
+    pts.shift(); pts.push(Math.max(4,Math.min(22,pts[pts.length-1]+rand(-4,4))));
+    const step=w/(n-1);
+    const d=pts.map((v,i)=>`${i?'L':'M'}${(i*step).toFixed(1)} ${(h-v).toFixed(1)}`).join(' ');
+    svg.innerHTML=`<path d="${d}" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity=".9"/>`;
+  }
+  draw(); setInterval(draw, 2600+seed*250);
+}
+spark('sp1','#8A8AE6',0); spark('sp2','#FF6D82',1); spark('sp3','#37D6A2',2);
+spark('sp4','#25C7E0',3); spark('sp5','#F6B34C',4); spark('sp6','#37D6A2',5);
+
+/* ---------- DADOS REAIS (painel ao vivo) ---------- */
+const TOKEN = new URLSearchParams(location.search).get('t') || '';
+let D = null;
+const mesesLong=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+$('meta-month').textContent = `${mesesLong[new Date().getMonth()]} / ${new Date().getFullYear()}`;
+
+function drawChart(){
+  if(!D) return;
+  const esp=D.serieEsperado||[], real=D.serieRealizado||[], labels=D.meses||[];
+  const n=Math.max(esp.length, real.length, 1);
+  const svg=$('plot'), W=860,H=360, padL=54,padB=30,padT=10,padR=8;
+  const iw=W-padL-padR, ih=H-padT-padB;
+  const max=Math.max(...esp,...real,1)*1.08;
+  const x=i=> padL + i*(iw/n) + (iw/n)*.5;
+  const bw=(iw/n)*.5;
+  const y=v=> padT + ih - (v/max)*ih;
+  const cur=n-1;
+  let s='';
+  for(let g=0;g<=4;g++){ const yy=padT+ih-(g/4)*ih; const val=(max*g/4/1000);
+    s+=`<line class="gridline" x1="${padL}" y1="${yy}" x2="${W-padR}" y2="${yy}"/>`;
+    s+=`<text class="ylab" x="${padL-8}" y="${yy+3}" text-anchor="end">${Math.round(val)}k</text>`; }
+  for(let i=0;i<n;i++){
+    const cx=x(i);
+    if(esp[i]>0) s+=`<rect class="barghost" x="${cx-bw/2}" y="${y(esp[i])}" width="${bw}" height="${padT+ih-y(esp[i])}" rx="4"/>`;
+    if(real[i]>0){
+      const hh=padT+ih-y(real[i]);
+      s+=`<rect class="bar" x="${cx-bw/2}" y="${y(real[i])}" width="${bw}" height="${hh}" rx="4">`;
+      if(i===cur) s+=`<animate attributeName="opacity" values="1;.55;1" dur="2.2s" repeatCount="indefinite"/>`;
+      s+=`</rect>`;
+    }
+    s+=`<text class="xlab" x="${cx}" y="${H-10}" text-anchor="middle" ${i===cur?'style="fill:#25C7E0;font-weight:600"':''}>${String(labels[i]||'').toUpperCase()}</text>`;
+  }
+  svg.innerHTML=`<defs><linearGradient id="gbar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#37D6A2"/><stop offset="1" stop-color="#25C7E0"/></linearGradient></defs>`+s;
+}
+
+function preencher(d){
+  D=d;
+  $('k-clientes').textContent=fmt(d.clientesAtivos);
+  $('k-clientes-t').textContent=`▲ ${fmt(d.clientesNovos)} no mês`;
+  $('k-atraso').textContent=fmt(d.clientesAtraso);
+  $('k-atraso-t').textContent=`R$ ${fmt(d.valorEmAberto)} em aberto`;
+  $('k-real').textContent=fmt(d.faturamentoRealizado);
+  $('k-real-t').textContent='pago no mês';
+  $('k-esp').textContent=fmt(d.faturamentoEsperado);
+  $('k-recreal').textContent=fmt(d.recorrenciaRealizada);
+  $('k-recreal-t').textContent=`esperado R$ ${fmt(d.recorrenciaEsperada)}`;
+  $('k-novos').textContent=fmt(d.clientesNovos);
+  $('k-novos-t').textContent=`projeção ${fmt(d.clientesNovosProjecao)}`;
+  const pct=d.faturamentoEsperado>0 ? Math.min(100, d.faturamentoRealizado/d.faturamentoEsperado*100) : 0;
+  $('gauge-pct').textContent=Math.round(pct)+'%';
+  $('gaugeArc').style.transition='stroke-dashoffset 1.2s ease';
+  $('gaugeArc').style.strokeDashoffset=(251-251*pct/100).toFixed(1);
+  $('meta-falta').textContent=fmt(Math.max(0,d.faturamentoEsperado-d.faturamentoRealizado));
+  $('meta-proj').textContent=fmt(d.faturamentoEsperado);
+  $('i-novos').textContent=fmt(d.clientesNovos);
+  $('i-novos-d').textContent=`ant. ${fmt(d.clientesNovosAnterior)}`;
+  $('i-proj').textContent=fmt(d.clientesNovosProjecao);
+  $('i-prim').textContent=fmt(d.primeiroHonorarioMes);
+  $('i-recesp').textContent=fmt(d.recorrenciaEsperada);
+  $('ticker').innerHTML=[
+    `<span><b>${fmt(d.clientesAtivos)}</b> clientes ativos · <b>${fmt(d.clientesNovos)}</b> novos no mês (projeção ${fmt(d.clientesNovosProjecao)}).</span>`,
+    `<span>Faturamento realizado <b>R$ ${fmt(d.faturamentoRealizado)}</b> de <b>R$ ${fmt(d.faturamentoEsperado)}</b> esperados.</span>`,
+    `<span>Recorrência Nauta (10%): realizada <b>R$ ${fmt(d.recorrenciaRealizada)}</b> · esperada <b>R$ ${fmt(d.recorrenciaEsperada)}</b>.</span>`,
+    `<span><em>${d.clientesAtraso}</em> clientes em atraso — <b>R$ ${fmt(d.valorEmAberto)}</b> em aberto.</span>`,
+  ].join('');
+  drawChart();
+}
+
+async function carregar(){
+  try{
+    const r=await fetch(`/api/painel/dados?t=${encodeURIComponent(TOKEN)}`,{cache:'no-store'});
+    if(!r.ok){ $('ticker').innerHTML='<span style="color:var(--red)">Link inválido ou token incorreto.</span>'; return; }
+    preencher(await r.json());
+  }catch(e){ /* mantém últimos valores na tela */ }
+}
+carregar();
+setInterval(carregar, 30000);
+addEventListener('resize', drawChart);
+/* FIM DO PAINEL */
+</script>

@@ -14,6 +14,8 @@ export interface DashboardData {
   aReceberSerie: number[]
   vencidosCount: number
   vencidosSerie: number[]
+  clientesAtivos: number
+  valorEmAberto: number
   // Rótulos dos 3 meses (anterior / atual / seguinte), ex.: "ago" / "set" / "out"
   labels: { anterior: string; atual: string; seguinte: string }
   clientesNovos: {
@@ -115,11 +117,13 @@ export async function getDashboard(empresaId: string): Promise<DashboardData> {
   // Snapshot atual (cards)
   let aVencerSum = 0
   let atrasadoCount = 0
+  let valorEmAberto = 0
   for (const l of leads) {
     const r = calcStatusFinanceiro(l.honorario_vencimento, paidByLead[l.id] ?? new Set<string>())
     if (r.status === 'a_vencer') aVencerSum += Number(l.valor_honorario || 0)
-    if (r.status === 'atrasado') atrasadoCount++
+    if (r.status === 'atrasado') { atrasadoCount++; valorEmAberto += Number(l.valor_honorario || 0) }
   }
+  const clientesAtivos = leads.length
 
   // ── Métricas dos 3 meses (anterior / atual / seguinte) ──────────────────
   const y = now.getFullYear(), mi = now.getMonth()
@@ -183,6 +187,8 @@ export async function getDashboard(empresaId: string): Promise<DashboardData> {
     aReceberSerie,
     vencidosCount: atrasadoCount,
     vencidosSerie,
+    clientesAtivos,
+    valorEmAberto,
     labels: { anterior: MES[ant.getMonth()], atual: MES[mi], seguinte: MES[seg.getMonth()] },
     clientesNovos: {
       anterior: novosAnterior, atual: novosAtual, projecao: projecaoNovos,

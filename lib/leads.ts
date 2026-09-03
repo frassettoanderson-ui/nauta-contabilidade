@@ -155,7 +155,9 @@ export async function countLeadsNovos(): Promise<number> {
 /** Move o lead para o Onboarding (Etapa 1) na categoria informada. */
 export async function iniciarOnboarding(leadId: string, categoria: string) {
   await pool.query(
-    `UPDATE leads SET em_onboarding = true, onboarding_etapa = 1, onboarding_categoria = $2 WHERE id = $1`,
+    `UPDATE leads SET em_onboarding = true, onboarding_etapa = 1, onboarding_categoria = $2,
+        onboarding_iniciado_em = COALESCE(onboarding_iniciado_em, NOW())
+      WHERE id = $1`,
     [leadId, categoria]
   )
   emitCrmChange()
@@ -215,7 +217,7 @@ export async function getOnboardingBoard(empresaId: string): Promise<OnboardingC
     `SELECT l.* FROM leads l
       WHERE l.em_onboarding = true AND COALESCE(l.onboarding_concluido, false) = false
         AND l.empresa_id = $1
-      ORDER BY l.criado_em ASC`,
+      ORDER BY COALESCE(l.onboarding_iniciado_em, l.criado_em) ASC`,
     [empresaId]
   )
   const leads = res.rows

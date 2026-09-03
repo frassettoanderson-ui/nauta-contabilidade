@@ -64,7 +64,7 @@ function FileTile({ nome, url, onDelete, restrito }: { nome: string; url: string
   const color = restrito ? '#fbbf24' : kind === 'pdf' ? '#ef4444' : kind === 'img' ? '#22c55e' : 'var(--sys-accent)'
   return (
     <div className="relative flex flex-col items-center text-center p-3 pt-7 rounded-xl transition-colors hover:bg-white/[0.04]"
-      title={restrito ? 'Restrito · admin/gerente' : undefined}>
+      title={restrito ? 'Conteúdo sensível (ex.: senha gov.br)' : undefined}>
       <div className="absolute top-1.5 right-1.5 flex gap-1">
         <a href={url} target="_blank" rel="noopener noreferrer" download title="Baixar"
           className="w-6 h-6 rounded-md flex items-center justify-center text-gray-300 hover:text-white"
@@ -472,7 +472,7 @@ function Wizard() {
                     </label>
                   </div>
                   {(() => {
-                    const visiveis = arquivos.filter(a => !a.restrito || podeExcluir)
+                    const visiveis = arquivos // senha do gov visível a todos os usuários
                     return visiveis.length === 0 ? (
                       <p className="text-gray-600 text-xs">Nenhum arquivo enviado.</p>
                     ) : (
@@ -481,7 +481,7 @@ function Wizard() {
                           <FileTile key={a.id} nome={a.nome}
                             url={a.restrito ? `/api/clientes/${clienteId}/arquivos/${a.id}` : a.url}
                             restrito={a.restrito}
-                            onDelete={() => handleExcluirArquivo(a.id, a.nome)} />
+                            onDelete={podeExcluir ? () => handleExcluirArquivo(a.id, a.nome) : undefined} />
                         ))}
                       </div>
                     )

@@ -336,7 +336,9 @@ function preencher(d){
   const meta=Number(d.metaClientes||0);
   // KPIs
   $('k-cnpjs').textContent=fmt(d.cnpjsAtivos ?? d.clientesAtivos);
-  $('k-cnpjs-t').textContent=`+${fmt(d.clientesNovos)} clientes no mês`;
+  // Saldo líquido do mês: novos − perdidos (ex.: 5 novos, 1 perdido → +4)
+  const perd=Number(d.clientesPerdidos||0), liq=Number(d.clientesNovos||0)-perd;
+  $('k-cnpjs-t').textContent=`${liq>=0?'+':''}${fmt(liq)} clientes no mês`+(perd>0?` (${fmt(d.clientesNovos)} novos, ${fmt(perd)} perdido${perd>1?'s':''})`:'');
   $('k-perdidos').textContent=fmt(d.cnpjsPerdidos||0);
   $('k-atraso').textContent=fmt(d.clientesAtraso);
   $('k-valatraso').textContent=fmt(d.valorEmAberto);

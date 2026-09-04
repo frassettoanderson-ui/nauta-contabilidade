@@ -21,6 +21,8 @@ export interface DashboardData {
   cnpjsAtivos: number
   // CNPJs perdidos no mês atual (clientes marcados como inativos no mês) — métrica mensal, não acumulativa
   cnpjsPerdidosMes: number
+  // Clientes (só matrizes) inativados no mês — para o saldo líquido "novos − perdidos"
+  clientesPerdidosMes: number
   // Índice do mês atual dentro de `meses` (a série vai até o mês seguinte)
   mesAtualIdx: number
   // Rótulos dos 3 meses (anterior / atual / seguinte), ex.: "ago" / "set" / "out"
@@ -221,7 +223,8 @@ export async function getDashboard(empresaId: string): Promise<DashboardData> {
         AND inativado_em >= date_trunc('month', NOW()) AND inativado_em < date_trunc('month', NOW()) + INTERVAL '1 month'`,
     [empresaId]
   )
-  const cnpjsPerdidosMes = Number(perdRow.rows[0]?.matrizes || 0) + Number(perdRow.rows[0]?.filiais || 0)
+  const clientesPerdidosMes = Number(perdRow.rows[0]?.matrizes || 0)
+  const cnpjsPerdidosMes = clientesPerdidosMes + Number(perdRow.rows[0]?.filiais || 0)
 
   const primAnterior = primeiroHonMes(ant.getFullYear(), ant.getMonth())
   const primAtualEsperado = primeiroHonMes(y, mi)
@@ -234,6 +237,7 @@ export async function getDashboard(empresaId: string): Promise<DashboardData> {
     mesAtualIdx,
     cnpjsAtivos,
     cnpjsPerdidosMes,
+    clientesPerdidosMes,
     resultadoMes: recebidoByMonth[kAtu] || 0,
     recebidoSerie,
     aReceberMes: aVencerSum,

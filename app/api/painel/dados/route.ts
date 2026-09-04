@@ -22,6 +22,7 @@ export async function GET(req: NextRequest) {
       clientesAtivos: d.clientesAtivos,
       cnpjsAtivos: d.cnpjsAtivos,
       cnpjsPerdidos: d.cnpjsPerdidosMes,
+      clientesPerdidos: d.clientesPerdidosMes,
       mesAtualIdx: d.mesAtualIdx,
       clientesAtraso: d.vencidosCount,
       valorEmAberto: d.valorEmAberto,

@@ -26,7 +26,7 @@
       radial-gradient(1100px 800px at 8% 115%, rgba(138,138,230,.10), transparent 60%),
       linear-gradient(160deg,#080B22 0%,#0B1030 55%,#080B22 100%);
     padding:22px 32px; overflow:hidden;
-    display:grid; grid-template-rows:84px 150px minmax(0,1fr) 56px; gap:18px;
+    display:grid; grid-template-rows:84px 160px minmax(0,1fr) 56px; gap:18px;
     font-variant-numeric:tabular-nums;
   }
   /* faint sonar rings behind everything */
@@ -58,25 +58,25 @@
   /* ---------- KPI ROW ---------- */
   .kpis{display:grid; grid-template-columns:repeat(4,1fr); gap:18px}
   .kpi{background:linear-gradient(180deg,var(--surface),rgba(17,23,55,.55)); border:1px solid var(--line);
-    border-radius:var(--r); padding:18px 20px; display:flex; flex-direction:column; justify-content:space-between; position:relative; overflow:hidden}
-  .kpi::before{content:""; position:absolute; left:0; top:0; bottom:0; width:4px; background:var(--teal); opacity:.85}
+    border-radius:var(--r); padding:16px 20px; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:12px; text-align:center; position:relative; overflow:hidden}
+  .kpi::before{content:""; position:absolute; left:0; top:0; bottom:0; width:5px; background:var(--teal); opacity:.9}
   .kpi.i::before{background:var(--indigo)} .kpi.g::before{background:var(--green)}
   .kpi.a::before{background:var(--amber)} .kpi.r::before{background:var(--red)}
-  .kpi .lab{font-size:12.5px; color:var(--muted); letter-spacing:.4px; display:flex; align-items:center; gap:7px}
-  .kpi .val{font-family:'Space Grotesk'; font-size:34px; font-weight:600; line-height:1; margin-top:8px}
-  .kpi .val .cur{font-size:18px; color:var(--muted); font-weight:500; margin-right:3px}
-  .kpi .foot{display:flex; align-items:center; justify-content:space-between; margin-top:10px}
-  .trend{font-size:12.5px; font-weight:600; display:flex; align-items:center; gap:4px}
-  .trend.up{color:var(--green)} .trend.down{color:var(--red)} .trend.warn{color:var(--amber)}
-  .spark{opacity:.9}
+  .kpi .lab{font-family:'Space Grotesk'; font-size:20px; font-weight:600; color:#fff; letter-spacing:.2px}
+  .kpi .val{font-family:'Space Grotesk'; font-size:64px; font-weight:700; line-height:1; color:#fff}
+  .kpi .val .cur{font-size:26px; color:var(--muted); font-weight:500; margin-right:6px; vertical-align:middle}
+  .kpi.r .val{color:var(--red)} .kpi.a .val{color:var(--amber)} .kpi.g .val{color:var(--green)}
 
   /* ---------- MAIN GRID ---------- */
-  .main{display:grid; min-height:0; grid-template-columns:repeat(12,1fr); grid-template-rows:290px minmax(0,1fr); gap:20px}
+  .main{display:grid; min-height:0; grid-template-columns:repeat(12,1fr); grid-template-rows:262px minmax(0,1fr); gap:20px}
   .card{background:linear-gradient(180deg,var(--surface),rgba(17,23,55,.5)); border:1px solid var(--line);
-    border-radius:var(--r); padding:20px 22px; display:flex; flex-direction:column; min-height:0}
-  .card > .ch{display:flex; align-items:baseline; justify-content:space-between; margin-bottom:14px}
-  .card .ch .t{font-family:'Space Grotesk'; font-size:16px; font-weight:600; letter-spacing:.3px}
-  .card .ch .m{font-size:12px; color:var(--muted)}
+    border-radius:var(--r); padding:18px 22px; display:flex; flex-direction:column; min-height:0; overflow:hidden}
+  .card > .ch{display:flex; flex-direction:column; align-items:center; gap:2px; margin-bottom:10px; text-align:center}
+  .card .ch .t{font-family:'Space Grotesk'; font-size:24px; font-weight:600; color:#fff; letter-spacing:.2px}
+  .card .ch .m{font-size:13px; color:var(--muted)}
+  .a-chart > .ch{display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:12px}
+  .a-chart > .ch .legend.left{justify-self:start} .a-chart > .ch .legend.right{justify-self:end}
 
   .a-metacli{grid-column:1 / 7; grid-row:1}
   .a-meta{grid-column:7 / 13; grid-row:1}
@@ -84,27 +84,30 @@
 
   /* faturamento chart */
   .chartwrap{flex:1; position:relative; min-height:0}
-  .legend{display:flex; align-items:center; gap:14px; font-size:12px; color:var(--muted)}
-  .legend i{display:inline-block; width:11px; height:11px; border-radius:3px; margin-right:6px; vertical-align:-1px}
-  .legend .chip{background:var(--surface2); border:1px solid var(--line); border-radius:8px; padding:4px 11px; color:var(--muted)}
-  .legend .chip b{color:var(--text); font-weight:600; margin-left:4px}
-  .barval{fill:var(--text); font-family:'Space Grotesk'; font-size:13px; font-weight:600; text-anchor:middle}
-  .barval.esp{fill:var(--faint); font-weight:500}
+  .legend{display:flex; align-items:center; gap:14px; font-size:13px; color:var(--muted)}
+  .legend i{display:inline-block; width:12px; height:12px; border-radius:3px; margin-right:6px; vertical-align:-1px}
+  .legend .chip{background:var(--surface2); border:1px solid var(--line); border-radius:8px; padding:6px 12px; color:var(--muted)}
+  .legend .chip b{color:var(--text); font-weight:600; margin-left:4px; font-size:14px}
+  .barval{fill:#fff; font-family:'Space Grotesk'; font-size:16px; font-weight:700; text-anchor:middle}
+  .barval.esp{fill:var(--muted); font-weight:500}
   svg.plot{width:100%; height:100%; display:block; overflow:visible}
   .bar{fill:url(#gbar)}
-  .barghost{fill:rgba(138,138,230,.14)}
-  .xlab{fill:var(--faint); font-size:11px; font-family:'Inter'}
-  .ylab{fill:var(--faint); font-size:10.5px}
-  .gridline{stroke:rgba(255,255,255,.05)}
+  .barghost{fill:rgba(138,138,230,.16)}
+  .xlab{fill:var(--muted); font-size:14px; font-family:'Inter'; font-weight:500}
+  .ylab{fill:var(--faint); font-size:12px}
+  .gridline{stroke:rgba(255,255,255,.06)}
 
-  /* meta gauge */
-  .gauge{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px}
-  .gauge .pct{font-family:'Space Grotesk'; font-size:44px; font-weight:600}
-  .metarow{display:flex; gap:12px; width:100%; margin-top:8px}
-  .metabox{flex:1; background:var(--surface2); border:1px solid var(--line); border-radius:12px; padding:12px 13px}
-  .metabox .k{font-size:11.5px; color:var(--muted)} 
-  .metabox .v{font-family:'Space Grotesk'; font-size:20px; font-weight:600; margin-top:5px}
-  .metabox .v small{font-size:12px; color:var(--muted)}
+  /* meta: anel + números ao lado */
+  .metabody{flex:1; min-height:0; display:flex; align-items:center; justify-content:center; gap:44px}
+  .ring{width:156px; height:156px; flex:0 0 auto}
+  .ring .track{fill:none; stroke:rgba(255,255,255,.08); stroke-width:14}
+  .ring .arc{fill:none; stroke-width:14; stroke-linecap:round; transition:stroke-dashoffset 1.2s ease}
+  .ring .pct{font-family:'Space Grotesk'; font-size:38px; font-weight:700; fill:#fff}
+  .mstats{display:flex; gap:34px}
+  .mstat{text-align:center; min-width:120px}
+  .mstat .k{font-size:14px; color:var(--muted); font-weight:500}
+  .mstat .v{font-family:'Space Grotesk'; font-size:50px; font-weight:700; line-height:1; margin-top:6px; color:#fff}
+  .mstat .v small{font-size:20px; color:var(--muted); font-weight:500; margin-right:4px; vertical-align:middle}
 
   /* atendimento queue */
   .a-queue .ch .m{display:flex; align-items:center; gap:6px}
@@ -186,30 +189,10 @@
 
   <!-- KPI ROW -->
   <div class="kpis">
-    <div class="kpi i">
-      <div class="lab">Clientes ativos</div>
-      <div class="val" id="k-clientes">0</div>
-      <div class="foot"><span class="trend up" id="k-clientes-t">▲ 0 no mês</span>
-        <svg class="spark" width="70" height="26" id="sp1"></svg></div>
-    </div>
-    <div class="kpi r">
-      <div class="lab">Clientes em atraso</div>
-      <div class="val" id="k-atraso">0</div>
-      <div class="foot"><span class="trend warn" id="k-atraso-t">clientes</span>
-        <svg class="spark" width="70" height="26" id="sp2"></svg></div>
-    </div>
-    <div class="kpi a">
-      <div class="lab">Valor em atraso</div>
-      <div class="val"><span class="cur">R$</span><span id="k-valatraso">0</span></div>
-      <div class="foot"><span class="trend warn" id="k-valatraso-t">em aberto</span>
-        <svg class="spark" width="70" height="26" id="sp3"></svg></div>
-    </div>
-    <div class="kpi g">
-      <div class="lab">Faturamento dos novos clientes</div>
-      <div class="val"><span class="cur">R$</span><span id="k-novosfat">0</span></div>
-      <div class="foot"><span class="trend up" id="k-novosfat-t">honorário no mês</span>
-        <svg class="spark" width="70" height="26" id="sp4"></svg></div>
-    </div>
+    <div class="kpi i"><div class="lab">Clientes ativos</div><div class="val" id="k-clientes">0</div></div>
+    <div class="kpi r"><div class="lab">Clientes em atraso</div><div class="val" id="k-atraso">0</div></div>
+    <div class="kpi a"><div class="lab">Valor em atraso</div><div class="val"><span class="cur">R$</span><span id="k-valatraso">0</span></div></div>
+    <div class="kpi g"><div class="lab">Faturamento dos novos clientes</div><div class="val"><span class="cur">R$</span><span id="k-novosfat">0</span></div></div>
   </div>
 
   <!-- MAIN -->
@@ -217,56 +200,54 @@
     <!-- META DE CLIENTES -->
     <div class="card a-metacli">
       <div class="ch"><div class="t">Meta de clientes</div><div class="m" id="metacli-month">—</div></div>
-      <div class="gauge">
-        <svg width="200" height="120" viewBox="0 0 200 120">
-          <path d="M20 110 A80 80 0 0 1 180 110" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="16" stroke-linecap="round"/>
-          <path id="gaugeArcCli" d="M20 110 A80 80 0 0 1 180 110" fill="none" stroke="url(#ggc)" stroke-width="16" stroke-linecap="round"
-            stroke-dasharray="251" stroke-dashoffset="251"/>
-          <defs><linearGradient id="ggc" x1="0" y1="0" x2="1" y2="0">
+      <div class="metabody">
+        <svg class="ring" viewBox="0 0 156 156">
+          <defs><linearGradient id="ggc" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0" stop-color="#37D6A2"/><stop offset="1" stop-color="#25C7E0"/></linearGradient></defs>
+          <circle class="track" cx="78" cy="78" r="64"/>
+          <circle class="arc" id="ringCli" cx="78" cy="78" r="64" stroke="url(#ggc)" stroke-dasharray="402" stroke-dashoffset="402" transform="rotate(-90 78 78)"/>
+          <text class="pct" id="ring-pct-cli" x="78" y="78" text-anchor="middle" dominant-baseline="central">0%</text>
         </svg>
-        <div class="pct" id="gauge-pct-cli">0%</div>
-        <div class="m" style="color:var(--muted); font-size:12.5px" id="metacli-sub">da meta de clientes</div>
-      </div>
-      <div class="metarow">
-        <div class="metabox"><div class="k">Novos no mês</div><div class="v" style="color:var(--green)" id="metacli-novos">0</div></div>
-        <div class="metabox"><div class="k">Meta</div><div class="v" id="metacli-meta">0</div></div>
-        <div class="metabox"><div class="k">Projeção</div><div class="v" style="color:var(--teal)" id="metacli-proj">0</div></div>
+        <div class="mstats">
+          <div class="mstat"><div class="k">Novos no mês</div><div class="v" style="color:var(--green)" id="metacli-novos">0</div></div>
+          <div class="mstat"><div class="k">Meta</div><div class="v" id="metacli-meta">0</div></div>
+          <div class="mstat"><div class="k">Projeção</div><div class="v" style="color:var(--teal)" id="metacli-proj">0</div></div>
+        </div>
       </div>
     </div>
 
     <!-- META DE FATURAMENTO -->
     <div class="card a-meta">
       <div class="ch"><div class="t">Meta de faturamento</div><div class="m" id="meta-month">—</div></div>
-      <div class="gauge">
-        <svg width="200" height="120" viewBox="0 0 200 120">
-          <path d="M20 110 A80 80 0 0 1 180 110" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="16" stroke-linecap="round"/>
-          <path id="gaugeArc" d="M20 110 A80 80 0 0 1 180 110" fill="none" stroke="url(#gg)" stroke-width="16" stroke-linecap="round"
-            stroke-dasharray="251" stroke-dashoffset="251"/>
-          <defs><linearGradient id="gg" x1="0" y1="0" x2="1" y2="0">
+      <div class="metabody">
+        <svg class="ring" viewBox="0 0 156 156">
+          <defs><linearGradient id="gg" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0" stop-color="#8A8AE6"/><stop offset="1" stop-color="#25C7E0"/></linearGradient></defs>
+          <circle class="track" cx="78" cy="78" r="64"/>
+          <circle class="arc" id="ringFat" cx="78" cy="78" r="64" stroke="url(#gg)" stroke-dasharray="402" stroke-dashoffset="402" transform="rotate(-90 78 78)"/>
+          <text class="pct" id="ring-pct-fat" x="78" y="78" text-anchor="middle" dominant-baseline="central">0%</text>
         </svg>
-        <div class="pct" id="gauge-pct">0%</div>
-        <div class="m" style="color:var(--muted); font-size:12.5px">do esperado já realizado</div>
-      </div>
-      <div class="metarow">
-        <div class="metabox"><div class="k">Realizado</div><div class="v"><small>R$</small> <span id="meta-real">0</span></div></div>
-        <div class="metabox"><div class="k">Meta (esperado)</div><div class="v"><small>R$</small> <span id="meta-esp">0</span></div></div>
+        <div class="mstats">
+          <div class="mstat"><div class="k">Realizado</div><div class="v" style="color:var(--green)"><small>R$</small><span id="meta-real">0</span></div></div>
+          <div class="mstat"><div class="k">Meta (esperado)</div><div class="v"><small>R$</small><span id="meta-esp">0</span></div></div>
+        </div>
       </div>
     </div>
 
     <!-- FATURAMENTO CHART -->
     <div class="card a-chart">
       <div class="ch">
-        <div class="t">Faturamento realizado × esperado</div>
-        <div class="legend">
+        <div class="legend left">
           <span class="chip">Faturamento <span id="i-ant-lab">ant.</span> <b id="i-ant">R$ 0</b></span>
           <span class="chip">Faturamento <span id="i-seg-lab">próx.</span> <b id="i-seg">R$ 0</b></span>
+        </div>
+        <div class="t">Faturamento realizado × esperado</div>
+        <div class="legend right">
           <span><i style="background:linear-gradient(180deg,#37D6A2,#25C7E0)"></i>Realizado</span>
           <span><i style="background:rgba(138,138,230,.6)"></i>Esperado</span>
         </div>
       </div>
-      <div class="chartwrap"><svg class="plot" id="plot" viewBox="0 0 980 300" preserveAspectRatio="none"></svg></div>
+      <div class="chartwrap"><svg class="plot" id="plot"></svg></div>
     </div>
   </div>
 
@@ -318,7 +299,7 @@ function spark(id,color,seed){
   }
   draw(); setInterval(draw, 2600+seed*250);
 }
-spark('sp1','#8A8AE6',0); spark('sp2','#37D6A2',1); spark('sp3','#25C7E0',2); spark('sp4','#FF6D82',3);
+/* (sparklines removidas — KPIs agora só com título + número) */
 
 /* ---------- DADOS REAIS (painel ao vivo) ---------- */
 const TOKEN = new URLSearchParams(location.search).get('t') || '';
@@ -333,7 +314,10 @@ function drawChart(){
   if(!D) return;
   const esp=D.serieEsperado||[], real=D.serieRealizado||[], labels=D.meses||[];
   const n=Math.max(esp.length, real.length, 1);
-  const svg=$('plot'), W=980,H=300, padL=52,padB=26,padT=30,padR=12;
+  // Desenha no tamanho real do container (sem esticar texto/barras)
+  const svg=$('plot'), wrap=svg.parentElement;
+  const W=wrap.clientWidth||980, H=wrap.clientHeight||300, padL=56,padB=30,padT=34,padR=14;
+  svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
   const iw=W-padL-padR, ih=H-padT-padB;
   const max=Math.max(...esp,...real,1)*1.14;
   const slot=iw/n;
@@ -368,29 +352,23 @@ function drawChart(){
 function preencher(d){
   D=d;
   const meta=Number(d.metaClientes||0);
-  // KPIs
+  // KPIs (só título + número)
   $('k-clientes').textContent=fmt(d.clientesAtivos);
-  $('k-clientes-t').textContent=`▲ ${fmt(d.clientesNovos)} no mês`;
   $('k-atraso').textContent=fmt(d.clientesAtraso);
-  $('k-atraso-t').textContent='clientes vencidos';
   $('k-valatraso').textContent=fmt(d.valorEmAberto);
-  $('k-valatraso-t').textContent=`${fmt(d.clientesAtraso)} cliente(s) em aberto`;
   $('k-novosfat').textContent=fmt(d.faturamentoNovosClientes);
-  $('k-novosfat-t').textContent='honorário no mês';
-  // Card Meta de clientes (gauge novos / meta)
+  // Anéis (circunferência 2π·64 ≈ 402)
+  const ring=(id,pctId,pct)=>{ $(pctId).textContent=Math.round(pct)+'%'; $(id).style.strokeDashoffset=(402-402*pct/100).toFixed(1); };
+  // Card Meta de clientes (novos / meta)
   const pctCli = meta>0 ? Math.min(100, d.clientesNovos/meta*100) : 0;
-  $('gauge-pct-cli').textContent=Math.round(pctCli)+'%';
-  $('gaugeArcCli').style.transition='stroke-dashoffset 1.2s ease';
-  $('gaugeArcCli').style.strokeDashoffset=(251-251*pctCli/100).toFixed(1);
+  ring('ringCli','ring-pct-cli',pctCli);
   $('metacli-novos').textContent=fmt(d.clientesNovos);
   $('metacli-meta').textContent=fmt(meta);
   $('metacli-proj').textContent=fmt(d.clientesNovosProjecao);
-  $('metacli-sub').textContent = meta>0 ? 'da meta de clientes atingida' : 'cadastre a meta em Comercial';
-  // Card Meta de faturamento (gauge realizado / esperado)
+  $('metacli-month').textContent = meta>0 ? _mesAno : `${_mesAno} · cadastre a meta em Comercial`;
+  // Card Meta de faturamento (realizado / esperado)
   const pct=d.faturamentoEsperado>0 ? Math.min(100, d.faturamentoRealizado/d.faturamentoEsperado*100) : 0;
-  $('gauge-pct').textContent=Math.round(pct)+'%';
-  $('gaugeArc').style.transition='stroke-dashoffset 1.2s ease';
-  $('gaugeArc').style.strokeDashoffset=(251-251*pct/100).toFixed(1);
+  ring('ringFat','ring-pct-fat',pct);
   $('meta-real').textContent=fmt(d.faturamentoRealizado);
   $('meta-esp').textContent=fmt(d.faturamentoEsperado);
   // Chips do gráfico (faturamento anterior / seguinte)

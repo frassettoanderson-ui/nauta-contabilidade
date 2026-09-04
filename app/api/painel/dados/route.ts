@@ -20,6 +20,9 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       geradoEm: new Date().toISOString(),
       clientesAtivos: d.clientesAtivos,
+      cnpjsAtivos: d.cnpjsAtivos,
+      cnpjsPerdidos: d.cnpjsPerdidosMes,
+      mesAtualIdx: d.mesAtualIdx,
       clientesAtraso: d.vencidosCount,
       valorEmAberto: d.valorEmAberto,
       // Faturamento

@@ -380,6 +380,7 @@ export interface DashboardData {
   resultadoMes: number; recebidoSerie: number[]
   aReceberMes: number; aReceberSerie: number[]
   vencidosCount: number; vencidosSerie: number[]
+  mesAtualIdx: number; cnpjsAtivos: number; cnpjsPerdidosMes: number
   labels: { anterior: string; atual: string; seguinte: string }
   clientesNovos: {
     anterior: number; atual: number; projecao: number

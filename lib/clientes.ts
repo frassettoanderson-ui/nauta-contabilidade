@@ -51,10 +51,12 @@ export async function getClienteByLead(leadId: string, empresaId?: string) {
 const SITUACOES = ['ativo', 'em_processo', 'inativo']
 export async function setSituacaoCliente(id: string, situacao: string, empresaId?: string) {
   if (!SITUACOES.includes(situacao)) throw new Error('Situação inválida')
+  // inativado_em marca o mês em que o cliente foi perdido (métrica "CNPJs perdidos" do painel)
+  const sets = `situacao = $2, inativado_em = CASE WHEN $2 = 'inativo' THEN COALESCE(inativado_em, NOW()) ELSE NULL END`
   if (empresaId) {
-    await pool.query(`UPDATE clientes SET situacao = $2 WHERE id = $1 AND empresa_id = $3`, [id, situacao, empresaId])
+    await pool.query(`UPDATE clientes SET ${sets} WHERE id = $1 AND empresa_id = $3`, [id, situacao, empresaId])
   } else {
-    await pool.query(`UPDATE clientes SET situacao = $2 WHERE id = $1`, [id, situacao])
+    await pool.query(`UPDATE clientes SET ${sets} WHERE id = $1`, [id, situacao])
   }
   emitCrmChange()
   return { ok: true }

@@ -17,6 +17,12 @@ export interface DashboardData {
   vencidosSerie: number[]
   clientesAtivos: number
   valorEmAberto: number
+  // CNPJs = matrizes (clientes não inativos) + filiais cadastradas
+  cnpjsAtivos: number
+  // CNPJs perdidos no mês atual (clientes marcados como inativos no mês) — métrica mensal, não acumulativa
+  cnpjsPerdidosMes: number
+  // Índice do mês atual dentro de `meses` (a série vai até o mês seguinte)
+  mesAtualIdx: number
   // Rótulos dos 3 meses (anterior / atual / seguinte), ex.: "ago" / "set" / "out"
   labels: { anterior: string; atual: string; seguinte: string }
   clientesNovos: {
@@ -76,11 +82,13 @@ export async function getDashboard(empresaId: string): Promise<DashboardData> {
   }
 
   const now = new Date()
+  // 12 meses: 10 anteriores + atual + seguinte (o painel mostra o esperado do próximo mês)
   const months: { key: string; label: string }[] = []
-  for (let i = 11; i >= 0; i--) {
+  for (let i = 10; i >= -1; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
     months.push({ key: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`, label: MES[d.getMonth()] })
   }
+  const mesAtualIdx = months.length - 2
 
   const recebidoSerie: number[] = []
   const aReceberSerie: number[] = []
@@ -90,6 +98,7 @@ export async function getDashboard(empresaId: string): Promise<DashboardData> {
     const [yy, mm] = m.key.split('-').map(Number)
     const monthIdx = mm - 1
     const ehAtual = yy === now.getFullYear() && monthIdx === now.getMonth()
+    const ehFuturo = new Date(yy, monthIdx, 1) > new Date(now.getFullYear(), now.getMonth(), 1)
     const ref = ehAtual ? new Date(now.getFullYear(), now.getMonth(), now.getDate()) : new Date(yy, monthIdx + 1, 0)
     const fimMes = new Date(yy, monthIdx, 1)
 
@@ -116,7 +125,7 @@ export async function getDashboard(empresaId: string): Promise<DashboardData> {
 
     recebidoSerie.push(recebidoByMonth[m.key] || 0)
     aReceberSerie.push(faturado)
-    vencidosSerie.push(vencidos)
+    vencidosSerie.push(ehFuturo ? 0 : vencidos) // mês futuro ainda não tem atraso
   }
 
   // Snapshot atual (cards)
@@ -195,16 +204,37 @@ export async function getDashboard(empresaId: string): Promise<DashboardData> {
   // Meta de clientes do mês (cadastrada em Comercial → Cadastrar meta)
   const { metaClientes } = await getMeta(empresaId, kAtu)
 
+  // CNPJs ativos = matrizes (clientes não inativos) + filiais cadastradas (emp_filiais JSONB)
+  const cnpjRow = await pool.query(
+    `SELECT COUNT(*)::int AS matrizes,
+            COALESCE(SUM(CASE WHEN jsonb_typeof(emp_filiais) = 'array' THEN jsonb_array_length(emp_filiais) ELSE 0 END), 0)::int AS filiais
+       FROM clientes WHERE empresa_id = $1 AND COALESCE(situacao, 'ativo') <> 'inativo'`,
+    [empresaId]
+  )
+  const cnpjsAtivos = Number(cnpjRow.rows[0]?.matrizes || 0) + Number(cnpjRow.rows[0]?.filiais || 0)
+  // CNPJs perdidos no mês = clientes inativados dentro do mês atual (+ suas filiais)
+  const perdRow = await pool.query(
+    `SELECT COUNT(*)::int AS matrizes,
+            COALESCE(SUM(CASE WHEN jsonb_typeof(emp_filiais) = 'array' THEN jsonb_array_length(emp_filiais) ELSE 0 END), 0)::int AS filiais
+       FROM clientes
+      WHERE empresa_id = $1 AND situacao = 'inativo'
+        AND inativado_em >= date_trunc('month', NOW()) AND inativado_em < date_trunc('month', NOW()) + INTERVAL '1 month'`,
+    [empresaId]
+  )
+  const cnpjsPerdidosMes = Number(perdRow.rows[0]?.matrizes || 0) + Number(perdRow.rows[0]?.filiais || 0)
+
   const primAnterior = primeiroHonMes(ant.getFullYear(), ant.getMonth())
   const primAtualEsperado = primeiroHonMes(y, mi)
   const primAtualRealizado = primeiroHonMes(y, mi, true)
   const primSeguinte = primeiroHonMes(seg.getFullYear(), seg.getMonth())
 
   const R = RECORRENCIA_PCT
-  const curKey = months[months.length - 1].key
   return {
     meses: months.map(m => m.label),
-    resultadoMes: recebidoByMonth[curKey] || 0,
+    mesAtualIdx,
+    cnpjsAtivos,
+    cnpjsPerdidosMes,
+    resultadoMes: recebidoByMonth[kAtu] || 0,
     recebidoSerie,
     aReceberMes: aVencerSum,
     aReceberSerie,

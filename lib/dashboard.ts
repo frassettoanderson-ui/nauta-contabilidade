@@ -1,5 +1,6 @@
 import pool from './db'
 import { calcStatusFinanceiro, vencimentoAjustado, contarDiasUteis } from './financeiro-calc'
+import { getMeta } from './metas'
 
 const MES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez']
 
@@ -24,6 +25,10 @@ export interface DashboardData {
     diasUteisDecorridos: number; diasUteisTotais: number
   }
   faturamento: { mesAtual: number; projecaoMesAtual: number; mesAnterior: number; projecaoMesSeguinte: number }
+  // Faturamento (honorário mensal) trazido pelos clientes novos do mês atual
+  faturamentoNovosClientes: number
+  // Meta de clientes do mês (cadastrada em Comercial → Cadastrar meta)
+  metaClientes: number
   primeiroHonorario: { anterior: number; atualEsperado: number; atualRealizado: number; seguinte: number }
   recorrencia: { anteriorRealizado: number; atualEsperado: number; atualRealizado: number; seguinteEsperado: number }
 }
@@ -172,6 +177,24 @@ export async function getDashboard(empresaId: string): Promise<DashboardData> {
   const projFatAtual = vencimentosNoMes(y, mi)
   const projFatSeguinte = vencimentosNoMes(seg.getFullYear(), seg.getMonth())
 
+  // Faturamento (honorário mensal) trazido pelos clientes NOVOS do mês atual:
+  // soma do honorário dos leads cuja PRIMEIRA assinatura de contrato caiu no mês.
+  const fatNovosRow = await pool.query(
+    `SELECT COALESCE(SUM(l.valor_honorario), 0) AS total FROM (
+        SELECT c.lead_id, MIN(c.atualizado_em) AS primeiro
+        FROM contratos c JOIN leads l0 ON l0.id = c.lead_id
+        WHERE l0.empresa_id = $1 AND c.autentique_status = 'assinado'
+        GROUP BY c.lead_id
+      ) t
+      JOIN leads l ON l.id = t.lead_id
+      WHERE to_char(t.primeiro, 'YYYY-MM') = $2`,
+    [empresaId, kAtu]
+  )
+  const faturamentoNovosClientes = Number(fatNovosRow.rows[0]?.total || 0)
+
+  // Meta de clientes do mês (cadastrada em Comercial → Cadastrar meta)
+  const { metaClientes } = await getMeta(empresaId, kAtu)
+
   const primAnterior = primeiroHonMes(ant.getFullYear(), ant.getMonth())
   const primAtualEsperado = primeiroHonMes(y, mi)
   const primAtualRealizado = primeiroHonMes(y, mi, true)
@@ -196,6 +219,8 @@ export async function getDashboard(empresaId: string): Promise<DashboardData> {
       diasUteisDecorridos, diasUteisTotais,
     },
     faturamento: { mesAtual: fatMesAtual, projecaoMesAtual: projFatAtual, mesAnterior: fatMesAnterior, projecaoMesSeguinte: projFatSeguinte },
+    faturamentoNovosClientes,
+    metaClientes,
     primeiroHonorario: { anterior: primAnterior, atualEsperado: primAtualEsperado, atualRealizado: primAtualRealizado, seguinte: primSeguinte },
     recorrencia: {
       anteriorRealizado: fatMesAnterior * R,

@@ -17,20 +17,23 @@ export async function GET(req: NextRequest) {
     const empresaId = emp.rows[0]?.id
     if (!empresaId) return NextResponse.json({ error: 'Empresa não encontrada' }, { status: 500 })
     const d = await getDashboard(empresaId)
-    const R = 0.10
     return NextResponse.json({
       geradoEm: new Date().toISOString(),
       clientesAtivos: d.clientesAtivos,
       clientesAtraso: d.vencidosCount,
       valorEmAberto: d.valorEmAberto,
+      // Faturamento
       faturamentoRealizado: d.faturamento.mesAtual,
       faturamentoEsperado: d.faturamento.projecaoMesAtual,
-      recorrenciaRealizada: d.recorrencia.atualRealizado,
-      recorrenciaEsperada: d.recorrencia.atualEsperado,
+      faturamentoMesAnterior: d.faturamento.mesAnterior,
+      faturamentoMesSeguinte: d.faturamento.projecaoMesSeguinte,
+      faturamentoNovosClientes: d.faturamentoNovosClientes,
+      // Clientes
       clientesNovos: d.clientesNovos.atual,
       clientesNovosProjecao: d.clientesNovos.projecao,
       clientesNovosAnterior: d.clientesNovos.anterior,
-      primeiroHonorarioMes: d.primeiroHonorario.atualEsperado,
+      metaClientes: d.metaClientes,
+      // Série do gráfico
       meses: d.meses,
       serieRealizado: d.recebidoSerie,
       serieEsperado: d.aReceberSerie,

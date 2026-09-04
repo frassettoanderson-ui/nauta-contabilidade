@@ -387,11 +387,26 @@ export interface DashboardData {
     diasUteisDecorridos: number; diasUteisTotais: number
   }
   faturamento: { mesAtual: number; projecaoMesAtual: number; mesAnterior: number; projecaoMesSeguinte: number }
+  faturamentoNovosClientes: number
+  metaClientes: number
   primeiroHonorario: { anterior: number; atualEsperado: number; atualRealizado: number; seguinte: number }
   recorrencia: { anteriorRealizado: number; atualEsperado: number; atualRealizado: number; seguinteEsperado: number }
 }
 export function getDashboard(): Promise<DashboardData> {
   return fetch('/api/dashboard').then(r => json<DashboardData>(r))
+}
+
+// ─── METAS (Comercial → Cadastrar meta) ──────────────────────────────────────
+export interface MetaData { competencia: string; metaClientes: number }
+export function getMeta(competencia?: string): Promise<MetaData> {
+  const q = competencia ? `?competencia=${encodeURIComponent(competencia)}` : ''
+  return fetch(`/api/metas${q}`).then(r => json<MetaData>(r))
+}
+export function setMeta(competencia: string, metaClientes: number): Promise<{ ok: true }> {
+  return fetch('/api/metas', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ competencia, metaClientes }),
+  }).then(r => json(r))
 }
 
 // ─── CHAT INTERNO ────────────────────────────────────────────────────────────

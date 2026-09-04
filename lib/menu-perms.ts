@@ -24,6 +24,7 @@ export const MENU_GRUPOS: MenuGrupo[] = [
   { grupo: 'Comercial', itens: [
     { href: '/sistema/comercial/kanban', label: 'CRM' },
     { href: '/sistema/comercial/leads', label: 'Leads' },
+    { href: '/sistema/comercial/meta', label: 'Cadastrar meta' },
   ] },
   { grupo: 'Onboarding', itens: [
     { href: '/sistema/onboarding', label: 'Onboarding' },
@@ -60,7 +61,7 @@ export function defaultPermsForRole(role: string): string[] | null {
     case 'gerente':
       return null
     case 'comercial':
-      return ['/sistema/comercial/kanban', '/sistema/comercial/leads', ...ONBOARDING]
+      return ['/sistema/comercial/kanban', '/sistema/comercial/leads', '/sistema/comercial/meta', ...ONBOARDING]
     case 'pessoal':
       return ['/sistema/pessoal', ...ONBOARDING]
     case 'fiscal':

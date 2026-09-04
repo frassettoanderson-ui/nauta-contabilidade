@@ -13,7 +13,7 @@ import {
   Users, UserPlus, Search, FileText, FilePlus, FileClock, FileSearch,
   Briefcase, LayoutGrid, Inbox, BarChart3, TrendingUp, Calculator, UserCog, Building2,
   Rocket, Settings, DollarSign, LayoutDashboard, MessageCircle,
-  ArrowDownCircle, ArrowUpCircle, Repeat, CalendarCheck,
+  ArrowDownCircle, ArrowUpCircle, Repeat, CalendarCheck, Target,
   LogOut, ChevronDown, Menu, X, type LucideIcon,
 } from 'lucide-react'
 
@@ -39,6 +39,7 @@ const NAV: NavItem[] = [
   { label: 'Comercial', icon: Briefcase, children: [
     { label: 'CRM',   href: '/sistema/comercial/kanban', icon: LayoutGrid },
     { label: 'Leads', href: '/sistema/comercial/leads',  icon: Inbox },
+    { label: 'Cadastrar meta', href: '/sistema/comercial/meta', icon: Target },
   ] },
   { label: 'Relatórios', icon: BarChart3, children: [
     { label: 'Conversão', href: '/sistema/relatorios/conversao', icon: TrendingUp },

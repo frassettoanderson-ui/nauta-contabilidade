@@ -1,16 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
 import pool from '@/lib/db'
 import { getDashboard } from '@/lib/dashboard'
 
 export const dynamic = 'force-dynamic'
 
-// Endpoint PÚBLICO do painel de TV — sem login, protegido por um token na URL.
-// O token fica em PAINEL_TV_TOKEN (.env.local). Link da TV: /painel-tv.html?t=<token>
+// Endpoint do painel — aceita (a) token na URL (TV, sem login: /painel-tv.html?t=<token>,
+// token em PAINEL_TV_TOKEN) ou (b) usuário logado no sistema (dashboard interno em /sistema).
 export async function GET(req: NextRequest) {
   const token = req.nextUrl.searchParams.get('t') || req.nextUrl.searchParams.get('token') || ''
   const esperado = process.env.PAINEL_TV_TOKEN || ''
-  if (!esperado || token !== esperado) {
-    return NextResponse.json({ error: 'Token inválido' }, { status: 401 })
+  const tokenOk = !!esperado && token === esperado
+  if (!tokenOk) {
+    const session = await getServerSession(authOptions)
+    if (!session) return NextResponse.json({ error: 'Token inválido' }, { status: 401 })
   }
   try {
     const emp = await pool.query(`SELECT id FROM empresas WHERE slug = 'nauta' LIMIT 1`)

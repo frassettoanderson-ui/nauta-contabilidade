@@ -71,21 +71,25 @@
   .spark{opacity:.9}
 
   /* ---------- MAIN GRID ---------- */
-  .main{display:grid; grid-template-columns:repeat(12,1fr); grid-template-rows:1fr 232px; gap:20px}
+  .main{display:grid; grid-template-columns:repeat(12,1fr); grid-template-rows:300px 1fr; gap:20px}
   .card{background:linear-gradient(180deg,var(--surface),rgba(17,23,55,.5)); border:1px solid var(--line);
     border-radius:var(--r); padding:20px 22px; display:flex; flex-direction:column; min-height:0}
   .card > .ch{display:flex; align-items:baseline; justify-content:space-between; margin-bottom:14px}
   .card .ch .t{font-family:'Space Grotesk'; font-size:16px; font-weight:600; letter-spacing:.3px}
   .card .ch .m{font-size:12px; color:var(--muted)}
 
-  .a-chart{grid-column:1 / 8; grid-row:1}
-  .a-meta{grid-column:8 / 13; grid-row:1}
-  .a-ind{grid-column:1 / 13; grid-row:2}
+  .a-metacli{grid-column:1 / 7; grid-row:1}
+  .a-meta{grid-column:7 / 13; grid-row:1}
+  .a-chart{grid-column:1 / 13; grid-row:2}
 
   /* faturamento chart */
   .chartwrap{flex:1; position:relative; min-height:0}
-  .legend{display:flex; gap:18px; font-size:12px; color:var(--muted)}
+  .legend{display:flex; align-items:center; gap:14px; font-size:12px; color:var(--muted)}
   .legend i{display:inline-block; width:11px; height:11px; border-radius:3px; margin-right:6px; vertical-align:-1px}
+  .legend .chip{background:var(--surface2); border:1px solid var(--line); border-radius:8px; padding:4px 11px; color:var(--muted)}
+  .legend .chip b{color:var(--text); font-weight:600; margin-left:4px}
+  .barval{fill:var(--text); font-family:'Space Grotesk'; font-size:13px; font-weight:600; text-anchor:middle}
+  .barval.esp{fill:var(--faint); font-weight:500}
   svg.plot{width:100%; height:100%; display:block; overflow:visible}
   .bar{fill:url(#gbar)}
   .barghost{fill:rgba(138,138,230,.14)}
@@ -188,38 +192,47 @@
       <div class="foot"><span class="trend up" id="k-clientes-t">▲ 0 no mês</span>
         <svg class="spark" width="70" height="26" id="sp1"></svg></div>
     </div>
-    <div class="kpi g">
-      <div class="lab">Clientes novos (mês)</div>
-      <div class="val" id="k-novos">0</div>
-      <div class="foot"><span class="trend up" id="k-novos-t">projeção 0</span>
-        <svg class="spark" width="70" height="26" id="sp2"></svg></div>
-    </div>
-    <div class="kpi i">
-      <div class="lab">Meta de clientes</div>
-      <div class="val" id="k-meta">0</div>
-      <div class="foot"><span class="trend" style="color:var(--muted)" id="k-meta-t">projeção 0</span>
-        <svg class="spark" width="70" height="26" id="sp3"></svg></div>
-    </div>
     <div class="kpi r">
       <div class="lab">Clientes em atraso</div>
       <div class="val" id="k-atraso">0</div>
-      <div class="foot"><span class="trend warn" id="k-atraso-t">R$ 0 em aberto</span>
+      <div class="foot"><span class="trend warn" id="k-atraso-t">clientes</span>
+        <svg class="spark" width="70" height="26" id="sp2"></svg></div>
+    </div>
+    <div class="kpi a">
+      <div class="lab">Valor em atraso</div>
+      <div class="val"><span class="cur">R$</span><span id="k-valatraso">0</span></div>
+      <div class="foot"><span class="trend warn" id="k-valatraso-t">em aberto</span>
+        <svg class="spark" width="70" height="26" id="sp3"></svg></div>
+    </div>
+    <div class="kpi g">
+      <div class="lab">Faturamento dos novos clientes</div>
+      <div class="val"><span class="cur">R$</span><span id="k-novosfat">0</span></div>
+      <div class="foot"><span class="trend up" id="k-novosfat-t">honorário no mês</span>
         <svg class="spark" width="70" height="26" id="sp4"></svg></div>
     </div>
   </div>
 
   <!-- MAIN -->
   <div class="main">
-    <!-- FATURAMENTO CHART -->
-    <div class="card a-chart">
-      <div class="ch">
-        <div class="t">Faturamento realizado × esperado</div>
-        <div class="legend">
-          <span><i style="background:linear-gradient(180deg,#37D6A2,#25C7E0)"></i>Realizado</span>
-          <span><i style="background:rgba(138,138,230,.6)"></i>Esperado</span>
-        </div>
+    <!-- META DE CLIENTES -->
+    <div class="card a-metacli">
+      <div class="ch"><div class="t">Meta de clientes</div><div class="m" id="metacli-month">—</div></div>
+      <div class="gauge">
+        <svg width="200" height="120" viewBox="0 0 200 120">
+          <path d="M20 110 A80 80 0 0 1 180 110" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="16" stroke-linecap="round"/>
+          <path id="gaugeArcCli" d="M20 110 A80 80 0 0 1 180 110" fill="none" stroke="url(#ggc)" stroke-width="16" stroke-linecap="round"
+            stroke-dasharray="251" stroke-dashoffset="251"/>
+          <defs><linearGradient id="ggc" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#37D6A2"/><stop offset="1" stop-color="#25C7E0"/></linearGradient></defs>
+        </svg>
+        <div class="pct" id="gauge-pct-cli">0%</div>
+        <div class="m" style="color:var(--muted); font-size:12.5px" id="metacli-sub">da meta de clientes</div>
       </div>
-      <div class="chartwrap"><svg class="plot" id="plot" viewBox="0 0 860 360" preserveAspectRatio="none"></svg></div>
+      <div class="metarow">
+        <div class="metabox"><div class="k">Novos no mês</div><div class="v" style="color:var(--green)" id="metacli-novos">0</div></div>
+        <div class="metabox"><div class="k">Meta</div><div class="v" id="metacli-meta">0</div></div>
+        <div class="metabox"><div class="k">Projeção</div><div class="v" style="color:var(--teal)" id="metacli-proj">0</div></div>
+      </div>
     </div>
 
     <!-- META DE FATURAMENTO -->
@@ -242,15 +255,18 @@
       </div>
     </div>
 
-    <!-- INDICADORES -->
-    <div class="card a-ind">
-      <div class="ch"><div class="t">Faturamento — visão do mês</div><div class="m">anterior · seguinte · novos clientes · atraso</div></div>
-      <div class="ind">
-        <div class="indbox"><div class="k">Faturamento <span id="i-ant-lab">mês anterior</span></div><div class="v"><span style="font-size:16px;color:var(--muted)">R$ </span><span id="i-ant">0</span></div><div class="d" style="color:var(--muted)">realizado</div></div>
-        <div class="indbox"><div class="k">Faturamento <span id="i-seg-lab">mês seguinte</span></div><div class="v" style="color:var(--teal)"><span style="font-size:16px;color:var(--muted)">R$ </span><span id="i-seg">0</span></div><div class="d" style="color:var(--muted)">projeção (vencimentos)</div></div>
-        <div class="indbox"><div class="k">Faturamento dos novos clientes</div><div class="v" style="color:var(--green)"><span style="font-size:16px;color:var(--muted)">R$ </span><span id="i-novosfat">0</span></div><div class="d" style="color:var(--muted)">honorário no mês</div></div>
-        <div class="indbox"><div class="k">Valor em atraso</div><div class="v" style="color:var(--red)"><span style="font-size:16px;color:var(--muted)">R$ </span><span id="i-atraso">0</span></div><div class="d" style="color:var(--muted)" id="i-atraso-d">0 cliente(s)</div></div>
+    <!-- FATURAMENTO CHART -->
+    <div class="card a-chart">
+      <div class="ch">
+        <div class="t">Faturamento realizado × esperado</div>
+        <div class="legend">
+          <span class="chip">Faturamento <span id="i-ant-lab">ant.</span> <b id="i-ant">R$ 0</b></span>
+          <span class="chip">Faturamento <span id="i-seg-lab">próx.</span> <b id="i-seg">R$ 0</b></span>
+          <span><i style="background:linear-gradient(180deg,#37D6A2,#25C7E0)"></i>Realizado</span>
+          <span><i style="background:rgba(138,138,230,.6)"></i>Esperado</span>
+        </div>
       </div>
+      <div class="chartwrap"><svg class="plot" id="plot" viewBox="0 0 980 300" preserveAspectRatio="none"></svg></div>
     </div>
   </div>
 
@@ -308,17 +324,21 @@ spark('sp1','#8A8AE6',0); spark('sp2','#37D6A2',1); spark('sp3','#25C7E0',2); sp
 const TOKEN = new URLSearchParams(location.search).get('t') || '';
 let D = null;
 const mesesLong=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-$('meta-month').textContent = `${mesesLong[new Date().getMonth()]} / ${new Date().getFullYear()}`;
+const _mesAno = `${mesesLong[new Date().getMonth()]} / ${new Date().getFullYear()}`;
+$('meta-month').textContent = _mesAno;
+$('metacli-month').textContent = _mesAno;
 
+const short=v=> v>=1000 ? (v/1000).toLocaleString('pt-BR',{maximumFractionDigits:1})+'k' : String(Math.round(v));
 function drawChart(){
   if(!D) return;
   const esp=D.serieEsperado||[], real=D.serieRealizado||[], labels=D.meses||[];
   const n=Math.max(esp.length, real.length, 1);
-  const svg=$('plot'), W=860,H=360, padL=54,padB=30,padT=10,padR=8;
+  const svg=$('plot'), W=980,H=300, padL=52,padB=26,padT=30,padR=12;
   const iw=W-padL-padR, ih=H-padT-padB;
-  const max=Math.max(...esp,...real,1)*1.08;
-  const x=i=> padL + i*(iw/n) + (iw/n)*.5;
-  const bw=(iw/n)*.5;
+  const max=Math.max(...esp,...real,1)*1.14;
+  const slot=iw/n;
+  const x=i=> padL + i*slot + slot*.5;
+  const bw=slot*.64;
   const y=v=> padT + ih - (v/max)*ih;
   const cur=n-1;
   let s='';
@@ -327,51 +347,56 @@ function drawChart(){
     s+=`<text class="ylab" x="${padL-8}" y="${yy+3}" text-anchor="end">${Math.round(val)}k</text>`; }
   for(let i=0;i<n;i++){
     const cx=x(i);
-    if(esp[i]>0) s+=`<rect class="barghost" x="${cx-bw/2}" y="${y(esp[i])}" width="${bw}" height="${padT+ih-y(esp[i])}" rx="4"/>`;
+    if(esp[i]>0){
+      s+=`<rect class="barghost" x="${cx-bw/2}" y="${y(esp[i])}" width="${bw}" height="${padT+ih-y(esp[i])}" rx="6"/>`;
+      // valor do esperado sobre a barra (só quando não houver realizado com valor parecido no topo)
+      if(!(real[i]>0) || (y(esp[i]) < y(real[i])-16))
+        s+=`<text class="barval esp" x="${cx}" y="${y(esp[i])-7}">${short(esp[i])}</text>`;
+    }
     if(real[i]>0){
       const hh=padT+ih-y(real[i]);
-      s+=`<rect class="bar" x="${cx-bw/2}" y="${y(real[i])}" width="${bw}" height="${hh}" rx="4">`;
+      s+=`<rect class="bar" x="${cx-bw/2}" y="${y(real[i])}" width="${bw}" height="${hh}" rx="6">`;
       if(i===cur) s+=`<animate attributeName="opacity" values="1;.55;1" dur="2.2s" repeatCount="indefinite"/>`;
       s+=`</rect>`;
+      s+=`<text class="barval" x="${cx}" y="${y(real[i])-7}">${short(real[i])}</text>`;
     }
-    s+=`<text class="xlab" x="${cx}" y="${H-10}" text-anchor="middle" ${i===cur?'style="fill:#25C7E0;font-weight:600"':''}>${String(labels[i]||'').toUpperCase()}</text>`;
+    s+=`<text class="xlab" x="${cx}" y="${H-8}" text-anchor="middle" ${i===cur?'style="fill:#25C7E0;font-weight:600"':''}>${String(labels[i]||'').toUpperCase()}</text>`;
   }
   svg.innerHTML=`<defs><linearGradient id="gbar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#37D6A2"/><stop offset="1" stop-color="#25C7E0"/></linearGradient></defs>`+s;
 }
 
 function preencher(d){
   D=d;
+  const meta=Number(d.metaClientes||0);
   // KPIs
   $('k-clientes').textContent=fmt(d.clientesAtivos);
   $('k-clientes-t').textContent=`▲ ${fmt(d.clientesNovos)} no mês`;
-  $('k-novos').textContent=fmt(d.clientesNovos);
-  $('k-novos-t').textContent=`projeção ${fmt(d.clientesNovosProjecao)}`;
-  // Meta de clientes (realizado / meta) + projeção
-  const meta=Number(d.metaClientes||0);
-  $('k-meta').innerHTML=`${fmt(d.clientesNovos)}<span style="font-size:18px;color:var(--muted)"> / ${fmt(meta)}</span>`;
-  const mt=$('k-meta-t');
-  if(meta>0){
-    const bateu=d.clientesNovos>=meta;
-    mt.textContent=`projeção ${fmt(d.clientesNovosProjecao)} · ${bateu?'meta batida':'faltam '+fmt(Math.max(0,meta-d.clientesNovos))}`;
-    mt.className='trend '+(d.clientesNovosProjecao>=meta?'up':'warn');
-    mt.style.color='';
-  } else { mt.textContent='cadastre a meta em Comercial'; mt.className='trend'; mt.style.color='var(--muted)'; }
   $('k-atraso').textContent=fmt(d.clientesAtraso);
-  $('k-atraso-t').textContent=`R$ ${fmt(d.valorEmAberto)} em aberto`;
-  // Gauge — meta de faturamento (realizado / esperado)
+  $('k-atraso-t').textContent='clientes vencidos';
+  $('k-valatraso').textContent=fmt(d.valorEmAberto);
+  $('k-valatraso-t').textContent=`${fmt(d.clientesAtraso)} cliente(s) em aberto`;
+  $('k-novosfat').textContent=fmt(d.faturamentoNovosClientes);
+  $('k-novosfat-t').textContent='honorário no mês';
+  // Card Meta de clientes (gauge novos / meta)
+  const pctCli = meta>0 ? Math.min(100, d.clientesNovos/meta*100) : 0;
+  $('gauge-pct-cli').textContent=Math.round(pctCli)+'%';
+  $('gaugeArcCli').style.transition='stroke-dashoffset 1.2s ease';
+  $('gaugeArcCli').style.strokeDashoffset=(251-251*pctCli/100).toFixed(1);
+  $('metacli-novos').textContent=fmt(d.clientesNovos);
+  $('metacli-meta').textContent=fmt(meta);
+  $('metacli-proj').textContent=fmt(d.clientesNovosProjecao);
+  $('metacli-sub').textContent = meta>0 ? 'da meta de clientes atingida' : 'cadastre a meta em Comercial';
+  // Card Meta de faturamento (gauge realizado / esperado)
   const pct=d.faturamentoEsperado>0 ? Math.min(100, d.faturamentoRealizado/d.faturamentoEsperado*100) : 0;
   $('gauge-pct').textContent=Math.round(pct)+'%';
   $('gaugeArc').style.transition='stroke-dashoffset 1.2s ease';
   $('gaugeArc').style.strokeDashoffset=(251-251*pct/100).toFixed(1);
   $('meta-real').textContent=fmt(d.faturamentoRealizado);
   $('meta-esp').textContent=fmt(d.faturamentoEsperado);
-  // Indicadores de faturamento
+  // Chips do gráfico (faturamento anterior / seguinte)
   if(d.labels){ $('i-ant-lab').textContent=d.labels.anterior; $('i-seg-lab').textContent=d.labels.seguinte; }
-  $('i-ant').textContent=fmt(d.faturamentoMesAnterior);
-  $('i-seg').textContent=fmt(d.faturamentoMesSeguinte);
-  $('i-novosfat').textContent=fmt(d.faturamentoNovosClientes);
-  $('i-atraso').textContent=fmt(d.valorEmAberto);
-  $('i-atraso-d').textContent=`${fmt(d.clientesAtraso)} cliente(s)`;
+  $('i-ant').textContent=`R$ ${fmt(d.faturamentoMesAnterior)}`;
+  $('i-seg').textContent=`R$ ${fmt(d.faturamentoMesSeguinte)}`;
   // Ticker
   $('ticker').innerHTML=[
     `<span><b>${fmt(d.clientesAtivos)}</b> clientes ativos · <b>${fmt(d.clientesNovos)}</b> novos no mês (projeção ${fmt(d.clientesNovosProjecao)}${meta>0?', meta '+fmt(meta):''}).</span>`,

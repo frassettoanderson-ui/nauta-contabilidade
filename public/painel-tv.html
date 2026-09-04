@@ -26,7 +26,7 @@
       radial-gradient(1100px 800px at 8% 115%, rgba(138,138,230,.10), transparent 60%),
       linear-gradient(160deg,#080B22 0%,#0B1030 55%,#080B22 100%);
     padding:22px 32px; overflow:hidden;
-    display:grid; grid-template-rows:84px 150px 1fr 56px; gap:18px;
+    display:grid; grid-template-rows:84px 150px minmax(0,1fr) 56px; gap:18px;
     font-variant-numeric:tabular-nums;
   }
   /* faint sonar rings behind everything */
@@ -71,7 +71,7 @@
   .spark{opacity:.9}
 
   /* ---------- MAIN GRID ---------- */
-  .main{display:grid; grid-template-columns:repeat(12,1fr); grid-template-rows:300px 1fr; gap:20px}
+  .main{display:grid; min-height:0; grid-template-columns:repeat(12,1fr); grid-template-rows:290px minmax(0,1fr); gap:20px}
   .card{background:linear-gradient(180deg,var(--surface),rgba(17,23,55,.5)); border:1px solid var(--line);
     border-radius:var(--r); padding:20px 22px; display:flex; flex-direction:column; min-height:0}
   .card > .ch{display:flex; align-items:baseline; justify-content:space-between; margin-bottom:14px}

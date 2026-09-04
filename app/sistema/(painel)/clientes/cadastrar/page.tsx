@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
-import { Loader2, Check, ArrowLeft, ArrowRight, Upload, FileText, FileImage, Paperclip, Save, Trash2, Link2, Copy, X, Send, Pencil, Folder, Download, Lock, Building2, Plus } from 'lucide-react'
+import { Loader2, Check, ArrowLeft, ArrowRight, Upload, FileText, FileImage, Paperclip, Save, Trash2, Link2, Copy, X, Send, Pencil, Folder, Download, Lock, Building2, Plus, Clock } from 'lucide-react'
 import { uploadDoc, saveCliente, getCliente, getClienteByLead, deleteCliente, gerarLinkCadastro, getLeadDetail, enviarParaAssinatura, getContratoByLead, listArquivos, addArquivoCliente, deleteArquivoCliente, type ContratoRow, type ArquivoRow } from '@/lib/api'
 import { CLI_FIELDS, EMP_FIELDS, SOCIO_FIELDS, CLI_TO_SOCIO } from '@/lib/cadastro'
 import HistoricoCliente from '@/components/sistema/HistoricoCliente'
@@ -16,7 +16,6 @@ type Obj = Record<string, unknown>
 
 const FIELD = 'w-full h-10 px-3.5 rounded-lg text-sm text-white placeholder-gray-600 outline-none disabled:opacity-40'
 const FS = { background: 'var(--sys-surface-3)', border: '1px solid var(--sys-border-2)' }
-const PASSOS = ['Dados do cliente', 'Dados da empresa', 'Sócio 1', 'Sócio 2', 'Sócio 3', 'Arquivos']
 
 // Largura do campo no grid de 12 colunas
 const SPAN_CLS: Record<number, string> = {
@@ -140,11 +139,10 @@ function Wizard() {
 
   const [cli, setCli] = useState<Obj>({})
   const [emp, setEmp] = useState<Obj>({ emp_usa_glp: false })
-  const [socios, setSocios] = useState<Obj[]>([{}, {}, {}])
-  const [usarCliente, setUsarCliente] = useState(false)
+  const [socios, setSocios] = useState<Obj[]>([{}, {}, {}, {}]) // sócios 2..5 (índice 0 = Sócio 2)
   const [propEhSocio1, setPropEhSocio1] = useState(false)
-  const [socio2Ativo, setSocio2Ativo] = useState(false)
-  const [socio3Ativo, setSocio3Ativo] = useState(false)
+  const [temSocios, setTemSocios] = useState(false)
+  const [numSocios, setNumSocios] = useState(2) // total de sócios, incluindo o Sócio 1 (o próprio cliente)
   const [tipo, setTipo] = useState<number | null>(null)
   const [histLeadId, setHistLeadId] = useState<string | null>(null)
   const [temFiliais, setTemFiliais] = useState(false)
@@ -166,9 +164,9 @@ function Wizard() {
         setFiliais(fil)
         setTemFiliais(!!data.emp_tem_filiais || fil.length > 0)
         const ss = (data.socios as Obj[] | undefined) ?? []
-        setSocios([0, 1, 2].map(i => ss[i] ?? {}))
-        if (ss[1]?.nome_completo || ss[1]?.cpf) setSocio2Ativo(true)
-        if (ss[2]?.nome_completo || ss[2]?.cpf) setSocio3Ativo(true)
+        const extras = ss.slice(1) // Sócio 1 = o próprio cliente (já carregado em `cli`)
+        setSocios([0, 1, 2, 3].map(i => extras[i] ?? {}))
+        if (extras.length > 0) { setTemSocios(true); setNumSocios(Math.min(5, extras.length + 1)) }
       }
       // Determina o tipo de contrato pelo interesse do lead
       const lid = leadId || (data?.lead_id as string | undefined)
@@ -225,41 +223,34 @@ function Wizard() {
   const setEmpK = (k: string, v: unknown) => setEmp(s => ({ ...s, [k]: v }))
   const setSocioK = (i: number, k: string, v: unknown) => setSocios(s => s.map((x, j) => j === i ? { ...x, [k]: v } : x))
 
-  function toggleUsarCliente(checked: boolean) {
-    setUsarCliente(checked)
-    if (checked) {
-      setSocios(s => s.map((x, j) => {
-        if (j !== 0) return x
-        const novo: Obj = { ...x }
-        CLI_TO_SOCIO.forEach(([ck, sk]) => { novo[sk] = cli[ck] ?? '' })
-        return novo
-      }))
-    }
-  }
-
   function togglePropSocio1(checked: boolean) {
     setPropEhSocio1(checked)
     if (checked) {
-      const s1 = socios[0] || {}
       setEmp(e => ({
         ...e,
-        emp_proprietario_nome: (s1.nome_completo as string) || (cli.cli_nome_completo as string) || '',
-        emp_proprietario_cpf:  (s1.cpf as string) || (cli.cli_cpf as string) || '',
+        emp_proprietario_nome: (cli.cli_nome_completo as string) || '',
+        emp_proprietario_cpf:  (cli.cli_cpf as string) || '',
       }))
     }
   }
 
-  const ativos = [true, socio2Ativo, socio3Ativo]
-  const totalPart = socios.reduce((sum, x, i) => sum + (ativos[i] ? (Number(x.participacao) || 0) : 0), 0)
+  const nExtra = temSocios ? Math.max(0, numSocios - 1) : 0
+  const somaExtras = socios.slice(0, nExtra).reduce((sum, x) => sum + (Number(x.participacao) || 0), 0)
 
   function montarPayload(): Obj {
-    const sociosOut = socios.map((s, i) => ativos[i] ? s : {})
+    // Sócio 1 é sempre o próprio cliente — montado a partir dos dados do cliente.
+    const socio1: Obj = {
+      doc_url: cli.cli_doc_url ?? '', cert_url: cli.cli_cert_url ?? '', cert_senha: cli.cli_cert_senha ?? '',
+    }
+    CLI_TO_SOCIO.forEach(([ck, sk]) => { socio1[sk] = cli[ck] ?? '' })
+    socio1.participacao = nExtra > 0 ? Math.max(0, 100 - somaExtras) : 100
+    const extras = socios.slice(0, nExtra)
     const filiaisOut = temFiliais ? filiais.filter(f => String(f.cnpj ?? '').trim() || String(f.fantasia ?? '').trim()) : []
-    return { id: clienteId, lead_id: leadId, ...cli, ...emp, socios: sociosOut, emp_tem_filiais: temFiliais, emp_filiais: filiaisOut }
+    return { id: clienteId, lead_id: leadId, ...cli, ...emp, socios: [socio1, ...extras], emp_tem_filiais: temFiliais, emp_filiais: filiaisOut }
   }
 
   async function persistir(): Promise<string | null> {
-    if (totalPart > 100) { alert(`A soma da participação dos sócios é ${totalPart}% — não pode passar de 100%.`); return null }
+    if (somaExtras > 100) { alert(`A soma da participação dos sócios é ${somaExtras}% — não pode passar de 100%.`); return null }
     const r = await saveCliente(montarPayload())
     setClienteId(r.id)
     return r.id
@@ -327,12 +318,16 @@ function Wizard() {
 
   if (loading) return <div className="flex justify-center py-24"><Loader2 size={24} className="animate-spin text-[color:var(--sys-accent)]" /></div>
 
-  const socioIdx = step - 2
-  const socioBloqueado = (socioIdx === 1 && !socio2Ativo) || (socioIdx === 2 && !socio3Ativo)
   const reqKeys = new Set(requiredKeysFor(tipo))
-  const socioAtivo = socioIdx === 0 || (socioIdx === 1 && socio2Ativo) || (socioIdx === 2 && socio3Ativo)
-  const passos = temFiliais ? [...PASSOS, 'Filiais'] : PASSOS
-  const stepFiliais = PASSOS.length // índice da aba Filiais (após Arquivos)
+  const socioTabs = temSocios ? Array.from({ length: Math.max(0, numSocios - 1) }, (_, i) => `Sócio ${i + 2}`) : []
+  const passos = [
+    'Dados do cliente', 'Dados da empresa',
+    ...socioTabs, 'Arquivos',
+    ...(temFiliais ? ['Filiais'] : []),
+    ...(histLeadId ? ['Histórico'] : []),
+  ]
+  const stepClamped = Math.min(step, passos.length - 1)
+  const atual = passos[stepClamped]
   const setFilialK = (i: number, k: string, v: unknown) => setFiliais(fs => fs.map((f, j) => j === i ? { ...f, [k]: v } : f))
   async function onFilialCNPJ(i: number, raw: string) {
     const masked = maskCNPJ(raw)
@@ -366,9 +361,9 @@ function Wizard() {
         {passos.map((p, i) => (
           <button key={p} onClick={() => setStep(i)}
             className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
-            style={{ background: step === i ? 'color-mix(in srgb, var(--sys-accent) 15%, transparent)' : 'var(--sys-surface-2)', color: step === i ? 'var(--sys-accent)' : '#6b7280', border: step === i ? '1px solid color-mix(in srgb, var(--sys-accent) 30%, transparent)' : '1px solid transparent' }}>
-            <span className="w-5 h-5 rounded-full flex items-center justify-center text-[10px]" style={{ background: step >= i ? 'var(--sys-accent)' : 'var(--sys-border-2)', color: step >= i ? '#fff' : '#9ca3af' }}>
-              {p === 'Arquivos' ? <Folder size={11} /> : p === 'Filiais' ? <Building2 size={11} /> : i + 1}
+            style={{ background: stepClamped === i ? 'color-mix(in srgb, var(--sys-accent) 15%, transparent)' : 'var(--sys-surface-2)', color: stepClamped === i ? 'var(--sys-accent)' : '#6b7280', border: stepClamped === i ? '1px solid color-mix(in srgb, var(--sys-accent) 30%, transparent)' : '1px solid transparent' }}>
+            <span className="w-5 h-5 rounded-full flex items-center justify-center text-[10px]" style={{ background: stepClamped >= i ? 'var(--sys-accent)' : 'var(--sys-border-2)', color: stepClamped >= i ? '#fff' : '#9ca3af' }}>
+              {p === 'Arquivos' ? <Folder size={11} /> : p === 'Filiais' ? <Building2 size={11} /> : p === 'Histórico' ? <Clock size={11} /> : i + 1}
             </span>
             {p}
           </button>
@@ -376,8 +371,9 @@ function Wizard() {
       </div>
 
       <div className="rounded-2xl p-4 mb-4 space-y-2.5" style={{ background: 'var(--sys-surface)', border: '1px solid var(--sys-border)' }}>
-        {step === 0 && (
+        {atual === 'Dados do cliente' && (
           <>
+            <p className="text-xs text-gray-500 mb-1">O cliente é sempre o <b className="text-gray-300">Sócio 1</b> da empresa.</p>
             <div className="grid grid-cols-12 gap-x-3 gap-y-2.5">
               {CLI_FIELDS.map(([k, label, type, span]) => (
                 <div key={k} className={colSpan(span)}>
@@ -402,7 +398,7 @@ function Wizard() {
           </>
         )}
 
-        {step === 1 && (
+        {atual === 'Dados da empresa' && (
           <div className="grid grid-cols-12 gap-x-3 gap-y-2.5">
             {EMP_FIELDS.map(([k, label, type, span]) => (
               <div key={k} className={colSpan(span)}>
@@ -430,8 +426,29 @@ function Wizard() {
             </div>
             <label className="col-span-12 flex items-center gap-2 cursor-pointer p-2.5 rounded-xl" style={{ background: 'color-mix(in srgb, var(--sys-accent) 6%, transparent)', border: '1px solid color-mix(in srgb, var(--sys-accent) 20%, transparent)' }}>
               <input type="checkbox" checked={propEhSocio1} disabled={readOnly} onChange={e => togglePropSocio1(e.target.checked)} className="w-4 h-4 accent-[var(--sys-accent)]" />
-              <span className="text-sm text-gray-300">O proprietário do imóvel é o Sócio 1 (preenche nome e CPF automaticamente)</span>
+              <span className="text-sm text-gray-300">O proprietário do imóvel é o próprio cliente / Sócio 1 (preenche nome e CPF automaticamente)</span>
             </label>
+
+            {/* Essa empresa terá sócios? */}
+            <div className="col-span-12 p-3 rounded-xl" style={{ background: 'var(--sys-surface-2)', border: '1px solid var(--sys-border-2)' }}>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" checked={temSocios} disabled={readOnly}
+                  onChange={e => { setTemSocios(e.target.checked); if (e.target.checked && numSocios < 2) setNumSocios(2) }}
+                  className="w-4 h-4 accent-[var(--sys-accent)]" />
+                <span className="text-sm text-gray-300">Essa empresa terá sócios? <span className="text-gray-500">(o cliente já é o Sócio 1)</span></span>
+              </label>
+              {temSocios && (
+                <div className="mt-3 flex items-center gap-3 flex-wrap">
+                  <label className="text-xs font-semibold text-gray-400">Quantidade total de sócios:</label>
+                  <select value={numSocios} disabled={readOnly} onChange={e => setNumSocios(Number(e.target.value))}
+                    className="h-10 px-3 rounded-lg text-sm text-white outline-none" style={FS}>
+                    {[2, 3, 4, 5].map(n => <option key={n} value={n} className="text-gray-900 bg-white">{n} sócios</option>)}
+                  </select>
+                  <span className="text-xs text-gray-500">→ habilita as abas: {socioTabs.join(', ')}</span>
+                </div>
+              )}
+            </div>
+
             <label className="col-span-12 flex items-center gap-2 cursor-pointer p-2.5 rounded-xl" style={{ background: 'color-mix(in srgb, var(--sys-accent) 6%, transparent)', border: '1px solid color-mix(in srgb, var(--sys-accent) 20%, transparent)' }}>
               <input type="checkbox" checked={temFiliais} disabled={readOnly}
                 onChange={e => { setTemFiliais(e.target.checked); if (e.target.checked && filiais.length === 0) setFiliais([{}]) }}
@@ -441,53 +458,33 @@ function Wizard() {
           </div>
         )}
 
-        {step >= 2 && step <= 4 && (
-          <>
-            {socioIdx === 0 && (
-              <label className="flex items-center gap-2 mb-2 cursor-pointer p-3 rounded-xl" style={{ background: 'color-mix(in srgb, var(--sys-accent) 6%, transparent)', border: '1px solid color-mix(in srgb, var(--sys-accent) 20%, transparent)' }}>
-                <input type="checkbox" checked={usarCliente} disabled={readOnly} onChange={e => toggleUsarCliente(e.target.checked)} className="w-4 h-4 accent-[var(--sys-accent)]" />
-                <span className="text-sm text-gray-300">Usar os dados do cliente como Sócio 1</span>
-              </label>
-            )}
-            {socioIdx === 1 && (
-              <label className="flex items-center gap-2 mb-2 cursor-pointer p-3 rounded-xl" style={{ background: 'var(--sys-surface-2)', border: '1px solid var(--sys-border-2)' }}>
-                <input type="checkbox" checked={socio2Ativo} disabled={readOnly} onChange={e => setSocio2Ativo(e.target.checked)} className="w-4 h-4 accent-[var(--sys-accent)]" />
-                <span className="text-sm text-gray-300">Adicionar Sócio 2</span>
-              </label>
-            )}
-            {socioIdx === 2 && (
-              <label className="flex items-center gap-2 mb-2 cursor-pointer p-3 rounded-xl" style={{ background: 'var(--sys-surface-2)', border: '1px solid var(--sys-border-2)' }}>
-                <input type="checkbox" checked={socio3Ativo} disabled={readOnly} onChange={e => setSocio3Ativo(e.target.checked)} className="w-4 h-4 accent-[var(--sys-accent)]" />
-                <span className="text-sm text-gray-300">Adicionar Sócio 3</span>
-              </label>
-            )}
+        {atual?.startsWith('Sócio ') && (() => {
+          const socioNum = parseInt(atual.split(' ')[1], 10) // 2..5
+          const idx = socioNum - 2                            // índice em `socios`
+          return (
+            <>
+              <p className="text-sm text-gray-400 mb-2">Dados do <b className="text-white">Sócio {socioNum}</b>. O <b className="text-white">Sócio 1</b> é o próprio cliente (aba “Dados do cliente”).</p>
+              <div className="grid grid-cols-12 gap-x-3 gap-y-2.5">
+                {SOCIO_FIELDS.map(([k, label, type, span]) => (
+                  <div key={k} className={colSpan(span)}>
+                    <SmartField label={label} type={type}
+                      required={REQ_SOCIO.includes(k)}
+                      value={(socios[idx]?.[k] as string) || ''}
+                      onChange={v => setSocioK(idx, k, v)}
+                      disabled={readOnly}
+                    />
+                  </div>
+                ))}
+              </div>
+              <PessoaUploads docKey="doc_url" certKey="cert_url" senhaKey="cert_senha" data={socios[idx] || {}} set={(k, v) => setSocioK(idx, k, v)} disabled={readOnly} />
+              <p className="text-xs pt-1" style={{ color: somaExtras > 100 ? '#f87171' : '#6b7280' }}>
+                Soma da participação dos sócios 2 a {numSocios}: <b>{somaExtras}%</b>{somaExtras > 100 ? ' — excede 100%!' : ` · o Sócio 1 (cliente) fica com ${Math.max(0, 100 - somaExtras)}%`}
+              </p>
+            </>
+          )
+        })()}
 
-            {socioBloqueado ? (
-              <p className="text-gray-600 text-sm py-6 text-center">Marque a opção acima para preencher os dados deste sócio.</p>
-            ) : (
-              <>
-                <div className="grid grid-cols-12 gap-x-3 gap-y-2.5">
-                  {SOCIO_FIELDS.map(([k, label, type, span]) => (
-                    <div key={k} className={colSpan(span)}>
-                      <SmartField label={label} type={type}
-                        required={socioAtivo && REQ_SOCIO.includes(k)}
-                        value={(socios[socioIdx]?.[k] as string) || ''}
-                        onChange={v => setSocioK(socioIdx, k, v)}
-                        disabled={readOnly}
-                      />
-                    </div>
-                  ))}
-                </div>
-                <PessoaUploads docKey="doc_url" certKey="cert_url" senhaKey="cert_senha" data={socios[socioIdx] || {}} set={(k, v) => setSocioK(socioIdx, k, v)} disabled={readOnly} />
-                <p className="text-xs pt-1" style={{ color: totalPart > 100 ? '#f87171' : '#6b7280' }}>
-                  Soma da participação dos sócios: <b>{totalPart}%</b>{totalPart > 100 ? ' — excede 100%!' : ` (faltam ${Math.max(0, 100 - totalPart)}%)`}
-                </p>
-              </>
-            )}
-          </>
-        )}
-
-        {step === 5 && (
+        {atual === 'Arquivos' && (
           <div className="space-y-5">
             {!clienteId ? (
               <p className="text-gray-500 text-sm py-8 text-center">Salve o cadastro primeiro para gerenciar os arquivos do cliente.</p>
@@ -503,9 +500,9 @@ function Wizard() {
                     }
                     if (cli.cli_doc_url) docs.push({ nome: 'Documento do cliente', url: cli.cli_doc_url as string })
                     if (cli.cli_cert_url) docs.push({ nome: 'Certificado do cliente', url: cli.cli_cert_url as string })
-                    socios.forEach((sx, i) => {
-                      if (sx.doc_url) docs.push({ nome: `Documento Sócio ${i + 1}`, url: sx.doc_url as string })
-                      if (sx.cert_url) docs.push({ nome: `Certificado Sócio ${i + 1}`, url: sx.cert_url as string })
+                    socios.slice(0, nExtra).forEach((sx, i) => {
+                      if (sx.doc_url) docs.push({ nome: `Documento Sócio ${i + 2}`, url: sx.doc_url as string })
+                      if (sx.cert_url) docs.push({ nome: `Certificado Sócio ${i + 2}`, url: sx.cert_url as string })
                     })
                     return docs.length ? (
                       <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-1">
@@ -544,7 +541,7 @@ function Wizard() {
           </div>
         )}
 
-        {step === stepFiliais && (
+        {atual === 'Filiais' && (
           <div className="space-y-3">
             <div className="flex items-center justify-between flex-wrap gap-2">
               <p className="text-sm font-bold text-white flex items-center gap-2"><Building2 size={16} className="text-[color:var(--sys-accent)]" /> Filiais da empresa <span className="text-gray-500 font-normal">({filiais.length})</span></p>
@@ -595,9 +592,11 @@ function Wizard() {
             ))}
           </div>
         )}
-      </div>
 
-      {histLeadId && <HistoricoCliente leadId={histLeadId} />}
+        {atual === 'Histórico' && histLeadId && (
+          <HistoricoCliente leadId={histLeadId} />
+        )}
+      </div>
 
       {savedMsg && <p className="text-sm text-[#22c55e] mb-4 flex items-center gap-2"><Check size={15} /> {savedMsg}</p>}
 
@@ -660,13 +659,13 @@ function Wizard() {
           </button>
         )}
 
-        <button onClick={() => setStep(s => Math.max(0, s - 1))} disabled={step === 0}
+        <button onClick={() => setStep(Math.max(0, stepClamped - 1))} disabled={stepClamped === 0}
           className="inline-flex items-center gap-2 px-4 h-11 rounded-xl text-sm text-gray-300 disabled:opacity-40" style={FS}>
           <ArrowLeft size={15} /> Voltar
         </button>
 
-        {step < passos.length - 1 && (
-          <button onClick={() => setStep(s => Math.min(passos.length - 1, s + 1))}
+        {stepClamped < passos.length - 1 && (
+          <button onClick={() => setStep(Math.min(passos.length - 1, stepClamped + 1))}
             className="inline-flex items-center gap-2 px-5 h-11 rounded-xl text-sm font-bold text-white" style={{ background: 'linear-gradient(135deg, var(--sys-accent), var(--sys-accent-2))' }}>
             Próximo <ArrowRight size={15} />
           </button>

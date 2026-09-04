@@ -3,13 +3,14 @@
 import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
-import { Loader2, Check, ArrowLeft, ArrowRight, Upload, FileText, FileImage, Paperclip, Save, Trash2, Link2, Copy, X, Send, Pencil, Folder, Download, Lock } from 'lucide-react'
+import { Loader2, Check, ArrowLeft, ArrowRight, Upload, FileText, FileImage, Paperclip, Save, Trash2, Link2, Copy, X, Send, Pencil, Folder, Download, Lock, Building2, Plus } from 'lucide-react'
 import { uploadDoc, saveCliente, getCliente, getClienteByLead, deleteCliente, gerarLinkCadastro, getLeadDetail, enviarParaAssinatura, getContratoByLead, listArquivos, addArquivoCliente, deleteArquivoCliente, type ContratoRow, type ArquivoRow } from '@/lib/api'
 import { CLI_FIELDS, EMP_FIELDS, SOCIO_FIELDS, CLI_TO_SOCIO } from '@/lib/cadastro'
 import HistoricoCliente from '@/components/sistema/HistoricoCliente'
 import { tipoFromInteresse, requiredKeysFor, REQ_SOCIO, TIPO_LABEL } from '@/lib/contratos'
 import SmartField from '@/components/cadastro/SmartField'
 import type { CEPData, CNPJData } from '@/lib/form-masks'
+import { maskCNPJ, fetchCNPJ, maskPhone } from '@/lib/form-masks'
 
 type Obj = Record<string, unknown>
 
@@ -146,6 +147,9 @@ function Wizard() {
   const [socio3Ativo, setSocio3Ativo] = useState(false)
   const [tipo, setTipo] = useState<number | null>(null)
   const [histLeadId, setHistLeadId] = useState<string | null>(null)
+  const [temFiliais, setTemFiliais] = useState(false)
+  const [filiais, setFiliais] = useState<Obj[]>([])
+  const [filialBuscando, setFilialBuscando] = useState<number | null>(null)
 
   useEffect(() => {
     async function init() {
@@ -158,6 +162,9 @@ function Wizard() {
         const c: Obj = {}, e: Obj = {}
         Object.entries(data).forEach(([k, v]) => { if (k.startsWith('cli_')) c[k] = v; if (k.startsWith('emp_')) e[k] = v })
         setCli(c); setEmp({ emp_usa_glp: false, ...e })
+        const fil = Array.isArray(data.emp_filiais) ? (data.emp_filiais as Obj[]) : []
+        setFiliais(fil)
+        setTemFiliais(!!data.emp_tem_filiais || fil.length > 0)
         const ss = (data.socios as Obj[] | undefined) ?? []
         setSocios([0, 1, 2].map(i => ss[i] ?? {}))
         if (ss[1]?.nome_completo || ss[1]?.cpf) setSocio2Ativo(true)
@@ -247,7 +254,8 @@ function Wizard() {
 
   function montarPayload(): Obj {
     const sociosOut = socios.map((s, i) => ativos[i] ? s : {})
-    return { id: clienteId, lead_id: leadId, ...cli, ...emp, socios: sociosOut }
+    const filiaisOut = temFiliais ? filiais.filter(f => String(f.cnpj ?? '').trim() || String(f.fantasia ?? '').trim()) : []
+    return { id: clienteId, lead_id: leadId, ...cli, ...emp, socios: sociosOut, emp_tem_filiais: temFiliais, emp_filiais: filiaisOut }
   }
 
   async function persistir(): Promise<string | null> {
@@ -323,6 +331,25 @@ function Wizard() {
   const socioBloqueado = (socioIdx === 1 && !socio2Ativo) || (socioIdx === 2 && !socio3Ativo)
   const reqKeys = new Set(requiredKeysFor(tipo))
   const socioAtivo = socioIdx === 0 || (socioIdx === 1 && socio2Ativo) || (socioIdx === 2 && socio3Ativo)
+  const passos = temFiliais ? [...PASSOS, 'Filiais'] : PASSOS
+  const stepFiliais = PASSOS.length // índice da aba Filiais (após Arquivos)
+  const setFilialK = (i: number, k: string, v: unknown) => setFiliais(fs => fs.map((f, j) => j === i ? { ...f, [k]: v } : f))
+  async function onFilialCNPJ(i: number, raw: string) {
+    const masked = maskCNPJ(raw)
+    setFilialK(i, 'cnpj', masked)
+    if (masked.replace(/\D/g, '').length === 14) {
+      setFilialBuscando(i)
+      const d = await fetchCNPJ(masked)
+      if (d) setFiliais(fs => fs.map((f, j) => j === i ? {
+        ...f, cnpj: masked,
+        fantasia: f.fantasia || d.nome_fantasia || d.razao_social,
+        municipio: f.municipio || d.municipio,
+        estado: f.estado || d.uf,
+        telefone: f.telefone || d.telefone,
+      } : f))
+      setFilialBuscando(null)
+    }
+  }
 
   return (
     <div className="p-6 lg:p-8 max-w-6xl">
@@ -336,12 +363,12 @@ function Wizard() {
 
       {/* Stepper (quebra linha, sem corte) */}
       <div className="flex flex-wrap items-center gap-2 mb-5">
-        {PASSOS.map((p, i) => (
+        {passos.map((p, i) => (
           <button key={p} onClick={() => setStep(i)}
             className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
             style={{ background: step === i ? 'color-mix(in srgb, var(--sys-accent) 15%, transparent)' : 'var(--sys-surface-2)', color: step === i ? 'var(--sys-accent)' : '#6b7280', border: step === i ? '1px solid color-mix(in srgb, var(--sys-accent) 30%, transparent)' : '1px solid transparent' }}>
             <span className="w-5 h-5 rounded-full flex items-center justify-center text-[10px]" style={{ background: step >= i ? 'var(--sys-accent)' : 'var(--sys-border-2)', color: step >= i ? '#fff' : '#9ca3af' }}>
-              {p === 'Arquivos' ? <Folder size={11} /> : i + 1}
+              {p === 'Arquivos' ? <Folder size={11} /> : p === 'Filiais' ? <Building2 size={11} /> : i + 1}
             </span>
             {p}
           </button>
@@ -404,6 +431,12 @@ function Wizard() {
             <label className="col-span-12 flex items-center gap-2 cursor-pointer p-2.5 rounded-xl" style={{ background: 'color-mix(in srgb, var(--sys-accent) 6%, transparent)', border: '1px solid color-mix(in srgb, var(--sys-accent) 20%, transparent)' }}>
               <input type="checkbox" checked={propEhSocio1} disabled={readOnly} onChange={e => togglePropSocio1(e.target.checked)} className="w-4 h-4 accent-[var(--sys-accent)]" />
               <span className="text-sm text-gray-300">O proprietário do imóvel é o Sócio 1 (preenche nome e CPF automaticamente)</span>
+            </label>
+            <label className="col-span-12 flex items-center gap-2 cursor-pointer p-2.5 rounded-xl" style={{ background: 'color-mix(in srgb, var(--sys-accent) 6%, transparent)', border: '1px solid color-mix(in srgb, var(--sys-accent) 20%, transparent)' }}>
+              <input type="checkbox" checked={temFiliais} disabled={readOnly}
+                onChange={e => { setTemFiliais(e.target.checked); if (e.target.checked && filiais.length === 0) setFiliais([{}]) }}
+                className="w-4 h-4 accent-[var(--sys-accent)]" />
+              <span className="text-sm text-gray-300">Essa empresa tem filiais? (abre a aba <b>Filiais</b> para cadastrar os CNPJs)</span>
             </label>
           </div>
         )}
@@ -510,6 +543,58 @@ function Wizard() {
             )}
           </div>
         )}
+
+        {step === stepFiliais && (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <p className="text-sm font-bold text-white flex items-center gap-2"><Building2 size={16} className="text-[color:var(--sys-accent)]" /> Filiais da empresa <span className="text-gray-500 font-normal">({filiais.length})</span></p>
+              <button type="button" disabled={readOnly} onClick={() => setFiliais(fs => [...fs, {}])}
+                className="inline-flex items-center gap-1.5 px-3 h-9 rounded-lg text-xs font-bold text-white disabled:opacity-60" style={{ background: 'linear-gradient(135deg, var(--sys-accent), #6355e0)' }}>
+                <Plus size={14} /> Adicionar filial
+              </button>
+            </div>
+            {filiais.length === 0 ? (
+              <p className="text-gray-600 text-sm py-6 text-center">Nenhuma filial cadastrada. Clique em “Adicionar filial” — ao digitar o CNPJ, o resto preenche sozinho.</p>
+            ) : filiais.map((f, i) => (
+              <div key={i} className="rounded-xl p-3 grid grid-cols-12 gap-2.5" style={{ background: 'var(--sys-surface-2)', border: '1px solid var(--sys-border)' }}>
+                <div className="col-span-12 sm:col-span-6">
+                  <label className="block text-[11px] font-semibold text-gray-400 mb-1">CNPJ da filial</label>
+                  <div className="relative">
+                    <input value={(f.cnpj as string) || ''} disabled={readOnly} placeholder="00.000.000/0001-00" inputMode="numeric"
+                      onChange={e => onFilialCNPJ(i, e.target.value)}
+                      className="w-full h-10 px-3 rounded-lg text-sm text-white placeholder-gray-600 outline-none" style={{ background: 'var(--sys-surface-3)', border: '1px solid var(--sys-border-2)' }} />
+                    {filialBuscando === i && <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[11px] text-gray-500">buscando…</span>}
+                  </div>
+                </div>
+                <div className="col-span-12 sm:col-span-6">
+                  <label className="block text-[11px] font-semibold text-gray-400 mb-1">Nome fantasia</label>
+                  <input value={(f.fantasia as string) || ''} disabled={readOnly} onChange={e => setFilialK(i, 'fantasia', e.target.value)}
+                    className="w-full h-10 px-3 rounded-lg text-sm text-white outline-none" style={{ background: 'var(--sys-surface-3)', border: '1px solid var(--sys-border-2)' }} />
+                </div>
+                <div className="col-span-7 sm:col-span-5">
+                  <label className="block text-[11px] font-semibold text-gray-400 mb-1">Município</label>
+                  <input value={(f.municipio as string) || ''} disabled={readOnly} onChange={e => setFilialK(i, 'municipio', e.target.value)}
+                    className="w-full h-10 px-3 rounded-lg text-sm text-white outline-none" style={{ background: 'var(--sys-surface-3)', border: '1px solid var(--sys-border-2)' }} />
+                </div>
+                <div className="col-span-5 sm:col-span-2">
+                  <label className="block text-[11px] font-semibold text-gray-400 mb-1">UF</label>
+                  <input value={(f.estado as string) || ''} disabled={readOnly} maxLength={2} onChange={e => setFilialK(i, 'estado', e.target.value.toUpperCase())}
+                    className="w-full h-10 px-3 rounded-lg text-sm text-white outline-none uppercase" style={{ background: 'var(--sys-surface-3)', border: '1px solid var(--sys-border-2)' }} />
+                </div>
+                <div className="col-span-9 sm:col-span-4">
+                  <label className="block text-[11px] font-semibold text-gray-400 mb-1">Telefone</label>
+                  <input value={(f.telefone as string) || ''} disabled={readOnly} onChange={e => setFilialK(i, 'telefone', maskPhone(e.target.value))}
+                    className="w-full h-10 px-3 rounded-lg text-sm text-white outline-none" style={{ background: 'var(--sys-surface-3)', border: '1px solid var(--sys-border-2)' }} />
+                </div>
+                <div className="col-span-3 sm:col-span-1 flex items-end">
+                  <button type="button" disabled={readOnly} onClick={() => setFiliais(fs => fs.filter((_, j) => j !== i))}
+                    className="h-10 w-full rounded-lg flex items-center justify-center text-red-400 hover:text-red-300 disabled:opacity-40"
+                    style={{ background: 'var(--sys-surface-3)', border: '1px solid var(--sys-border-2)' }} title="Remover filial"><Trash2 size={15} /></button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {histLeadId && <HistoricoCliente leadId={histLeadId} />}
@@ -580,8 +665,8 @@ function Wizard() {
           <ArrowLeft size={15} /> Voltar
         </button>
 
-        {step < PASSOS.length - 1 && (
-          <button onClick={() => setStep(s => Math.min(PASSOS.length - 1, s + 1))}
+        {step < passos.length - 1 && (
+          <button onClick={() => setStep(s => Math.min(passos.length - 1, s + 1))}
             className="inline-flex items-center gap-2 px-5 h-11 rounded-xl text-sm font-bold text-white" style={{ background: 'linear-gradient(135deg, var(--sys-accent), var(--sys-accent-2))' }}>
             Próximo <ArrowRight size={15} />
           </button>

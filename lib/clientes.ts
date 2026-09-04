@@ -8,6 +8,7 @@ const CLI_COLS = [
   'emp_nome', 'emp_fantasia', 'emp_cnpj', 'emp_regime', 'emp_endereco', 'emp_bairro', 'emp_cidade_estado', 'emp_cep',
   'emp_inscricao_imobiliaria', 'emp_area_ocupada', 'emp_edificacao', 'emp_usa_glp',
   'emp_proprietario_nome', 'emp_proprietario_cpf', 'emp_atividade', 'emp_capital_social', 'emp_telefone', 'emp_email',
+  'emp_tem_filiais', 'emp_filiais',
 ]
 
 const SOCIO_COLS = [
@@ -82,6 +83,10 @@ const PARES_UNIFICADOS: [string, string][] = [
 ]
 
 export async function saveCliente(payload: AnyObj & { id?: string; lead_id?: string; socios?: AnyObj[] }, empresaId?: string) {
+  // emp_filiais é JSONB — serializa se vier como array/objeto
+  if (payload.emp_filiais != null && typeof payload.emp_filiais !== 'string') {
+    payload.emp_filiais = JSON.stringify(payload.emp_filiais)
+  }
   // Puxa o contato do lead (fonte única) para preencher os campos de contato que
   // estiverem vazios no cliente — o popup do contrato, por ex., não coleta telefone.
   const leadIdContato = (payload.lead_id as string)

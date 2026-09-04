@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import { Loader2, Search, DollarSign, MessageCircle, X, Plus, Trash2, Phone, Mail, Smartphone, CalendarClock } from 'lucide-react'
+import { Loader2, Search, DollarSign, MessageCircle, X, Plus, Trash2, Phone, Mail, Smartphone, CalendarClock, ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react'
 import { listFinanceiro, listPagamentos, addPagamento, deletePagamento, listEventos, addEvento, type PagamentoRow, type EventoRow } from '@/lib/api'
 
 type Row = Record<string, unknown>
@@ -52,6 +52,7 @@ export default function FinanceiroPage() {
   const [busca, setBusca] = useState('')
   const [filtro, setFiltro] = useState<'todos' | StatusKey>('todos')
   const [cobranca, setCobranca] = useState<Row | null>(null)
+  const [sort, setSort] = useState<{ key: string; dir: 1 | -1 }>({ key: 'empresa', dir: 1 })
 
   const load = useCallback(() => { listFinanceiro().then(setRows).catch(() => setRows([])) }, [])
   useEffect(() => { load() }, [load])
@@ -69,6 +70,32 @@ export default function FinanceiroPage() {
     const q = busca.toLowerCase()
     return s(r.emp_nome).toLowerCase().includes(q) || s(r.responsavel).toLowerCase().includes(q) || s(r.lead_nome).toLowerCase().includes(q)
   })
+
+  // Ordenação por cabeçalho (clique alterna asc/desc)
+  const COLS: { label: string; key: string | null }[] = [
+    { label: 'Empresa', key: 'empresa' }, { label: 'Responsável', key: 'responsavel' },
+    { label: 'Telefone', key: 'telefone' }, { label: 'Honorário', key: 'honorario' },
+    { label: 'Vencimento', key: 'vencimento' }, { label: 'Prazo prometido', key: 'prazo' },
+    { label: 'Status', key: 'status' }, { label: '', key: null },
+  ]
+  const sortKey = (r: Row, key: string): string | number => {
+    switch (key) {
+      case 'empresa': return (s(r.emp_nome) || s(r.lead_nome)).toLowerCase()
+      case 'responsavel': return s(r.responsavel).toLowerCase()
+      case 'telefone': return s(r.emp_telefone) || s(r.whatsapp)
+      case 'honorario': return Number(r.valor_honorario ?? 0)
+      case 'vencimento': return s(r.proximo_vencimento)
+      case 'prazo': return s(r.prazo_prometido)
+      case 'status': return ({ atrasado: 0, a_vencer: 1, em_dia: 2 } as Record<string, number>)[s(r.financeiro_status)] ?? 9
+      default: return ''
+    }
+  }
+  const sorted = [...filtered].sort((a, b) => {
+    const va = sortKey(a, sort.key), vb = sortKey(b, sort.key)
+    if (typeof va === 'number' && typeof vb === 'number') return (va - vb) * sort.dir
+    return String(va).localeCompare(String(vb), 'pt-BR', { numeric: true }) * sort.dir
+  })
+  const toggleSort = (key: string) => setSort(cur => cur.key === key ? { key, dir: (cur.dir === 1 ? -1 : 1) } : { key, dir: 1 })
 
   return (
     <div className="p-6 lg:p-8">
@@ -113,13 +140,23 @@ export default function FinanceiroPage() {
           <table className="w-full text-sm whitespace-nowrap">
             <thead>
               <tr style={{ borderBottom: '1px solid var(--sys-border)' }}>
-                {['Empresa', 'Responsável', 'Telefone', 'Honorário', 'Vencimento', 'Prazo prometido', 'Status', ''].map((col, i) => (
-                  <th key={i} className="text-left text-[11px] font-bold uppercase tracking-wide text-gray-500 px-4 py-3">{col}</th>
+                {COLS.map((col, i) => col.key ? (
+                  <th key={i} onClick={() => toggleSort(col.key!)}
+                    className="text-left text-[11px] font-bold uppercase tracking-wide text-gray-500 px-4 py-3 cursor-pointer select-none hover:text-gray-300 transition-colors">
+                    <span className="inline-flex items-center gap-1">
+                      {col.label}
+                      {sort.key === col.key
+                        ? (sort.dir === 1 ? <ChevronUp size={13} className="text-[color:var(--sys-accent)]" /> : <ChevronDown size={13} className="text-[color:var(--sys-accent)]" />)
+                        : <ChevronsUpDown size={12} className="opacity-30" />}
+                    </span>
+                  </th>
+                ) : (
+                  <th key={i} className="text-left text-[11px] font-bold uppercase tracking-wide text-gray-500 px-4 py-3">{col.label}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {filtered.map(r => {
+              {sorted.map(r => {
                 const meses = Number(r.meses_atraso ?? 0)
                 const tel = s(r.emp_telefone) || s(r.whatsapp)
                 return (

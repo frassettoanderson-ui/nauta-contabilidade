@@ -26,6 +26,7 @@ export const MENU_GRUPOS: MenuGrupo[] = [
     { href: '/sistema/comercial/kanban', label: 'CRM' },
     { href: '/sistema/comercial/leads', label: 'Leads' },
     { href: '/sistema/comercial/meta', label: 'Cadastrar meta' },
+    { href: '/sistema/comercial/comissoes', label: 'Comissões' },
   ] },
   { grupo: 'Onboarding', itens: [
     { href: '/sistema/onboarding', label: 'Onboarding' },

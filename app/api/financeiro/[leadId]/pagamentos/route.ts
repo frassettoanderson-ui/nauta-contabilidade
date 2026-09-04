@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { listPagamentos, addPagamento, deletePagamento } from '@/lib/leads'
+import { empresaAtivaId } from '@/lib/tenant'
 
 export const dynamic = 'force-dynamic'
 
@@ -16,7 +17,7 @@ export async function POST(req: NextRequest, { params }: { params: { leadId: str
   if (!session) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
   const { competencia, valor, pago_em } = await req.json()
   if (!competencia) return NextResponse.json({ error: 'competência faltando' }, { status: 400 })
-  const p = await addPagamento(params.leadId, competencia, valor ?? null, pago_em ?? null)
+  const p = await addPagamento(params.leadId, competencia, valor ?? null, pago_em ?? null, await empresaAtivaId())
   return NextResponse.json(p)
 }
 

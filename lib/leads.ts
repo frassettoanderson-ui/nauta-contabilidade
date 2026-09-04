@@ -340,12 +340,13 @@ export async function listPagamentos(leadId: string) {
   return res.rows
 }
 
-export async function addPagamento(leadId: string, competencia: string, valor: number | null, pagoEm: string | null) {
-  // competencia 'YYYY-MM' -> primeiro dia do mês
+export async function addPagamento(leadId: string, competencia: string, valor: number | null, pagoEm: string | null, empresaId?: string | null) {
+  // competencia 'YYYY-MM' -> primeiro dia do mês; empresa_id obrigatório p/ aparecer no Dashboard
   const res = await pool.query(
-    `INSERT INTO financeiro_pagamentos (lead_id, competencia, valor, pago_em)
-     VALUES ($1, ($2 || '-01')::date, $3, $4) RETURNING id, to_char(competencia,'YYYY-MM') AS competencia, valor, pago_em, criado_em`,
-    [leadId, competencia, valor, pagoEm]
+    `INSERT INTO financeiro_pagamentos (lead_id, competencia, valor, pago_em, empresa_id)
+     VALUES ($1, ($2 || '-01')::date, $3, $4, COALESCE($5, (SELECT id FROM empresas WHERE slug = 'nauta')))
+     RETURNING id, to_char(competencia,'YYYY-MM') AS competencia, valor, pago_em, criado_em`,
+    [leadId, competencia, valor, pagoEm, empresaId ?? null]
   )
   emitCrmChange()
   return res.rows[0]

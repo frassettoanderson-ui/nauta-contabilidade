@@ -403,6 +403,15 @@ export function getMeta(competencia?: string): Promise<MetaData> {
   const q = competencia ? `?competencia=${encodeURIComponent(competencia)}` : ''
   return fetch(`/api/metas${q}`).then(r => json<MetaData>(r))
 }
+export function getMetasAno(ano: number): Promise<{ ano: number; metas: number[] }> {
+  return fetch(`/api/metas?ano=${ano}`).then(r => json(r))
+}
+export function setMetasAno(ano: number, metas: number[]): Promise<{ ok: true }> {
+  return fetch('/api/metas', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ano, metas }),
+  }).then(r => json(r))
+}
 export function setMeta(competencia: string, metaClientes: number): Promise<{ ok: true }> {
   return fetch('/api/metas', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },

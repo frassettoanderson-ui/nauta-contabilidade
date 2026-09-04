@@ -16,6 +16,32 @@ export async function getMeta(empresaId: string, competencia?: string): Promise<
   return { competencia: comp.slice(0, 7), metaClientes: Number(r.rows[0]?.meta_clientes ?? 0) }
 }
 
+// Metas dos 12 meses de um ano (índice 0 = janeiro). Meses sem cadastro voltam 0.
+export async function getMetasAno(empresaId: string, ano: number): Promise<number[]> {
+  const r = await pool.query(
+    `SELECT EXTRACT(MONTH FROM competencia)::int AS mes, meta_clientes
+       FROM metas WHERE empresa_id = $1 AND EXTRACT(YEAR FROM competencia) = $2`,
+    [empresaId, ano]
+  )
+  const out = Array(12).fill(0) as number[]
+  for (const row of r.rows) out[Number(row.mes) - 1] = Number(row.meta_clientes || 0)
+  return out
+}
+
+// Salva os 12 meses de uma vez (upsert por competência).
+export async function setMetasAno(empresaId: string, ano: number, metas: number[]): Promise<{ ok: true }> {
+  for (let i = 0; i < 12; i++) {
+    const comp = `${ano}-${String(i + 1).padStart(2, '0')}-01`
+    const v = Math.max(0, Math.round(Number(metas[i]) || 0))
+    await pool.query(
+      `INSERT INTO metas (empresa_id, competencia, meta_clientes) VALUES ($1, $2, $3)
+       ON CONFLICT (empresa_id, competencia) DO UPDATE SET meta_clientes = EXCLUDED.meta_clientes, atualizado_em = now()`,
+      [empresaId, comp, v]
+    )
+  }
+  return { ok: true }
+}
+
 export async function setMeta(empresaId: string, competencia: string, metaClientes: number): Promise<{ ok: true }> {
   const comp = mkCompetencia(competencia)
   await pool.query(

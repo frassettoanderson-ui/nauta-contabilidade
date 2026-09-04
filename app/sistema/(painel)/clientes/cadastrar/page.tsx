@@ -404,6 +404,14 @@ function Wizard() {
                   disabled={readOnly}
                 />
               </div>
+              {/* Senha gov.br — campo normal do cadastro (antes ficava num .txt em Arquivos) */}
+              <div className={colSpan(4)}>
+                <SmartField label="Senha gov.br" type="text"
+                  value={(cli.cli_senha_gov as string) || ''}
+                  onChange={v => setCliK('cli_senha_gov', v)}
+                  disabled={readOnly}
+                />
+              </div>
             </div>
             <PessoaUploads docKey="cli_doc_url" certKey="cli_cert_url" senhaKey="cli_cert_senha" data={cli} set={setCliK} disabled={readOnly} />
           </>

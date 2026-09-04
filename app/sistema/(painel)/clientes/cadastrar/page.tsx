@@ -9,7 +9,7 @@ import { CLI_FIELDS, EMP_FIELDS, SOCIO_FIELDS, CLI_TO_SOCIO } from '@/lib/cadast
 import HistoricoCliente from '@/components/sistema/HistoricoCliente'
 import { tipoFromInteresse, requiredKeysFor, REQ_SOCIO, TIPO_LABEL } from '@/lib/contratos'
 import SmartField from '@/components/cadastro/SmartField'
-import type { CEPData } from '@/lib/form-masks'
+import type { CEPData, CNPJData } from '@/lib/form-masks'
 
 type Obj = Record<string, unknown>
 
@@ -29,6 +29,21 @@ function makeCEPFill(setter: (k: string, v: unknown) => void, prefix: string) {
     setter(`${prefix}endereco`, data.logradouro)
     setter(`${prefix}bairro`, data.bairro)
     setter(`${prefix}cidade_estado`, `${data.localidade}/${data.uf}`)
+  }
+}
+
+// Auto-preenche os dados da empresa a partir do CNPJ (BrasilAPI/Receita).
+function makeCNPJFill(setter: (k: string, v: unknown) => void) {
+  return (d: CNPJData) => {
+    if (d.razao_social) setter('emp_nome', d.razao_social)
+    if (d.nome_fantasia) setter('emp_fantasia', d.nome_fantasia)
+    const end = [d.logradouro, d.numero].filter(Boolean).join(', ')
+    if (end) setter('emp_endereco', end)
+    if (d.bairro) setter('emp_bairro', d.bairro)
+    if (d.cep) setter('emp_cep', d.cep)
+    if (d.municipio) setter('emp_cidade_estado', `${d.municipio}/${d.uf}`)
+    if (d.atividade) setter('emp_atividade', d.atividade)
+    if (d.telefone) setter('emp_telefone', d.telefone)
   }
 }
 
@@ -368,6 +383,7 @@ function Wizard() {
                   value={(emp[k] as string) || ''}
                   onChange={v => setEmpK(k, v)}
                   onCEPFill={type === 'cep' ? makeCEPFill(setEmpK, 'emp_') : undefined}
+                  onCNPJFill={type === 'cnpj' ? makeCNPJFill(setEmpK) : undefined}
                   disabled={readOnly}
                 />
               </div>

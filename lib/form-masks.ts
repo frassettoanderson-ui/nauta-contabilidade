@@ -111,6 +111,35 @@ export async function fetchCEP(cep: string): Promise<CEPData | null> {
   } catch { return null }
 }
 
+// ─── CNPJ via BrasilAPI (dados da Receita) ─────────────────────────────────
+export interface CNPJData {
+  razao_social: string; nome_fantasia: string; logradouro: string; numero: string
+  bairro: string; cep: string; municipio: string; uf: string; telefone: string; atividade: string
+}
+export async function fetchCNPJ(cnpj: string): Promise<CNPJData | null> {
+  const d = cnpj.replace(/\D/g, '')
+  if (d.length !== 14) return null
+  try {
+    const r = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${d}`)
+    if (!r.ok) return null
+    const j = await r.json()
+    const cep = String(j.cep ?? '').replace(/\D/g, '')
+    const tel = String(j.ddd_telefone_1 ?? '').replace(/\D/g, '')
+    return {
+      razao_social: j.razao_social ?? '',
+      nome_fantasia: j.nome_fantasia ?? '',
+      logradouro: [j.descricao_tipo_de_logradouro, j.logradouro].filter(Boolean).join(' ').trim(),
+      numero: String(j.numero ?? ''),
+      bairro: j.bairro ?? '',
+      cep: cep.length === 8 ? `${cep.slice(0, 5)}-${cep.slice(5)}` : '',
+      municipio: j.municipio ?? '',
+      uf: j.uf ?? '',
+      telefone: tel ? maskPhone(tel) : '',
+      atividade: j.cnae_fiscal_descricao ?? '',
+    }
+  } catch { return null }
+}
+
 // ─── Helper: parseia "Cidade/UF" ──────────────────────────────────────────
 
 export function parseCidadeEstado(v: string): { cidade: string; uf: string } {

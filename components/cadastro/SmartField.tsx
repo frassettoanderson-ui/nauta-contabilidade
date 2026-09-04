@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react'
 import { Loader2 } from 'lucide-react'
 import {
   maskCPF, validateCPF, maskCNPJ, maskCEP, maskPhone, onlyLetters, onlyNumbers, maskMoney,
-  ESTADOS_BR, ESTADO_CIVIL_OPS, REGIME_OPS, fetchCEP, parseCidadeEstado,
-  type CEPData,
+  ESTADOS_BR, ESTADO_CIVIL_OPS, REGIME_OPS, fetchCEP, fetchCNPJ, parseCidadeEstado,
+  type CEPData, type CNPJData,
 } from '@/lib/form-masks'
 
 const BASE    = 'w-full h-10 px-3.5 rounded-lg text-sm text-white placeholder-gray-600 outline-none disabled:opacity-40'
@@ -37,10 +37,12 @@ export interface SmartFieldProps {
   disabled?: boolean
   /** Chamado após busca de CEP bem-sucedida; o pai deve atualizar endereco/bairro/cidade_estado */
   onCEPFill?: (data: CEPData) => void
+  /** Chamado após busca de CNPJ bem-sucedida; o pai preenche os campos da empresa */
+  onCNPJFill?: (data: CNPJData) => void
 }
 
 export default function SmartField({
-  label, value, onChange, type = 'text', required, disabled, onCEPFill,
+  label, value, onChange, type = 'text', required, disabled, onCEPFill, onCNPJFill,
 }: SmartFieldProps) {
   const [cpfInvalid, setCpfInvalid]     = useState(false)
   const [loadingCep, setLoadingCep]     = useState(false)
@@ -122,12 +124,25 @@ export default function SmartField({
 
   // ── CNPJ ──────────────────────────────────────────────────────────────
   if (type === 'cnpj') {
+    const handleCNPJ = async (raw: string) => {
+      const masked = maskCNPJ(raw)
+      onChange(masked)
+      if (masked.replace(/\D/g, '').length === 14 && onCNPJFill) {
+        setLoadingCep(true)
+        const data = await fetchCNPJ(masked)
+        if (data) onCNPJFill(data)
+        setLoadingCep(false)
+      }
+    }
     return (
       <div>
         <Label text={label} />
-        <input type="text" value={value} disabled={disabled} placeholder="00.000.000/0001-00"
-          onChange={e => onChange(maskCNPJ(e.target.value))}
-          className={BASE_NARROW} style={errBorder ? FSE : FS} />
+        <div className="relative">
+          <input type="text" value={value} disabled={disabled} placeholder="00.000.000/0001-00"
+            onChange={e => handleCNPJ(e.target.value)}
+            className={BASE_NARROW} style={errBorder ? FSE : FS} />
+          {loadingCep && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-gray-500">buscando…</span>}
+        </div>
       </div>
     )
   }

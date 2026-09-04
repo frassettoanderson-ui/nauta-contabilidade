@@ -72,7 +72,7 @@ export default function ComissoesPage() {
           <Percent size={22} className="text-[color:var(--sys-accent)]" /> Comissões do comercial
         </h1>
         <p className="text-gray-500 text-sm mt-0.5">
-          10% de recorrência sobre todos os honorários pagos no mês + 100% do 1º honorário de cada cliente. O que é pago no mês é apurado e pago ao setor comercial no mês seguinte.
+          100% do 1º honorário de cada cliente + 10% de recorrência sobre os demais honorários pagos no mês (a recorrência começa no 2º honorário). O que é pago no mês é apurado e pago ao setor comercial no mês seguinte.
         </p>
       </div>
 
@@ -132,7 +132,7 @@ export default function ComissoesPage() {
               </table>
             </div>
             <p className="text-xs text-gray-500 text-center px-4 py-2.5" style={{ borderTop: '1px solid var(--sys-border)' }}>
-              Esperado = honorários dos clientes ativos que vencem em {d.label} (o 1º honorário é o cliente cujo primeiro vencimento cai neste mês). Realizado = pagamentos com data dentro do mês.
+              Esperado = honorários dos clientes ativos que vencem em {d.label}; o 1º honorário (cliente cujo primeiro vencimento cai neste mês) vale 100% e não gera os 10%. Realizado = pagamentos com data dentro do mês.
             </p>
           </div>
 
@@ -165,7 +165,7 @@ export default function ComissoesPage() {
                       <td className="px-4 py-3 text-right text-gray-300 tabular-nums">{brl(it.valor)}</td>
                       <td className="px-4 py-3 text-center">
                         {it.primeiro ? (
-                          <span className="inline-block px-2 py-0.5 rounded-md text-[11px] font-bold" style={{ background: 'rgba(34,197,94,0.14)', color: '#22c55e' }}>1º honorário + 10%</span>
+                          <span className="inline-block px-2 py-0.5 rounded-md text-[11px] font-bold" style={{ background: 'rgba(34,197,94,0.14)', color: '#22c55e' }}>1º honorário (100%)</span>
                         ) : (
                           <span className="inline-block px-2 py-0.5 rounded-md text-[11px] font-bold" style={{ background: 'rgba(148,163,184,0.12)', color: '#9ca3af' }}>recorrência 10%</span>
                         )}
@@ -205,12 +205,12 @@ export default function ComissoesPage() {
                       <td className="px-4 py-3 text-right text-gray-300 tabular-nums">{brl(it.valor)}</td>
                       <td className="px-4 py-3 text-center">
                         {it.primeiro ? (
-                          <span className="inline-block px-2 py-0.5 rounded-md text-[11px] font-bold" style={{ background: 'rgba(34,197,94,0.14)', color: '#22c55e' }}>1º honorário + 10%</span>
+                          <span className="inline-block px-2 py-0.5 rounded-md text-[11px] font-bold" style={{ background: 'rgba(34,197,94,0.14)', color: '#22c55e' }}>1º honorário (100%)</span>
                         ) : (
                           <span className="inline-block px-2 py-0.5 rounded-md text-[11px] font-bold" style={{ background: 'rgba(148,163,184,0.12)', color: '#9ca3af' }}>recorrência 10%</span>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-right font-black tabular-nums text-gray-200">{brl(it.valor * 0.10 + (it.primeiro ? it.valor : 0))}</td>
+                      <td className="px-4 py-3 text-right font-black tabular-nums text-gray-200">{brl(it.primeiro ? it.valor : it.valor * 0.10)}</td>
                     </tr>
                   ))}
                 </tbody>

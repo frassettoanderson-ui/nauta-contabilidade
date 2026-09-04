@@ -1,8 +1,8 @@
 import pool from './db'
 
 // Regra de comissionamento do setor comercial (definida em 04/09/2026):
-//  - 10% de recorrência sobre TODOS os honorários pagos dentro do mês (pelo pago_em);
-//  - + 100% do PRIMEIRO honorário pago de cada cliente (a 1ª competência do lead);
+//  - 10% de recorrência sobre os honorários pagos dentro do mês (pelo pago_em), a partir do 2º honorário;
+//  - 100% do PRIMEIRO honorário pago de cada cliente (a 1ª competência do lead) — SEM os 10% (senão pagaria 2x);
 //  - apuração sempre do mês anterior: o que foi pago em M é pago ao comercial em M+1.
 // Não há vendedor individual — a comissão é do setor comercial como um todo.
 export const RECORRENCIA_COMISSAO = 0.10
@@ -50,7 +50,7 @@ export async function getComissoes(empresaId: string, ano: number, mes: number):
   const itens: ComissaoItem[] = r.rows.map(row => {
     const valor = Number(row.valor || 0)
     const primeiro = !!row.primeiro
-    const recorrencia = r2(valor * RECORRENCIA_COMISSAO)
+    const recorrencia = primeiro ? 0 : r2(valor * RECORRENCIA_COMISSAO) // 1º honorário não gera os 10%
     const primeiro_valor = primeiro ? valor : 0
     return {
       id: String(row.id), lead_id: String(row.lead_id), cliente: String(row.cliente || ''), empresa: String(row.empresa || ''),
@@ -91,7 +91,7 @@ export async function getComissoes(empresaId: string, ano: number, mes: number):
   const esperado = zero()
   for (const it of esperadoItens) {
     esperado.honorarios += it.valor
-    esperado.recorrencia += it.valor * RECORRENCIA_COMISSAO
+    if (!it.primeiro) esperado.recorrencia += it.valor * RECORRENCIA_COMISSAO
     if (it.primeiro) { esperado.primeiros += it.valor; esperado.qtdPrimeiros++ }
     esperado.qtd++
   }

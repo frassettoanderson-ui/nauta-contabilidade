@@ -528,3 +528,9 @@ export async function uploadImage(file: File): Promise<string> {
   const data = await json<{ url: string }>(res)
   return data.url
 }
+
+// ─── COMISSÕES (Comercial) ───────────────────────────────────────────────────
+export type { ComissoesData, ComissaoItem, ComissaoVendedor } from './comissoes'
+export function getComissoes(ano: number, mes: number): Promise<import('./comissoes').ComissoesData> {
+  return fetch(`/api/comercial/comissoes?ano=${ano}&mes=${mes}`).then(r => json(r))
+}

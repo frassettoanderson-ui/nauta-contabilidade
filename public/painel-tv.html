@@ -3,183 +3,143 @@
 <title>Nauta Contabilidade — Central de Operações</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#080B22; --bg2:#0B1030;
-    --surface:#111737; --surface2:#161E44;
+    --bg:#070B24; --bg2:#0A1030;
+    --surface:#0E1538; --surface2:#131B45;
     --line:rgba(255,255,255,.07); --line2:rgba(255,255,255,.12);
-    --teal:#25C7E0; --teal-dim:rgba(37,199,224,.14);
-    --indigo:#8A8AE6; --indigo-dim:rgba(138,138,230,.14);
     --text:#EAF0FF; --muted:#8B93C4; --faint:#5B6398;
-    --green:#37D6A2; --amber:#F6B34C; --red:#FF6D82;
+    --blue:#3B82F6; --teal:#22D3EE; --green:#22C55E; --amber:#F5B82E; --red:#EF4444;
     --r:16px;
   }
   *{box-sizing:border-box; margin:0; padding:0}
   html,body{height:100%; background:#000; overflow:hidden; font-family:'Inter',system-ui,sans-serif}
   #viewport{width:100vw; height:100vh; display:flex; align-items:center; justify-content:center; background:#000}
-
   #stage{
     width:1920px; height:1080px; flex:0 0 auto; position:relative; color:var(--text);
     background:
-      radial-gradient(1200px 700px at 82% -10%, rgba(37,199,224,.10), transparent 60%),
-      radial-gradient(1100px 800px at 8% 115%, rgba(138,138,230,.10), transparent 60%),
-      linear-gradient(160deg,#080B22 0%,#0B1030 55%,#080B22 100%);
-    padding:22px 32px; overflow:hidden;
-    display:grid; grid-template-rows:84px 160px minmax(0,1fr) 56px; gap:18px;
+      radial-gradient(1200px 700px at 85% -10%, rgba(59,130,246,.12), transparent 60%),
+      radial-gradient(1100px 800px at 5% 115%, rgba(34,211,238,.08), transparent 60%),
+      linear-gradient(160deg,#070B24 0%,#0A1030 55%,#070B24 100%);
+    padding:20px 32px; overflow:hidden;
+    display:grid; grid-template-rows:88px 150px 300px minmax(0,1fr) 64px; gap:18px;
     font-variant-numeric:tabular-nums;
   }
-  /* faint sonar rings behind everything */
   .bgfx{position:absolute; inset:0; overflow:hidden; pointer-events:none; z-index:0}
-  .ring{position:absolute; right:-160px; top:-160px; width:640px; height:640px; border-radius:50%;
-    border:1px solid rgba(37,199,224,.10)}
-  .ring:nth-child(2){inset:auto; right:-40px; top:-40px; width:400px; height:400px; border-color:rgba(37,199,224,.07)}
+  .ring-bg{position:absolute; right:-180px; top:-180px; width:680px; height:680px; border-radius:50%; border:1px solid rgba(59,130,246,.10)}
+  .ring-bg:nth-child(2){right:-60px; top:-60px; width:420px; height:420px; border-color:rgba(59,130,246,.07)}
   #stage>*{position:relative; z-index:1}
   #stage>.bgfx{position:absolute; z-index:0}
 
   /* ---------- HEADER ---------- */
   header{display:flex; align-items:center; gap:22px}
-  .brand{display:flex; align-items:center; gap:14px}
-  .mark{width:52px; height:52px; flex:0 0 auto}
-  .brand h1{font-family:'Space Grotesk'; font-size:24px; font-weight:600; letter-spacing:.5px; line-height:1}
-  .brand h1 b{color:var(--teal)}
-  .brand .sub{font-size:11px; letter-spacing:4px; color:var(--muted); margin-top:4px}
+  .brand{display:flex; align-items:center; gap:14px; min-width:420px}
+  .mark{width:54px; height:54px; flex:0 0 auto}
+  .brand h1{font-size:26px; font-weight:700; letter-spacing:-.2px; line-height:1}
+  .brand .sub{font-size:11px; letter-spacing:4px; color:var(--muted); margin-top:5px}
   .hcenter{flex:1; text-align:center}
   .hcenter .eyebrow{font-size:12px; letter-spacing:5px; color:var(--faint); text-transform:uppercase}
-  .hcenter .ttl{font-family:'Space Grotesk'; font-size:22px; font-weight:500; margin-top:3px; letter-spacing:.5px}
-  .hright{display:flex; align-items:center; gap:26px}
-  .clock{font-family:'Space Grotesk'; font-size:40px; font-weight:600; line-height:1; letter-spacing:1px}
-  .clock small{display:block; font-family:'Inter'; font-size:12px; font-weight:500; letter-spacing:2px; color:var(--muted); text-align:right; margin-top:6px; text-transform:capitalize}
-  .live{display:flex; align-items:center; gap:9px; background:rgba(255,109,130,.10); border:1px solid rgba(255,109,130,.35);
-    padding:9px 15px; border-radius:999px; font-size:13px; font-weight:600; letter-spacing:2px; color:#FF9AA8}
-  .live .dot{width:10px; height:10px; border-radius:50%; background:var(--red); box-shadow:0 0 0 0 rgba(255,109,130,.6); animation:pulse 1.8s infinite}
-  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,109,130,.55)}70%{box-shadow:0 0 0 14px rgba(255,109,130,0)}100%{box-shadow:0 0 0 0 rgba(255,109,130,0)}}
+  .hcenter .ttl{font-size:24px; font-weight:600; margin-top:3px}
+  .hcenter .upd{font-size:12.5px; color:var(--muted); margin-top:5px; display:inline-flex; align-items:center; gap:7px}
+  .hcenter .upd i{width:8px; height:8px; border-radius:50%; background:var(--green); display:inline-block; box-shadow:0 0 10px var(--green)}
+  .hright{display:flex; align-items:center; gap:28px; min-width:420px; justify-content:flex-end}
+  .clock{font-size:40px; font-weight:700; line-height:1; letter-spacing:.5px}
+  .clock small{display:block; font-size:12.5px; font-weight:500; letter-spacing:.5px; color:var(--muted); text-align:right; margin-top:6px; text-transform:capitalize}
+  .live{display:flex; align-items:center; gap:9px; background:rgba(239,68,68,.10); border:1px solid rgba(239,68,68,.40);
+    padding:9px 16px; border-radius:999px; font-size:13px; font-weight:700; letter-spacing:2px; color:#FF9AA8}
+  .live .dot{width:10px; height:10px; border-radius:50%; background:var(--red); box-shadow:0 0 0 0 rgba(239,68,68,.6); animation:pulse 1.8s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(239,68,68,.55)}70%{box-shadow:0 0 0 14px rgba(239,68,68,0)}100%{box-shadow:0 0 0 0 rgba(239,68,68,0)}}
 
   /* ---------- KPI ROW ---------- */
   .kpis{display:grid; grid-template-columns:repeat(4,1fr); gap:18px}
-  .kpi{background:linear-gradient(180deg,var(--surface),rgba(17,23,55,.55)); border:1px solid var(--line);
-    border-radius:var(--r); padding:16px 20px; display:flex; flex-direction:column; align-items:center; justify-content:center;
-    gap:12px; text-align:center; position:relative; overflow:hidden}
-  .kpi::before{content:""; position:absolute; left:0; top:0; bottom:0; width:5px; background:var(--teal); opacity:.9}
-  .kpi.i::before{background:var(--indigo)} .kpi.g::before{background:var(--green)}
-  .kpi.a::before{background:var(--amber)} .kpi.r::before{background:var(--red)}
-  .kpi .lab{font-family:'Space Grotesk'; font-size:20px; font-weight:600; color:#fff; letter-spacing:.2px}
-  .kpi .val{font-family:'Space Grotesk'; font-size:64px; font-weight:700; line-height:1; color:#fff}
-  .kpi .val .cur{font-size:26px; color:var(--muted); font-weight:500; margin-right:6px; vertical-align:middle}
-  .kpi.r .val{color:var(--red)} .kpi.a .val{color:var(--amber)} .kpi.g .val{color:var(--green)}
+  .kpi{--c:var(--blue); position:relative; overflow:hidden; border-radius:var(--r);
+    background:linear-gradient(180deg,rgba(19,27,69,.85),rgba(14,21,56,.7));
+    border:1.5px solid color-mix(in srgb,var(--c) 55%,transparent);
+    box-shadow:0 0 0 1px color-mix(in srgb,var(--c) 10%,transparent), 0 10px 30px rgba(0,0,0,.25), inset 0 0 40px color-mix(in srgb,var(--c) 6%,transparent);
+    padding:20px 22px; display:flex; align-items:center; gap:18px}
+  .kpi.blue{--c:var(--blue)} .kpi.red{--c:var(--red)} .kpi.amber{--c:var(--amber)} .kpi.green{--c:var(--green)}
+  .kpi .ico{width:58px; height:58px; border-radius:50%; flex:0 0 auto; display:flex; align-items:center; justify-content:center;
+    background:color-mix(in srgb,var(--c) 16%,transparent); border:1px solid color-mix(in srgb,var(--c) 35%,transparent)}
+  .kpi .ico svg{width:28px; height:28px; stroke:var(--c); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round}
+  .kpi .body{flex:1; min-width:0; z-index:1}
+  .kpi .lab{font-size:15.5px; font-weight:600; color:#fff}
+  .kpi .val{font-size:44px; font-weight:800; line-height:1.05; margin-top:4px; letter-spacing:-.5px; color:#fff}
+  .kpi .val .cur{font-size:22px; font-weight:600; color:var(--muted); margin-right:5px}
+  .kpi .trend{font-size:13px; font-weight:600; color:var(--c); margin-top:6px; display:flex; align-items:center; gap:6px}
+  .kpi .trend svg{width:14px; height:14px; stroke:var(--c); fill:none; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round}
+  .kpi .chev{position:absolute; right:18px; top:18px; color:var(--muted); font-size:22px; line-height:1}
+  .kpi .spark{position:absolute; right:14px; bottom:12px; width:170px; height:62px; opacity:.95}
 
-  /* ---------- MAIN GRID ---------- */
-  .main{display:grid; min-height:0; grid-template-columns:repeat(12,1fr); grid-template-rows:262px minmax(0,1fr); gap:20px}
-  .card{background:linear-gradient(180deg,var(--surface),rgba(17,23,55,.5)); border:1px solid var(--line);
-    border-radius:var(--r); padding:18px 22px; display:flex; flex-direction:column; min-height:0; overflow:hidden}
-  .card > .ch{display:flex; flex-direction:column; align-items:center; gap:2px; margin-bottom:10px; text-align:center}
-  .card .ch .t{font-family:'Space Grotesk'; font-size:24px; font-weight:600; color:#fff; letter-spacing:.2px}
-  .card .ch .m{font-size:13px; color:var(--muted)}
-  .a-chart > .ch{display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:12px}
-  .a-chart > .ch .legend.left{justify-self:start} .a-chart > .ch .legend.right{justify-self:end}
+  /* ---------- CARDS ---------- */
+  .card{background:linear-gradient(180deg,rgba(19,27,69,.6),rgba(14,21,56,.55)); border:1px solid var(--line2);
+    border-radius:var(--r); padding:20px 24px; display:flex; flex-direction:column; min-height:0; overflow:hidden;
+    box-shadow:0 10px 30px rgba(0,0,0,.2)}
+  .card > .ch{display:flex; align-items:center; justify-content:space-between; margin-bottom:10px}
+  .card .ch .t{display:flex; align-items:center; gap:12px; font-size:20px; font-weight:700; color:#fff}
+  .card .ch .t svg{width:24px; height:24px; stroke:var(--teal); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round}
+  .card .ch .m{font-size:14px; color:var(--muted)}
 
-  .a-metacli{grid-column:1 / 7; grid-row:1}
-  .a-meta{grid-column:7 / 13; grid-row:1}
-  .a-chart{grid-column:1 / 13; grid-row:2}
+  .metas{display:grid; grid-template-columns:1fr 1fr; gap:18px; min-height:0}
+  .metabody{flex:1; min-height:0; display:grid; grid-template-columns:auto 1fr; align-items:center; gap:70px; padding:0 30px}
+  .ring{width:200px; height:200px}
+  .ring .track{fill:none; stroke:rgba(255,255,255,.07); stroke-width:16}
+  .ring .arc{fill:none; stroke-width:16; stroke-linecap:round; transition:stroke-dashoffset 1.2s ease}
+  .ring .pct{font-size:36px; font-weight:800; fill:#fff}
+  .ring .sub{font-size:12px; fill:var(--muted)}
+  .rows{display:flex; flex-direction:column}
+  .row{display:flex; align-items:center; justify-content:space-between; padding:12px 0; border-bottom:1px solid var(--line)}
+  .row:last-child{border-bottom:0}
+  .row .k{font-size:14px; color:var(--muted); font-weight:500}
+  .row .v{font-size:26px; font-weight:700; color:#fff}
+  .row .v small{font-size:15px; color:var(--muted); font-weight:600; margin-right:4px}
+  .row .v.teal{color:var(--teal)} .row .v.green{color:var(--green)}
 
-  /* faturamento chart */
+  /* ---------- CHART ---------- */
   .chartwrap{flex:1; position:relative; min-height:0}
-  .legend{display:flex; align-items:center; gap:14px; font-size:13px; color:var(--muted)}
-  .legend i{display:inline-block; width:12px; height:12px; border-radius:3px; margin-right:6px; vertical-align:-1px}
-  .legend .chip{background:var(--surface2); border:1px solid var(--line); border-radius:8px; padding:6px 12px; color:var(--muted)}
-  .legend .chip b{color:var(--text); font-weight:600; margin-left:4px; font-size:14px}
-  .barval{fill:#fff; font-family:'Space Grotesk'; font-size:16px; font-weight:700; text-anchor:middle}
-  .barval.esp{fill:var(--muted); font-weight:500}
   svg.plot{width:100%; height:100%; display:block; overflow:visible}
-  .bar{fill:url(#gbar)}
-  .barghost{fill:rgba(138,138,230,.16)}
-  .xlab{fill:var(--muted); font-size:14px; font-family:'Inter'; font-weight:500}
-  .ylab{fill:var(--faint); font-size:12px}
-  .gridline{stroke:rgba(255,255,255,.06)}
-
-  /* meta: anel + números ao lado */
-  .metabody{flex:1; min-height:0; display:flex; align-items:center; justify-content:center; gap:44px}
-  .ring{width:156px; height:156px; flex:0 0 auto}
-  .ring .track{fill:none; stroke:rgba(255,255,255,.08); stroke-width:14}
-  .ring .arc{fill:none; stroke-width:14; stroke-linecap:round; transition:stroke-dashoffset 1.2s ease}
-  .ring .pct{font-family:'Space Grotesk'; font-size:38px; font-weight:700; fill:#fff}
-  .mstats{display:flex; gap:34px}
-  .mstat{text-align:center; min-width:120px}
-  .mstat .k{font-size:14px; color:var(--muted); font-weight:500}
-  .mstat .v{font-family:'Space Grotesk'; font-size:50px; font-weight:700; line-height:1; margin-top:6px; color:#fff}
-  .mstat .v small{font-size:20px; color:var(--muted); font-weight:500; margin-right:4px; vertical-align:middle}
-
-  /* atendimento queue */
-  .a-queue .ch .m{display:flex; align-items:center; gap:6px}
-  .qsplit{flex:1; display:flex; flex-direction:column; min-height:0; gap:14px}
-  .qsec{display:flex; flex-direction:column; min-height:0}
-  .qhead{display:flex; align-items:center; justify-content:space-between; margin-bottom:9px}
-  .qhead .lh{font-size:12.5px; letter-spacing:1px; text-transform:uppercase; color:var(--muted); display:flex; align-items:center; gap:8px}
-  .qhead .cnt{font-family:'Space Grotesk'; font-weight:600; font-size:15px; background:var(--teal-dim); color:var(--teal); border-radius:8px; padding:2px 10px}
-  .qhead .cnt.i{background:var(--indigo-dim); color:var(--indigo)}
-  .qlist{display:flex; flex-direction:column; gap:8px; overflow:hidden}
-  .qitem{display:flex; align-items:center; gap:11px; background:var(--surface2); border:1px solid var(--line);
-    border-radius:12px; padding:9px 12px; animation:slidein .5s ease}
-  @keyframes slidein{from{opacity:0; transform:translateX(14px)}to{opacity:1; transform:none}}
-  .av{width:34px; height:34px; flex:0 0 auto; border-radius:9px; display:flex; align-items:center; justify-content:center;
-    font-family:'Space Grotesk'; font-weight:600; font-size:13px; color:#0B1030}
-  .qitem .nm{flex:1; min-width:0}
-  .qitem .nm .n{font-size:13.5px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
-  .qitem .nm .s{font-size:11.5px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
-  .qitem .rt{font-family:'Space Grotesk'; font-size:13px; font-weight:600; text-align:right; flex:0 0 auto}
-  .qitem .rt small{display:block; font-family:'Inter'; font-size:10px; color:var(--faint); font-weight:500}
-  .prog{height:4px; border-radius:3px; background:rgba(255,255,255,.08); margin-top:6px; overflow:hidden}
-  .prog i{display:block; height:100%; background:linear-gradient(90deg,var(--indigo),var(--teal))}
-
-  /* obrigações */
-  .obr{flex:1; display:flex; flex-direction:column; justify-content:center; gap:11px}
-  .obrrow{display:grid; grid-template-columns:1fr auto; gap:6px 14px; align-items:center}
-  .obrrow .name{font-size:13.5px}
-  .obrrow .name span{color:var(--muted); font-size:11.5px; display:block; margin-top:1px}
-  .obrrow .num{font-family:'Space Grotesk'; font-size:17px; font-weight:600; text-align:right}
-  .obrrow .track{grid-column:1 / 3; height:6px; border-radius:4px; background:rgba(255,255,255,.07); overflow:hidden}
-  .obrrow .track i{display:block; height:100%; border-radius:4px}
-
-  /* indicadores */
-  .ind{flex:1; display:grid; grid-template-columns:repeat(4,1fr); gap:16px}
-  .indbox{background:var(--surface2); border:1px solid var(--line); border-radius:14px; padding:15px 16px; display:flex; flex-direction:column; justify-content:space-between}
-  .indbox .k{font-size:12px; color:var(--muted); line-height:1.3}
-  .indbox .v{font-family:'Space Grotesk'; font-size:30px; font-weight:600; margin-top:6px; line-height:1}
-  .indbox .d{font-size:11.5px; margin-top:7px; font-weight:600}
+  .legend{display:flex; align-items:center; gap:14px; font-size:13px; color:var(--text)}
+  .legend i{display:inline-block; width:12px; height:12px; border-radius:3px; margin-right:7px; vertical-align:-1px}
+  .legend .chip{background:var(--surface2); border:1px solid var(--line2); border-radius:9px; padding:7px 12px; color:var(--muted)}
+  .legend .chip b{color:#fff; font-weight:700; margin-left:8px; font-size:14px}
+  .barval{fill:#fff; font-size:15px; font-weight:700; text-anchor:middle}
+  .barval.esp{fill:var(--muted); font-weight:600}
+  .xlab{fill:var(--muted); font-size:14px; font-weight:500}
+  .ylab{fill:var(--faint); font-size:12.5px}
+  .gridline{stroke:rgba(255,255,255,.06); stroke-dasharray:4 5}
+  .axis{stroke:rgba(255,255,255,.14)}
 
   /* ---------- TICKER ---------- */
-  .ticker{display:flex; align-items:center; background:linear-gradient(90deg,var(--surface2),rgba(22,30,68,.4));
-    border:1px solid var(--line); border-radius:12px; overflow:hidden}
-  .ticker .tag{flex:0 0 auto; background:var(--teal); color:#06213b; font-weight:700; font-size:12.5px; letter-spacing:2px;
-    padding:0 20px; height:100%; display:flex; align-items:center; gap:9px}
+  .ticker{display:flex; align-items:center; gap:18px; background:linear-gradient(90deg,var(--surface2),rgba(19,27,69,.5));
+    border:1px solid var(--line2); border-radius:14px; overflow:hidden; padding-right:22px}
+  .ticker .tag{flex:0 0 auto; background:var(--teal); color:#06213b; font-weight:800; font-size:13px; letter-spacing:2px;
+    padding:0 22px; height:100%; display:flex; align-items:center; gap:10px; border-radius:12px 0 0 12px}
+  .ticker .tag svg{width:16px; height:16px; stroke:#06213b; fill:none; stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round}
   .ticker .track{flex:1; overflow:hidden; white-space:nowrap; position:relative; height:100%}
-  .ticker .move{display:inline-block; padding-left:100%; animation:scroll 46s linear infinite; height:100%; line-height:56px}
-  .ticker .move span{margin:0 46px; font-size:14px; color:var(--text)}
-  .ticker .move span b{color:var(--teal)} .ticker .move span em{color:var(--amber); font-style:normal}
+  .ticker .move{display:inline-block; padding-left:100%; animation:scroll 50s linear infinite; height:100%; line-height:62px}
+  .ticker .move span{margin:0 46px; font-size:15px; color:var(--text)}
+  .ticker .move span b{color:var(--teal); font-weight:700} .ticker .move span em{color:var(--amber); font-style:normal; font-weight:700}
   @keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-100%)}}
-
   @media (prefers-reduced-motion: reduce){*{animation:none!important}}
 </style>
 
 <div id="viewport"><div id="stage">
-  <div class="bgfx"><div class="ring"></div><div class="ring"></div></div>
+  <div class="bgfx"><div class="ring-bg"></div><div class="ring-bg"></div></div>
 
   <!-- HEADER -->
   <header>
     <div class="brand">
       <svg class="mark" viewBox="0 0 100 100" fill="none">
-        <path d="M18 44a32 32 0 0 1 64 0" stroke="#25C7E0" stroke-width="6" stroke-linecap="round"/>
-        <path d="M50 16v28M50 16l20 24" stroke="#25C7E0" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M22 56h56M27 66h46M33 76h34" stroke="#25C7E0" stroke-width="6" stroke-linecap="round"/>
+        <path d="M18 44a32 32 0 0 1 64 0" stroke="#22D3EE" stroke-width="6" stroke-linecap="round"/>
+        <path d="M50 16v28M50 16l20 24" stroke="#22D3EE" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M22 56h56M27 66h46M33 76h34" stroke="#22D3EE" stroke-width="6" stroke-linecap="round"/>
       </svg>
-      <div>
-        <h1><b>Nauta</b> Contabilidade</h1>
-        <div class="sub">CONTABILIDADE</div>
-      </div>
+      <div><h1>Nauta Contabilidade</h1><div class="sub">CONTABILIDADE</div></div>
     </div>
     <div class="hcenter">
       <div class="eyebrow">Central de Operações</div>
       <div class="ttl">Monitor em tempo real</div>
+      <div class="upd"><i></i><span id="upd">Sistema atualizando…</span></div>
     </div>
     <div class="hright">
       <div class="live"><span class="dot"></span> AO VIVO</div>
@@ -189,74 +149,98 @@
 
   <!-- KPI ROW -->
   <div class="kpis">
-    <div class="kpi i"><div class="lab">Clientes ativos</div><div class="val" id="k-clientes">0</div></div>
-    <div class="kpi r"><div class="lab">Clientes em atraso</div><div class="val" id="k-atraso">0</div></div>
-    <div class="kpi a"><div class="lab">Valor em atraso</div><div class="val"><span class="cur">R$</span><span id="k-valatraso">0</span></div></div>
-    <div class="kpi g"><div class="lab">Faturamento dos novos clientes</div><div class="val"><span class="cur">R$</span><span id="k-novosfat">0</span></div></div>
+    <div class="kpi blue">
+      <div class="ico"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+      <div class="body"><div class="lab">Clientes ativos</div><div class="val" id="k-clientes">0</div>
+        <div class="trend"><svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg><span id="k-clientes-t">+0 no mês</span></div></div>
+      <div class="chev">›</div><svg class="spark" id="sp1" viewBox="0 0 170 62" preserveAspectRatio="none"></svg>
+    </div>
+    <div class="kpi red">
+      <div class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>
+      <div class="body"><div class="lab">Clientes em atraso</div><div class="val" id="k-atraso">0</div>
+        <div class="trend"><svg viewBox="0 0 24 24"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0zM12 9v4M12 17h.01"/></svg><span>clientes vencidos</span></div></div>
+      <div class="chev">›</div><svg class="spark" id="sp2" viewBox="0 0 170 62" preserveAspectRatio="none"></svg>
+    </div>
+    <div class="kpi amber">
+      <div class="ico"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.7 4 3 9 3s9-1.3 9-3V5"/><path d="M3 12c0 1.7 4 3 9 3s9-1.3 9-3"/></svg></div>
+      <div class="body"><div class="lab">Valor em atraso</div><div class="val"><span class="cur">R$</span><span id="k-valatraso">0</span></div>
+        <div class="trend"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg><span id="k-valatraso-t">0 cliente(s) em aberto</span></div></div>
+      <div class="chev">›</div><svg class="spark" id="sp3" viewBox="0 0 170 62" preserveAspectRatio="none"></svg>
+    </div>
+    <div class="kpi green">
+      <div class="ico"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 15v-4M12 15V8M17 15v-7"/></svg></div>
+      <div class="body"><div class="lab">Faturamento dos novos clientes</div><div class="val"><span class="cur">R$</span><span id="k-novosfat">0</span></div>
+        <div class="trend"><svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg><span>honorário no mês</span></div></div>
+      <div class="chev">›</div><svg class="spark" id="sp4" viewBox="0 0 170 62" preserveAspectRatio="none"></svg>
+    </div>
   </div>
 
-  <!-- MAIN -->
-  <div class="main">
-    <!-- META DE CLIENTES -->
-    <div class="card a-metacli">
-      <div class="ch"><div class="t">Meta de clientes</div><div class="m" id="metacli-month">—</div></div>
-      <div class="metabody">
-        <svg class="ring" viewBox="0 0 156 156">
-          <defs><linearGradient id="ggc" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stop-color="#37D6A2"/><stop offset="1" stop-color="#25C7E0"/></linearGradient></defs>
-          <circle class="track" cx="78" cy="78" r="64"/>
-          <circle class="arc" id="ringCli" cx="78" cy="78" r="64" stroke="url(#ggc)" stroke-dasharray="402" stroke-dashoffset="402" transform="rotate(-90 78 78)"/>
-          <text class="pct" id="ring-pct-cli" x="78" y="78" text-anchor="middle" dominant-baseline="central">0%</text>
-        </svg>
-        <div class="mstats">
-          <div class="mstat"><div class="k">Novos no mês</div><div class="v" style="color:var(--green)" id="metacli-novos">0</div></div>
-          <div class="mstat"><div class="k">Meta</div><div class="v" id="metacli-meta">0</div></div>
-          <div class="mstat"><div class="k">Projeção</div><div class="v" style="color:var(--teal)" id="metacli-proj">0</div></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- META DE FATURAMENTO -->
-    <div class="card a-meta">
-      <div class="ch"><div class="t">Meta de faturamento</div><div class="m" id="meta-month">—</div></div>
-      <div class="metabody">
-        <svg class="ring" viewBox="0 0 156 156">
-          <defs><linearGradient id="gg" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stop-color="#8A8AE6"/><stop offset="1" stop-color="#25C7E0"/></linearGradient></defs>
-          <circle class="track" cx="78" cy="78" r="64"/>
-          <circle class="arc" id="ringFat" cx="78" cy="78" r="64" stroke="url(#gg)" stroke-dasharray="402" stroke-dashoffset="402" transform="rotate(-90 78 78)"/>
-          <text class="pct" id="ring-pct-fat" x="78" y="78" text-anchor="middle" dominant-baseline="central">0%</text>
-        </svg>
-        <div class="mstats">
-          <div class="mstat"><div class="k">Realizado</div><div class="v" style="color:var(--green)"><small>R$</small><span id="meta-real">0</span></div></div>
-          <div class="mstat"><div class="k">Meta (esperado)</div><div class="v"><small>R$</small><span id="meta-esp">0</span></div></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- FATURAMENTO CHART -->
-    <div class="card a-chart">
+  <!-- METAS -->
+  <div class="metas">
+    <div class="card">
       <div class="ch">
-        <div class="legend left">
-          <span class="chip">Faturamento <span id="i-ant-lab">ant.</span> <b id="i-ant">R$ 0</b></span>
-          <span class="chip">Faturamento <span id="i-seg-lab">próx.</span> <b id="i-seg">R$ 0</b></span>
-        </div>
-        <div class="t">Faturamento realizado × esperado</div>
-        <div class="legend right">
-          <span><i style="background:linear-gradient(180deg,#37D6A2,#25C7E0)"></i>Realizado</span>
-          <span><i style="background:rgba(138,138,230,.6)"></i>Esperado</span>
+        <div class="t"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>Meta de clientes</div>
+        <div class="m" id="metacli-month">—</div>
+      </div>
+      <div class="metabody">
+        <svg class="ring" viewBox="0 0 200 200">
+          <defs><linearGradient id="ggc" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#22D3EE"/><stop offset="1" stop-color="#22C55E"/></linearGradient></defs>
+          <circle class="track" cx="100" cy="100" r="84"/>
+          <circle class="arc" id="ringCli" cx="100" cy="100" r="84" stroke="url(#ggc)" stroke-dasharray="528" stroke-dashoffset="528" transform="rotate(-90 100 100)"/>
+          <text class="pct" id="ring-pct-cli" x="100" y="92" text-anchor="middle" dominant-baseline="central">0%</text>
+          <text class="sub" x="100" y="120" text-anchor="middle">da meta de clientes</text>
+          <text class="sub" x="100" y="136" text-anchor="middle" id="ring-sub-cli">atingida</text>
+        </svg>
+        <div class="rows">
+          <div class="row"><span class="k">Novos no mês</span><span class="v green" id="metacli-novos">0</span></div>
+          <div class="row"><span class="k">Meta do mês</span><span class="v" id="metacli-meta">0</span></div>
+          <div class="row"><span class="k">Projeção do mês</span><span class="v teal" id="metacli-proj">0</span></div>
         </div>
       </div>
-      <div class="chartwrap"><svg class="plot" id="plot"></svg></div>
     </div>
+
+    <div class="card">
+      <div class="ch">
+        <div class="t"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 15v-4M12 15V8M17 15v-7"/></svg>Meta de faturamento</div>
+        <div class="m" id="meta-month">—</div>
+      </div>
+      <div class="metabody">
+        <svg class="ring" viewBox="0 0 200 200">
+          <defs><linearGradient id="gg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3B82F6"/><stop offset="1" stop-color="#22D3EE"/></linearGradient></defs>
+          <circle class="track" cx="100" cy="100" r="84"/>
+          <circle class="arc" id="ringFat" cx="100" cy="100" r="84" stroke="url(#gg)" stroke-dasharray="528" stroke-dashoffset="528" transform="rotate(-90 100 100)"/>
+          <text class="pct" id="ring-pct-fat" x="100" y="92" text-anchor="middle" dominant-baseline="central">0%</text>
+          <text class="sub" x="100" y="120" text-anchor="middle">do esperado</text>
+          <text class="sub" x="100" y="136" text-anchor="middle">já realizado</text>
+        </svg>
+        <div class="rows">
+          <div class="row"><span class="k">Realizado</span><span class="v green"><small>R$</small><span id="meta-real">0</span></span></div>
+          <div class="row"><span class="k">Meta (esperado)</span><span class="v"><small>R$</small><span id="meta-esp">0</span></span></div>
+          <div class="row"><span class="k">Projeção do mês</span><span class="v teal"><small>R$</small><span id="meta-proj">0</span></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHART -->
+  <div class="card">
+    <div class="ch">
+      <div class="t"><svg viewBox="0 0 24 24"><path d="M22 7l-8.5 8.5-5-5L2 17"/><path d="M16 7h6v6"/></svg>Faturamento realizado × esperado</div>
+      <div class="legend">
+        <span class="chip">Faturamento <span id="i-ant-lab">ant.</span><b id="i-ant">R$ 0</b></span>
+        <span class="chip">Faturamento <span id="i-seg-lab">próx.</span><b id="i-seg">R$ 0</b></span>
+        <span><i style="background:linear-gradient(180deg,#22D3EE,#22C55E)"></i>Realizado</span>
+        <span><i style="background:rgba(99,120,255,.55)"></i>Esperado</span>
+      </div>
+    </div>
+    <div class="chartwrap"><svg class="plot" id="plot"></svg></div>
   </div>
 
   <!-- TICKER -->
   <div class="ticker">
-    <div class="tag"><span style="width:8px;height:8px;border-radius:50%;background:#06213b;display:inline-block"></span> AVISOS</div>
+    <div class="tag"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg> AVISOS</div>
     <div class="track"><div class="move" id="ticker"></div></div>
   </div>
-
 </div></div>
 
 <script>
@@ -264,114 +248,116 @@
 function fit(){
   const s=document.getElementById('stage');
   const k=Math.min(innerWidth/1920, innerHeight/1080);
-  s.style.transform='scale('+k+')';
-  s.style.transformOrigin='center center';
+  s.style.transform='scale('+k+')'; s.style.transformOrigin='center center';
 }
 addEventListener('resize',fit); fit();
 
 /* ---------- helpers ---------- */
 const $=id=>document.getElementById(id);
-const rand=(a,b)=>a+Math.random()*(b-a);
-const ri=(a,b)=>Math.floor(rand(a,b+1));
-const fmt=n=>Math.round(n).toLocaleString('pt-BR');
-const pick=a=>a[ri(0,a.length-1)];
+const fmt=n=>Math.round(Number(n)||0).toLocaleString('pt-BR');
+const short=v=> v>=1000 ? (v/1000).toLocaleString('pt-BR',{maximumFractionDigits:1})+'k' : String(Math.round(v));
 
-/* ---------- clock ---------- */
+/* ---------- clock + "atualizado há" ---------- */
 const dias=['domingo','segunda-feira','terça-feira','quarta-feira','quinta-feira','sexta-feira','sábado'];
-const meses=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+const mesesCurto=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+const mesesLong=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+let ultimaAtualizacao=null;
 function tick(){
-  const d=new Date();
-  const p=x=>String(x).padStart(2,'0');
+  const d=new Date(), p=x=>String(x).padStart(2,'0');
   $('clock').firstChild.nodeValue=`${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
-  $('date').textContent=`${dias[d.getDay()]}, ${d.getDate()} ${meses[d.getMonth()]} ${d.getFullYear()}`;
+  $('date').textContent=`${dias[d.getDay()]}, ${d.getDate()} de ${mesesCurto[d.getMonth()]} de ${d.getFullYear()}`;
+  if(ultimaAtualizacao){
+    const s=Math.max(0,Math.round((Date.now()-ultimaAtualizacao)/1000));
+    $('upd').textContent = s<60 ? `Sistema atualizado há ${s} s` : `Sistema atualizado há ${Math.round(s/60)} min`;
+  }
 }
 setInterval(tick,1000); tick();
 
-/* ---------- sparklines ---------- */
+/* ---------- sparklines (área decorativa, estática por carga) ---------- */
 function spark(id,color,seed){
-  const svg=$(id), w=70,h=26,n=14; let pts=[];
-  for(let i=0;i<n;i++) pts.push(rand(6,20));
-  function draw(){
-    pts.shift(); pts.push(Math.max(4,Math.min(22,pts[pts.length-1]+rand(-4,4))));
-    const step=w/(n-1);
-    const d=pts.map((v,i)=>`${i?'L':'M'}${(i*step).toFixed(1)} ${(h-v).toFixed(1)}`).join(' ');
-    svg.innerHTML=`<path d="${d}" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity=".9"/>`;
-  }
-  draw(); setInterval(draw, 2600+seed*250);
+  const svg=$(id), w=170,h=62,n=12; let pts=[], v=30, r=seed*9301+49297;
+  const rnd=()=>{ r=(r*9301+49297)%233280; return r/233280; };
+  for(let i=0;i<n;i++){ v=Math.max(10,Math.min(52,v+(rnd()-.45)*16)); pts.push(v); }
+  const step=w/(n-1);
+  const line=pts.map((v,i)=>`${i?'L':'M'}${(i*step).toFixed(1)} ${(h-v).toFixed(1)}`).join(' ');
+  const area=`${line} L ${w} ${h} L 0 ${h} Z`;
+  svg.innerHTML=`<defs><linearGradient id="g${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${color}" stop-opacity=".45"/><stop offset="1" stop-color="${color}" stop-opacity="0"/></linearGradient></defs>
+    <path d="${area}" fill="url(#g${id})"/><path d="${line}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>`;
 }
-/* (sparklines removidas — KPIs agora só com título + número) */
+spark('sp1','#3B82F6',1); spark('sp2','#EF4444',2); spark('sp3','#F5B82E',3); spark('sp4','#22C55E',4);
 
-/* ---------- DADOS REAIS (painel ao vivo) ---------- */
+/* ---------- DADOS REAIS ---------- */
 const TOKEN = new URLSearchParams(location.search).get('t') || '';
 let D = null;
-const mesesLong=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 const _mesAno = `${mesesLong[new Date().getMonth()]} / ${new Date().getFullYear()}`;
-$('meta-month').textContent = _mesAno;
-$('metacli-month').textContent = _mesAno;
+$('meta-month').textContent=_mesAno; $('metacli-month').textContent=_mesAno;
 
-const short=v=> v>=1000 ? (v/1000).toLocaleString('pt-BR',{maximumFractionDigits:1})+'k' : String(Math.round(v));
+function barTop(x,y,w,h,r){ // retângulo com só o topo arredondado
+  if(h<=0) return '';
+  r=Math.min(r,w/2,h);
+  return `M${x} ${y+h} V${y+r} Q${x} ${y} ${x+r} ${y} H${x+w-r} Q${x+w} ${y} ${x+w} ${y+r} V${y+h} Z`;
+}
 function drawChart(){
   if(!D) return;
   const esp=D.serieEsperado||[], real=D.serieRealizado||[], labels=D.meses||[];
   const n=Math.max(esp.length, real.length, 1);
-  // Desenha no tamanho real do container (sem esticar texto/barras)
   const svg=$('plot'), wrap=svg.parentElement;
-  const W=wrap.clientWidth||980, H=wrap.clientHeight||300, padL=56,padB=30,padT=34,padR=14;
+  const W=wrap.clientWidth||1800, H=wrap.clientHeight||300, padL=60,padB=34,padT=36,padR=16;
   svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
   const iw=W-padL-padR, ih=H-padT-padB;
-  const max=Math.max(...esp,...real,1)*1.14;
-  const slot=iw/n;
+  const max=Math.max(...esp,...real,1)*1.12;
+  const slot=iw/n, bw=slot*.56;
   const x=i=> padL + i*slot + slot*.5;
-  const bw=slot*.64;
   const y=v=> padT + ih - (v/max)*ih;
-  const cur=n-1;
+  const base=padT+ih, cur=n-1;
   let s='';
-  for(let g=0;g<=4;g++){ const yy=padT+ih-(g/4)*ih; const val=(max*g/4/1000);
-    s+=`<line class="gridline" x1="${padL}" y1="${yy}" x2="${W-padR}" y2="${yy}"/>`;
-    s+=`<text class="ylab" x="${padL-8}" y="${yy+3}" text-anchor="end">${Math.round(val)}k</text>`; }
+  for(let g=0;g<=3;g++){ const yy=padT+ih-(g/3)*ih; const val=(max*g/3/1000);
+    s+=`<line class="${g?'gridline':'axis'}" x1="${padL}" y1="${yy}" x2="${W-padR}" y2="${yy}"/>`;
+    s+=`<text class="ylab" x="${padL-12}" y="${yy+4}" text-anchor="end">${val<1?Math.round(val*10)/10:Math.round(val)}k</text>`; }
   for(let i=0;i<n;i++){
-    const cx=x(i);
+    const cx=x(i), x0=cx-bw/2;
     if(esp[i]>0){
-      s+=`<rect class="barghost" x="${cx-bw/2}" y="${y(esp[i])}" width="${bw}" height="${padT+ih-y(esp[i])}" rx="6"/>`;
-      // valor do esperado sobre a barra (só quando não houver realizado com valor parecido no topo)
-      if(!(real[i]>0) || (y(esp[i]) < y(real[i])-16))
-        s+=`<text class="barval esp" x="${cx}" y="${y(esp[i])-7}">${short(esp[i])}</text>`;
+      s+=`<path d="${barTop(x0,y(esp[i]),bw,base-y(esp[i]),8)}" fill="${i===cur?'url(#gcur)':'rgba(99,120,255,.20)'}"/>`;
+      if(!(real[i]>0) || (y(esp[i]) < y(real[i])-18))
+        s+=`<text class="barval esp" x="${cx}" y="${y(esp[i])-9}">${short(esp[i])}</text>`;
     }
     if(real[i]>0){
-      const hh=padT+ih-y(real[i]);
-      s+=`<rect class="bar" x="${cx-bw/2}" y="${y(real[i])}" width="${bw}" height="${hh}" rx="6">`;
-      if(i===cur) s+=`<animate attributeName="opacity" values="1;.55;1" dur="2.2s" repeatCount="indefinite"/>`;
-      s+=`</rect>`;
-      s+=`<text class="barval" x="${cx}" y="${y(real[i])-7}">${short(real[i])}</text>`;
+      s+=`<path d="${barTop(x0,y(real[i]),bw,base-y(real[i]),8)}" fill="url(#gbar)">`;
+      if(i===cur) s+=`<animate attributeName="opacity" values="1;.6;1" dur="2.2s" repeatCount="indefinite"/>`;
+      s+=`</path><text class="barval" x="${cx}" y="${y(real[i])-9}">${short(real[i])}</text>`;
     }
-    s+=`<text class="xlab" x="${cx}" y="${H-8}" text-anchor="middle" ${i===cur?'style="fill:#25C7E0;font-weight:600"':''}>${String(labels[i]||'').toUpperCase()}</text>`;
+    s+=`<text class="xlab" x="${cx}" y="${H-8}" text-anchor="middle" ${i===cur?'style="fill:#fff;font-weight:700"':''}>${String(labels[i]||'').toUpperCase()}</text>`;
   }
-  svg.innerHTML=`<defs><linearGradient id="gbar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#37D6A2"/><stop offset="1" stop-color="#25C7E0"/></linearGradient></defs>`+s;
+  svg.innerHTML=`<defs>
+    <linearGradient id="gbar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#22D3EE"/><stop offset="1" stop-color="#22C55E"/></linearGradient>
+    <linearGradient id="gcur" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3B82F6"/><stop offset="1" stop-color="#4F46E5"/></linearGradient>
+  </defs>`+s;
 }
 
 function preencher(d){
-  D=d;
+  D=d; ultimaAtualizacao=Date.now(); tick();
   const meta=Number(d.metaClientes||0);
-  // KPIs (só título + número)
+  // KPIs
   $('k-clientes').textContent=fmt(d.clientesAtivos);
+  $('k-clientes-t').textContent=`+${fmt(d.clientesNovos)} no mês`;
   $('k-atraso').textContent=fmt(d.clientesAtraso);
   $('k-valatraso').textContent=fmt(d.valorEmAberto);
+  $('k-valatraso-t').textContent=`${fmt(d.clientesAtraso)} cliente(s) em aberto`;
   $('k-novosfat').textContent=fmt(d.faturamentoNovosClientes);
-  // Anéis (circunferência 2π·64 ≈ 402)
-  const ring=(id,pctId,pct)=>{ $(pctId).textContent=Math.round(pct)+'%'; $(id).style.strokeDashoffset=(402-402*pct/100).toFixed(1); };
-  // Card Meta de clientes (novos / meta)
+  // Anéis (2π·84 ≈ 528)
+  const ring=(id,pctId,pct)=>{ $(pctId).textContent=Math.round(pct)+'%'; $(id).style.strokeDashoffset=(528-528*pct/100).toFixed(1); };
   const pctCli = meta>0 ? Math.min(100, d.clientesNovos/meta*100) : 0;
   ring('ringCli','ring-pct-cli',pctCli);
+  $('ring-sub-cli').textContent = meta>0 ? 'atingida' : '(cadastre a meta)';
   $('metacli-novos').textContent=fmt(d.clientesNovos);
   $('metacli-meta').textContent=fmt(meta);
   $('metacli-proj').textContent=fmt(d.clientesNovosProjecao);
-  $('metacli-month').textContent = meta>0 ? _mesAno : `${_mesAno} · cadastre a meta em Comercial`;
-  // Card Meta de faturamento (realizado / esperado)
   const pct=d.faturamentoEsperado>0 ? Math.min(100, d.faturamentoRealizado/d.faturamentoEsperado*100) : 0;
   ring('ringFat','ring-pct-fat',pct);
   $('meta-real').textContent=fmt(d.faturamentoRealizado);
   $('meta-esp').textContent=fmt(d.faturamentoEsperado);
-  // Chips do gráfico (faturamento anterior / seguinte)
+  $('meta-proj').textContent=fmt(d.faturamentoProjecao ?? d.faturamentoRealizado);
+  // Chips do gráfico
   if(d.labels){ $('i-ant-lab').textContent=d.labels.anterior; $('i-seg-lab').textContent=d.labels.seguinte; }
   $('i-ant').textContent=`R$ ${fmt(d.faturamentoMesAnterior)}`;
   $('i-seg').textContent=`R$ ${fmt(d.faturamentoMesSeguinte)}`;
@@ -395,5 +381,4 @@ async function carregar(){
 carregar();
 setInterval(carregar, 30000);
 addEventListener('resize', drawChart);
-/* FIM DO PAINEL */
 </script>

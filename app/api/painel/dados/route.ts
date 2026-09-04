@@ -28,6 +28,10 @@ export async function GET(req: NextRequest) {
       faturamentoMesAnterior: d.faturamento.mesAnterior,
       faturamentoMesSeguinte: d.faturamento.projecaoMesSeguinte,
       faturamentoNovosClientes: d.faturamentoNovosClientes,
+      // Projeção linear do realizado até o fim do mês (por dias úteis)
+      faturamentoProjecao: d.clientesNovos.diasUteisDecorridos > 0
+        ? Math.round(d.faturamento.mesAtual / d.clientesNovos.diasUteisDecorridos * d.clientesNovos.diasUteisTotais)
+        : d.faturamento.mesAtual,
       // Clientes
       clientesNovos: d.clientesNovos.atual,
       clientesNovosProjecao: d.clientesNovos.projecao,

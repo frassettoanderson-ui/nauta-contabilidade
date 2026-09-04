@@ -242,7 +242,7 @@ function Wizard() {
   function montarPayload(): Obj {
     // Sócio 1 é sempre o próprio cliente — montado a partir dos dados do cliente.
     const socio1: Obj = {
-      doc_url: cli.cli_doc_url ?? '', cert_url: cli.cli_cert_url ?? '', cert_senha: cli.cli_cert_senha ?? '',
+      doc_url: cli.cli_doc_url ?? '', cert_url: cli.cli_cert_url ?? '', cert_senha: cli.cli_cert_senha ?? '', senha_gov: cli.cli_senha_gov ?? '',
     }
     CLI_TO_SOCIO.forEach(([ck, sk]) => { socio1[sk] = cli[ck] ?? '' })
     socio1.participacao = nExtra > 0 ? Math.max(0, 100 - somaExtras) : 100

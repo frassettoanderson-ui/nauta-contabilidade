@@ -13,7 +13,7 @@ export async function GET(req: NextRequest, { params }: { params: { token: strin
   delete rest.cli_cert_senha
   delete rest.cli_senha_gov
   const sociosSafe = ((rest.socios as Record<string, unknown>[]) || []).map(s => {
-    const sr = { ...s }; delete sr.cert_senha; return sr
+    const sr = { ...s }; delete sr.cert_senha; delete sr.senha_gov; return sr
   })
   rest.socios = sociosSafe
   return NextResponse.json(rest)

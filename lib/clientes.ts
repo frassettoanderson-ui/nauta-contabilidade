@@ -13,7 +13,7 @@ const CLI_COLS = [
 
 const SOCIO_COLS = [
   'nome_completo', 'rg', 'cpf', 'nascimento', 'nome_pai', 'nome_mae', 'participacao',
-  'estado_civil', 'recibo_irpf', 'titulo_eleitor', 'doc_url', 'cert_url', 'cert_senha',
+  'estado_civil', 'recibo_irpf', 'titulo_eleitor', 'doc_url', 'cert_url', 'cert_senha', 'senha_gov',
 ]
 
 type AnyObj = Record<string, unknown>

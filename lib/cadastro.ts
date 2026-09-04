@@ -53,6 +53,7 @@ export const SOCIO_FIELDS: Field[] = [
   ['estado_civil',  'Estado civil',        'estado_civil', 4],
   ['recibo_irpf',   'Nº recibo de IRPF',   'numero', 4],
   ['titulo_eleitor','Nº título de eleitor','numero', 4],
+  ['senha_gov',     'Senha gov.br',        'text', 4],   // opcional — não entra na regra de cadastro completo
 ]
 
 export const CLI_TO_SOCIO: [string, string][] = [
@@ -63,7 +64,7 @@ export const CLI_TO_SOCIO: [string, string][] = [
 
 const CLI_REQ = CLI_FIELDS.map(f => f[0])
 const EMP_REQ = EMP_FIELDS.map(f => f[0])
-const SOCIO_REQ = SOCIO_FIELDS.map(f => f[0])
+const SOCIO_REQ = SOCIO_FIELDS.map(f => f[0]).filter(k => k !== 'senha_gov')
 
 type Obj = Record<string, unknown>
 const filled = (v: unknown) => String(v ?? '').trim() !== ''

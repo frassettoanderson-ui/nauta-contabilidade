@@ -56,7 +56,7 @@
   @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,109,130,.55)}70%{box-shadow:0 0 0 14px rgba(255,109,130,0)}100%{box-shadow:0 0 0 0 rgba(255,109,130,0)}}
 
   /* ---------- KPI ROW ---------- */
-  .kpis{display:grid; grid-template-columns:repeat(6,1fr); gap:18px}
+  .kpis{display:grid; grid-template-columns:repeat(4,1fr); gap:18px}
   .kpi{background:linear-gradient(180deg,var(--surface),rgba(17,23,55,.55)); border:1px solid var(--line);
     border-radius:var(--r); padding:18px 20px; display:flex; flex-direction:column; justify-content:space-between; position:relative; overflow:hidden}
   .kpi::before{content:""; position:absolute; left:0; top:0; bottom:0; width:4px; background:var(--teal); opacity:.85}
@@ -200,23 +200,11 @@
       <div class="foot"><span class="trend" style="color:var(--muted)" id="k-meta-t">projeção 0</span>
         <svg class="spark" width="70" height="26" id="sp3"></svg></div>
     </div>
-    <div class="kpi g">
-      <div class="lab">Faturamento realizado</div>
-      <div class="val"><span class="cur">R$</span><span id="k-real">0</span></div>
-      <div class="foot"><span class="trend" style="color:var(--muted)" id="k-real-t">pago no mês</span>
-        <svg class="spark" width="70" height="26" id="sp4"></svg></div>
-    </div>
-    <div class="kpi">
-      <div class="lab">Faturamento esperado</div>
-      <div class="val"><span class="cur">R$</span><span id="k-esp">0</span></div>
-      <div class="foot"><span class="trend" style="color:var(--muted)" id="k-esp-t">meta do mês</span>
-        <svg class="spark" width="70" height="26" id="sp5"></svg></div>
-    </div>
     <div class="kpi r">
       <div class="lab">Clientes em atraso</div>
       <div class="val" id="k-atraso">0</div>
       <div class="foot"><span class="trend warn" id="k-atraso-t">R$ 0 em aberto</span>
-        <svg class="spark" width="70" height="26" id="sp6"></svg></div>
+        <svg class="spark" width="70" height="26" id="sp4"></svg></div>
     </div>
   </div>
 
@@ -314,8 +302,7 @@ function spark(id,color,seed){
   }
   draw(); setInterval(draw, 2600+seed*250);
 }
-spark('sp1','#8A8AE6',0); spark('sp2','#FF6D82',1); spark('sp3','#37D6A2',2);
-spark('sp4','#25C7E0',3); spark('sp5','#F6B34C',4); spark('sp6','#37D6A2',5);
+spark('sp1','#8A8AE6',0); spark('sp2','#37D6A2',1); spark('sp3','#25C7E0',2); spark('sp4','#FF6D82',3);
 
 /* ---------- DADOS REAIS (painel ao vivo) ---------- */
 const TOKEN = new URLSearchParams(location.search).get('t') || '';
@@ -369,8 +356,6 @@ function preencher(d){
     mt.className='trend '+(d.clientesNovosProjecao>=meta?'up':'warn');
     mt.style.color='';
   } else { mt.textContent='cadastre a meta em Comercial'; mt.className='trend'; mt.style.color='var(--muted)'; }
-  $('k-real').textContent=fmt(d.faturamentoRealizado);
-  $('k-esp').textContent=fmt(d.faturamentoEsperado);
   $('k-atraso').textContent=fmt(d.clientesAtraso);
   $('k-atraso-t').textContent=`R$ ${fmt(d.valorEmAberto)} em aberto`;
   // Gauge — meta de faturamento (realizado / esperado)

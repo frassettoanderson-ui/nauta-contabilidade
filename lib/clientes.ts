@@ -21,7 +21,7 @@ type AnyObj = Record<string, unknown>
 export async function listClientes(empresaId: string) {
   const res = await pool.query(
     `SELECT
-        c.id, c.lead_id, c.emp_nome, c.emp_cnpj, c.emp_cidade_estado, c.emp_regime, c.criado_em, c.situacao,
+        c.id, c.lead_id, c.emp_nome, c.emp_cnpj, c.emp_cidade_estado, c.emp_regime, c.criado_em, c.situacao, c.inativado_em,
         COALESCE(NULLIF(c.emp_telefone, ''), l.whatsapp) AS emp_telefone,
         COALESCE(
           (SELECT s.nome_completo FROM cliente_socios s
@@ -58,6 +58,11 @@ export async function setSituacaoCliente(id: string, situacao: string, empresaId
   } else {
     await pool.query(`UPDATE clientes SET ${sets} WHERE id = $1`, [id, situacao])
   }
+  // Cliente inativo (contrato cancelado) sai do faturamento; reativado volta a ser cobrado.
+  await pool.query(
+    `UPDATE leads SET financeiro_ativo = $2 WHERE id = (SELECT lead_id FROM clientes WHERE id = $1)`,
+    [id, situacao !== 'inativo']
+  ).catch(() => {})
   emitCrmChange()
   return { ok: true }
 }

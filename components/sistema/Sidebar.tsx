@@ -13,7 +13,7 @@ import {
   Users, UserPlus, Search, FileText, FilePlus, FileClock, FileSearch,
   Briefcase, LayoutGrid, Inbox, BarChart3, TrendingUp, Calculator, UserCog, Building2,
   Rocket, Settings, DollarSign, LayoutDashboard, MessageCircle,
-  ArrowDownCircle, ArrowUpCircle, Repeat, CalendarCheck, Target,
+  ArrowDownCircle, ArrowUpCircle, Repeat, CalendarCheck, Target, UserX,
   LogOut, ChevronDown, Menu, X, type LucideIcon,
 } from 'lucide-react'
 
@@ -30,6 +30,7 @@ const NAV: NavItem[] = [
   { label: 'Clientes', icon: Users, children: [
     { label: 'Cadastrar', href: '/sistema/clientes/cadastrar', icon: UserPlus },
     { label: 'Consultar', href: '/sistema/clientes/consultar', icon: Search },
+    { label: 'Inativos',  href: '/sistema/clientes/inativos',  icon: UserX },
   ] },
   { label: 'Geração de Contrato', icon: FileText, children: [
     { label: 'Gerar Contrato',     href: '/sistema/contratos/gerar',     icon: FilePlus },

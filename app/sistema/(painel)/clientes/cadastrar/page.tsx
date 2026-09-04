@@ -3,8 +3,8 @@
 import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
-import { Loader2, Check, ArrowLeft, ArrowRight, Upload, FileText, FileImage, Paperclip, Save, Trash2, Link2, Copy, X, Send, Pencil, Folder, Download, Lock, Building2, Plus, Clock } from 'lucide-react'
-import { uploadDoc, saveCliente, getCliente, getClienteByLead, deleteCliente, gerarLinkCadastro, getLeadDetail, enviarParaAssinatura, getContratoByLead, listArquivos, addArquivoCliente, deleteArquivoCliente, type ContratoRow, type ArquivoRow } from '@/lib/api'
+import { Loader2, Check, ArrowLeft, ArrowRight, Upload, FileText, FileImage, Paperclip, Save, Trash2, Link2, Copy, X, Send, Pencil, Folder, Download, Lock, Building2, Plus, Clock, Ban } from 'lucide-react'
+import { uploadDoc, saveCliente, getCliente, getClienteByLead, deleteCliente, gerarLinkCadastro, getLeadDetail, enviarParaAssinatura, getContratoByLead, listArquivos, addArquivoCliente, deleteArquivoCliente, setSituacaoCliente, type ContratoRow, type ArquivoRow } from '@/lib/api'
 import { CLI_FIELDS, EMP_FIELDS, SOCIO_FIELDS, CLI_TO_SOCIO } from '@/lib/cadastro'
 import HistoricoCliente from '@/components/sistema/HistoricoCliente'
 import { tipoFromInteresse, requiredKeysFor, REQ_SOCIO, TIPO_LABEL } from '@/lib/contratos'
@@ -145,6 +145,7 @@ function Wizard() {
   const [numSocios, setNumSocios] = useState(2) // total de sócios, incluindo o Sócio 1 (o próprio cliente)
   const [tipo, setTipo] = useState<number | null>(null)
   const [histLeadId, setHistLeadId] = useState<string | null>(null)
+  const [situacao, setSituacao] = useState<string>('ativo')
   const [temFiliais, setTemFiliais] = useState(false)
   const [filiais, setFiliais] = useState<Obj[]>([])
   const [filialBuscando, setFilialBuscando] = useState<number | null>(null)
@@ -156,6 +157,7 @@ function Wizard() {
       else if (leadId) data = await getClienteByLead(leadId)
       if (data) {
         setClienteId(data.id as string)
+        setSituacao(String(data.situacao || 'ativo'))
         setReadOnly(!abrirEditavel) // cadastro existente abre travado; com ?edit=1 (preencher) já abre liberado
         const c: Obj = {}, e: Obj = {}
         Object.entries(data).forEach(([k, v]) => { if (k.startsWith('cli_')) c[k] = v; if (k.startsWith('emp_')) e[k] = v })
@@ -266,6 +268,15 @@ function Wizard() {
       }
     } catch { alert('Erro ao salvar o cadastro.') }
     finally { setSaving(false) }
+  }
+
+  // Cancelar contrato → cliente vira "inativo" (aba Clientes › Inativos), sai do faturamento
+  // e conta como CNPJ perdido no mês do cancelamento (painel de resultados).
+  async function handleCancelarContrato() {
+    if (!clienteId) { alert('Cadastro ainda não foi salvo.'); return }
+    if (!confirm('Cancelar o contrato deste cliente?\n\nEle será movido para "Inativos", deixará de ser faturado e contará como CNPJ perdido neste mês.')) return
+    try { await setSituacaoCliente(clienteId, 'inativo'); router.push('/sistema/clientes/inativos') }
+    catch { alert('Erro ao cancelar o contrato.') }
   }
 
   async function handleExcluir() {
@@ -642,6 +653,20 @@ function Wizard() {
             style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)' }}>
             {saving ? <Loader2 size={15} className="animate-spin" /> : <><Save size={15} /> Salvar</>}
           </button>
+        )}
+
+        {clienteId && situacao !== 'inativo' && (
+          <button onClick={handleCancelarContrato}
+            className="inline-flex items-center gap-2 px-4 h-11 rounded-xl text-sm font-semibold"
+            style={{ background: 'rgba(251,146,60,0.12)', border: '1px solid rgba(251,146,60,0.35)', color: '#fb923c' }}>
+            <Ban size={15} /> Cancelar contrato
+          </button>
+        )}
+        {clienteId && situacao === 'inativo' && (
+          <span className="inline-flex items-center gap-2 px-4 h-11 rounded-xl text-sm font-semibold"
+            style={{ background: 'rgba(148,163,184,0.10)', border: '1px solid rgba(148,163,184,0.3)', color: '#94a3b8' }}>
+            <Ban size={15} /> Contrato cancelado (inativo)
+          </span>
         )}
 
         {clienteId && !savedMsg && (

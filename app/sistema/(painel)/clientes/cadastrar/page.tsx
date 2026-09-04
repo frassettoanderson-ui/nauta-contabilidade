@@ -6,6 +6,7 @@ import { useSession } from 'next-auth/react'
 import { Loader2, Check, ArrowLeft, ArrowRight, Upload, FileText, FileImage, Paperclip, Save, Trash2, Link2, Copy, X, Send, Pencil, Folder, Download, Lock } from 'lucide-react'
 import { uploadDoc, saveCliente, getCliente, getClienteByLead, deleteCliente, gerarLinkCadastro, getLeadDetail, enviarParaAssinatura, getContratoByLead, listArquivos, addArquivoCliente, deleteArquivoCliente, type ContratoRow, type ArquivoRow } from '@/lib/api'
 import { CLI_FIELDS, EMP_FIELDS, SOCIO_FIELDS, CLI_TO_SOCIO } from '@/lib/cadastro'
+import HistoricoCliente from '@/components/sistema/HistoricoCliente'
 import { tipoFromInteresse, requiredKeysFor, REQ_SOCIO, TIPO_LABEL } from '@/lib/contratos'
 import SmartField from '@/components/cadastro/SmartField'
 import type { CEPData } from '@/lib/form-masks'
@@ -129,6 +130,7 @@ function Wizard() {
   const [socio2Ativo, setSocio2Ativo] = useState(false)
   const [socio3Ativo, setSocio3Ativo] = useState(false)
   const [tipo, setTipo] = useState<number | null>(null)
+  const [histLeadId, setHistLeadId] = useState<string | null>(null)
 
   useEffect(() => {
     async function init() {
@@ -148,6 +150,7 @@ function Wizard() {
       }
       // Determina o tipo de contrato pelo interesse do lead
       const lid = leadId || (data?.lead_id as string | undefined)
+      setHistLeadId(lid ?? null)
       if (lid) {
         try {
           const lead = await getLeadDetail(lid)
@@ -492,6 +495,8 @@ function Wizard() {
           </div>
         )}
       </div>
+
+      {histLeadId && <HistoricoCliente leadId={histLeadId} />}
 
       {savedMsg && <p className="text-sm text-[#22c55e] mb-4 flex items-center gap-2"><Check size={15} /> {savedMsg}</p>}
 

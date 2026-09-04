@@ -156,7 +156,8 @@ export async function countLeadsNovos(): Promise<number> {
 export async function iniciarOnboarding(leadId: string, categoria: string) {
   await pool.query(
     `UPDATE leads SET em_onboarding = true, onboarding_etapa = 1, onboarding_categoria = $2,
-        onboarding_iniciado_em = COALESCE(onboarding_iniciado_em, NOW())
+        onboarding_iniciado_em = COALESCE(onboarding_iniciado_em, NOW()),
+        financeiro_ativo = true
       WHERE id = $1`,
     [leadId, categoria]
   )

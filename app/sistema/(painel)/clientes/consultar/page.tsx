@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import { Loader2, Search, Users, Building2, DollarSign } from 'lucide-react'
+import { Loader2, Search, Users, Building2, DollarSign, ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react'
 import { listClientes, setSituacaoCliente } from '@/lib/api'
 import { parseCidadeEstado } from '@/lib/form-masks'
 import CobrancaModal from '@/components/sistema/CobrancaModal'
@@ -26,6 +26,7 @@ export default function ConsultarClientesPage() {
   const [busca, setBusca] = useState('')
   const [filtroSit, setFiltroSit] = useState<'todos' | 'ativo' | 'em_processo' | 'inativo'>('todos')
   const [cobranca, setCobranca] = useState<{ leadId: string; nome: string; cnpj: string } | null>(null)
+  const [sort, setSort] = useState<{ key: string; dir: 1 | -1 }>({ key: 'cadastro', dir: -1 })
 
   useEffect(() => { listClientes().then(setClientes).catch(() => setClientes([])) }, [])
 
@@ -51,17 +52,41 @@ export default function ConsultarClientesPage() {
 
   const contagem = (k: string) => (clientes ?? []).filter(c => (s(c.situacao) || 'ativo') === k).length
 
-  const COLS: { label: string; w: string }[] = [
-    { label: 'Empresa', w: '16%' },
-    { label: 'CNPJ', w: '14%' },
-    { label: 'Responsável', w: '14%' },
-    { label: 'Telefone', w: '11%' },
-    { label: 'Cidade', w: '12%' },
-    { label: 'UF', w: '4%' },
-    { label: 'Cadastro', w: '8%' },
-    { label: 'Cobrança', w: '10%' },
-    { label: 'Situação', w: '11%' },
+  // Ordenação por cabeçalho (clique alterna asc/desc) — mesmo padrão da tela de Faturamento
+  const COLS: { label: string; w: string; key: string | null }[] = [
+    { label: 'Empresa', w: '16%', key: 'empresa' },
+    { label: 'CNPJ', w: '14%', key: 'cnpj' },
+    { label: 'Responsável', w: '14%', key: 'responsavel' },
+    { label: 'Telefone', w: '11%', key: 'telefone' },
+    { label: 'Cidade', w: '12%', key: 'cidade' },
+    { label: 'UF', w: '4%', key: 'uf' },
+    { label: 'Cadastro', w: '8%', key: 'cadastro' },
+    { label: 'Cobrança', w: '10%', key: null },
+    { label: 'Situação', w: '11%', key: 'situacao' },
   ]
+  const sortKey = (c: Cli, key: string): string | number => {
+    const { cidade, uf } = parseCidadeEstado(s(c.emp_cidade_estado))
+    switch (key) {
+      case 'empresa': return (s(c.emp_nome) || s(c.responsavel)).toLowerCase()
+      case 'cnpj': return s(c.emp_cnpj).replace(/\D/g, '')
+      case 'responsavel': return s(c.responsavel).toLowerCase()
+      case 'telefone': return s(c.emp_telefone).replace(/\D/g, '')
+      case 'cidade': return cidade.toLowerCase()
+      case 'uf': return uf
+      case 'cadastro': return s(c.criado_em)
+      case 'situacao': return ({ ativo: 0, em_processo: 1, inativo: 2 } as Record<string, number>)[s(c.situacao) || 'ativo'] ?? 9
+      default: return ''
+    }
+  }
+  const sorted = [...filtered].sort((a, b) => {
+    const va = sortKey(a, sort.key), vb = sortKey(b, sort.key)
+    // vazios sempre por último, independente da direção
+    if (va === '' && vb !== '') return 1
+    if (vb === '' && va !== '') return -1
+    if (typeof va === 'number' && typeof vb === 'number') return (va - vb) * sort.dir
+    return String(va).localeCompare(String(vb), 'pt-BR', { numeric: true }) * sort.dir
+  })
+  const toggleSort = (key: string) => setSort(cur => cur.key === key ? { key, dir: (cur.dir === 1 ? -1 : 1) } : { key, dir: 1 })
 
   const chip = (key: 'todos' | 'ativo' | 'em_processo' | 'inativo', label: string, cor?: string) => {
     const ativo = filtroSit === key
@@ -115,13 +140,24 @@ export default function ConsultarClientesPage() {
             </colgroup>
             <thead>
               <tr style={{ borderBottom: '1px solid var(--sys-border)' }}>
-                {COLS.map(col => (
+                {COLS.map(col => col.key ? (
+                  <th key={col.label} onClick={() => toggleSort(col.key!)} title="Clique para ordenar"
+                    className="text-left text-[11px] font-bold uppercase tracking-wide px-3 py-3 truncate cursor-pointer select-none hover:text-white"
+                    style={{ color: sort.key === col.key ? 'var(--sys-accent)' : '#6b7280' }}>
+                    <span className="inline-flex items-center gap-1">
+                      {col.label}
+                      {sort.key === col.key
+                        ? (sort.dir === 1 ? <ChevronUp size={12} /> : <ChevronDown size={12} />)
+                        : <ChevronsUpDown size={12} className="opacity-30" />}
+                    </span>
+                  </th>
+                ) : (
                   <th key={col.label} className="text-left text-[11px] font-bold uppercase tracking-wide text-gray-500 px-3 py-3 truncate">{col.label}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {filtered.map(c => {
+              {sorted.map(c => {
                 const { cidade, uf } = parseCidadeEstado(s(c.emp_cidade_estado))
                 const sit = s(c.situacao) || 'ativo'
                 const cfg = SIT[sit] ?? SIT.ativo

@@ -51,8 +51,9 @@ export async function getDashboard(empresaId: string): Promise<DashboardData> {
   // (com vencimento definido) mesmo antes de virarem financeiro_ativo (senão o
   // "1º honorário" e as projeções escondem quem fechou e ainda está no onboarding).
   const leadsBilling = (await pool.query(
-    `SELECT id, valor_honorario, honorario_vencimento FROM leads
-      WHERE empresa_id = $1 AND valor_honorario > 0 AND honorario_vencimento IS NOT NULL`,
+    `SELECT l.id, l.valor_honorario, l.honorario_vencimento FROM leads l
+      WHERE l.empresa_id = $1 AND l.valor_honorario > 0 AND l.honorario_vencimento IS NOT NULL
+        AND NOT EXISTS (SELECT 1 FROM clientes c WHERE c.lead_id = l.id AND c.situacao = 'inativo')`,
     [empresaId]
   )).rows
 

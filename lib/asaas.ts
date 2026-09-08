@@ -259,6 +259,16 @@ export async function competenciaAberta(leadId: string): Promise<string> {
   return l.rows[0]?.c || `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-01`
 }
 
+// PIX copia-e-cola de uma cobrança comum (fallback quando não há Pix Automático)
+export async function pixDaCobranca(asaasPaymentId: string): Promise<string> {
+  try { const r = await api<{ payload?: string }>(`/payments/${asaasPaymentId}/pixQrCode`); return r.payload || '' } catch { return '' }
+}
+
+// Pix Automático disponível para a conta? (recurso precisa ser habilitado pelo Asaas)
+export async function pixAutomaticoDisponivel(): Promise<boolean> {
+  try { await api('/pix/automatic/eligibility'); return true } catch { return false }
+}
+
 // Usados pelos módulos de Pix Automático e régua de cobrança
 export { api as asaasApi, dadosLead, ensureCustomer }
 

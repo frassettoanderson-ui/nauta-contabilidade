@@ -1,6 +1,7 @@
 import pool from './db'
 import { emitCrmChange } from './realtime'
 import { getOrCreatePixAuto } from './pix-automatico'
+import { pixDaCobranca } from './asaas'
 
 // ─── Régua de cobrança pelos canais da Nauta ─────────────────────────────────
 // WhatsApp: API pública do Whats Profissional (número do atendimento) — sem custo por msg.
@@ -52,11 +53,13 @@ async function contexto(leadId: string, cobrancaId?: string): Promise<Ctx> {
   const l = r.rows[0]
   if (!l) throw new Error('Lead não encontrado')
   const cob = cobrancaId
-    ? (await pool.query(`SELECT id, valor, to_char(vencimento,'YYYY-MM-DD') AS vencimento, invoice_url FROM financeiro_cobrancas WHERE id = $1`, [cobrancaId])).rows[0]
-    : (await pool.query(`SELECT id, valor, to_char(vencimento,'YYYY-MM-DD') AS vencimento, invoice_url FROM financeiro_cobrancas
+    ? (await pool.query(`SELECT id, asaas_payment_id, valor, to_char(vencimento,'YYYY-MM-DD') AS vencimento, invoice_url FROM financeiro_cobrancas WHERE id = $1`, [cobrancaId])).rows[0]
+    : (await pool.query(`SELECT id, asaas_payment_id, valor, to_char(vencimento,'YYYY-MM-DD') AS vencimento, invoice_url FROM financeiro_cobrancas
                           WHERE lead_id = $1 AND status IN ('PENDING','OVERDUE') ORDER BY vencimento ASC LIMIT 1`, [leadId])).rows[0]
+  // PIX copia-e-cola: prioriza o Pix Automático (autoriza a recorrência); se indisponível, usa o PIX comum do boleto
   let pix = ''
-  try { pix = (await getOrCreatePixAuto(leadId)).payload || '' } catch (e) { console.error('[regua] pix automático:', (e as Error).message) }
+  try { pix = (await getOrCreatePixAuto(leadId)).payload || '' } catch { /* Pix Automático indisponível/não elegível */ }
+  if (!pix && cob?.asaas_payment_id) { try { pix = await pixDaCobranca(cob.asaas_payment_id) } catch { /* segue sem pix */ } }
   return {
     leadId, empresaId: l.empresa_id,
     nome: primeiroNome(l.cli_nome_completo || l.nome), empresa: l.emp_nome || l.nome,
@@ -71,7 +74,8 @@ function montar(tipo: TipoEnvio, c: Ctx, canal: 'whatsapp' | 'email') {
     .replace(/{nome}/g, c.nome).replace(/{empresa}/g, c.empresa).replace(/{valor}/g, brl(c.valor))
     .replace(/{venc}/g, c.venc).replace(/{pix}/g, c.pix || '(indisponível)').replace(/{link}/g, c.link || '(indisponível)')
   let corpo = fill(RAND(MENSAGENS[tipo]))
-  if (c.pix) corpo += PIX_AUTO_RODAPE
+  // rodapé só quando o PIX é realmente o do Pix Automático (tag br.gov.bcb.pix + /rec/ da recorrência)
+  if (c.pix && /\/rec\//.test(c.pix)) corpo += PIX_AUTO_RODAPE
   if (canal === 'email') corpo = corpo.replace(/\*/g, '')
   return { corpo, assunto: fill(ASSUNTO[tipo]) }
 }

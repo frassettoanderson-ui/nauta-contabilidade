@@ -1,5 +1,6 @@
 import pool from './db'
 import { emitCrmChange } from './realtime'
+import { asaasConfigurado, sincronizarLead, cancelarAssinatura } from './asaas'
 
 const CLI_COLS = [
   'cli_nome_completo', 'cli_rg', 'cli_cpf', 'cli_nascimento', 'cli_nome_pai', 'cli_nome_mae',
@@ -63,6 +64,15 @@ export async function setSituacaoCliente(id: string, situacao: string, empresaId
     `UPDATE leads SET financeiro_ativo = $2 WHERE id = (SELECT lead_id FROM clientes WHERE id = $1)`,
     [id, situacao !== 'inativo']
   ).catch(() => {})
+  // Asaas: contrato cancelado encerra a assinatura; reativado recria (sem bloquear a tela)
+  if (asaasConfigurado()) {
+    const lr = await pool.query(`SELECT lead_id FROM clientes WHERE id = $1`, [id]).catch(() => ({ rows: [] as { lead_id: string }[] }))
+    const leadId = lr.rows[0]?.lead_id as string | undefined
+    if (leadId) {
+      const op = situacao === 'inativo' ? cancelarAssinatura(leadId) : sincronizarLead(leadId)
+      op.catch(e => console.error('[asaas] situação cliente:', (e as Error).message))
+    }
+  }
   emitCrmChange()
   return { ok: true }
 }

@@ -1,4 +1,5 @@
 import pool from './db'
+import { asaasConfigurado, sincronizarLead } from './asaas'
 import { isContratoPronto } from './contratos'
 import { emitCrmChange } from './realtime'
 import { calcStatusFinanceiro } from './financeiro-calc'
@@ -162,6 +163,10 @@ export async function iniciarOnboarding(leadId: string, categoria: string) {
     [leadId, categoria]
   )
   emitCrmChange()
+  // Cobrança automática: cria cliente + assinatura mensal no Asaas (não bloqueia o onboarding se falhar)
+  if (asaasConfigurado()) {
+    sincronizarLead(leadId).catch(e => console.error('[asaas] sincronizarLead falhou:', (e as Error).message))
+  }
 }
 
 /** Lista os leads em onboarding de uma categoria. */

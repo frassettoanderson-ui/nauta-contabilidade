@@ -3,8 +3,8 @@
 import { useEffect, useState, useCallback } from 'react'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import { Loader2, Search, DollarSign, MessageCircle, X, Plus, Trash2, Phone, Mail, Smartphone, CalendarClock, ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react'
-import { listFinanceiro, listPagamentos, addPagamento, deletePagamento, listEventos, addEvento, type PagamentoRow, type EventoRow } from '@/lib/api'
+import { Loader2, Search, DollarSign, MessageCircle, X, Plus, Trash2, Phone, Mail, Smartphone, CalendarClock, ChevronUp, ChevronDown, ChevronsUpDown, ExternalLink, RefreshCw } from 'lucide-react'
+import { listFinanceiro, listPagamentos, addPagamento, deletePagamento, listEventos, addEvento, asaasResumo, asaasSincronizar, asaasSincronizarTodos, type PagamentoRow, type EventoRow, type AsaasResumo, type AsaasResumoItem } from '@/lib/api'
 
 type Row = Record<string, unknown>
 const s = (v: unknown) => String(v ?? '')
@@ -54,8 +54,32 @@ export default function FinanceiroPage() {
   const [cobranca, setCobranca] = useState<Row | null>(null)
   const [sort, setSort] = useState<{ key: string; dir: 1 | -1 }>({ key: 'empresa', dir: 1 })
 
-  const load = useCallback(() => { listFinanceiro().then(setRows).catch(() => setRows([])) }, [])
+  const [asaas, setAsaas] = useState<AsaasResumo | null>(null)
+  const [syncing, setSyncing] = useState<string | null>(null) // leadId em sincronização, ou 'todos'
+
+  const load = useCallback(() => {
+    listFinanceiro().then(setRows).catch(() => setRows([]))
+    asaasResumo().then(setAsaas).catch(() => setAsaas(null))
+  }, [])
   useEffect(() => { load() }, [load])
+
+  async function syncLead(leadId: string) {
+    setSyncing(leadId)
+    try { await asaasSincronizar(leadId); load() }
+    catch (e) { alert('Asaas: ' + ((e as Error).message || 'erro ao sincronizar')) }
+    finally { setSyncing(null) }
+  }
+  async function syncTodos() {
+    if (!confirm('Cadastrar/atualizar TODOS os clientes ativos no Asaas (cliente + assinatura mensal)?')) return
+    setSyncing('todos')
+    try {
+      const r = await asaasSincronizarTodos()
+      const falhas = r.resultados.filter(x => !x.ok)
+      load()
+      alert(`Asaas: ${r.resultados.length - falhas.length} sincronizado(s)` + (falhas.length ? `\n\nFalhas (${falhas.length}):\n` + falhas.map(f => `• ${f.nome}: ${f.erro}`).join('\n') : ''))
+    } catch (e) { alert('Asaas: ' + ((e as Error).message || 'erro')) }
+    finally { setSyncing(null) }
+  }
 
   const base = rows ?? []
   const cont = {
@@ -76,7 +100,7 @@ export default function FinanceiroPage() {
     { label: 'Empresa', key: 'empresa' }, { label: 'Responsável', key: 'responsavel' },
     { label: 'Telefone', key: 'telefone' }, { label: 'Honorário', key: 'honorario' },
     { label: 'Vencimento', key: 'vencimento' }, { label: 'Prazo prometido', key: 'prazo' },
-    { label: 'Status', key: 'status' }, { label: '', key: null },
+    { label: 'Status', key: 'status' }, { label: 'Cobrança Asaas', key: null }, { label: '', key: null },
   ]
   const sortKey = (r: Row, key: string): string | number => {
     switch (key) {
@@ -104,10 +128,27 @@ export default function FinanceiroPage() {
           <h1 className="text-2xl font-black text-white flex items-center gap-2" style={{ letterSpacing: '-0.02em' }}><DollarSign size={22} className="text-[color:var(--sys-accent)]" /> Faturamento</h1>
           <p className="text-gray-500 text-sm mt-0.5">{rows === null ? 'Carregando...' : `${filtered.length} cliente(s) · honorários`}</p>
         </div>
-        <div className="relative">
-          <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" />
-          <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar empresa ou responsável..."
-            className="h-10 pl-9 pr-4 rounded-xl text-sm text-white placeholder-gray-600 outline-none w-72" style={{ background: 'var(--sys-surface-3)', border: '1px solid var(--sys-border-2)' }} />
+        <div className="flex items-center gap-2 flex-wrap">
+          {asaas?.configurado && (
+            <>
+              <span className="text-[10px] font-bold uppercase tracking-wide px-2 h-6 inline-flex items-center rounded-md"
+                style={asaas.ambiente === 'production'
+                  ? { background: 'rgba(34,197,94,0.12)', color: '#22c55e' }
+                  : { background: 'rgba(251,191,36,0.12)', color: '#fbbf24' }}>
+                Asaas · {asaas.ambiente === 'production' ? 'produção' : 'sandbox (teste)'}
+              </span>
+              <button onClick={syncTodos} disabled={syncing !== null}
+                className="inline-flex items-center gap-2 px-3.5 h-10 rounded-xl text-sm font-bold text-white disabled:opacity-60"
+                style={{ background: 'rgba(124,111,255,0.9)' }}>
+                <RefreshCw size={14} className={syncing === 'todos' ? 'animate-spin' : ''} /> Sincronizar todos no Asaas
+              </button>
+            </>
+          )}
+          <div className="relative">
+            <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" />
+            <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar empresa ou responsável..."
+              className="h-10 pl-9 pr-4 rounded-xl text-sm text-white placeholder-gray-600 outline-none w-72" style={{ background: 'var(--sys-surface-3)', border: '1px solid var(--sys-border-2)' }} />
+          </div>
         </div>
       </div>
 
@@ -169,6 +210,10 @@ export default function FinanceiroPage() {
                     <td className="px-4 py-3 text-gray-400">{dataBR(r.proximo_vencimento)}</td>
                     <td className="px-4 py-3">{r.prazo_prometido ? <span className="text-[#fbbf24]">{dataBR(r.prazo_prometido)}</span> : <span className="text-gray-600">—</span>}</td>
                     <td className="px-4 py-3"><StatusBadge status={s(r.financeiro_status)} meses={meses} /></td>
+                    <td className="px-4 py-3" onClick={e => e.stopPropagation()}>
+                      <AsaasCell item={asaas?.resumo[s(r.lead_id)]} configurado={!!asaas?.configurado}
+                        syncing={syncing === s(r.lead_id)} onSync={() => syncLead(s(r.lead_id))} />
+                    </td>
                     <td className="px-4 py-3">
                       {r.financeiro_status === 'atrasado' && (
                         <a onClick={e => e.stopPropagation()} href={`https://wa.me/55${waDigits(tel)}?text=${encodeURIComponent(msgCobranca(s(r.lead_nome) || s(r.responsavel), meses))}`} target="_blank" rel="noopener noreferrer"
@@ -186,6 +231,41 @@ export default function FinanceiroPage() {
       )}
 
       {cobranca && <CobrancaModal row={cobranca} onClose={() => setCobranca(null)} onChanged={load} />}
+    </div>
+  )
+}
+
+// Célula "Cobrança Asaas": status da cobrança em aberto + link do boleto/PIX + sincronizar
+const ASAAS_ST: Record<string, { label: string; color: string }> = {
+  PENDING:          { label: 'Aguardando', color: '#fbbf24' },
+  OVERDUE:          { label: 'Vencida',    color: '#f87171' },
+  RECEIVED:         { label: 'Paga',       color: '#22c55e' },
+  CONFIRMED:        { label: 'Paga',       color: '#22c55e' },
+  RECEIVED_IN_CASH: { label: 'Paga',       color: '#22c55e' },
+}
+function AsaasCell({ item, configurado, syncing, onSync }: { item?: AsaasResumoItem; configurado: boolean; syncing: boolean; onSync: () => void }) {
+  if (!configurado) return <span className="text-gray-600 text-xs">—</span>
+  const st = item ? (ASAAS_ST[item.status] ?? { label: item.status, color: '#9ca3af' }) : null
+  return (
+    <div className="flex items-center gap-2">
+      {st ? (
+        <span className="inline-flex items-center px-2 h-6 rounded-md text-[11px] font-bold" style={{ background: `${st.color}22`, color: st.color }}>
+          {st.label}{item?.vencimento ? ` · ${item.vencimento.slice(8, 10)}/${item.vencimento.slice(5, 7)}` : ''}
+        </span>
+      ) : (
+        <span className="text-gray-500 text-[11px]">sem cobrança</span>
+      )}
+      {item?.invoice_url && (
+        <a href={item.invoice_url} target="_blank" rel="noopener noreferrer" title="Abrir boleto / PIX"
+          className="inline-flex items-center gap-1 text-[11px] font-bold px-2 h-6 rounded-md text-white" style={{ background: 'rgba(124,111,255,0.9)' }}>
+          <ExternalLink size={11} /> Boleto/PIX
+        </a>
+      )}
+      <button onClick={onSync} disabled={syncing} title={item ? 'Atualizar cobranças do Asaas' : 'Cadastrar no Asaas (cliente + assinatura mensal)'}
+        className="w-6 h-6 rounded-md flex items-center justify-center text-gray-300 hover:text-white disabled:opacity-50"
+        style={{ background: 'var(--sys-surface-3)', border: '1px solid var(--sys-border-2)' }}>
+        <RefreshCw size={12} className={syncing ? 'animate-spin' : ''} />
+      </button>
     </div>
   )
 }

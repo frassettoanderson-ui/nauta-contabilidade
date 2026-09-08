@@ -534,3 +534,26 @@ export type { ComissoesData, ComissaoItem, ComissaoTotais, ComissaoEsperadoItem 
 export function getComissoes(ano: number, mes: number): Promise<import('./comissoes').ComissoesData> {
   return fetch(`/api/comercial/comissoes?ano=${ano}&mes=${mes}`).then(r => json(r))
 }
+
+// ─── ASAAS (cobrança automática) ─────────────────────────────────────────────
+export interface AsaasResumoItem { status: string; vencimento: string; invoice_url: string | null; bank_slip_url: string | null; valor: number }
+export interface AsaasResumo { configurado: boolean; ambiente: 'sandbox' | 'production'; resumo: Record<string, AsaasResumoItem> }
+export interface AsaasCobrancaRow {
+  id: string; asaas_payment_id: string; competencia: string; valor: number | string; vencimento: string
+  status: string; billing_type: string; invoice_url: string | null; bank_slip_url: string | null; pago_em: string | null
+}
+export function asaasResumo(): Promise<AsaasResumo> {
+  return fetch('/api/financeiro/asaas').then(r => json(r))
+}
+export function asaasCobrancas(leadId: string): Promise<AsaasCobrancaRow[]> {
+  return fetch(`/api/financeiro/asaas?leadId=${encodeURIComponent(leadId)}`).then(r => json(r))
+}
+export function asaasSincronizar(leadId: string): Promise<{ ok: boolean; cobrancas?: number; cancelado?: boolean }> {
+  return fetch('/api/financeiro/asaas', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ leadId }) }).then(r => json(r))
+}
+export function asaasSincronizarTodos(): Promise<{ resultados: { leadId: string; nome: string; ok: boolean; erro?: string }[] }> {
+  return fetch('/api/financeiro/asaas', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ todos: true }) }).then(r => json(r))
+}
+export function asaasCancelar(leadId: string): Promise<{ ok: boolean }> {
+  return fetch('/api/financeiro/asaas', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ leadId, cancelar: true }) }).then(r => json(r))
+}

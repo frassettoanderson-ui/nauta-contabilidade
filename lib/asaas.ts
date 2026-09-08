@@ -13,7 +13,7 @@ export const asaasAmbiente = () => (process.env.ASAAS_ENV === 'production' ? 'pr
 
 export interface AsaasPayment {
   id: string; customer: string; subscription?: string | null
-  value: number; dueDate: string; status: string; billingType: string
+  value: number; netValue?: number | null; dueDate: string; status: string; billingType: string
   invoiceUrl?: string | null; bankSlipUrl?: string | null
   paymentDate?: string | null; clientPaymentDate?: string | null
   externalReference?: string | null; description?: string | null
@@ -170,7 +170,38 @@ export async function upsertCobranca(p: AsaasPayment, leadId: string, empresaId:
         [leadId, competencia, Number(p.value || 0), pagoEm, empresaId]
       )
     }
+    // Fluxo de caixa: honorário líquido vira ENTRADA e a tarifa Asaas vira DESPESA (uma vez por cobrança)
+    await lancarFluxoCaixa(p, leadId, empresaId, competencia, pagoEm)
   }
+}
+
+// Cria os lançamentos de caixa a partir de um pagamento Asaas recebido:
+//  entrada = valor líquido (o que caiu na conta) | despesa = tarifa Asaas (bruto − líquido)
+async function lancarFluxoCaixa(p: AsaasPayment, leadId: string, empresaId: string | null, competencia: string, pagoEm: string) {
+  const cob = await pool.query(`SELECT lancado FROM financeiro_cobrancas WHERE asaas_payment_id = $1`, [p.id])
+  if (cob.rows[0]?.lancado) return
+  const bruto = Number(p.value || 0)
+  let net = Number(p.netValue ?? 0)
+  if (!net) { try { const full = await api<{ netValue?: number }>(`/payments/${p.id}`); net = Number(full.netValue ?? bruto) } catch { net = bruto } }
+  const tarifa = Math.max(0, +(bruto - net).toFixed(2))
+  const nome = (await pool.query(
+    `SELECT COALESCE(NULLIF(c.emp_nome,''), l.nome) AS nome FROM leads l LEFT JOIN clientes c ON c.lead_id = l.id WHERE l.id = $1`, [leadId]
+  )).rows[0]?.nome || 'Cliente'
+  const compBR = `${competencia.slice(5, 7)}/${competencia.slice(0, 4)}`
+  const empExpr = 'COALESCE($7, (SELECT id FROM empresas WHERE slug = \'nauta\'))'
+  await pool.query(
+    `INSERT INTO fin_lancamentos (tipo, categoria, descricao, cliente_nome, valor, data, autor, empresa_id, origem, origem_ref)
+     VALUES ('entrada', 'Honorários', $1, $2, $3, $4, $5, ${empExpr}, 'asaas', $6)`,
+    [`Honorário ${nome} — ${compBR}`, nome, net, pagoEm, 'Asaas', p.id, empresaId]
+  )
+  if (tarifa > 0) {
+    await pool.query(
+      `INSERT INTO fin_lancamentos (tipo, categoria, descricao, cliente_nome, valor, data, autor, empresa_id, origem, origem_ref)
+       VALUES ('despesa', 'Tarifas Asaas', $1, $2, $3, $4, $5, ${empExpr}, 'asaas', $6)`,
+      [`Tarifa Asaas — ${nome} ${compBR}`, nome, tarifa, pagoEm, 'Asaas', p.id, empresaId]
+    )
+  }
+  await pool.query(`UPDATE financeiro_cobrancas SET lancado = true WHERE asaas_payment_id = $1`, [p.id])
 }
 
 async function syncPayments(leadId: string, subscriptionId: string, empresaId: string | null) {

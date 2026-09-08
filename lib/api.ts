@@ -577,3 +577,22 @@ export function enviarCobrancaAgora(leadId: string, tipo: TipoEnvioCobranca): Pr
 export function gerarPixAutomatico(leadId: string): Promise<PixAutoRow> { return postEnvios({ leadId, pixAuto: true }).then(r => json(r)) }
 export function getPixAutomatico(leadId: string): Promise<PixAutoRow | null> { return fetch(`/api/financeiro/envios?leadId=${encodeURIComponent(leadId)}&pixAuto=1`).then(r => json(r)) }
 export function cancelarPixAutomatico(leadId: string): Promise<{ ok: boolean }> { return postEnvios({ leadId, cancelarPixAuto: true }).then(r => json(r)) }
+
+// ─── CONTAS A PAGAR ──────────────────────────────────────────────────────────
+export interface ContaPagarRow {
+  id: string; descricao: string; fornecedor: string | null; categoria: string | null
+  valor: number; vencimento: string | null; pago: boolean; pago_em: string | null
+  observacao: string | null; lancamento_id: string | null
+}
+export function listContasPagar(): Promise<ContaPagarRow[]> {
+  return fetch('/api/financeiro/contas').then(r => json<ContaPagarRow[]>(r))
+}
+function postConta(body: Record<string, unknown>) {
+  return fetch('/api/financeiro/contas', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).then(r => json(r))
+}
+export function addContaPagar(c: { descricao: string; fornecedor?: string; categoria?: string; valor: number; vencimento?: string | null; observacao?: string }): Promise<ContaPagarRow> {
+  return postConta({ action: 'add', ...c }) as Promise<ContaPagarRow>
+}
+export function pagarContaPagar(id: string, pagoEm: string): Promise<{ ok: boolean }> { return postConta({ action: 'pagar', id, pagoEm }) as Promise<{ ok: boolean }> }
+export function desmarcarContaPagar(id: string): Promise<{ ok: boolean }> { return postConta({ action: 'desmarcar', id }) as Promise<{ ok: boolean }> }
+export function deleteContaPagar(id: string): Promise<{ ok: boolean }> { return postConta({ action: 'delete', id }) as Promise<{ ok: boolean }> }

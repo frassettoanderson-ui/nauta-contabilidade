@@ -42,6 +42,7 @@ export const MENU_GRUPOS: MenuGrupo[] = [
     { href: '/sistema/financeiro/lancar-entrada', label: 'Lançar Entrada' },
     { href: '/sistema/financeiro/lancar-despesa', label: 'Lançar Despesa' },
     { href: '/sistema/financeiro/despesas-fixas', label: 'Despesas Fixas' },
+    { href: '/sistema/financeiro/contas-a-pagar', label: 'Contas a Pagar' },
   ] },
   { grupo: 'Áreas', itens: [
     { href: '/sistema/fiscal', label: 'Fiscal' },

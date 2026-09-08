@@ -43,6 +43,8 @@ export async function getOrCreatePixAuto(leadId: string): Promise<PixAuto> {
   const startDate = addMonths(vencAberto, 1)
   const valor = Number(d.valor_honorario)
   const nome = (d.emp_nome || d.nome || '').slice(0, 20)
+  // contractId precisa ser único por autorização no Asaas (máx. 35 chars): lead + carimbo de tempo
+  const contractId = `${leadId.replace(/-/g, '').slice(0, 24)}-${Date.now().toString(36)}`
 
   const a = await asaasApi<{
     id: string; status: string; startDate: string; payload: string; encodedImage: string
@@ -51,7 +53,7 @@ export async function getOrCreatePixAuto(leadId: string): Promise<PixAuto> {
     method: 'POST',
     body: JSON.stringify({
       customerId,
-      contractId: leadId.replace(/-/g, ''),           // máx. 35 chars
+      contractId,
       frequency: 'MONTHLY',
       startDate: ymd(startDate),
       value: valor,
@@ -66,7 +68,7 @@ export async function getOrCreatePixAuto(leadId: string): Promise<PixAuto> {
     `INSERT INTO financeiro_pix_automatico (empresa_id, lead_id, asaas_auth_id, contract_id, status, start_date, valor, payload, encoded_image, expira_em, raw)
      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
      ON CONFLICT (asaas_auth_id) DO UPDATE SET status = EXCLUDED.status, payload = EXCLUDED.payload, encoded_image = EXCLUDED.encoded_image, expira_em = EXCLUDED.expira_em, raw = EXCLUDED.raw, atualizado_em = now()`,
-    [d.empresa_id, leadId, a.id, leadId.replace(/-/g, ''), a.status || 'CREATED', a.startDate, valor, a.payload, a.encodedImage, expira, JSON.stringify(a)]
+    [d.empresa_id, leadId, a.id, contractId, a.status || 'CREATED', a.startDate, valor, a.payload, a.encodedImage, expira, JSON.stringify(a)]
   )
   return (await getPixAuto(leadId))!
 }

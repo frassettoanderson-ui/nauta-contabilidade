@@ -12,7 +12,7 @@ const money = (v: unknown) => {
   const n = Number(v)
   return isNaN(n) || v == null || v === '' ? '—' : `R$ ${n.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
 }
-const dataBR = (v: unknown) => v ? format(new Date(s(v) + (s(v).length === 10 ? 'T00:00:00' : '')), 'dd/MM/yyyy', { locale: ptBR }) : '—'
+const dataBR = (v: unknown) => { if (!v) return '—'; const str = s(v); const d = new Date(str.length === 10 ? str + 'T00:00:00' : str); return isNaN(d.getTime()) ? '—' : format(d, 'dd/MM/yyyy', { locale: ptBR }) }
 const primeiroNome = (n: string) => n.trim().split(/\s+/)[0]
 const waDigits = (t: string) => (t || '').replace(/\D/g, '')
 

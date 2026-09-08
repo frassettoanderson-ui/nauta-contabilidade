@@ -7,7 +7,7 @@ import { Loader2, Receipt, Plus, Trash2, Check, RotateCcw, AlertTriangle, CheckC
 import { listContasPagar, addContaPagar, pagarContaPagar, desmarcarContaPagar, deleteContaPagar, type ContaPagarRow } from '@/lib/api'
 
 const brl = (v: unknown) => { const n = Number(v); return isNaN(n) ? 'R$ 0,00' : `R$ ${n.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` }
-const dataBR = (v: string | null) => v ? format(new Date(v + 'T00:00:00'), 'dd/MM/yyyy', { locale: ptBR }) : '—'
+const dataBR = (v: string | null) => { if (!v) return '—'; const d = new Date(String(v).slice(0, 10) + 'T00:00:00'); return isNaN(d.getTime()) ? '—' : format(d, 'dd/MM/yyyy', { locale: ptBR }) }
 const hoje = () => new Date().toISOString().slice(0, 10)
 const FS = { background: 'var(--sys-surface-3)', border: '1px solid var(--sys-border-2)' }
 const FIELD = 'w-full h-10 px-3 rounded-lg text-sm text-white placeholder-gray-600 outline-none'

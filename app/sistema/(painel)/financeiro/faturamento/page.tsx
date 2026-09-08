@@ -10,7 +10,7 @@ import type { ReactNode } from 'react'
 type Row = Record<string, unknown>
 const s = (v: unknown) => String(v ?? '')
 const brl = (v: unknown) => { const n = Number(v); return isNaN(n) ? 'R$ 0,00' : `R$ ${n.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` }
-const dataBR = (v: unknown) => v ? format(new Date(s(v) + (s(v).length === 10 ? 'T00:00:00' : '')), 'dd/MM/yyyy', { locale: ptBR }) : '—'
+const dataBR = (v: unknown) => { if (!v) return '—'; const str = s(v); const d = new Date(str.length === 10 ? str + 'T00:00:00' : str); return isNaN(d.getTime()) ? '—' : format(d, 'dd/MM/yyyy', { locale: ptBR }) }
 
 const STATUS = {
   em_dia:   { label: 'Em dia',   bg: 'rgba(34,197,94,0.12)',  color: '#22c55e' },

@@ -95,7 +95,7 @@ export default function LancarEntradaPage() {
             <tbody>
               {lancs.map(l => (
                 <tr key={l.id} style={{ borderBottom: '1px solid var(--sys-surface-4)' }}>
-                  <td className="px-4 py-3 text-gray-400">{l.data ? format(new Date(l.data + 'T00:00:00'), 'dd/MM/yyyy', { locale: ptBR }) : '—'}</td>
+                  <td className="px-4 py-3 text-gray-400">{l.data ? format(new Date(String(l.data).slice(0, 10) + 'T00:00:00'), 'dd/MM/yyyy', { locale: ptBR }) : '—'}</td>
                   <td className="px-4 py-3 text-gray-200">{l.categoria || '—'}</td>
                   <td className="px-4 py-3 text-gray-300">{l.cliente_nome || '—'}</td>
                   <td className="px-4 py-3 text-gray-500">{l.descricao || '—'}</td>

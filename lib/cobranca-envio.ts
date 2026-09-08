@@ -13,24 +13,26 @@ import { pixDaCobranca } from './asaas'
 export type TipoEnvio = 'lembrete' | 'vencimento' | 'atraso'
 const RAND = <T,>(arr: T[]) => arr[Math.floor(Math.random() * arr.length)]
 
+// Texto principal (sem o PIX/boleto embutidos — eles vão em mensagens separadas,
+// senão o WhatsApp cria preview da URL e embola o código copia-e-cola).
 const MENSAGENS: Record<TipoEnvio, string[]> = {
   lembrete: [
-    'Olá {nome}, tudo bem? 😊 Passando para lembrar que o honorário da {empresa} ({valor}) vence em {venc}. Se preferir pagar pelo PIX, é só copiar: {pix} — ou pelo boleto: {link}. Qualquer dúvida estamos por aqui!',
-    'Oi {nome}! Aqui é da Nauta Contabilidade. O honorário de {venc} da {empresa} já está disponível: {valor}. PIX copia e cola: {pix} • Boleto: {link}. Obrigado! 🙏',
-    '{nome}, bom dia! Deixando o pagamento da {empresa} facilitado: {valor}, vencimento {venc}. PIX: {pix} | Boleto: {link}. Se já pagou, desconsidere. 😉',
+    'Olá {nome}, tudo bem? 😊 Passando para lembrar que o honorário da {empresa} ({valor}) vence em {venc}. Logo abaixo deixo o *PIX copia e cola* e o *boleto* para facilitar. Qualquer dúvida estamos por aqui! 🙏',
+    'Oi {nome}! Aqui é da Nauta Contabilidade. O honorário de {venc} da {empresa} está chegando: {valor}. Mando abaixo o PIX e o boleto para você escolher como pagar. Obrigado!',
+    '{nome}, bom dia! Seu honorário da {empresa} ({valor}) vence em {venc}. Para facilitar, deixo abaixo o PIX copia e cola e o link do boleto. 😉',
   ],
   vencimento: [
-    'Olá {nome}! Hoje é o vencimento do honorário da {empresa} ({valor}). PIX: {pix} • Boleto: {link}. Se já efetuou o pagamento, pode ignorar esta mensagem. 😊',
-    'Oi {nome}, lembrete rápido: o honorário da {empresa} ({valor}) vence hoje, {venc}. Pagando pelo PIX cai na hora: {pix}. Boleto: {link}.',
-    '{nome}, tudo certo? Só avisando que o boleto da {empresa} ({valor}) vence hoje. Link: {link} | PIX copia e cola: {pix}. Qualquer coisa, chama a gente!',
+    'Olá {nome}! Hoje é o vencimento do honorário da {empresa} ({valor}). Deixo abaixo o PIX e o boleto. Se já efetuou o pagamento, pode ignorar esta mensagem. 😊',
+    'Oi {nome}, lembrete rápido: o honorário da {empresa} ({valor}) vence hoje, {venc}. Seguem abaixo o PIX (cai na hora) e o boleto.',
+    '{nome}, tudo certo? O honorário da {empresa} ({valor}) vence hoje. Deixo abaixo o PIX e o boleto. Qualquer coisa, chama a gente!',
   ],
   atraso: [
-    'Olá {nome}, tudo bem? Não identificamos o pagamento do honorário da {empresa} ({valor}, vencido em {venc}). Você consegue nos passar uma previsão? Se precisar de 2ª via: {link} • PIX: {pix}. Obrigado! 🙏',
-    'Oi {nome}. O honorário de {venc} da {empresa} ({valor}) ainda consta em aberto por aqui. Se já pagou, nos envia o comprovante? Senão, segue o PIX: {pix} ou boleto: {link}.',
-    '{nome}, passando para alinhar o honorário da {empresa} ({valor}) que venceu em {venc}. Podemos combinar uma data? Para facilitar: PIX {pix} | Boleto {link}. Estamos à disposição.',
+    'Olá {nome}, tudo bem? Não identificamos o pagamento do honorário da {empresa} ({valor}, vencido em {venc}). Consegue nos passar uma previsão? Para facilitar, deixo abaixo o PIX e o boleto. 🙏',
+    'Oi {nome}. O honorário de {venc} da {empresa} ({valor}) ainda consta em aberto por aqui. Se já pagou, nos envia o comprovante? Senão, seguem abaixo o PIX e o boleto.',
+    '{nome}, passando para alinhar o honorário da {empresa} ({valor}) vencido em {venc}. Podemos combinar uma data? Deixo abaixo o PIX e o boleto. Estamos à disposição.',
   ],
 }
-const PIX_AUTO_RODAPE = '\n\nℹ️ Pagando pelo PIX acima, os próximos honorários entram no *Pix Automático* (você autoriza uma vez no app do banco e não precisa mais se preocupar com boleto).'
+const PIX_AUTO_RODAPE = 'ℹ️ Pagando por este PIX, os próximos honorários entram no Pix Automático — você autoriza uma vez no app do banco e não precisa mais se preocupar com boleto.'
 const ASSUNTO: Record<TipoEnvio, string> = {
   lembrete: 'Honorário {empresa} — vence em {venc}',
   vencimento: 'Honorário {empresa} — vence hoje',
@@ -69,33 +71,50 @@ async function contexto(leadId: string, cobrancaId?: string): Promise<Ctx> {
   }
 }
 
-function montar(tipo: TipoEnvio, c: Ctx, canal: 'whatsapp' | 'email') {
+function montar(tipo: TipoEnvio, c: Ctx) {
   const fill = (t: string) => t
-    .replace(/{nome}/g, c.nome).replace(/{empresa}/g, c.empresa).replace(/{valor}/g, brl(c.valor))
-    .replace(/{venc}/g, c.venc).replace(/{pix}/g, c.pix || '(indisponível)').replace(/{link}/g, c.link || '(indisponível)')
-  let corpo = fill(RAND(MENSAGENS[tipo]))
-  // rodapé só quando o PIX é realmente o do Pix Automático (tag br.gov.bcb.pix + /rec/ da recorrência)
-  if (c.pix && /\/rec\//.test(c.pix)) corpo += PIX_AUTO_RODAPE
-  if (canal === 'email') corpo = corpo.replace(/\*/g, '')
-  return { corpo, assunto: fill(ASSUNTO[tipo]) }
+    .replace(/{nome}/g, c.nome).replace(/{empresa}/g, c.empresa).replace(/{valor}/g, brl(c.valor)).replace(/{venc}/g, c.venc)
+  const pixAuto = !!c.pix && /\/rec\//.test(c.pix) // payload de recorrência (Pix Automático)
+  return { corpo: fill(RAND(MENSAGENS[tipo])), assunto: fill(ASSUNTO[tipo]), pixAuto }
+}
+
+// Monta as partes do WhatsApp: texto → PIX (sozinho, fácil de copiar) → boleto → aviso Pix Automático
+function partesWhats(corpo: string, c: Ctx, pixAuto: boolean): string[] {
+  const partes = [corpo]
+  if (c.pix) partes.push(c.pix)
+  if (c.link) partes.push(`📄 Boleto: ${c.link}`)
+  if (pixAuto) partes.push(PIX_AUTO_RODAPE)
+  return partes
+}
+// Corpo do e-mail: seções rotuladas (no e-mail o código não gera preview, então fica tudo junto)
+function corpoEmail(corpo: string, c: Ctx, pixAuto: boolean): string {
+  const p: string[] = [corpo, '']
+  if (c.pix) p.push('PIX copia e cola:', c.pix, '')
+  if (c.link) p.push(`Boleto: ${c.link}`, '')
+  if (pixAuto) p.push(PIX_AUTO_RODAPE)
+  return p.join('\n').trim()
 }
 
 // ── Canais ───────────────────────────────────────────────────────────────────
 export const whatsConfigurado = () => !!process.env.WHATSPRO_TOKEN
 export const emailConfigurado = () => !!(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS)
 
-async function enviarWhats(phone: string, message: string) {
+// Envia uma ou mais mensagens em sequência (partes: texto, PIX, boleto…) pelo mesmo número
+async function enviarWhats(phone: string, messages: string[]) {
   const token = process.env.WHATSPRO_TOKEN
   if (!token) throw new Error('WHATSPRO_TOKEN não configurado')
   let p = soDigitos(phone)
   if (p.length === 10 || p.length === 11) p = '55' + p
   if (p.length < 12) throw new Error('telefone inválido')
-  const res = await fetch('https://api-v2.whatsprofissional.com/api/public/send-message', {
-    method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ token, phone: p, message }),
-  })
-  const txt = await res.text()
-  if (!res.ok) throw new Error(`WhatsPro ${res.status}: ${txt.slice(0, 200)}`)
+  for (let i = 0; i < messages.length; i++) {
+    const res = await fetch('https://api-v2.whatsprofissional.com/api/public/send-message', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, phone: p, message: messages[i] }),
+    })
+    const txt = await res.text()
+    if (!res.ok) throw new Error(`WhatsPro ${res.status}: ${txt.slice(0, 200)}`)
+    if (i < messages.length - 1) await new Promise(r => setTimeout(r, 1500)) // ordem garantida entre as partes
+  }
   return p
 }
 
@@ -122,15 +141,17 @@ async function registrar(c: Ctx, tipo: TipoEnvio, canal: string, destino: string
 export async function enviarCobranca(leadId: string, tipo: TipoEnvio, cobrancaId?: string) {
   const c = await contexto(leadId, cobrancaId)
   const out: { canal: string; ok: boolean; erro?: string }[] = []
+  const { corpo, assunto, pixAuto } = montar(tipo, c)
   if (whatsConfigurado()) {
-    const { corpo } = montar(tipo, c, 'whatsapp')
-    try { const dest = await enviarWhats(c.whatsapp, corpo); await registrar(c, tipo, 'whatsapp', dest, corpo, true); out.push({ canal: 'whatsapp', ok: true }) }
-    catch (e) { const erro = (e as Error).message; await registrar(c, tipo, 'whatsapp', c.whatsapp, corpo, false, erro); out.push({ canal: 'whatsapp', ok: false, erro }) }
+    const partes = partesWhats(corpo, c, pixAuto)
+    const log = partes.join('\n\n')
+    try { const dest = await enviarWhats(c.whatsapp, partes); await registrar(c, tipo, 'whatsapp', dest, log, true); out.push({ canal: 'whatsapp', ok: true }) }
+    catch (e) { const erro = (e as Error).message; await registrar(c, tipo, 'whatsapp', c.whatsapp, log, false, erro); out.push({ canal: 'whatsapp', ok: false, erro }) }
   }
   if (emailConfigurado() && c.email) {
-    const { corpo, assunto } = montar(tipo, c, 'email')
-    try { await enviarEmail(c.email, assunto, corpo); await registrar(c, tipo, 'email', c.email, corpo, true); out.push({ canal: 'email', ok: true }) }
-    catch (e) { const erro = (e as Error).message; await registrar(c, tipo, 'email', c.email, corpo, false, erro); out.push({ canal: 'email', ok: false, erro }) }
+    const corpoMail = corpoEmail(corpo, c, pixAuto)
+    try { await enviarEmail(c.email, assunto, corpoMail); await registrar(c, tipo, 'email', c.email, corpoMail, true); out.push({ canal: 'email', ok: true }) }
+    catch (e) { const erro = (e as Error).message; await registrar(c, tipo, 'email', c.email, corpoMail, false, erro); out.push({ canal: 'email', ok: false, erro }) }
   }
   emitCrmChange()
   return { leadId, tipo, envios: out }

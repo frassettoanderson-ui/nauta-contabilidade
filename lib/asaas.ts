@@ -82,11 +82,13 @@ async function ensureCustomer(d: LeadBilling): Promise<string> {
         email: d.emp_email || d.email || undefined,
         mobilePhone: tel.length >= 10 ? tel.slice(-11) : undefined,
         externalReference: d.id,
-        notificationDisabled: false,
+        notificationDisabled: true, // quem avisa o cliente é a Nauta (WhatsApp/e-mail), não o Asaas
       }),
     })
     id = c.id
   }
+  // garante notificações do Asaas desligadas também para clientes já existentes
+  try { await api(`/customers/${id}`, { method: 'PUT', body: JSON.stringify({ notificationDisabled: true }) }) } catch { /* ignora */ }
   await pool.query(`UPDATE leads SET asaas_customer_id = $2 WHERE id = $1`, [d.id, id])
   return id
 }

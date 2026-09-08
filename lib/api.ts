@@ -557,3 +557,23 @@ export function asaasSincronizarTodos(): Promise<{ resultados: { leadId: string;
 export function asaasCancelar(leadId: string): Promise<{ ok: boolean }> {
   return fetch('/api/financeiro/asaas', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ leadId, cancelar: true }) }).then(r => json(r))
 }
+
+// ─── RÉGUA DE COBRANÇA (WhatsApp da Nauta / e-mail) + PIX AUTOMÁTICO ────────
+export type TipoEnvioCobranca = 'lembrete' | 'vencimento' | 'atraso'
+export interface EnvioRow { id: string; tipo: string; canal: string; destino: string | null; mensagem: string; ok: boolean; erro: string | null; criado_em: string }
+export interface EnviosResumo {
+  whats: boolean; email: boolean
+  envios: Record<string, { tipo: string; canal: string; ok: boolean; data: string }>
+  pixAuto: Record<string, string> // leadId → CREATED | ACTIVE | CANCELLED | EXPIRED | REFUSED
+}
+export interface PixAutoRow { id: string; asaas_auth_id: string; status: string; start_date: string | null; valor: number; payload: string | null; encoded_image: string | null; expira_em: string | null }
+const postEnvios = (body: Record<string, unknown>) =>
+  fetch('/api/financeiro/envios', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+export function enviosResumo(): Promise<EnviosResumo> { return fetch('/api/financeiro/envios').then(r => json(r)) }
+export function listEnviosCobranca(leadId: string): Promise<EnvioRow[]> { return fetch(`/api/financeiro/envios?leadId=${encodeURIComponent(leadId)}`).then(r => json(r)) }
+export function enviarCobrancaAgora(leadId: string, tipo: TipoEnvioCobranca): Promise<{ envios: { canal: string; ok: boolean; erro?: string }[] }> {
+  return postEnvios({ leadId, tipo }).then(r => json(r))
+}
+export function gerarPixAutomatico(leadId: string): Promise<PixAutoRow> { return postEnvios({ leadId, pixAuto: true }).then(r => json(r)) }
+export function getPixAutomatico(leadId: string): Promise<PixAutoRow | null> { return fetch(`/api/financeiro/envios?leadId=${encodeURIComponent(leadId)}&pixAuto=1`).then(r => json(r)) }
+export function cancelarPixAutomatico(leadId: string): Promise<{ ok: boolean }> { return postEnvios({ leadId, cancelarPixAuto: true }).then(r => json(r)) }

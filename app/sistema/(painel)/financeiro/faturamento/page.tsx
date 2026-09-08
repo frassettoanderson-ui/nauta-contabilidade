@@ -3,8 +3,8 @@
 import { useEffect, useState, useCallback } from 'react'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import { Loader2, Search, DollarSign, MessageCircle, X, Plus, Trash2, Phone, Mail, Smartphone, CalendarClock, ChevronUp, ChevronDown, ChevronsUpDown, ExternalLink, RefreshCw } from 'lucide-react'
-import { listFinanceiro, listPagamentos, addPagamento, deletePagamento, listEventos, addEvento, asaasResumo, asaasSincronizar, asaasSincronizarTodos, type PagamentoRow, type EventoRow, type AsaasResumo, type AsaasResumoItem } from '@/lib/api'
+import { Loader2, Search, DollarSign, MessageCircle, X, Plus, Trash2, Phone, Mail, Smartphone, CalendarClock, ChevronUp, ChevronDown, ChevronsUpDown, ExternalLink, RefreshCw, Send, Copy, Zap } from 'lucide-react'
+import { listFinanceiro, listPagamentos, addPagamento, deletePagamento, listEventos, addEvento, asaasResumo, asaasSincronizar, asaasSincronizarTodos, enviosResumo, enviarCobrancaAgora, listEnviosCobranca, gerarPixAutomatico, getPixAutomatico, cancelarPixAutomatico, type PagamentoRow, type EventoRow, type AsaasResumo, type AsaasResumoItem, type EnviosResumo, type EnvioRow, type PixAutoRow, type TipoEnvioCobranca } from '@/lib/api'
 
 type Row = Record<string, unknown>
 const s = (v: unknown) => String(v ?? '')
@@ -56,13 +56,27 @@ export default function FinanceiroPage() {
 
   const [asaas, setAsaas] = useState<AsaasResumo | null>(null)
   const [syncing, setSyncing] = useState<string | null>(null) // leadId em sincronização, ou 'todos'
+  const [envios, setEnvios] = useState<EnviosResumo | null>(null)
+  const [enviando, setEnviando] = useState<string | null>(null)
 
   const load = useCallback(() => {
     listFinanceiro().then(setRows).catch(() => setRows([]))
     asaasResumo().then(setAsaas).catch(() => setAsaas(null))
+    enviosResumo().then(setEnvios).catch(() => setEnvios(null))
   }, [])
   useEffect(() => { load() }, [load])
 
+  // Envio manual pelo WhatsApp da Nauta (+ e-mail se configurado); registra em cobranca_envios
+  async function enviar(leadId: string, tipo: TipoEnvioCobranca) {
+    setEnviando(leadId)
+    try {
+      const r = await enviarCobrancaAgora(leadId, tipo)
+      const falha = r.envios.filter(e => !e.ok)
+      load()
+      if (falha.length) alert('Falha no envio:\n' + falha.map(f => `• ${f.canal}: ${f.erro}`).join('\n'))
+    } catch (e) { alert('Envio: ' + ((e as Error).message || 'erro')) }
+    finally { setEnviando(null) }
+  }
   async function syncLead(leadId: string) {
     setSyncing(leadId)
     try { await asaasSincronizar(leadId); load() }
@@ -211,16 +225,37 @@ export default function FinanceiroPage() {
                     <td className="px-4 py-3">{r.prazo_prometido ? <span className="text-[#fbbf24]">{dataBR(r.prazo_prometido)}</span> : <span className="text-gray-600">—</span>}</td>
                     <td className="px-4 py-3"><StatusBadge status={s(r.financeiro_status)} meses={meses} /></td>
                     <td className="px-4 py-3" onClick={e => e.stopPropagation()}>
-                      <AsaasCell item={asaas?.resumo[s(r.lead_id)]} configurado={!!asaas?.configurado}
+                      <AsaasCell item={asaas?.resumo[s(r.lead_id)]} configurado={!!asaas?.configurado} pixAuto={envios?.pixAuto[s(r.lead_id)]}
                         syncing={syncing === s(r.lead_id)} onSync={() => syncLead(s(r.lead_id))} />
                     </td>
-                    <td className="px-4 py-3">
-                      {r.financeiro_status === 'atrasado' && (
-                        <a onClick={e => e.stopPropagation()} href={`https://wa.me/55${waDigits(tel)}?text=${encodeURIComponent(msgCobranca(s(r.lead_nome) || s(r.responsavel), meses))}`} target="_blank" rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 h-7 rounded-lg text-white" style={{ background: '#25D366' }}>
-                          <MessageCircle size={12} /> Enviar cobrança
-                        </a>
-                      )}
+                    <td className="px-4 py-3" onClick={e => e.stopPropagation()}>
+                      {(() => {
+                        const lid = s(r.lead_id)
+                        const ult = envios?.envios[lid]
+                        const tipo: TipoEnvioCobranca = r.financeiro_status === 'atrasado' ? 'atraso' : 'lembrete'
+                        const temCob = !!asaas?.resumo[lid]
+                        return (
+                          <div className="flex items-center gap-2">
+                            {envios?.whats ? (
+                              <button onClick={() => enviar(lid, tipo)} disabled={enviando === lid || !temCob}
+                                title={temCob ? `Enviar ${tipo} pelo WhatsApp da Nauta` : 'Sincronize no Asaas primeiro (sem cobrança gerada)'}
+                                className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 h-7 rounded-lg text-white disabled:opacity-40" style={{ background: '#25D366' }}>
+                                {enviando === lid ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} />} {tipo === 'atraso' ? 'Cobrar' : 'Lembrar'}
+                              </button>
+                            ) : r.financeiro_status === 'atrasado' && (
+                              <a href={`https://wa.me/55${waDigits(tel)}?text=${encodeURIComponent(msgCobranca(s(r.lead_nome) || s(r.responsavel), meses))}`} target="_blank" rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 h-7 rounded-lg text-white" style={{ background: '#25D366' }}>
+                                <MessageCircle size={12} /> Enviar cobrança
+                              </a>
+                            )}
+                            {ult && (
+                              <span className="text-[10px] text-gray-500 whitespace-nowrap" title={`Último envio: ${ult.tipo} por ${ult.canal}`}>
+                                {ult.ok ? '✓' : '✗'} {ult.tipo} {ult.data.slice(8, 10)}/{ult.data.slice(5, 7)}
+                              </span>
+                            )}
+                          </div>
+                        )
+                      })()}
                     </td>
                   </tr>
                 )
@@ -243,11 +278,21 @@ const ASAAS_ST: Record<string, { label: string; color: string }> = {
   CONFIRMED:        { label: 'Paga',       color: '#22c55e' },
   RECEIVED_IN_CASH: { label: 'Paga',       color: '#22c55e' },
 }
-function AsaasCell({ item, configurado, syncing, onSync }: { item?: AsaasResumoItem; configurado: boolean; syncing: boolean; onSync: () => void }) {
+function AsaasCell({ item, configurado, syncing, onSync, pixAuto }: { item?: AsaasResumoItem; configurado: boolean; syncing: boolean; onSync: () => void; pixAuto?: string }) {
   if (!configurado) return <span className="text-gray-600 text-xs">—</span>
   const st = item ? (ASAAS_ST[item.status] ?? { label: item.status, color: '#9ca3af' }) : null
   return (
     <div className="flex items-center gap-2">
+      {pixAuto === 'ACTIVE' && (
+        <span className="inline-flex items-center gap-1 px-2 h-6 rounded-md text-[11px] font-bold" style={{ background: 'rgba(34,197,94,0.14)', color: '#22c55e' }} title="Débito automático via Pix ativo">
+          <Zap size={11} /> Pix Automático
+        </span>
+      )}
+      {pixAuto === 'CREATED' && (
+        <span className="inline-flex items-center gap-1 px-2 h-6 rounded-md text-[11px] font-bold" style={{ background: 'rgba(167,139,250,0.14)', color: '#a78bfa' }} title="QR do Pix Automático gerado — aguardando o cliente autorizar">
+          <Zap size={11} /> Pix Auto pendente
+        </span>
+      )}
       {st ? (
         <span className="inline-flex items-center px-2 h-6 rounded-md text-[11px] font-bold" style={{ background: `${st.color}22`, color: st.color }}>
           {st.label}{item?.vencimento ? ` · ${item.vencimento.slice(8, 10)}/${item.vencimento.slice(5, 7)}` : ''}
@@ -282,6 +327,11 @@ function CobrancaModal({ row, onClose, onChanged }: { row: Row; onClose: () => v
   const nome = s(row.emp_nome) || s(row.lead_nome)
   const [pagamentos, setPagamentos] = useState<PagamentoRow[]>([])
   const [eventos, setEventos] = useState<EventoRow[]>([])
+  const [enviosLead, setEnviosLead] = useState<EnvioRow[]>([])
+  const [pixAuto, setPixAuto] = useState<PixAutoRow | null>(null)
+  const [pixBusy, setPixBusy] = useState(false)
+  const [envBusy, setEnvBusy] = useState<string | null>(null)
+  const [copiado, setCopiado] = useState(false)
   const [loading, setLoading] = useState(true)
 
   // form pagamento
@@ -296,8 +346,8 @@ function CobrancaModal({ row, onClose, onChanged }: { row: Row; onClose: () => v
 
   const load = useCallback(() => {
     setLoading(true)
-    Promise.all([listPagamentos(leadId), listEventos(leadId)])
-      .then(([p, e]) => { setPagamentos(p); setEventos(e) })
+    Promise.all([listPagamentos(leadId), listEventos(leadId), listEnviosCobranca(leadId).catch(() => [] as EnvioRow[]), getPixAutomatico(leadId).catch(() => null)])
+      .then(([p, e, env, pa]) => { setPagamentos(p); setEventos(e); setEnviosLead(env); setPixAuto(pa) })
       .finally(() => setLoading(false))
   }, [leadId])
   useEffect(() => { load() }, [load])
@@ -315,6 +365,34 @@ function CobrancaModal({ row, onClose, onChanged }: { row: Row; onClose: () => v
   async function excluirPagamento(id: string) {
     if (!confirm('Excluir este pagamento?')) return
     try { await deletePagamento(leadId, id); load(); onChanged() } catch { alert('Erro.') }
+  }
+  // Régua / Pix Automático (dentro do modal)
+  async function enviarTipo(t: TipoEnvioCobranca) {
+    setEnvBusy(t)
+    try {
+      const r = await enviarCobrancaAgora(leadId, t)
+      const falha = r.envios.filter(x => !x.ok)
+      if (falha.length) alert('Falha no envio:\n' + falha.map(f => `• ${f.canal}: ${f.erro}`).join('\n'))
+      load(); onChanged()
+    } catch (e) { alert('Envio: ' + ((e as Error).message || 'erro')) }
+    finally { setEnvBusy(null) }
+  }
+  async function gerarQr() {
+    setPixBusy(true)
+    try { setPixAuto(await gerarPixAutomatico(leadId)); onChanged() }
+    catch (e) { alert('Pix Automático: ' + ((e as Error).message || 'erro')) }
+    finally { setPixBusy(false) }
+  }
+  async function cancelarPa() {
+    if (!confirm('Cancelar a autorização de Pix Automático deste cliente? Ele volta para boleto/PIX normal.')) return
+    setPixBusy(true)
+    try { await cancelarPixAutomatico(leadId); setPixAuto(null); onChanged() }
+    catch (e) { alert('Pix Automático: ' + ((e as Error).message || 'erro')) }
+    finally { setPixBusy(false) }
+  }
+  function copiarPix() {
+    if (!pixAuto?.payload) return
+    navigator.clipboard?.writeText(pixAuto.payload).then(() => { setCopiado(true); setTimeout(() => setCopiado(false), 2000) })
   }
   async function salvarEvento() {
     if (!descricao.trim()) { alert('Descreva o que foi combinado.'); return }
@@ -411,6 +489,67 @@ function CobrancaModal({ row, onClose, onChanged }: { row: Row; onClose: () => v
                 <button onClick={salvarEvento} disabled={saving} className="w-full h-9 rounded-lg text-xs font-bold text-white inline-flex items-center justify-center gap-1.5 disabled:opacity-60" style={{ background: 'linear-gradient(135deg, var(--sys-accent), var(--sys-accent-2))' }}>
                   <Plus size={13} /> Registrar acionamento
                 </button>
+              </div>
+            </div>
+
+            {/* Régua: enviar agora + histórico de envios */}
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wide text-gray-400 mb-2">Enviar cobrança (WhatsApp da Nauta)</p>
+              <div className="flex gap-1.5 mb-3">
+                {([['lembrete', 'Lembrete'], ['vencimento', 'Vence hoje'], ['atraso', 'Em atraso']] as [TipoEnvioCobranca, string][]).map(([t, label]) => (
+                  <button key={t} onClick={() => enviarTipo(t)} disabled={envBusy !== null}
+                    className="flex-1 h-9 rounded-lg text-xs font-bold text-white inline-flex items-center justify-center gap-1.5 disabled:opacity-60"
+                    style={{ background: t === 'atraso' ? '#ef4444' : '#25D366' }}>
+                    {envBusy === t ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} />} {label}
+                  </button>
+                ))}
+              </div>
+              <div className="space-y-1.5 max-h-44 overflow-y-auto">
+                {enviosLead.length === 0 ? <p className="text-gray-600 text-xs">Nenhum envio ainda. A régua automática manda 3 dias antes, no dia e 3 dias após o vencimento.</p> : enviosLead.map(ev => (
+                  <div key={ev.id} className="p-2 rounded-lg text-xs" style={{ background: 'var(--sys-surface-3)' }} title={ev.mensagem}>
+                    <div className="flex items-center gap-1.5 text-[11px] text-gray-400">
+                      <span style={{ color: ev.ok ? '#22c55e' : '#f87171' }}>{ev.ok ? '✓' : '✗'}</span>
+                      <b className="text-gray-300 capitalize">{ev.tipo}</b> · {ev.canal} · {ev.destino}
+                      <span className="ml-auto">{format(new Date(ev.criado_em), 'dd/MM HH:mm', { locale: ptBR })}</span>
+                    </div>
+                    {ev.erro && <p className="text-[11px] text-[#f87171] mt-0.5">{ev.erro}</p>}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Pix Automático */}
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wide text-gray-400 mb-2 flex items-center gap-1.5"><Zap size={12} className="text-[#22c55e]" /> Pix Automático</p>
+              <div className="rounded-xl p-3 space-y-2" style={{ background: 'var(--sys-surface)', border: '1px solid var(--sys-border)' }}>
+                {pixAuto ? (
+                  <>
+                    <p className="text-xs text-gray-300">
+                      Status: <b style={{ color: pixAuto.status === 'ACTIVE' ? '#22c55e' : pixAuto.status === 'CREATED' ? '#a78bfa' : '#f87171' }}>{pixAuto.status === 'ACTIVE' ? 'ATIVO (débito automático)' : pixAuto.status === 'CREATED' ? 'QR gerado — aguardando o cliente pagar/autorizar' : pixAuto.status}</b>
+                      {pixAuto.start_date && <> · débitos a partir de {dataBR(pixAuto.start_date)}</>}
+                    </p>
+                    {pixAuto.encoded_image && pixAuto.status === 'CREATED' && (
+                      <img src={`data:image/png;base64,${pixAuto.encoded_image}`} alt="QR Pix Automático" className="w-36 h-36 rounded-lg bg-white p-1 mx-auto" />
+                    )}
+                    {pixAuto.payload && pixAuto.status === 'CREATED' && (
+                      <button onClick={copiarPix} className="w-full h-9 rounded-lg text-xs font-bold text-white inline-flex items-center justify-center gap-1.5" style={{ background: 'rgba(124,111,255,0.9)' }}>
+                        <Copy size={12} /> {copiado ? 'Copiado!' : 'Copiar PIX copia e cola (1º pagamento + autorização)'}
+                      </button>
+                    )}
+                    {['CREATED', 'ACTIVE'].includes(pixAuto.status) && (
+                      <button onClick={cancelarPa} disabled={pixBusy} className="w-full h-8 rounded-lg text-[11px] font-semibold disabled:opacity-60" style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)', color: '#f87171' }}>
+                        Cancelar autorização
+                      </button>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <p className="text-xs text-gray-500">O PIX das mensagens de cobrança já é o QR do Pix Automático: o cliente paga o mês em aberto e autoriza os débitos mensais. Aqui você pode gerar/ver o QR para mandar na mão.</p>
+                    <button onClick={gerarQr} disabled={pixBusy} className="w-full h-9 rounded-lg text-xs font-bold text-white inline-flex items-center justify-center gap-1.5 disabled:opacity-60" style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)' }}>
+                      {pixBusy ? <Loader2 size={12} className="animate-spin" /> : <Zap size={12} />} Gerar / ver QR do Pix Automático
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           </div>

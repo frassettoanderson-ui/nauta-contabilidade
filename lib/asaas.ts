@@ -144,8 +144,8 @@ async function ensureSubscription(d: LeadBilling, customerId: string): Promise<s
 // ── Cobranças (payments) ─────────────────────────────────────────────────────
 const PAGO = new Set(['RECEIVED', 'CONFIRMED', 'RECEIVED_IN_CASH'])
 
-export async function upsertCobranca(p: AsaasPayment, leadId: string, empresaId: string | null) {
-  const competencia = compOf(p.dueDate)
+export async function upsertCobranca(p: AsaasPayment, leadId: string, empresaId: string | null, competenciaOverride?: string) {
+  const competencia = competenciaOverride ?? compOf(p.dueDate)
   const pagoEm = PAGO.has(p.status) ? (p.clientPaymentDate || p.paymentDate || null) : null
   await pool.query(
     `INSERT INTO financeiro_cobrancas
@@ -227,10 +227,38 @@ export async function processarWebhook(body: { event?: string; payment?: AsaasPa
   )
   const lead = r.rows[0]
   if (!lead) return { ignored: true, motivo: 'lead não encontrado' }
-  await upsertCobranca(p, lead.id, lead.empresa_id)
+  // Pagamento sem assinatura de boleto e com Pix Automático (criado/ativo) → é o QR do
+  // Pix Automático ou um débito recorrente: quita a competência em aberto mais antiga.
+  let compOverride: string | undefined
+  if (!p.subscription) {
+    const pa = await pool.query(
+      `SELECT 1 FROM financeiro_pix_automatico WHERE lead_id = $1 AND status IN ('CREATED','ACTIVE') LIMIT 1`, [lead.id]
+    )
+    if (pa.rows[0]) compOverride = await competenciaAberta(lead.id)
+  }
+  await upsertCobranca(p, lead.id, lead.empresa_id, compOverride)
   emitCrmChange()
   return { ok: true, event: body.event, leadId: lead.id }
 }
+
+// Competência em aberto mais antiga do lead ('YYYY-MM-01'): a 1ª cobrança pendente/vencida;
+// se não houver, o mês seguinte ao último pago; senão o mês do 1º vencimento.
+export async function competenciaAberta(leadId: string): Promise<string> {
+  const c = await pool.query(
+    `SELECT to_char(competencia,'YYYY-MM-01') AS c FROM financeiro_cobrancas
+      WHERE lead_id = $1 AND status IN ('PENDING','OVERDUE') ORDER BY vencimento ASC LIMIT 1`, [leadId]
+  )
+  if (c.rows[0]?.c) return c.rows[0].c
+  const p = await pool.query(
+    `SELECT to_char((MAX(competencia) + INTERVAL '1 month')::date,'YYYY-MM-01') AS c FROM financeiro_pagamentos WHERE lead_id = $1`, [leadId]
+  )
+  if (p.rows[0]?.c) return p.rows[0].c
+  const l = await pool.query(`SELECT to_char(honorario_vencimento,'YYYY-MM-01') AS c FROM leads WHERE id = $1`, [leadId])
+  return l.rows[0]?.c || `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-01`
+}
+
+// Usados pelos módulos de Pix Automático e régua de cobrança
+export { api as asaasApi, dadosLead, ensureCustomer }
 
 // Consultas para a UI
 export async function listCobrancasLead(leadId: string) {

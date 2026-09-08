@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { processarWebhook } from '@/lib/asaas'
+import { processarEventoPixAuto } from '@/lib/pix-automatico'
 
 export const dynamic = 'force-dynamic'
 
@@ -9,10 +10,11 @@ export async function POST(req: NextRequest) {
   const esperado = process.env.ASAAS_WEBHOOK_TOKEN || ''
   const recebido = req.headers.get('asaas-access-token') || ''
   if (!esperado || recebido !== esperado) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
-  let body: { event?: string; payment?: never } = {}
+  let body: { event?: string; payment?: never; authorization?: never; paymentInstruction?: never } = {}
   try { body = await req.json() } catch { return NextResponse.json({ error: 'json inválido' }, { status: 400 }) }
   try {
-    const r = await processarWebhook(body)
+    const ev = String(body.event || '')
+    const r = ev.startsWith('PIX_AUTOMATIC_') ? await processarEventoPixAuto(body) : await processarWebhook(body)
     return NextResponse.json(r)
   } catch (e) {
     // 500 faz o Asaas reenviar depois (fila sequencial) — não perde o evento

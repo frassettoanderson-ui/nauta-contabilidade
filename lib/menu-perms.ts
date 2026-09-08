@@ -38,6 +38,7 @@ export const MENU_GRUPOS: MenuGrupo[] = [
   ] },
   { grupo: 'Financeiro', itens: [
     { href: '/sistema/financeiro/faturamento', label: 'Faturamento' },
+    { href: '/sistema/financeiro/cobranca', label: 'Cobrança' },
     { href: '/sistema/financeiro/lancar-entrada', label: 'Lançar Entrada' },
     { href: '/sistema/financeiro/lancar-despesa', label: 'Lançar Despesa' },
     { href: '/sistema/financeiro/despesas-fixas', label: 'Despesas Fixas' },

@@ -311,10 +311,15 @@ export async function listFinanceiro(empresaId: string) {
   const ids = rows.map(r => r.lead_id)
   if (ids.length === 0) return []
 
-  // Meses pagos por lead
-  const pag = await pool.query(`SELECT lead_id, to_char(competencia, 'YYYY-MM') AS comp FROM financeiro_pagamentos WHERE lead_id = ANY($1)`, [ids])
+  // Meses pagos por lead (+ valor pago no mês vigente, p/ o resumo do Faturamento)
+  const pag = await pool.query(`SELECT lead_id, to_char(competencia, 'YYYY-MM') AS comp, valor FROM financeiro_pagamentos WHERE lead_id = ANY($1)`, [ids])
   const pagosByLead: Record<string, Set<string>> = {}
-  for (const p of pag.rows) (pagosByLead[p.lead_id] ||= new Set()).add(p.comp)
+  const compAtual = (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` })()
+  const pagoMesByLead: Record<string, number> = {}
+  for (const p of pag.rows) {
+    (pagosByLead[p.lead_id] ||= new Set()).add(p.comp)
+    if (p.comp === compAtual) pagoMesByLead[p.lead_id] = (pagoMesByLead[p.lead_id] || 0) + Number(p.valor || 0)
+  }
 
   // Prazo prometido mais recente (futuro) por lead
   const ev = await pool.query(
@@ -326,14 +331,24 @@ export async function listFinanceiro(empresaId: string) {
   const prazoByLead: Record<string, string> = {}
   for (const e of ev.rows) prazoByLead[e.lead_id] = e.prazo_pagamento
 
+  const [cy, cm] = compAtual.split('-').map(Number)
   return rows.map(r => {
     const calc = calcStatusFinanceiro(r.honorario_vencimento, pagosByLead[r.lead_id] ?? new Set())
+    // Valores do MÊS VIGENTE (resumo do Faturamento): já fatura este mês se o 1º vencimento já passou/é este mês
+    const venc = r.honorario_vencimento ? new Date(r.honorario_vencimento) : null
+    const faturaEsteMes = !!venc && new Date(venc.getFullYear(), venc.getMonth(), 1) <= new Date(cy, cm - 1, 1)
+    const aReceberMes = faturaEsteMes ? Number(r.valor_honorario || 0) : 0
+    const pagoMes = Number(pagoMesByLead[r.lead_id] || 0)
+    const emAbertoMes = Math.max(0, aReceberMes - pagoMes)
     return {
       ...r,
       financeiro_status: calc.status,
       meses_atraso: calc.mesesAtraso,
       proximo_vencimento: calc.proximoVencimento ? calc.proximoVencimento.toISOString().slice(0, 10) : null,
       prazo_prometido: prazoByLead[r.lead_id] ?? null,
+      a_receber_mes: aReceberMes,
+      pago_mes: pagoMes,
+      em_aberto_mes: emAbertoMes,
     }
   })
 }

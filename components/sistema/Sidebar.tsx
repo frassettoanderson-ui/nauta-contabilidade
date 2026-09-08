@@ -13,7 +13,7 @@ import {
   Users, UserPlus, Search, FileText, FilePlus, FileClock, FileSearch,
   Briefcase, LayoutGrid, Inbox, BarChart3, TrendingUp, Calculator, UserCog, Building2,
   Rocket, Settings, DollarSign, LayoutDashboard, MessageCircle,
-  ArrowDownCircle, ArrowUpCircle, Repeat, CalendarCheck, Target, UserX, Percent,
+  ArrowDownCircle, ArrowUpCircle, Repeat, CalendarCheck, Target, UserX, Percent, AlertTriangle,
   LogOut, ChevronDown, Menu, X, type LucideIcon,
 } from 'lucide-react'
 
@@ -52,6 +52,7 @@ const NAV: NavItem[] = [
   { label: 'GestorOA',   href: GESTOROA_URL, icon: CalendarCheck, external: true },
   { label: 'Financeiro', icon: DollarSign, children: [
     { label: 'Faturamento',    href: '/sistema/financeiro/faturamento',    icon: DollarSign },
+    { label: 'Cobrança',       href: '/sistema/financeiro/cobranca',       icon: AlertTriangle },
     { label: 'Lançar Entrada', href: '/sistema/financeiro/lancar-entrada',  icon: ArrowDownCircle },
     { label: 'Lançar Despesa', href: '/sistema/financeiro/lancar-despesa',  icon: ArrowUpCircle },
     { label: 'Despesas Fixas', href: '/sistema/financeiro/despesas-fixas',  icon: Repeat },

@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import { Loader2, Search, DollarSign, MessageCircle, X, Plus, Trash2, Phone, Mail, Smartphone, CalendarClock, ChevronUp, ChevronDown, ChevronsUpDown, ExternalLink, RefreshCw, Send, Copy, Zap, AlertTriangle } from 'lucide-react'
+import { Loader2, Search, DollarSign, MessageCircle, X, Plus, Trash2, Phone, Mail, Smartphone, CalendarClock, ChevronUp, ChevronDown, ChevronsUpDown, ExternalLink, RefreshCw, Send, Copy, Zap, AlertTriangle, Check } from 'lucide-react'
 import { listFinanceiro, listPagamentos, addPagamento, deletePagamento, listEventos, addEvento, asaasResumo, asaasSincronizar, enviosResumo, enviarCobrancaAgora, listEnviosCobranca, gerarPixAutomatico, getPixAutomatico, cancelarPixAutomatico, type PagamentoRow, type EventoRow, type AsaasResumo, type AsaasResumoItem, type EnviosResumo, type EnvioRow, type PixAutoRow, type TipoEnvioCobranca } from '@/lib/api'
 
 type Row = Record<string, unknown>
@@ -50,6 +50,7 @@ export default function FinanceiroPage() {
   const [syncing, setSyncing] = useState<string | null>(null) // leadId em sincronização, ou 'todos'
   const [envios, setEnvios] = useState<EnviosResumo | null>(null)
   const [enviando, setEnviando] = useState<string | null>(null)
+  const [pago, setPago] = useState<Row | null>(null)
 
   const load = useCallback(() => {
     listFinanceiro().then(setRows).catch(() => setRows([]))
@@ -190,6 +191,10 @@ export default function FinanceiroPage() {
                         const temCob = !!asaas?.resumo[lid]
                         return (
                           <div className="flex items-center gap-2">
+                            <button onClick={() => setPago(r)} title="Marcar como pago (dá baixa na cobrança do mês)"
+                              className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 h-7 rounded-lg text-white" style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)' }}>
+                              <Check size={12} /> Pago
+                            </button>
                             {envios?.whats ? (
                               <button onClick={() => enviar(lid, tipo)} disabled={enviando === lid || !temCob}
                                 title={temCob ? `Enviar ${tipo} pelo WhatsApp da Nauta` : 'Sincronize no Asaas primeiro (sem cobrança gerada)'}
@@ -220,6 +225,7 @@ export default function FinanceiroPage() {
       )}
 
       {cobranca && <CobrancaModal row={cobranca} onClose={() => setCobranca(null)} onChanged={load} />}
+      {pago && <PagoModal row={pago} onClose={() => setPago(null)} onSaved={() => { setPago(null); load() }} />}
     </div>
   )
 }
@@ -275,6 +281,53 @@ const TIPOS = [
   { id: 'email', label: 'E-mail', icon: Mail },
   { id: 'sms', label: 'SMS', icon: Smartphone },
 ]
+
+// Popup rápido do botão "Pago": informa valor e data → dá baixa na competência em aberto do mês
+function PagoModal({ row, onClose, onSaved }: { row: Row; onClose: () => void; onSaved: () => void }) {
+  const leadId = s(row.lead_id)
+  const nome = s(row.emp_nome) || s(row.lead_nome) || '—'
+  // competência a quitar = mês do vencimento em aberto (proximo_vencimento); fallback = mês atual
+  const compVenc = (s(row.proximo_vencimento).slice(0, 7)) || new Date().toISOString().slice(0, 7)
+  const [valor, setValor] = useState(row.valor_honorario != null ? String(row.valor_honorario) : '')
+  const [pagoEm, setPagoEm] = useState(new Date().toISOString().slice(0, 10))
+  const [saving, setSaving] = useState(false)
+  const FS2 = { background: 'var(--sys-surface-3)', border: '1px solid var(--sys-border-2)' }
+  const FIELD = 'w-full h-11 px-3 rounded-lg text-sm text-white placeholder-gray-600 outline-none'
+
+  async function salvar() {
+    if (!pagoEm) { alert('Informe a data do pagamento.'); return }
+    setSaving(true)
+    try { await addPagamento(leadId, compVenc, valor ? Number(valor) : null, pagoEm); onSaved() }
+    catch { alert('Erro ao registrar o pagamento.'); setSaving(false) }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/60" onClick={onClose} />
+      <div className="relative w-full max-w-sm rounded-2xl p-6" style={{ background: 'var(--sys-modal)', border: '1px solid var(--sys-border-2)' }}>
+        <div className="flex items-center justify-between mb-1">
+          <h2 className="text-lg font-black text-white flex items-center gap-2"><Check size={18} className="text-[#22c55e]" /> Marcar como pago</h2>
+          <button onClick={onClose} className="text-gray-500 hover:text-white"><X size={20} /></button>
+        </div>
+        <p className="text-sm text-gray-500 mb-4">{nome} · competência <b className="text-gray-300">{compVenc.split('-').reverse().join('/')}</b></p>
+        <div className="space-y-3">
+          <div>
+            <label className="block text-[11px] font-semibold text-gray-400 mb-1 uppercase tracking-wide">Valor pago</label>
+            <input type="number" step="0.01" value={valor} onChange={e => setValor(e.target.value)} placeholder="0,00" className={FIELD} style={FS2} />
+          </div>
+          <div>
+            <label className="block text-[11px] font-semibold text-gray-400 mb-1 uppercase tracking-wide">Data do pagamento</label>
+            <input type="date" value={pagoEm} onChange={e => setPagoEm(e.target.value)} className={FIELD} style={{ ...FS2, colorScheme: 'dark' }} />
+          </div>
+          <button onClick={salvar} disabled={saving}
+            className="w-full h-11 rounded-xl text-sm font-bold text-white inline-flex items-center justify-center gap-2 disabled:opacity-60" style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)' }}>
+            {saving ? <Loader2 size={15} className="animate-spin" /> : <Check size={15} />} Confirmar pagamento
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 function CobrancaModal({ row, onClose, onChanged }: { row: Row; onClose: () => void; onChanged: () => void }) {
   const leadId = s(row.lead_id)

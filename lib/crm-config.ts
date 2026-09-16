@@ -21,6 +21,7 @@ export const ETAPA_LABEL: Record<string, string> = {
 export const INTERESSES = [
   'Trocar de contador',
   'Abrir minha empresa',
+  'Abrir MEI',
   'Deixar de ser MEI',
   'BPO Financeiro',
   'Contabilidade Eleitoral',

@@ -3,6 +3,7 @@
 export const ONBOARDING_CATEGORIAS: { slug: string; label: string; interesse: string }[] = [
   { slug: 'trocar-de-contador',       label: 'Trocar de contador',      interesse: 'Trocar de contador' },
   { slug: 'abrir-empresa',            label: 'Abrir minha empresa',     interesse: 'Abrir minha empresa' },
+  { slug: 'abrir-mei',                label: 'Abrir MEI',               interesse: 'Abrir MEI' },
   { slug: 'deixar-mei',               label: 'Deixar de ser MEI',       interesse: 'Deixar de ser MEI' },
   { slug: 'bpo-financeiro',           label: 'BPO Financeiro',          interesse: 'BPO Financeiro' },
   { slug: 'contabilidade-eleitoral',  label: 'Contabilidade Eleitoral', interesse: 'Contabilidade Eleitoral' },

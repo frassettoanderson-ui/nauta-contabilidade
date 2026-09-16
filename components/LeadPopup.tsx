@@ -8,6 +8,7 @@ import { saveLead } from '@/lib/api'
 const INTERESTS = [
   'Trocar de contador',
   'Abrir minha empresa',
+  'Abrir MEI',
   'Deixar de ser MEI',
   'BPO Financeiro',
   'Contabilidade Eleitoral',

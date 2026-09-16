@@ -14,7 +14,7 @@ const SETORES = [
   { label: 'Departamento Pessoal', setor: 'pessoal' },
   { label: 'Atendimento', setor: 'atendente' },
 ]
-const INTERESSES = ['Abrir minha empresa', 'Trocar de contador', 'Deixar de ser MEI', 'BPO Financeiro', 'Contabilidade Eleitoral', 'Outro']
+const INTERESSES = ['Abrir minha empresa', 'Abrir MEI', 'Trocar de contador', 'Deixar de ser MEI', 'BPO Financeiro', 'Contabilidade Eleitoral', 'Outro']
 
 export default function FloatingChat() {
   const [open, setOpen] = useState(false)

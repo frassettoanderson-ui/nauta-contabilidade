@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { signSsoToken } from '@/lib/sso'
@@ -8,15 +8,17 @@ import { signSsoToken } from '@/lib/sso'
 // o endpoint de SSO do Obrigô, que grava a sessão e devolve o usuário já logado.
 export const dynamic = 'force-dynamic'
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   const session = await getServerSession(authOptions)
   const user = session?.user as { email?: string; name?: string; role?: string } | undefined
 
   // Sem sessão: manda para o login da Nauta e volta para cá depois de autenticar.
+  // Location relativo: resolve no domínio do navegador (atrás do proxy, req.url vê localhost:3000).
   if (!user?.email) {
-    const login = new URL('/sistema/login', req.url)
-    login.searchParams.set('callbackUrl', '/api/sso/gestoroa')
-    return NextResponse.redirect(login)
+    return new NextResponse(null, {
+      status: 307,
+      headers: { Location: '/sistema/login?callbackUrl=%2Fapi%2Fsso%2Fgestoroa' },
+    })
   }
 
   const secret = process.env.SSO_GESTOROA_SECRET

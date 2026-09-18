@@ -17,8 +17,9 @@ import {
   LogOut, ChevronDown, Menu, X, type LucideIcon,
 } from 'lucide-react'
 
-// URL do GestorOA (sistema separado de obrigacoes/entregas). Trocar pelo subdominio quando o SSL estiver pronto.
-const GESTOROA_URL = 'http://89.117.79.163:8090'
+// GestorOA/Obrigô: entra logado via SSO (handoff usa a sessão atual da Nauta).
+// Mesmo domínio, servido em /gestoroa atrás do nginx.
+const GESTOROA_URL = '/api/sso/gestoroa'
 
 interface NavLeaf { label: string; href: string; icon: LucideIcon; highlight?: boolean; external?: boolean }
 interface NavGroup { label: string; icon: LucideIcon; children: NavLeaf[]; highlight?: boolean }

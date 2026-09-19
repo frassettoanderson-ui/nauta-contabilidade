@@ -225,6 +225,28 @@ function Wizard() {
   const setEmpK = (k: string, v: unknown) => setEmp(s => ({ ...s, [k]: v }))
   const setSocioK = (i: number, k: string, v: unknown) => setSocios(s => s.map((x, j) => j === i ? { ...x, [k]: v } : x))
 
+  // Preenche os sócios a partir do quadro societário (QSA) da Receita/BrasilAPI.
+  // A Receita só devolve NOME (o CPF vem mascarado), então preenchemos os nomes;
+  // o restante (CPF, RG, nascimento, participação) continua manual. Não sobrescreve
+  // nada que o usuário já tenha digitado.
+  function fillSociosFromCNPJ(d: CNPJData) {
+    const qsa = d.socios ?? []
+    if (qsa.length === 0) return
+    // Sócio 1 = o próprio cliente (titular): usa o 1º sócio do QSA se o nome estiver vazio.
+    setCli(c => (String(c.cli_nome_completo ?? '').trim() ? c : { ...c, cli_nome_completo: qsa[0].nome }))
+    // Sócios 2..5: demais nomes do QSA (até 4 extras).
+    const extras = qsa.slice(1, 5)
+    if (extras.length > 0) {
+      setTemSocios(true)
+      setNumSocios(n => Math.max(n, Math.min(5, extras.length + 1)))
+      setSocios(prev => prev.map((s, i) => {
+        const q = extras[i]
+        if (!q) return s
+        return String(s.nome_completo ?? '').trim() ? s : { ...s, nome_completo: q.nome }
+      }))
+    }
+  }
+
   function togglePropSocio1(checked: boolean) {
     setPropEhSocio1(checked)
     if (checked) {
@@ -425,7 +447,7 @@ function Wizard() {
                   value={(emp[k] as string) || ''}
                   onChange={v => setEmpK(k, v)}
                   onCEPFill={type === 'cep' ? makeCEPFill(setEmpK, 'emp_') : undefined}
-                  onCNPJFill={type === 'cnpj' ? makeCNPJFill(setEmpK) : undefined}
+                  onCNPJFill={type === 'cnpj' ? (d) => { makeCNPJFill(setEmpK)(d); fillSociosFromCNPJ(d) } : undefined}
                   disabled={readOnly}
                 />
               </div>

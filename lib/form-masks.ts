@@ -112,9 +112,11 @@ export async function fetchCEP(cep: string): Promise<CEPData | null> {
 }
 
 // ─── CNPJ via BrasilAPI (dados da Receita) ─────────────────────────────────
+export interface CNPJSocio { nome: string; qualificacao: string }
 export interface CNPJData {
   razao_social: string; nome_fantasia: string; logradouro: string; numero: string
   bairro: string; cep: string; municipio: string; uf: string; telefone: string; atividade: string
+  socios: CNPJSocio[]
 }
 export async function fetchCNPJ(cnpj: string): Promise<CNPJData | null> {
   const d = cnpj.replace(/\D/g, '')
@@ -136,6 +138,14 @@ export async function fetchCNPJ(cnpj: string): Promise<CNPJData | null> {
       uf: j.uf ?? '',
       telefone: tel ? maskPhone(tel) : '',
       atividade: j.cnae_fiscal_descricao ?? '',
+      socios: Array.isArray(j.qsa)
+        ? j.qsa
+            .map((s: Record<string, unknown>) => ({
+              nome: String(s.nome_socio ?? '').trim(),
+              qualificacao: String(s.qualificacao_socio ?? '').trim(),
+            }))
+            .filter((s: CNPJSocio) => s.nome)
+        : [],
     }
   } catch { return null }
 }

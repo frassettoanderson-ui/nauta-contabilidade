@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Loader2 } from 'lucide-react'
+import { Loader2, RefreshCw } from 'lucide-react'
 import {
   maskCPF, validateCPF, maskCNPJ, maskCEP, maskPhone, onlyLetters, onlyNumbers, maskMoney,
   ESTADOS_BR, ESTADO_CIVIL_OPS, REGIME_OPS, fetchCEP, fetchCNPJ, parseCidadeEstado,
@@ -124,6 +124,7 @@ export default function SmartField({
 
   // ── CNPJ ──────────────────────────────────────────────────────────────
   if (type === 'cnpj') {
+    const digits = value.replace(/\D/g, '')
     const handleCNPJ = async (raw: string) => {
       const masked = maskCNPJ(raw)
       onChange(masked)
@@ -134,14 +135,31 @@ export default function SmartField({
         setLoadingCep(false)
       }
     }
+    // Botão "atualizar": rebusca na Receita e sobrescreve os dados (útil ao editar).
+    const atualizar = async () => {
+      if (digits.length !== 14 || !onCNPJFill || disabled || loadingCep) return
+      setLoadingCep(true)
+      const data = await fetchCNPJ(value)
+      if (data) onCNPJFill(data)
+      setLoadingCep(false)
+    }
     return (
       <div>
         <Label text={label} />
-        <div className="relative">
+        <div className="flex gap-2">
           <input type="text" value={value} disabled={disabled} placeholder="00.000.000/0001-00"
             onChange={e => handleCNPJ(e.target.value)}
-            className={BASE_NARROW} style={errBorder ? FSE : FS} />
-          {loadingCep && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-gray-500">buscando…</span>}
+            className={`${BASE_NARROW} flex-1 min-w-0`} style={errBorder ? FSE : FS} />
+          {onCNPJFill && (
+            <button type="button" onClick={atualizar} disabled={disabled || digits.length !== 14 || loadingCep}
+              title="Buscar/atualizar dados pelo CNPJ na Receita"
+              className="w-10 h-10 shrink-0 rounded-lg flex items-center justify-center transition-opacity disabled:opacity-40 hover:opacity-80"
+              style={FS}>
+              {loadingCep
+                ? <Loader2 size={15} className="animate-spin text-[#0BBCD4]" />
+                : <RefreshCw size={15} className="text-[#0BBCD4]" />}
+            </button>
+          )}
         </div>
       </div>
     )

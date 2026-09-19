@@ -84,6 +84,29 @@ export async function getCliente(id: string) {
   return { ...c.rows[0], socios: s.rows }
 }
 
+// Atualiza SOMENTE os dados da empresa (usado na atualizacao em lote pelo CNPJ/Receita).
+// Nao toca em socios, arquivos, campos do cliente (cli_*) nem na situacao.
+// So grava campos presentes e nao-vazios (nunca apaga um dado existente com valor vazio).
+const EMP_ATUALIZAVEIS = [
+  'emp_nome', 'emp_fantasia', 'emp_endereco', 'emp_bairro', 'emp_cep',
+  'emp_cidade_estado', 'emp_telefone', 'emp_atividade', 'emp_cnpj',
+]
+export async function atualizarEmpresaCliente(id: string, empresaId: string | undefined, fields: AnyObj) {
+  const cols = EMP_ATUALIZAVEIS.filter(k => fields[k] !== undefined && String(fields[k] ?? '').trim() !== '')
+  if (cols.length === 0) return { atualizado: false }
+  const sets = cols.map((c, i) => `${c} = $${i + 2}`).join(', ')
+  const vals = cols.map(c => fields[c])
+  if (empresaId) {
+    await pool.query(
+      `UPDATE clientes SET ${sets}, atualizado_em = NOW() WHERE id = $1 AND empresa_id = $${cols.length + 2}`,
+      [id, ...vals, empresaId],
+    )
+  } else {
+    await pool.query(`UPDATE clientes SET ${sets}, atualizado_em = NOW() WHERE id = $1`, [id, ...vals])
+  }
+  return { atualizado: true, campos: cols.length }
+}
+
 // Converte string vazia/undefined em null (evita erro em colunas numéricas/boolean)
 const norm = (v: unknown) => (v === '' || v === undefined ? null : v)
 

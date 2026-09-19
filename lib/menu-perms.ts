@@ -15,6 +15,7 @@ export const MENU_GRUPOS: MenuGrupo[] = [
   { grupo: 'Clientes', itens: [
     { href: '/sistema/clientes/cadastrar', label: 'Cadastrar' },
     { href: '/sistema/clientes/consultar', label: 'Consultar' },
+    { href: '/sistema/clientes/atualizar', label: 'Atualizar clientes' },
     { href: '/sistema/clientes/inativos', label: 'Inativos' },
   ] },
   { grupo: 'Geração de Contrato', itens: [

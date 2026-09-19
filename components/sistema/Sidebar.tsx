@@ -14,7 +14,7 @@ import {
   Briefcase, LayoutGrid, Inbox, BarChart3, TrendingUp, Calculator, UserCog, Building2,
   Rocket, Settings, DollarSign, LayoutDashboard, MessageCircle,
   ArrowDownCircle, ArrowUpCircle, Repeat, CalendarCheck, Target, UserX, Percent, AlertTriangle, Receipt,
-  LogOut, ChevronDown, Menu, X, type LucideIcon,
+  RefreshCw, LogOut, ChevronDown, Menu, X, type LucideIcon,
 } from 'lucide-react'
 
 // GestorOA/Obrigô: entra logado via SSO (handoff usa a sessão atual da Nauta).
@@ -31,6 +31,7 @@ const NAV: NavItem[] = [
   { label: 'Clientes', icon: Users, children: [
     { label: 'Cadastrar', href: '/sistema/clientes/cadastrar', icon: UserPlus },
     { label: 'Consultar', href: '/sistema/clientes/consultar', icon: Search },
+    { label: 'Atualizar clientes', href: '/sistema/clientes/atualizar', icon: RefreshCw },
     { label: 'Inativos',  href: '/sistema/clientes/inativos',  icon: UserX },
   ] },
   { label: 'Geração de Contrato', icon: FileText, children: [

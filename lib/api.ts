@@ -263,6 +263,11 @@ export function getCliente(id: string): Promise<Record<string, unknown>> {
 export function listClientes(): Promise<Record<string, unknown>[]> {
   return fetch('/api/clientes').then(r => json<Record<string, unknown>[]>(r))
 }
+export function atualizarEmpresaCliente(id: string, fields: Record<string, unknown>): Promise<{ atualizado: boolean; campos?: number }> {
+  return fetch(`/api/clientes/${id}/atualizar-empresa`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(fields),
+  }).then(r => json<{ atualizado: boolean; campos?: number }>(r))
+}
 export function setSituacaoCliente(id: string, situacao: string): Promise<{ ok: boolean }> {
   return fetch(`/api/clientes/${id}/situacao`, {
     method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ situacao }),

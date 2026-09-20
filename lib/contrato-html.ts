@@ -306,24 +306,54 @@ export function buildContratoHtml(cliente: Obj, lead: Obj, logos: ContratoLogos 
 
     <div class="pagebreak"></div>
     <div class="anexo-titulo">ANEXO 1 — Serviços Profissionais de Contabilidade</div>
+
     <div class="anexo-sub">1 — Escrituração Contábil</div>
     <ul>
-      <li>Classificação da contabilidade conforme normas e princípios contábeis vigentes;</li>
-      <li>Emissão de balancetes;</li>
-      <li>Elaboração de demonstrativos contábeis.</li>
+      <li>Classificação da contabilidade de acordo com as normas brasileiras de contabilidade (NBC) e os princípios contábeis vigentes;</li>
+      <li>Emissão de balancetes de verificação;</li>
+      <li>Elaboração das demonstrações contábeis (Balanço Patrimonial, DRE e demais demonstrativos exigidos);</li>
+      <li>Escrituração Contábil Digital (ECD) e Escrituração Contábil Fiscal (ECF), transmitidas ao SPED quando obrigatórias à empresa.</li>
     </ul>
+
     <div class="anexo-sub">2 — Escrituração Fiscal</div>
     <ul>
-      <li>Orientação e controle da aplicação dos dispositivos legais federais, estaduais e municipais;</li>
-      <li>Escrituração dos registros fiscais dos livros obrigatórios e das obrigações acessórias pertinentes (incl. ISSQN);</li>
-      <li>Apuração de impostos e atendimento das demais exigências da legislação.</li>
+      <li>Orientação e controle da aplicação dos dispositivos legais vigentes, sejam eles Federais, Estaduais ou Municipais;</li>
+      <li>Escrituração dos registros fiscais de todos os livros obrigatórios, bem como das obrigações que se fizerem necessárias;</li>
+      <li>Escrituração do registro fiscal de ISSQN e emissão/gestão de NFS-e (padrão nacional), bem como as que se fizerem necessárias;</li>
+      <li>Escrituração do registro fiscal de ICMS/IPI e das notas fiscais eletrônicas (NF-e / NFC-e), bem como as que se fizerem necessárias;</li>
+      <li>Escrituração Fiscal Digital via SPED: EFD ICMS/IPI e EFD-Contribuições (PIS/COFINS), quando obrigatórias;</li>
+      <li>Apuração e entrega da DCTF / DCTFWeb e da EFD-Reinf, conforme o regime tributário da empresa;</li>
+      <li>Acompanhamento da transição da Reforma Tributária (EC 132/2023): preenchimento dos campos de IBS e CBS e adequação das obrigações a partir de 2026;</li>
+      <li>Atendimento das demais exigências previstas na legislação.</li>
     </ul>
+
     <div class="anexo-sub">3 — Departamento de Pessoal</div>
+    <p style="font-weight:bold;font-size:9pt;margin:6pt 0 2pt;">3.1 — Admissão, contratos e rotinas trabalhistas</p>
     <ul>
-      <li>Admissões, contratos de experiência e comunicações ao Ministério do Trabalho;</li>
-      <li>Folha de pagamento, recibos, FGTS, INSS e guias de arrecadação;</li>
-      <li>Rescisões, férias, 13º salário, seguro-desemprego, vale-transporte e salário-família;</li>
-      <li>Comprovantes de rendimento e demais obrigações acessórias trabalhistas e previdenciárias.</li>
+      <li>Contrato de experiência e demais contratos de trabalho;</li>
+      <li>Comunicação de admissão e desligamento por meio do eSocial (em substituição ao CAGED);</li>
+      <li>Elaboração da folha de pagamento e dos recibos de pagamento;</li>
+      <li>Rescisões trabalhistas e respectivos termos (TRCT);</li>
+      <li>Recibo de férias e recibo de responsabilidade de salário-família;</li>
+      <li>Recibo de vale-transporte;</li>
+      <li>Quadro de horário de trabalho dos empregados.</li>
+    </ul>
+    <p style="font-weight:bold;font-size:9pt;margin:6pt 0 2pt;">3.2 — Encargos, guias e obrigações acessórias</p>
+    <ul>
+      <li>FGTS e recolhimento por meio do FGTS Digital;</li>
+      <li>Contribuições previdenciárias (INSS) apuradas e declaradas via eSocial, EFD-Reinf e DCTFWeb;</li>
+      <li>Requerimento de seguro-desemprego;</li>
+      <li>Contribuição sindical patronal e dos empregados (quando devida/autorizada, conforme reforma trabalhista);</li>
+      <li>Comprovante de rendimentos (empregado e empregador) e informações de IR retido na fonte via eSocial/EFD-Reinf, em substituição à DIRF (extinta);</li>
+      <li>Escrituração e transmissão das obrigações do eSocial e da EFD-Reinf, bem como das demais obrigações acessórias pertinentes.</li>
+    </ul>
+    <p style="font-weight:bold;font-size:9pt;margin:6pt 0 2pt;">3.3 — Impostos e obrigações gerais</p>
+    <ul>
+      <li>Impostos e tributos Federais, Estaduais e Municipais;</li>
+      <li>Orientação e controle da aplicação dos dispositivos legais vigentes;</li>
+      <li>Emissão das guias de arrecadação dos impostos pertinentes (incluindo DARF, GPS e DAE via DCTFWeb);</li>
+      <li>Elaboração das obrigações acessórias pertinentes;</li>
+      <li>Atendimento das demais exigências previstas na legislação.</li>
     </ul>
 
     <div class="foot">NAUTA CONTABILIDADE LTDA · CNPJ 19.361.966/0001-82 · Avenida Santa Catarina, Centro — Imbituba/SC · nautacontabilidade.com.br</div>

@@ -30,6 +30,9 @@ export function buildContratoHtml(cliente: Obj, lead: Obj, logos: ContratoLogos 
   const foroComarca = FORO_OVERRIDE[String(lead?.id)] ?? 'Imbituba/SC'
   const comEmpresa = usaEmpresa(tipo)
   const comAbertura = usaAbertura(tipo) && Number(lead?.valor_abertura) > 0
+  // Abertura de empresa (tipo 1) SEM cobrança de abertura = oferta de "abertura grátis":
+  // aciona a cláusula de fidelidade de 6 meses.
+  const aberturaGratis = tipo === 1 && !(Number(lead?.valor_abertura) > 0)
   const socios: Obj[] = (cliente.socios || []).filter((s: Obj) => s && (s.nome_completo || s.cpf))
 
   const nomeContratante = comEmpresa ? esc(val(cliente.emp_nome)) : esc(val(cliente.cli_nome_completo))
@@ -55,6 +58,12 @@ export function buildContratoHtml(cliente: Obj, lead: Obj, logos: ContratoLogos 
 
   const aberturaLinha = comAbertura
     ? `<p><b>5.2.</b> Pela ${tipo === 1 ? 'constituição/abertura da empresa' : 'execução dos serviços iniciais de implantação'}, a CONTRATANTE pagará à CONTRATADA o valor único de <b>R$ ${brl(lead?.valor_abertura)}</b>, devido no ato da contratação.</p>`
+    : ''
+
+  // Cláusula de fidelidade (só quando a abertura foi gratuita).
+  const fidelidadeClausula = aberturaGratis
+    ? `<p><b>7.5.</b> <b>Fidelidade – Abertura Gratuita.</b> Tendo a CONTRATANTE se beneficiado da oferta de <b>abertura gratuita</b> da empresa, compromete-se a manter a prestação dos serviços contábeis por prazo mínimo de <b>6 (seis) meses</b>, contados do início da vigência deste contrato. Caso a CONTRATANTE promova a rescisão antes de completado esse período, será devida multa de fidelidade equivalente a <b>1 (um) salário mínimo nacional vigente</b>, aplicada de forma proporcional aos meses restantes para o término do período de fidelidade, à razão de 1/6 (um sexto) do salário mínimo por mês ou fração faltante.</p>
+      <p><b>7.5.1.</b> Não incidirá a multa de fidelidade quando a saída decorrer do <b>encerramento (baixa) da empresa</b>, desde que a baixa seja integralmente realizada por esta CONTRATADA.</p>`
     : ''
 
   // Espaço para observações de negociação (carência, honorário por período etc.)
@@ -248,7 +257,8 @@ export function buildContratoHtml(cliente: Obj, lead: Obj, logos: ContratoLogos 
       <p><b>7.2.1.</b> Os dados que compõem o banco de dados do sistema de gestão contábil da CONTRATADA, contendo as informações da CONTRATANTE, poderão ser repassados a esta ou a quem ela designar, mediante anuência escrita, podendo a CONTRATADA cobrar eventuais custos que julgar necessários para tal liberação.</p>
       <p><b>7.3.</b> A falta de pagamento de qualquer parcela de honorários, bem como a falência da CONTRATANTE, facultará à CONTRATADA suspender imediatamente a execução dos serviços e considerar rescindido o contrato, independentemente de notificação judicial ou extrajudicial.</p>
       <p><b>7.3.1.</b> Em caso de suspensão, a CONTRATADA não se responsabiliza por eventuais multas e notificações geradas em virtude da paralisação dos serviços, ficando estas sob responsabilidade da CONTRATANTE.</p>
-      <p><b>7.4.</b> Considerar-se-á rescindido o contrato caso qualquer das partes infrinja cláusula ora convencionada, ficando estipulada multa contratual de 2 (duas) mensalidades vigentes, exigível por inteiro da parte que der causa à rescisão motivada.</p>`)}
+      <p><b>7.4.</b> Considerar-se-á rescindido o contrato caso qualquer das partes infrinja cláusula ora convencionada, ficando estipulada multa contratual de 2 (duas) mensalidades vigentes, exigível por inteiro da parte que der causa à rescisão motivada.</p>
+      ${fidelidadeClausula}`)}
 
     ${Cl(8, '– DO VÍNCULO EMPREGATÍCIO E DA RESPONSABILIDADE DOS SÓCIOS', `
       <p>O presente contrato não gera qualquer vínculo empregatício entre as partes, ou entre a CONTRATANTE e os prepostos da CONTRATADA. Os sócios da CONTRATANTE assinam o presente na condição de fiadores solidários e principais pagadores em relação a todas as obrigações contratuais decorrentes.</p>`)}

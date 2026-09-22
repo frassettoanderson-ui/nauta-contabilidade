@@ -148,6 +148,11 @@ export async function saveCliente(payload: AnyObj & { id?: string; lead_id?: str
     if (va && !vb) payload[b] = payload[a]
     else if (vb && !va) payload[a] = payload[b]
   }
+  // Limpa rótulo "E-mail:" colado por engano e espaços nos campos de e-mail
+  // (a Autentique recusa qualquer coisa fora do formato ao enviar o contrato).
+  for (const k of ['cli_email', 'emp_email']) {
+    if (payload[k]) payload[k] = String(payload[k]).replace(/^\s*e-?mail\s*:?\s*/i, '').trim()
+  }
   const cliData = CLI_COLS.map(c => norm(payload[c]))
   let clienteId = payload.id as string | undefined
 

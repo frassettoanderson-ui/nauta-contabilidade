@@ -1,6 +1,20 @@
 const ENDPOINT = 'https://api.autentique.com.br/v2/graphql'
 const TOKEN = process.env.AUTENTIQUE_TOKEN!
 
+// Extrai uma mensagem útil do erro GraphQL da Autentique. Erros de "validation" trazem
+// o campo problemático em extensions.validation/errors — sem isso, só se vê "validation".
+function fmtGqlError(errors: unknown, fallback: string): string {
+  const e = (errors as Array<Record<string, any>>)?.[0]
+  if (!e) return fallback
+  const ext = (e.extensions ?? {}) as Record<string, any>
+  const v = ext.validation ?? ext.errors
+  if (v && typeof v === 'object') {
+    const parts = Object.entries(v).map(([k, msgs]) => `${k}: ${Array.isArray(msgs) ? msgs.join(' ') : String(msgs)}`)
+    if (parts.length) return `${e.message || 'validation'} — ${parts.join('; ')}`
+  }
+  return e.message || fallback
+}
+
 async function gql(query: string, variables?: Record<string, unknown>) {
   const res = await fetch(ENDPOINT, {
     method: 'POST',
@@ -10,7 +24,7 @@ async function gql(query: string, variables?: Record<string, unknown>) {
   const text = await res.text()
   let json: Record<string, unknown>
   try { json = JSON.parse(text) } catch { throw new Error(`Autentique retornou não-JSON (${res.status}): ${text.slice(0, 200)}`) }
-  if (json.errors) throw new Error((json.errors as Array<{ message: string }>)[0]?.message ?? 'Erro Autentique')
+  if (json.errors) throw new Error(fmtGqlError(json.errors, 'Erro Autentique'))
   return json.data
 }
 
@@ -75,7 +89,7 @@ export async function criarDocumento(
   const text = await res.text()
   let json: Record<string, unknown>
   try { json = JSON.parse(text) } catch { throw new Error(`Autentique createDocument retornou não-JSON (${res.status}): ${text.slice(0, 200)}`) }
-  if (json.errors) throw new Error((json.errors as Array<{ message: string }>)[0]?.message ?? 'Erro ao criar documento Autentique')
+  if (json.errors) throw new Error(fmtGqlError(json.errors, 'Erro ao criar documento Autentique'))
   return (json.data as Record<string, unknown>).createDocument as AutentiqueDocument
 }
 

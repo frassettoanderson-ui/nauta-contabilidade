@@ -337,8 +337,9 @@ export function concluirOnboarding(leadId: string, valor?: number | null, vencim
     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ leadId, valor, vencimento }),
   }).then(r => json(r)).then(() => undefined)
 }
-export function listFinanceiro(): Promise<Record<string, unknown>[]> {
-  return fetch('/api/financeiro/clientes').then(r => json<Record<string, unknown>[]>(r))
+export function listFinanceiro(competencia?: string): Promise<Record<string, unknown>[]> {
+  const q = competencia ? `?competencia=${encodeURIComponent(competencia)}` : ''
+  return fetch(`/api/financeiro/clientes${q}`).then(r => json<Record<string, unknown>[]>(r))
 }
 
 // Categorias de serviço avulso

@@ -291,7 +291,7 @@ export async function concluirOnboarding(leadId: string, valor?: number | null, 
 
 // ─── FINANCEIRO ──────────────────────────────────────────────────────────
 
-export async function listFinanceiro(empresaId: string) {
+export async function listFinanceiro(empresaId: string, competencia?: string) {
   const res = await pool.query(
     `SELECT
         l.id AS lead_id, l.nome AS lead_nome, l.whatsapp, l.email,
@@ -314,7 +314,11 @@ export async function listFinanceiro(empresaId: string) {
   // Meses pagos por lead (+ valor pago no mês vigente, p/ o resumo do Faturamento)
   const pag = await pool.query(`SELECT lead_id, to_char(competencia, 'YYYY-MM') AS comp, valor FROM financeiro_pagamentos WHERE lead_id = ANY($1)`, [ids])
   const pagosByLead: Record<string, Set<string>> = {}
-  const compAtual = (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` })()
+  // Competência selecionada (YYYY-MM); padrão = mês atual. O seletor de mês no
+  // Faturamento manda a competência para toda a tela refletir aquele mês.
+  const compAtual = competencia && /^\d{4}-\d{2}$/.test(competencia)
+    ? competencia
+    : (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` })()
   const pagoMesByLead: Record<string, number> = {}
   for (const p of pag.rows) {
     (pagosByLead[p.lead_id] ||= new Set()).add(p.comp)
@@ -332,32 +336,37 @@ export async function listFinanceiro(empresaId: string) {
   for (const e of ev.rows) prazoByLead[e.lead_id] = e.prazo_pagamento
 
   const [cy, cm] = compAtual.split('-').map(Number)
+  const selStart = new Date(cy, cm - 1, 1)
+  const hoje0 = new Date(); hoje0.setHours(0, 0, 0, 0)
   return rows.map(r => {
     const calc = calcStatusFinanceiro(r.honorario_vencimento, pagosByLead[r.lead_id] ?? new Set())
-    // Valores do MÊS VIGENTE (resumo do Faturamento): já fatura este mês se o 1º vencimento já passou/é este mês
     const venc = r.honorario_vencimento ? new Date(r.honorario_vencimento) : null
-    const faturaEsteMes = !!venc && new Date(venc.getFullYear(), venc.getMonth(), 1) <= new Date(cy, cm - 1, 1)
-    const aReceberMes = faturaEsteMes ? Number(r.valor_honorario || 0) : 0
+    // Fatura na competência selecionada se o 1º vencimento é <= o mês selecionado.
+    const faturaMes = !!venc && new Date(venc.getFullYear(), venc.getMonth(), 1) <= selStart
+    const aReceberMes = faturaMes ? Number(r.valor_honorario || 0) : 0
     const pagoMes = Number(pagoMesByLead[r.lead_id] || 0)
     const emAbertoMes = Math.max(0, aReceberMes - pagoMes)
-    // Vencimento do MÊS VIGENTE (para o Faturamento, que resume o mês atual). Fica
-    // coerente com A receber/Pago/Em aberto — diferente do proximo_vencimento, que
-    // aponta o próximo mês em aberto (usado na Cobrança).
-    const vencimentoMes = faturaEsteMes && venc
-      ? vencimentoAjustado(venc.getDate(), cy, cm - 1)
-      : venc
+    // Vencimento DA competência selecionada (coerente com A receber/Pago/Em aberto).
+    const vencimentoMes = faturaMes && venc ? vencimentoAjustado(venc.getDate(), cy, cm - 1) : null
+    // Status relativo à competência selecionada (não ao "hoje" global).
+    let statusMes: 'em_dia' | 'a_vencer' | 'atrasado' = 'a_vencer'
+    if (aReceberMes > 0 && pagoMes >= aReceberMes) statusMes = 'em_dia'
+    else if (vencimentoMes && vencimentoMes < hoje0) statusMes = 'atrasado'
     return {
       ...r,
-      financeiro_status: calc.status,
+      financeiro_status: statusMes,
+      status_global: calc.status,
       meses_atraso: calc.mesesAtraso,
       proximo_vencimento: calc.proximoVencimento ? calc.proximoVencimento.toISOString().slice(0, 10) : null,
       vencimento_mes: vencimentoMes ? vencimentoMes.toISOString().slice(0, 10) : null,
       prazo_prometido: prazoByLead[r.lead_id] ?? null,
+      competencia: compAtual,
+      fatura_mes: faturaMes,
       a_receber_mes: aReceberMes,
       pago_mes: pagoMes,
       em_aberto_mes: emAbertoMes,
     }
-  })
+  }).filter(r => r.fatura_mes) // só clientes que faturam na competência selecionada
 }
 
 export async function listPagamentos(leadId: string) {

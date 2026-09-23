@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import { Loader2, Search, DollarSign, ChevronUp, ChevronDown, ChevronsUpDown, RefreshCw, X, Plus, Trash2, Wallet, CheckCircle2, CircleDollarSign } from 'lucide-react'
+import { Loader2, Search, DollarSign, ChevronUp, ChevronDown, ChevronsUpDown, ChevronLeft, ChevronRight, RefreshCw, X, Plus, Trash2, Wallet, CheckCircle2, CircleDollarSign } from 'lucide-react'
 import { listFinanceiro, listPagamentos, addPagamento, deletePagamento, asaasResumo, asaasSincronizarTodos, type PagamentoRow, type AsaasResumo } from '@/lib/api'
 import type { ReactNode } from 'react'
 
@@ -48,12 +48,21 @@ export default function FaturamentoPage() {
   const [asaas, setAsaas] = useState<AsaasResumo | null>(null)
   const [syncing, setSyncing] = useState(false)
   const [sel, setSel] = useState<Row | null>(null)
+  const nowComp = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` }
+  const [comp, setComp] = useState(nowComp())
 
   const load = useCallback(() => {
-    listFinanceiro().then(setRows).catch(() => setRows([]))
-    asaasResumo().then(setAsaas).catch(() => setAsaas(null))
-  }, [])
+    setRows(null)
+    listFinanceiro(comp).then(setRows).catch(() => setRows([]))
+  }, [comp])
   useEffect(() => { load() }, [load])
+  useEffect(() => { asaasResumo().then(setAsaas).catch(() => setAsaas(null)) }, [])
+
+  const mudarMes = (delta: number) => setComp(c => {
+    const [y, m] = c.split('-').map(Number)
+    const d = new Date(y, m - 1 + delta, 1)
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+  })
 
   async function syncTodos() {
     if (!confirm('Cadastrar/atualizar TODOS os clientes ativos no Asaas (cliente + assinatura mensal)?')) return
@@ -68,7 +77,9 @@ export default function FaturamentoPage() {
   }
 
   const base = rows ?? []
-  const mesLabel = new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
+  const [cy, cm] = comp.split('-').map(Number)
+  const mesLabel = new Date(cy, cm - 1, 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
+  const isMesAtual = comp === nowComp()
   const tot = base.reduce((a: { receber: number; pago: number; aberto: number }, r) => {
     a.receber += Number(r.a_receber_mes || 0); a.pago += Number(r.pago_mes || 0); a.aberto += Number(r.em_aberto_mes || 0); return a
   }, { receber: 0, pago: 0, aberto: 0 })
@@ -131,6 +142,29 @@ export default function FaturamentoPage() {
               className="h-10 pl-9 pr-4 rounded-xl text-sm text-white placeholder-gray-600 outline-none w-72" style={{ background: 'var(--sys-surface-3)', border: '1px solid var(--sys-border-2)' }} />
           </div>
         </div>
+      </div>
+
+      {/* Seletor de mês (competência) */}
+      <div className="flex items-center gap-3 mb-5">
+        <button onClick={() => mudarMes(-1)} title="Mês anterior"
+          className="w-9 h-9 rounded-lg flex items-center justify-center text-gray-300 hover:text-white transition-colors"
+          style={{ background: 'var(--sys-surface-3)', border: '1px solid var(--sys-border-2)' }}>
+          <ChevronLeft size={18} />
+        </button>
+        <div className="min-w-[180px] text-center">
+          <p className="text-sm font-black text-white capitalize leading-tight">{mesLabel}</p>
+          <p className="text-[11px] text-gray-500">{isMesAtual ? 'mês atual' : 'competência'}</p>
+        </div>
+        <button onClick={() => mudarMes(1)} title="Próximo mês"
+          className="w-9 h-9 rounded-lg flex items-center justify-center text-gray-300 hover:text-white transition-colors"
+          style={{ background: 'var(--sys-surface-3)', border: '1px solid var(--sys-border-2)' }}>
+          <ChevronRight size={18} />
+        </button>
+        {!isMesAtual && (
+          <button onClick={() => setComp(nowComp())} className="ml-1 text-xs font-bold text-[color:var(--sys-accent)] hover:underline">
+            Voltar ao mês atual
+          </button>
+        )}
       </div>
 
       {/* Resumo do mês vigente */}
@@ -206,18 +240,18 @@ export default function FaturamentoPage() {
         </div>
       )}
 
-      {sel && <PagamentosModal row={sel} onClose={() => setSel(null)} onChanged={load} />}
+      {sel && <PagamentosModal row={sel} compInicial={comp} onClose={() => setSel(null)} onChanged={load} />}
     </div>
   )
 }
 
 // Modal enxuto: ver e registrar pagamentos do cliente (baixa manual, além da automática do Asaas)
-function PagamentosModal({ row, onClose, onChanged }: { row: Row; onClose: () => void; onChanged: () => void }) {
+function PagamentosModal({ row, compInicial, onClose, onChanged }: { row: Row; compInicial?: string; onClose: () => void; onChanged: () => void }) {
   const leadId = s(row.lead_id)
   const nome = s(row.emp_nome) || s(row.lead_nome)
   const [pagamentos, setPagamentos] = useState<PagamentoRow[]>([])
   const [loading, setLoading] = useState(true)
-  const [comp, setComp] = useState('')
+  const [comp, setComp] = useState(compInicial || '')
   const [valorPg, setValorPg] = useState(row.valor_honorario != null ? String(row.valor_honorario) : '')
   const [pagoEm, setPagoEm] = useState('')
   const [saving, setSaving] = useState(false)

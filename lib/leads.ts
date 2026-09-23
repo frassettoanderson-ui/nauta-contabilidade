@@ -2,7 +2,7 @@ import pool from './db'
 import { asaasConfigurado, sincronizarLead } from './asaas'
 import { isContratoPronto } from './contratos'
 import { emitCrmChange } from './realtime'
-import { calcStatusFinanceiro } from './financeiro-calc'
+import { calcStatusFinanceiro, vencimentoAjustado } from './financeiro-calc'
 
 export type Lead = {
   id?: string
@@ -340,11 +340,18 @@ export async function listFinanceiro(empresaId: string) {
     const aReceberMes = faturaEsteMes ? Number(r.valor_honorario || 0) : 0
     const pagoMes = Number(pagoMesByLead[r.lead_id] || 0)
     const emAbertoMes = Math.max(0, aReceberMes - pagoMes)
+    // Vencimento do MÊS VIGENTE (para o Faturamento, que resume o mês atual). Fica
+    // coerente com A receber/Pago/Em aberto — diferente do proximo_vencimento, que
+    // aponta o próximo mês em aberto (usado na Cobrança).
+    const vencimentoMes = faturaEsteMes && venc
+      ? vencimentoAjustado(venc.getDate(), cy, cm - 1)
+      : venc
     return {
       ...r,
       financeiro_status: calc.status,
       meses_atraso: calc.mesesAtraso,
       proximo_vencimento: calc.proximoVencimento ? calc.proximoVencimento.toISOString().slice(0, 10) : null,
+      vencimento_mes: vencimentoMes ? vencimentoMes.toISOString().slice(0, 10) : null,
       prazo_prometido: prazoByLead[r.lead_id] ?? null,
       a_receber_mes: aReceberMes,
       pago_mes: pagoMes,

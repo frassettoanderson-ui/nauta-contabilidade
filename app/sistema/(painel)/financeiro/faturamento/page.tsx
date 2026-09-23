@@ -90,7 +90,7 @@ export default function FaturamentoPage() {
     switch (key) {
       case 'empresa': return (s(r.emp_nome) || s(r.lead_nome)).toLowerCase()
       case 'responsavel': return s(r.responsavel).toLowerCase()
-      case 'vencimento': return s(r.proximo_vencimento)
+      case 'vencimento': return s(r.vencimento_mes ?? r.proximo_vencimento)
       case 'receber': return Number(r.a_receber_mes ?? 0)
       case 'pago': return Number(r.pago_mes ?? 0)
       case 'aberto': return Number(r.em_aberto_mes ?? 0)
@@ -185,7 +185,7 @@ export default function FaturamentoPage() {
                   title="Ver / registrar pagamento">
                   <td className="px-4 py-3 font-semibold text-white">{s(r.emp_nome) || s(r.lead_nome) || '—'}</td>
                   <td className="px-4 py-3 text-gray-300">{s(r.responsavel) || '—'}</td>
-                  <td className="px-4 py-3 text-gray-400">{dataBR(r.proximo_vencimento)}</td>
+                  <td className="px-4 py-3 text-gray-400">{dataBR(r.vencimento_mes ?? r.proximo_vencimento)}</td>
                   <td className="px-4 py-3 text-right text-gray-300 tabular-nums">{brl(r.a_receber_mes)}</td>
                   <td className="px-4 py-3 text-right tabular-nums" style={{ color: Number(r.pago_mes) > 0 ? '#22c55e' : '#6b7280' }}>{brl(r.pago_mes)}</td>
                   <td className="px-4 py-3 text-right tabular-nums font-bold" style={{ color: Number(r.em_aberto_mes) > 0 ? '#f87171' : '#22c55e' }}>{brl(r.em_aberto_mes)}</td>

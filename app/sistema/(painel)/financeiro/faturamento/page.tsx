@@ -170,7 +170,7 @@ export default function FaturamentoPage() {
       {/* Resumo do mês vigente */}
       <div className="flex flex-wrap gap-3 mb-6">
         <Card icon={Wallet} label="A receber no mês" valor={brl(tot.receber)} sub="honorários do mês" />
-        <Card icon={CheckCircle2} label="Recebido no mês" valor={brl(tot.pago)} cor="#22c55e" sub="pagamentos confirmados" />
+        <Card icon={CheckCircle2} label="Recebido no mês" valor={brl(tot.pago)} cor="#22c55e" sub="recebidos no mês (inclui atrasados)" />
         <Card icon={CircleDollarSign} label="Em aberto no mês" valor={brl(tot.aberto)} cor={tot.aberto > 0 ? '#f87171' : '#22c55e'} sub="ainda a receber" />
       </div>
 

@@ -2,24 +2,28 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
 import { effectivePerms, podeVer } from '@/lib/menu-perms'
 import { getOnboardingStatus, getComercialStatus } from '@/lib/api'
-import { getSomAtivo, getTema, onPrefsChange } from '@/lib/sys-prefs'
+import { getSomAtivo } from '@/lib/sys-prefs'
 import RocketIcon from './RocketIcon'
 import {
   Users, UserPlus, Search, FileText, FilePlus, FileClock, FileSearch,
   Briefcase, LayoutGrid, Inbox, BarChart3, TrendingUp, Calculator, UserCog, Building2,
   Rocket, Settings, DollarSign, LayoutDashboard, MessageCircle,
   ArrowDownCircle, ArrowUpCircle, Repeat, CalendarCheck, Target, UserX, Percent, AlertTriangle, Receipt,
-  RefreshCw, LogOut, ChevronDown, Menu, X, type LucideIcon,
+  RefreshCw, LogOut, ChevronDown, Menu, X, Home, User, HelpCircle, Power, type LucideIcon,
 } from 'lucide-react'
 
 // GestorOA/Obrigô: entra logado via SSO (handoff usa a sessão atual da Nauta).
 // Mesmo domínio, servido em /gestoroa atrás do nginx.
 const GESTOROA_URL = '/api/sso/gestoroa'
+
+// Identidade Atuan/Obrigô no menu: marinho + laranja.
+const MARINHO = '#0E2240'
+const LARANJA = '#F47920'
+const BORDA = 'rgba(255,255,255,0.08)'
 
 interface NavLeaf { label: string; href: string; icon: LucideIcon; highlight?: boolean; external?: boolean }
 interface NavGroup { label: string; icon: LucideIcon; children: NavLeaf[]; highlight?: boolean }
@@ -72,8 +76,19 @@ function isGroup(i: NavItem): i is NavGroup {
   return (i as NavGroup).children !== undefined
 }
 
+// Logo/wordmark provisório da Atuan (troca pela logo oficial quando o arquivo chegar).
+function LogoAtuan() {
+  return (
+    <span className="leading-none select-none">
+      <span className="block text-xl font-black text-white tracking-tight">Atuan</span>
+      <span className="block text-[9px] font-bold uppercase tracking-[0.28em]" style={{ color: LARANJA }}>Contabilidade</span>
+    </span>
+  )
+}
+
 export default function Sidebar({ email }: { email?: string | null }) {
   const pathname = usePathname()
+  const router = useRouter()
   const { data: session } = useSession()
   const su = session?.user as unknown as { role?: string; menuPerms?: string[] | null } | undefined
   const perms = effectivePerms(su?.role ?? '', su?.menuPerms ?? null)
@@ -92,7 +107,6 @@ export default function Sidebar({ email }: { email?: string | null }) {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [onbNovos, setOnbNovos] = useState(false)
   const [comNovos, setComNovos] = useState(false)
-  const [temaLight, setTemaLight] = useState(false)
   const [openGroups, setOpenGroups] = useState<string[]>(
     NAV.filter(isGroup).filter(g => g.children.some(c => pathname.startsWith(c.href))).map(g => g.label)
   )
@@ -101,14 +115,6 @@ export default function Sidebar({ email }: { email?: string | null }) {
     getOnboardingStatus().then(s => setOnbNovos(!!s.temNovos)).catch(() => {})
     getComercialStatus().then(s => setComNovos(!!s.temNovos)).catch(() => {})
   }, [pathname])
-
-  useEffect(() => {
-    const sync = () => setTemaLight(getTema() === 'light')
-    sync()
-    return onPrefsChange(sync)
-  }, [])
-
-  const logoSrc = temaLight ? '/logo.png' : '/logo-branca.png'
 
   // Som de clique curto via Web Audio (sem asset)
   const playClick = () => {
@@ -133,13 +139,35 @@ export default function Sidebar({ email }: { email?: string | null }) {
     setOpenGroups(g => g.includes(label) ? g.filter(x => x !== label) : [...g, label])
   }
 
-  const itemBase = 'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-150 hover:translate-x-[3px] hover:bg-white/[0.04]'
+  const sair = async () => { await signOut({ redirect: false }); window.location.href = '/sistema/login' }
+  const irPara = (href: string) => { playClick(); setMobileOpen(false); router.push(href) }
+
+  const itemBase = 'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-150 hover:translate-x-[3px] hover:bg-white/[0.05]'
+  const ativoStyle = { background: 'rgba(244,121,32,0.14)', color: LARANJA, border: '1px solid rgba(244,121,32,0.30)' }
+  const inativoStyle = { background: 'transparent', color: '#c3cad8', border: '1px solid transparent' }
+
+  // Botões de atalho do topo (ações ainda serão refinadas pelo usuário)
+  const QuickBtn = ({ color, title, onClick, children }: { color: string; title: string; onClick: () => void; children: React.ReactNode }) => (
+    <button onClick={() => { playClick(); onClick() }} title={title}
+      className="h-10 rounded-xl flex items-center justify-center text-white transition-all hover:brightness-110 active:scale-95"
+      style={{ background: color }}>
+      {children}
+    </button>
+  )
 
   const content = (
     <div className="flex flex-col h-full">
-      <div className="flex items-center justify-between px-5 h-16 border-b border-white/8 shrink-0">
-        <Link href="/sistema"><Image src={logoSrc} alt="Nauta" width={130} height={40} className="h-8 w-auto object-contain" /></Link>
+      <div className="flex items-center justify-between px-5 h-16 shrink-0" style={{ borderBottom: `1px solid ${BORDA}` }}>
+        <Link href="/sistema" onClick={() => setMobileOpen(false)}><LogoAtuan /></Link>
         <button onClick={() => setMobileOpen(false)} className="lg:hidden p-1 text-gray-400" aria-label="Fechar menu"><X size={20} /></button>
+      </div>
+
+      {/* Botões de atalho (topo) — estilo Obrigô */}
+      <div className="grid grid-cols-4 gap-2 px-3 pt-3 pb-1 shrink-0">
+        <QuickBtn color="#22c55e" title="Início" onClick={() => irPara('/sistema')}><Home size={18} /></QuickBtn>
+        <QuickBtn color={LARANJA} title="Configurações" onClick={() => irPara('/sistema/configuracoes')}><User size={18} /></QuickBtn>
+        <QuickBtn color="#fbbf24" title="Ajuda (em breve)" onClick={() => alert('Central de ajuda: em breve')}><HelpCircle size={18} /></QuickBtn>
+        <QuickBtn color="#ef4444" title="Sair" onClick={sair}><Power size={18} /></QuickBtn>
       </div>
 
       <nav className="flex-1 overflow-y-auto p-3 space-y-1">
@@ -149,19 +177,19 @@ export default function Sidebar({ email }: { email?: string | null }) {
             const activeChild = item.children.some(c => pathname === c.href)
             return (
               <div key={item.label}>
-                <button onClick={() => toggleGroup(item.label)} className={`${itemBase} w-full justify-between`} style={{ color: activeChild ? 'var(--sys-accent)' : '#9ca3af' }}>
+                <button onClick={() => toggleGroup(item.label)} className={`${itemBase} w-full justify-between`} style={{ color: activeChild ? LARANJA : '#c3cad8' }}>
                   <span className="flex items-center gap-3"><item.icon size={17} /> {item.label}
                     {item.label === 'Comercial' && comNovos && <span className="onb-badge">Novo</span>}
                   </span>
                   <ChevronDown size={14} className={`transition-transform ${open ? 'rotate-180' : ''}`} />
                 </button>
                 {open && (
-                  <div className="mt-1 ml-3 pl-3 space-y-1 border-l border-white/8">
+                  <div className="mt-1 ml-3 pl-3 space-y-1" style={{ borderLeft: `1px solid ${BORDA}` }}>
                     {item.children.map(c => {
                       const active = pathname === c.href
                       return (
-                        <Link key={c.href} href={c.href} onClick={() => setMobileOpen(false)} className={itemBase}
-                          style={{ background: active ? 'color-mix(in srgb, var(--sys-accent) 12%, transparent)' : 'transparent', color: active ? 'var(--sys-accent)' : '#9ca3af', border: active ? '1px solid color-mix(in srgb, var(--sys-accent) 22%, transparent)' : '1px solid transparent' }}>
+                        <Link key={c.href} href={c.href} onClick={() => { playClick(); setMobileOpen(false) }} className={itemBase}
+                          style={active ? ativoStyle : inativoStyle}>
                           <c.icon size={16} /> {c.label}
                         </Link>
                       )
@@ -175,9 +203,9 @@ export default function Sidebar({ email }: { email?: string | null }) {
           if (item.external) {
             return (
               <a key={item.href} href={item.href} target="_blank" rel="noopener noreferrer" onClick={() => { playClick(); setMobileOpen(false) }} className={`${itemBase} justify-between`}
-                style={{ color: '#9ca3af' }}>
+                style={{ color: '#c3cad8' }}>
                 <span className="flex items-center gap-3"><item.icon size={17} /> {item.label}</span>
-                <span className="text-[10px] uppercase tracking-wide text-gray-600">abrir</span>
+                <span className="text-[10px] uppercase tracking-wide" style={{ color: LARANJA }}>abrir</span>
               </a>
             )
           }
@@ -194,19 +222,19 @@ export default function Sidebar({ email }: { email?: string | null }) {
           }
           return (
             <Link key={item.href} href={item.href} onClick={() => { playClick(); setMobileOpen(false) }} className={itemBase}
-              style={{ background: active ? 'color-mix(in srgb, var(--sys-accent) 12%, transparent)' : 'transparent', color: active ? 'var(--sys-accent)' : '#9ca3af', border: active ? '1px solid color-mix(in srgb, var(--sys-accent) 22%, transparent)' : '1px solid transparent' }}>
+              style={active ? ativoStyle : inativoStyle}>
               <item.icon size={17} /> {item.label}
             </Link>
           )
         })}
       </nav>
 
-      <div className="p-3 border-t border-white/8 shrink-0">
+      <div className="p-3 shrink-0" style={{ borderTop: `1px solid ${BORDA}` }}>
         <div className="px-3 py-2 mb-1">
-          <p className="text-[10px] uppercase tracking-wider text-gray-600 font-bold">Conectado</p>
+          <p className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">Conectado</p>
           <p className="text-xs text-gray-400 truncate">{email ?? '—'}</p>
         </div>
-        <button onClick={async () => { await signOut({ redirect: false }); window.location.href = '/sistema/login' }} className={`${itemBase} w-full text-gray-500 hover:text-red-400`}>
+        <button onClick={sair} className={`${itemBase} w-full text-gray-400 hover:text-red-400`}>
           <LogOut size={16} /> Sair
         </button>
       </div>
@@ -215,19 +243,19 @@ export default function Sidebar({ email }: { email?: string | null }) {
 
   return (
     <>
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-30 flex items-center justify-between px-4 h-14 bg-[var(--sys-sidebar)] border-b border-white/8">
-        <Image src={logoSrc} alt="Nauta" width={120} height={36} className="h-7 w-auto object-contain" />
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-30 flex items-center justify-between px-4 h-14" style={{ background: MARINHO, borderBottom: `1px solid ${BORDA}` }}>
+        <LogoAtuan />
         <button onClick={() => setMobileOpen(true)} className="p-2 text-gray-300" aria-label="Abrir menu"><Menu size={22} /></button>
       </div>
 
-      <aside className="hidden lg:flex fixed top-0 left-0 bottom-0 w-64 z-30 flex-col" style={{ background: 'var(--sys-sidebar)', borderRight: '1px solid var(--sys-border)' }}>
+      <aside className="hidden lg:flex fixed top-0 left-0 bottom-0 w-64 z-30 flex-col" style={{ background: MARINHO, borderRight: `2px solid ${LARANJA}` }}>
         {content}
       </aside>
 
       {mobileOpen && (
         <div className="lg:hidden fixed inset-0 z-40">
           <div className="absolute inset-0 bg-black/60" onClick={() => setMobileOpen(false)} />
-          <div className="absolute top-0 left-0 bottom-0 w-72" style={{ background: 'var(--sys-sidebar)', borderRight: '1px solid var(--sys-border)' }}>
+          <div className="absolute top-0 left-0 bottom-0 w-72" style={{ background: MARINHO, borderRight: `2px solid ${LARANJA}` }}>
             {content}
           </div>
         </div>

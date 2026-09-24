@@ -5,9 +5,8 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
 import { effectivePerms, podeVer } from '@/lib/menu-perms'
-import { getOnboardingStatus, getComercialStatus } from '@/lib/api'
+import { getComercialStatus } from '@/lib/api'
 import { getSomAtivo } from '@/lib/sys-prefs'
-import RocketIcon from './RocketIcon'
 import {
   Users, UserPlus, Search, FileText, FilePlus, FileClock, FileSearch,
   Briefcase, LayoutGrid, Inbox, BarChart3, TrendingUp, Calculator, UserCog, Building2,
@@ -38,7 +37,7 @@ interface NavGroup { label: string; icon: LucideIcon; children: NavLeaf[]; highl
 type NavItem = NavLeaf | NavGroup
 
 const NAV: NavItem[] = [
-  { label: 'Onboarding', href: '/sistema/onboarding', icon: Rocket, highlight: true },
+  { label: 'Onboarding', href: '/sistema/onboarding', icon: Rocket },
   { label: 'Dashboard',  href: '/sistema', icon: LayoutDashboard },
   { label: 'Clientes', icon: Users, children: [
     { label: 'Cadastrar', href: '/sistema/clientes/cadastrar', icon: UserPlus },
@@ -63,7 +62,7 @@ const NAV: NavItem[] = [
   ] },
   { label: 'Fiscal',     href: '/sistema/fiscal',     icon: Calculator },
   { label: 'Pessoal',    href: '/sistema/pessoal',    icon: Users },
-  { label: 'GestorOA',   href: GESTOROA_URL, icon: CalendarCheck, external: true },
+  { label: 'Obrigô',     href: GESTOROA_URL, icon: CalendarCheck, external: true },
   { label: 'Financeiro', icon: DollarSign, children: [
     { label: 'Faturamento',    href: '/sistema/financeiro/faturamento',    icon: DollarSign },
     { label: 'Cobrança',       href: '/sistema/financeiro/cobranca',       icon: AlertTriangle },
@@ -110,7 +109,6 @@ export default function Sidebar({ email }: { email?: string | null }) {
     .filter((i): i is NavItem => i !== null)
 
   const [mobileOpen, setMobileOpen] = useState(false)
-  const [onbNovos, setOnbNovos] = useState(false)
   const [comNovos, setComNovos] = useState(false)
   const [openGroups, setOpenGroups] = useState<string[]>(
     NAV.filter(isGroup).filter(g => g.children.some(c => pathname.startsWith(c.href))).map(g => g.label)
@@ -122,7 +120,6 @@ export default function Sidebar({ email }: { email?: string | null }) {
   const cancelarFecharFly = () => { if (flyTimer.current) clearTimeout(flyTimer.current) }
 
   useEffect(() => {
-    getOnboardingStatus().then(s => setOnbNovos(!!s.temNovos)).catch(() => {})
     getComercialStatus().then(s => setComNovos(!!s.temNovos)).catch(() => {})
   }, [pathname])
 
@@ -232,17 +229,6 @@ export default function Sidebar({ email }: { email?: string | null }) {
                   <span className="flex-1">{item.label}</span>
                   <span className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--m-acc)' }}>abrir</span>
                 </a>
-              </div>
-            )
-          }
-          if (item.highlight) {
-            return (
-              <div key={item.href} className={divisoria}>
-                <Link href={item.href} onClick={() => { playClick(); setMobileOpen(false) }} className={`${itemCls} nav-onboarding`}>
-                  <RocketIcon size={20} className="nav-onboarding-icon" />
-                  <span className="flex-1 nav-onboarding-text">{item.label}</span>
-                  {onbNovos && <span className="onb-badge">Novo</span>}
-                </Link>
               </div>
             )
           }

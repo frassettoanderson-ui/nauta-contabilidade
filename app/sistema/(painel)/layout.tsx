@@ -43,7 +43,7 @@ export default function PainelLayout({ children }: { children: React.ReactNode }
       <ProfileButton />
       <ChatButton />
       {/* Conteúdo: deslocado pela sidebar no desktop; topbar no mobile */}
-      <div className="lg:pl-56 pt-14 lg:pt-0">
+      <div className="sys-content pt-14 lg:pt-0">
         {children}
       </div>
       {mustChange && <ForcePasswordChange />}

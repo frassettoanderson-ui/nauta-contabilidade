@@ -3,6 +3,12 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Deslocamento do conteúdo conforme a sidebar (expandida x recolhida) — desktop */
+@media (min-width: 1024px) {
+  .sys-content { padding-left: 14rem; transition: padding-left .2s ease; }
+  html[data-menu-collapsed="1"] .sys-content { padding-left: 4rem; }
+}
+
 :root {
   --primary:       #3D3B8E;
   --primary-dark:  #272561;

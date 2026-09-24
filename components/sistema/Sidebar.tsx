@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
@@ -13,7 +13,7 @@ import {
   Briefcase, LayoutGrid, Inbox, BarChart3, TrendingUp, Calculator, UserCog, Building2,
   Rocket, Settings, DollarSign, LayoutDashboard, MessageCircle,
   ArrowDownCircle, ArrowUpCircle, Repeat, CalendarCheck, Target, UserX, Percent, AlertTriangle, Receipt,
-  RefreshCw, LogOut, ChevronDown, Menu, X, Home, User, HelpCircle, Power, type LucideIcon,
+  RefreshCw, LogOut, ChevronDown, ChevronRight, Menu, X, Home, User, HelpCircle, Power, type LucideIcon,
 } from 'lucide-react'
 
 // GestorOA/Obrigô: entra logado via SSO (handoff usa a sessão atual da Nauta).
@@ -24,6 +24,7 @@ const GESTOROA_URL = '/api/sso/gestoroa'
 const MARINHO = '#0E2240'
 const LARANJA = '#F47920'
 const BORDA = 'rgba(255,255,255,0.08)'
+const SIDEBAR_W = 256 // w-64
 
 interface NavLeaf { label: string; href: string; icon: LucideIcon; highlight?: boolean; external?: boolean }
 interface NavGroup { label: string; icon: LucideIcon; children: NavLeaf[]; highlight?: boolean }
@@ -110,6 +111,12 @@ export default function Sidebar({ email }: { email?: string | null }) {
   const [openGroups, setOpenGroups] = useState<string[]>(
     NAV.filter(isGroup).filter(g => g.children.some(c => pathname.startsWith(c.href))).map(g => g.label)
   )
+  // Flyout do desktop: grupo abre para o lado (estilo Obrigô), posicionado por `top`.
+  const [fly, setFly] = useState<{ label: string; top: number } | null>(null)
+  const flyTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const abrirFly = (label: string, top: number) => { if (flyTimer.current) clearTimeout(flyTimer.current); setFly({ label, top }) }
+  const fecharFly = () => { if (flyTimer.current) clearTimeout(flyTimer.current); flyTimer.current = setTimeout(() => setFly(null), 250) }
+  const cancelarFecharFly = () => { if (flyTimer.current) clearTimeout(flyTimer.current) }
 
   useEffect(() => {
     getOnboardingStatus().then(s => setOnbNovos(!!s.temNovos)).catch(() => {})
@@ -155,7 +162,16 @@ export default function Sidebar({ email }: { email?: string | null }) {
     </button>
   )
 
-  const content = (
+  const SubLink = ({ c }: { c: NavLeaf }) => {
+    const active = pathname === c.href
+    return (
+      <Link href={c.href} onClick={() => { playClick(); setFly(null); setMobileOpen(false) }} className={itemBase} style={active ? ativoStyle : inativoStyle}>
+        <c.icon size={16} /> {c.label}
+      </Link>
+    )
+  }
+
+  const renderContent = (flyout: boolean) => (
     <div className="flex flex-col h-full">
       <div className="flex items-center justify-between px-5 h-16 shrink-0" style={{ borderBottom: `1px solid ${BORDA}` }}>
         <Link href="/sistema" onClick={() => setMobileOpen(false)}><LogoAtuan /></Link>
@@ -173,8 +189,24 @@ export default function Sidebar({ email }: { email?: string | null }) {
       <nav className="flex-1 overflow-y-auto p-3 space-y-1">
         {nav.map(item => {
           if (isGroup(item)) {
-            const open = openGroups.includes(item.label)
             const activeChild = item.children.some(c => pathname === c.href)
+            // ── Desktop: flyout para o lado ──
+            if (flyout) {
+              return (
+                <div key={item.label}
+                  onMouseEnter={e => abrirFly(item.label, (e.currentTarget as HTMLElement).getBoundingClientRect().top)}
+                  onMouseLeave={fecharFly}>
+                  <button className={`${itemBase} w-full justify-between`} style={{ color: activeChild || fly?.label === item.label ? LARANJA : '#c3cad8' }}>
+                    <span className="flex items-center gap-3"><item.icon size={17} /> {item.label}
+                      {item.label === 'Comercial' && comNovos && <span className="onb-badge">Novo</span>}
+                    </span>
+                    <ChevronRight size={14} />
+                  </button>
+                </div>
+              )
+            }
+            // ── Mobile: acordeão para baixo ──
+            const open = openGroups.includes(item.label)
             return (
               <div key={item.label}>
                 <button onClick={() => toggleGroup(item.label)} className={`${itemBase} w-full justify-between`} style={{ color: activeChild ? LARANJA : '#c3cad8' }}>
@@ -185,15 +217,7 @@ export default function Sidebar({ email }: { email?: string | null }) {
                 </button>
                 {open && (
                   <div className="mt-1 ml-3 pl-3 space-y-1" style={{ borderLeft: `1px solid ${BORDA}` }}>
-                    {item.children.map(c => {
-                      const active = pathname === c.href
-                      return (
-                        <Link key={c.href} href={c.href} onClick={() => { playClick(); setMobileOpen(false) }} className={itemBase}
-                          style={active ? ativoStyle : inativoStyle}>
-                          <c.icon size={16} /> {c.label}
-                        </Link>
-                      )
-                    })}
+                    {item.children.map(c => <SubLink key={c.href} c={c} />)}
                   </div>
                 )}
               </div>
@@ -241,6 +265,9 @@ export default function Sidebar({ email }: { email?: string | null }) {
     </div>
   )
 
+  // Painel flyout (desktop): renderizado fixo, ao lado da sidebar, na altura do item.
+  const grpFly = fly ? (nav.find(i => isGroup(i) && i.label === fly.label) as NavGroup | undefined) : undefined
+
   return (
     <>
       <div className="lg:hidden fixed top-0 left-0 right-0 z-30 flex items-center justify-between px-4 h-14" style={{ background: MARINHO, borderBottom: `1px solid ${BORDA}` }}>
@@ -249,14 +276,26 @@ export default function Sidebar({ email }: { email?: string | null }) {
       </div>
 
       <aside className="hidden lg:flex fixed top-0 left-0 bottom-0 w-64 z-30 flex-col" style={{ background: MARINHO, borderRight: `2px solid ${LARANJA}` }}>
-        {content}
+        {renderContent(true)}
       </aside>
+
+      {/* Flyout do grupo (desktop) */}
+      {grpFly && fly && (
+        <div className="hidden lg:block fixed z-40 min-w-[240px] max-h-[75vh] overflow-y-auto rounded-xl p-2 shadow-2xl"
+          style={{ left: SIDEBAR_W + 2, top: Math.max(8, fly.top), background: MARINHO, border: `1px solid ${BORDA}` }}
+          onMouseEnter={cancelarFecharFly} onMouseLeave={fecharFly}>
+          <p className="px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide" style={{ color: LARANJA }}>{grpFly.label}</p>
+          <div className="space-y-1">
+            {grpFly.children.map(c => <SubLink key={c.href} c={c} />)}
+          </div>
+        </div>
+      )}
 
       {mobileOpen && (
         <div className="lg:hidden fixed inset-0 z-40">
           <div className="absolute inset-0 bg-black/60" onClick={() => setMobileOpen(false)} />
           <div className="absolute top-0 left-0 bottom-0 w-72" style={{ background: MARINHO, borderRight: `2px solid ${LARANJA}` }}>
-            {content}
+            {renderContent(false)}
           </div>
         </div>
       )}

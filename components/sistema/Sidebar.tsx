@@ -13,18 +13,25 @@ import {
   Briefcase, LayoutGrid, Inbox, BarChart3, TrendingUp, Calculator, UserCog, Building2,
   Rocket, Settings, DollarSign, LayoutDashboard, MessageCircle,
   ArrowDownCircle, ArrowUpCircle, Repeat, CalendarCheck, Target, UserX, Percent, AlertTriangle, Receipt,
-  RefreshCw, LogOut, ChevronDown, ChevronRight, Menu, X, Home, User, HelpCircle, Power, type LucideIcon,
+  RefreshCw, ChevronRight, Menu, X, Home, User, HelpCircle, Power, type LucideIcon,
 } from 'lucide-react'
 
-// GestorOA/Obrigô: entra logado via SSO (handoff usa a sessão atual da Nauta).
-// Mesmo domínio, servido em /gestoroa atrás do nginx.
 const GESTOROA_URL = '/api/sso/gestoroa'
 
-// Identidade Atuan/Obrigô no menu: marinho + laranja.
-const MARINHO = '#0E2240'
-const LARANJA = '#F47920'
-const BORDA = 'rgba(255,255,255,0.08)'
-const SIDEBAR_W = 256 // w-64
+// Paleta EXATA do menu do Obrigô (estilo "marinho" — gestor-oa/web/src/index.css)
+const MVARS = {
+  '--m-sbg': '#0e2240',
+  '--m-bg': '#13294b',
+  '--m-bd': '#1f3a5f',
+  '--m-fg': '#aebed6',
+  '--m-ic': '#7e93b5',
+  '--m-hv': '#173052',
+  '--m-abg': '#16335a',
+  '--m-afg': '#f89244',
+  '--m-acc': '#f47920',
+  '--m-title': '#ffffff',
+  fontFamily: "'Poppins', system-ui, sans-serif",
+} as unknown as React.CSSProperties
 
 interface NavLeaf { label: string; href: string; icon: LucideIcon; highlight?: boolean; external?: boolean }
 interface NavGroup { label: string; icon: LucideIcon; children: NavLeaf[]; highlight?: boolean }
@@ -73,16 +80,14 @@ const NAV: NavItem[] = [
   ] },
 ]
 
-function isGroup(i: NavItem): i is NavGroup {
-  return (i as NavGroup).children !== undefined
-}
+function isGroup(i: NavItem): i is NavGroup { return (i as NavGroup).children !== undefined }
 
 // Logo/wordmark provisório da Atuan (troca pela logo oficial quando o arquivo chegar).
 function LogoAtuan() {
   return (
-    <span className="leading-none select-none">
-      <span className="block text-xl font-black text-white tracking-tight">Atuan</span>
-      <span className="block text-[9px] font-bold uppercase tracking-[0.28em]" style={{ color: LARANJA }}>Contabilidade</span>
+    <span className="leading-none select-none text-center">
+      <span className="block text-2xl font-extrabold text-white tracking-tight">Atuan</span>
+      <span className="block text-[10px] font-bold uppercase tracking-[0.3em]" style={{ color: 'var(--m-acc)' }}>Contabilidade</span>
     </span>
   )
 }
@@ -94,7 +99,6 @@ export default function Sidebar({ email }: { email?: string | null }) {
   const su = session?.user as unknown as { role?: string; menuPerms?: string[] | null } | undefined
   const perms = effectivePerms(su?.role ?? '', su?.menuPerms ?? null)
 
-  // Filtra o menu pelas permissões do usuário (grupos somem se nenhum filho for visível)
   const nav: NavItem[] = NAV
     .map(item => {
       if (isGroup(item)) {
@@ -111,11 +115,10 @@ export default function Sidebar({ email }: { email?: string | null }) {
   const [openGroups, setOpenGroups] = useState<string[]>(
     NAV.filter(isGroup).filter(g => g.children.some(c => pathname.startsWith(c.href))).map(g => g.label)
   )
-  // Flyout do desktop: grupo abre para o lado (estilo Obrigô), posicionado por `top`.
   const [fly, setFly] = useState<{ label: string; top: number } | null>(null)
   const flyTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const abrirFly = (label: string, top: number) => { if (flyTimer.current) clearTimeout(flyTimer.current); setFly({ label, top }) }
-  const fecharFly = () => { if (flyTimer.current) clearTimeout(flyTimer.current); flyTimer.current = setTimeout(() => setFly(null), 250) }
+  const fecharFly = () => { if (flyTimer.current) clearTimeout(flyTimer.current); flyTimer.current = setTimeout(() => setFly(null), 300) }
   const cancelarFecharFly = () => { if (flyTimer.current) clearTimeout(flyTimer.current) }
 
   useEffect(() => {
@@ -123,178 +126,169 @@ export default function Sidebar({ email }: { email?: string | null }) {
     getComercialStatus().then(s => setComNovos(!!s.temNovos)).catch(() => {})
   }, [pathname])
 
-  // Som de clique curto via Web Audio (sem asset)
   const playClick = () => {
     if (!getSomAtivo()) return
     try {
       const AC = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
-      const ctx = new AC()
-      const o = ctx.createOscillator()
-      const g = ctx.createGain()
-      o.connect(g); g.connect(ctx.destination)
-      o.type = 'sine'; o.frequency.value = 620
+      const ctx = new AC(); const o = ctx.createOscillator(); const g = ctx.createGain()
+      o.connect(g); g.connect(ctx.destination); o.type = 'sine'; o.frequency.value = 620
       g.gain.setValueAtTime(0.0001, ctx.currentTime)
       g.gain.exponentialRampToValueAtTime(0.13, ctx.currentTime + 0.005)
       g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.11)
-      o.start(); o.stop(ctx.currentTime + 0.12)
-      o.onended = () => ctx.close()
-    } catch { /* navegador sem suporte: ignora */ }
+      o.start(); o.stop(ctx.currentTime + 0.12); o.onended = () => ctx.close()
+    } catch { /* ignora */ }
   }
 
-  const toggleGroup = (label: string) => {
-    playClick()
-    setOpenGroups(g => g.includes(label) ? g.filter(x => x !== label) : [...g, label])
-  }
-
+  const toggleGroup = (label: string) => { playClick(); setOpenGroups(g => g.includes(label) ? g.filter(x => x !== label) : [...g, label]) }
   const sair = async () => { await signOut({ redirect: false }); window.location.href = '/sistema/login' }
   const irPara = (href: string) => { playClick(); setMobileOpen(false); router.push(href) }
 
-  const itemBase = 'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-150 hover:translate-x-[3px] hover:bg-white/[0.05]'
-  const ativoStyle = { background: 'rgba(244,121,32,0.14)', color: LARANJA, border: '1px solid rgba(244,121,32,0.30)' }
-  const inativoStyle = { background: 'transparent', color: '#c3cad8', border: '1px solid transparent' }
+  // ── Classes idênticas ao MenuLista do Obrigô ──
+  const itemCls = 'flex w-full items-center gap-3 rounded px-3 py-2.5 text-left transition'
+  const leafCls = (active: boolean) => `${itemCls} border-l-[3px] ${active
+    ? 'border-[color:var(--m-acc)] bg-[var(--m-abg)] font-medium text-[color:var(--m-afg)]'
+    : 'border-transparent text-[color:var(--m-fg)] hover:bg-[var(--m-hv)] hover:text-[color:var(--m-afg)]'}`
+  const grpCls = (on: boolean) => `${itemCls} ${on
+    ? 'bg-[var(--m-abg)] text-[color:var(--m-afg)]'
+    : 'text-[color:var(--m-fg)] hover:bg-[var(--m-hv)] hover:text-[color:var(--m-afg)]'}`
 
-  // Botões de atalho do topo (ações ainda serão refinadas pelo usuário)
-  const QuickBtn = ({ color, title, onClick, children }: { color: string; title: string; onClick: () => void; children: React.ReactNode }) => (
-    <button onClick={() => { playClick(); onClick() }} title={title}
-      className="h-10 rounded-xl flex items-center justify-center text-white transition-all hover:brightness-110 active:scale-95"
-      style={{ background: color }}>
-      {children}
-    </button>
-  )
-
-  const SubLink = ({ c }: { c: NavLeaf }) => {
+  const Leaf = ({ c }: { c: NavLeaf }) => {
     const active = pathname === c.href
     return (
-      <Link href={c.href} onClick={() => { playClick(); setFly(null); setMobileOpen(false) }} className={itemBase} style={active ? ativoStyle : inativoStyle}>
-        <c.icon size={16} /> {c.label}
+      <Link href={c.href} onClick={() => { playClick(); setFly(null); setMobileOpen(false) }} className={leafCls(active)}>
+        <c.icon size={20} className={active ? 'text-[color:var(--m-afg)]' : 'text-[color:var(--m-ic)]'} />
+        <span className="flex-1">{c.label}</span>
       </Link>
     )
   }
 
+  const QuickBtn = ({ color, title, onClick, children }: { color: string; title: string; onClick: () => void; children: React.ReactNode }) => (
+    <button onClick={() => { playClick(); onClick() }} title={title}
+      className="grid h-10 w-full place-items-center rounded-lg text-white transition hover:opacity-90 active:scale-95" style={{ background: color }}>
+      {children}
+    </button>
+  )
+
   const renderContent = (flyout: boolean) => (
     <div className="flex flex-col h-full">
-      <div className="flex items-center justify-between px-5 h-16 shrink-0" style={{ borderBottom: `1px solid ${BORDA}` }}>
+      {/* Logo */}
+      <div className="flex items-center justify-between px-4 py-3 shrink-0">
         <Link href="/sistema" onClick={() => setMobileOpen(false)}><LogoAtuan /></Link>
-        <button onClick={() => setMobileOpen(false)} className="lg:hidden p-1 text-gray-400" aria-label="Fechar menu"><X size={20} /></button>
+        <button onClick={() => setMobileOpen(false)} className="lg:hidden p-1 text-[color:var(--m-ic)]" aria-label="Fechar menu"><X size={20} /></button>
       </div>
 
-      {/* Botões de atalho (topo) — estilo Obrigô */}
-      <div className="grid grid-cols-4 gap-2 px-3 pt-3 pb-1 shrink-0">
-        <QuickBtn color="#22c55e" title="Início" onClick={() => irPara('/sistema')}><Home size={18} /></QuickBtn>
-        <QuickBtn color={LARANJA} title="Configurações" onClick={() => irPara('/sistema/configuracoes')}><User size={18} /></QuickBtn>
-        <QuickBtn color="#fbbf24" title="Ajuda (em breve)" onClick={() => alert('Central de ajuda: em breve')}><HelpCircle size={18} /></QuickBtn>
-        <QuickBtn color="#ef4444" title="Sair" onClick={sair}><Power size={18} /></QuickBtn>
+      {/* Botões de atalho */}
+      <div className="grid grid-cols-4 gap-1 px-3 pb-2 shrink-0">
+        <QuickBtn color="#88b87f" title="Início" onClick={() => irPara('/sistema')}><Home size={18} /></QuickBtn>
+        <QuickBtn color="#f47920" title="Configurações" onClick={() => irPara('/sistema/configuracoes')}><User size={18} /></QuickBtn>
+        <QuickBtn color="#ffb752" title="Ajuda (em breve)" onClick={() => alert('Central de ajuda: em breve')}><HelpCircle size={18} /></QuickBtn>
+        <QuickBtn color="#d15b47" title="Sair" onClick={sair}><Power size={18} /></QuickBtn>
       </div>
 
-      <nav className="flex-1 overflow-y-auto p-3 space-y-1">
+      {/* Menu */}
+      <nav className="flex-1 overflow-y-auto px-1.5 pb-2 text-[16px]">
         {nav.map(item => {
+          const divisoria = 'border-b border-[color:var(--m-bd)] last:border-0'
+
           if (isGroup(item)) {
             const activeChild = item.children.some(c => pathname === c.href)
-            // ── Desktop: flyout para o lado ──
             if (flyout) {
+              const on = activeChild || fly?.label === item.label
               return (
-                <div key={item.label}
+                <div key={item.label} className={divisoria}
                   onMouseEnter={e => abrirFly(item.label, (e.currentTarget as HTMLElement).getBoundingClientRect().top)}
                   onMouseLeave={fecharFly}>
-                  <button className={`${itemBase} w-full justify-between`} style={{ color: activeChild || fly?.label === item.label ? LARANJA : '#c3cad8' }}>
-                    <span className="flex items-center gap-3"><item.icon size={17} /> {item.label}
-                      {item.label === 'Comercial' && comNovos && <span className="onb-badge">Novo</span>}
+                  <button className={grpCls(on)}>
+                    <item.icon size={20} className={on ? 'text-[color:var(--m-afg)]' : 'text-[color:var(--m-ic)]'} />
+                    <span className="flex-1">{item.label}
+                      {item.label === 'Comercial' && comNovos && <span className="onb-badge ml-2">Novo</span>}
                     </span>
-                    <ChevronRight size={14} />
+                    <ChevronRight size={15} className="text-[color:var(--m-ic)]" />
                   </button>
                 </div>
               )
             }
-            // ── Mobile: acordeão para baixo ──
             const open = openGroups.includes(item.label)
             return (
-              <div key={item.label}>
-                <button onClick={() => toggleGroup(item.label)} className={`${itemBase} w-full justify-between`} style={{ color: activeChild ? LARANJA : '#c3cad8' }}>
-                  <span className="flex items-center gap-3"><item.icon size={17} /> {item.label}
-                    {item.label === 'Comercial' && comNovos && <span className="onb-badge">Novo</span>}
+              <div key={item.label} className={divisoria}>
+                <button onClick={() => toggleGroup(item.label)} className={grpCls(activeChild)}>
+                  <item.icon size={20} className={activeChild ? 'text-[color:var(--m-afg)]' : 'text-[color:var(--m-ic)]'} />
+                  <span className="flex-1">{item.label}
+                    {item.label === 'Comercial' && comNovos && <span className="onb-badge ml-2">Novo</span>}
                   </span>
-                  <ChevronDown size={14} className={`transition-transform ${open ? 'rotate-180' : ''}`} />
+                  <ChevronRight size={15} className={`text-[color:var(--m-ic)] transition-transform ${open ? 'rotate-90' : ''}`} />
                 </button>
-                {open && (
-                  <div className="mt-1 ml-3 pl-3 space-y-1" style={{ borderLeft: `1px solid ${BORDA}` }}>
-                    {item.children.map(c => <SubLink key={c.href} c={c} />)}
-                  </div>
-                )}
+                {open && <div className="pb-1">{item.children.map(c => <Leaf key={c.href} c={c} />)}</div>}
               </div>
             )
           }
+
           const active = pathname === item.href
           if (item.external) {
             return (
-              <a key={item.href} href={item.href} target="_blank" rel="noopener noreferrer" onClick={() => { playClick(); setMobileOpen(false) }} className={`${itemBase} justify-between`}
-                style={{ color: '#c3cad8' }}>
-                <span className="flex items-center gap-3"><item.icon size={17} /> {item.label}</span>
-                <span className="text-[10px] uppercase tracking-wide" style={{ color: LARANJA }}>abrir</span>
-              </a>
+              <div key={item.href} className={divisoria}>
+                <a href={item.href} target="_blank" rel="noopener noreferrer" onClick={() => { playClick(); setMobileOpen(false) }} className={grpCls(false)}>
+                  <item.icon size={20} className="text-[color:var(--m-ic)]" />
+                  <span className="flex-1">{item.label}</span>
+                  <span className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--m-acc)' }}>abrir</span>
+                </a>
+              </div>
             )
           }
           if (item.highlight) {
             return (
-              <Link key={item.href} href={item.href} onClick={() => { playClick(); setMobileOpen(false) }}
-                className={`${itemBase} nav-onboarding justify-between mb-2`}>
-                <span className="flex items-center gap-3 nav-onboarding-text">
-                  <RocketIcon size={19} className="nav-onboarding-icon" /> {item.label}
+              <div key={item.href} className={divisoria}>
+                <Link href={item.href} onClick={() => { playClick(); setMobileOpen(false) }} className={`${itemCls} nav-onboarding`}>
+                  <RocketIcon size={20} className="nav-onboarding-icon" />
+                  <span className="flex-1 nav-onboarding-text">{item.label}</span>
                   {onbNovos && <span className="onb-badge">Novo</span>}
-                </span>
-              </Link>
+                </Link>
+              </div>
             )
           }
           return (
-            <Link key={item.href} href={item.href} onClick={() => { playClick(); setMobileOpen(false) }} className={itemBase}
-              style={active ? ativoStyle : inativoStyle}>
-              <item.icon size={17} /> {item.label}
-            </Link>
+            <div key={item.href} className={divisoria}><Leaf c={item} /></div>
           )
         })}
       </nav>
 
-      <div className="p-3 shrink-0" style={{ borderTop: `1px solid ${BORDA}` }}>
-        <div className="px-3 py-2 mb-1">
-          <p className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">Conectado</p>
-          <p className="text-xs text-gray-400 truncate">{email ?? '—'}</p>
-        </div>
-        <button onClick={sair} className={`${itemBase} w-full text-gray-400 hover:text-red-400`}>
-          <LogOut size={16} /> Sair
-        </button>
+      {/* Rodapé */}
+      <div className="px-3 py-2 shrink-0 border-t border-[color:var(--m-bd)]">
+        <p className="text-[10px] uppercase tracking-wider font-bold" style={{ color: 'var(--m-ic)' }}>Conectado</p>
+        <p className="text-xs truncate" style={{ color: 'var(--m-fg)' }}>{email ?? '—'}</p>
       </div>
     </div>
   )
 
-  // Painel flyout (desktop): renderizado fixo, ao lado da sidebar, na altura do item.
   const grpFly = fly ? (nav.find(i => isGroup(i) && i.label === fly.label) as NavGroup | undefined) : undefined
 
   return (
     <>
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-30 flex items-center justify-between px-4 h-14" style={{ background: MARINHO, borderBottom: `1px solid ${BORDA}` }}>
+      {/* Topbar mobile */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-30 flex items-center justify-between px-4 h-14" style={{ ...MVARS, background: 'var(--m-sbg)', borderBottom: '1px solid var(--m-bd)' }}>
         <LogoAtuan />
-        <button onClick={() => setMobileOpen(true)} className="p-2 text-gray-300" aria-label="Abrir menu"><Menu size={22} /></button>
+        <button onClick={() => setMobileOpen(true)} className="p-2 text-[color:var(--m-ic)]" aria-label="Abrir menu"><Menu size={22} /></button>
       </div>
 
-      <aside className="hidden lg:flex fixed top-0 left-0 bottom-0 w-64 z-30 flex-col" style={{ background: MARINHO, borderRight: `2px solid ${LARANJA}` }}>
+      {/* Sidebar desktop */}
+      <aside className="hidden lg:flex fixed top-0 left-0 bottom-0 w-56 z-30 flex-col" style={{ ...MVARS, background: 'var(--m-sbg)', borderRight: '2px solid var(--m-acc)' }}>
         {renderContent(true)}
       </aside>
 
       {/* Flyout do grupo (desktop) */}
       {grpFly && fly && (
-        <div className="hidden lg:block fixed z-40 min-w-[240px] max-h-[75vh] overflow-y-auto rounded-xl p-2 shadow-2xl"
-          style={{ left: SIDEBAR_W + 2, top: Math.max(8, fly.top), background: MARINHO, border: `1px solid ${BORDA}` }}
+        <div className="hidden lg:block fixed z-40 min-w-[240px] max-h-[75vh] overflow-y-auto rounded-md p-1 pl-2 shadow-xl text-[16px]"
+          style={{ ...MVARS, left: 226, top: Math.max(8, fly.top), background: 'var(--m-bg)', border: '1px solid var(--m-bd)' }}
           onMouseEnter={cancelarFecharFly} onMouseLeave={fecharFly}>
-          <p className="px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide" style={{ color: LARANJA }}>{grpFly.label}</p>
-          <div className="space-y-1">
-            {grpFly.children.map(c => <SubLink key={c.href} c={c} />)}
-          </div>
+          {grpFly.children.map(c => <Leaf key={c.href} c={c} />)}
         </div>
       )}
 
+      {/* Drawer mobile */}
       {mobileOpen && (
         <div className="lg:hidden fixed inset-0 z-40">
           <div className="absolute inset-0 bg-black/60" onClick={() => setMobileOpen(false)} />
-          <div className="absolute top-0 left-0 bottom-0 w-72" style={{ background: MARINHO, borderRight: `2px solid ${LARANJA}` }}>
+          <div className="absolute top-0 left-0 bottom-0 w-72" style={{ ...MVARS, background: 'var(--m-sbg)', borderRight: '2px solid var(--m-acc)' }}>
             {renderContent(false)}
           </div>
         </div>

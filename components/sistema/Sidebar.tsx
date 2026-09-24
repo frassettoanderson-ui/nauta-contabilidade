@@ -247,6 +247,10 @@ export default function Sidebar({ email }: { email?: string | null }) {
   )
 
   const grpFly = fly ? (nav.find(i => isGroup(i) && i.label === fly.label) as NavGroup | undefined) : undefined
+  // Impede o flyout de vazar pela parte de baixo da tela (sobe o necessário para caber).
+  const estFlyH = grpFly ? grpFly.children.length * 46 + 16 : 0
+  const vh = typeof window !== 'undefined' ? window.innerHeight : 800
+  const flyTop = fly ? Math.max(8, Math.min(fly.top, vh - estFlyH - 8)) : 8
 
   return (
     <>
@@ -264,7 +268,7 @@ export default function Sidebar({ email }: { email?: string | null }) {
       {/* Flyout do grupo (desktop) */}
       {grpFly && fly && (
         <div className="hidden lg:block fixed z-40 min-w-[240px] max-h-[75vh] overflow-y-auto rounded-md p-1 pl-2 shadow-xl text-[16px]"
-          style={{ ...MVARS, left: 226, top: Math.max(8, fly.top), background: 'var(--m-bg)', border: '1px solid var(--m-bd)' }}
+          style={{ ...MVARS, left: 226, top: flyTop, background: 'var(--m-bg)', border: '1px solid var(--m-bd)' }}
           onMouseEnter={cancelarFecharFly} onMouseLeave={fecharFly}>
           {grpFly.children.map(c => <Leaf key={c.href} c={c} />)}
         </div>

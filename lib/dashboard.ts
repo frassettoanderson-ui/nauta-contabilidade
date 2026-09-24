@@ -85,13 +85,14 @@ export async function getDashboard(empresaId: string): Promise<DashboardData> {
   }
 
   const now = new Date()
-  // 12 meses: 10 anteriores + atual + seguinte (o painel mostra o esperado do próximo mês)
+  // 12 meses: 8 anteriores + atual + 3 seguintes (mostra o esperado dos próximos 3 meses)
   const months: { key: string; label: string }[] = []
-  for (let i = 10; i >= -1; i--) {
+  for (let i = 8; i >= -3; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
     months.push({ key: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`, label: MES[d.getMonth()] })
   }
-  const mesAtualIdx = months.length - 2
+  const chaveAtual = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+  const mesAtualIdx = months.findIndex(m => m.key === chaveAtual)
 
   const recebidoSerie: number[] = []
   const aReceberSerie: number[] = []

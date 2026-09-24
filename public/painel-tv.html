@@ -303,7 +303,9 @@ function drawChart(){
   svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
   const iw=W-padL-padR, ih=H-padT-padB;
   const max=Math.max(...esp,...real,1)*1.12;
-  const slot=iw/n, bw=slot*.56;
+  const slot=iw/n;
+  // Duas barras por mês, lado a lado: Realizado (esquerda) × Esperado (direita)
+  const gap=slot*.06, bwG=Math.max(6,(slot*.58-gap)/2);
   const x=i=> padL + i*slot + slot*.5;
   const y=v=> padT + ih - (v/max)*ih;
   const base=padT+ih, cur=(Number.isInteger(D.mesAtualIdx) ? D.mesAtualIdx : n-1);
@@ -312,16 +314,19 @@ function drawChart(){
     s+=`<line class="${g?'gridline':'axis'}" x1="${padL}" y1="${yy}" x2="${W-padR}" y2="${yy}"/>`;
     s+=`<text class="ylab" x="${padL-12}" y="${yy+4}" text-anchor="end">${val<1?Math.round(val*10)/10:Math.round(val)}k</text>`; }
   for(let i=0;i<n;i++){
-    const cx=x(i), x0=cx-bw/2;
-    if(esp[i]>0){
-      s+=`<path d="${barTop(x0,y(esp[i]),bw,base-y(esp[i]),8)}" fill="${i===cur?'url(#gcur)':'rgba(99,120,255,.20)'}"/>`;
-      if(!(real[i]>0) || (y(esp[i]) < y(real[i])-18))
-        s+=`<text class="barval esp" x="${cx}" y="${y(esp[i])-9}">${short(esp[i])}</text>`;
-    }
+    const cx=x(i);
+    const xr=cx-bwG-gap/2;   // realizado à esquerda
+    const xe=cx+gap/2;       // esperado à direita
+    // Realizado (verde)
     if(real[i]>0){
-      s+=`<path d="${barTop(x0,y(real[i]),bw,base-y(real[i]),8)}" fill="url(#gbar)">`;
+      s+=`<path d="${barTop(xr,y(real[i]),bwG,base-y(real[i]),6)}" fill="url(#gbar)">`;
       if(i===cur) s+=`<animate attributeName="opacity" values="1;.6;1" dur="2.2s" repeatCount="indefinite"/>`;
-      s+=`</path><text class="barval" x="${cx}" y="${y(real[i])-9}">${short(real[i])}</text>`;
+      s+=`</path><text class="barval" x="${xr+bwG/2}" y="${y(real[i])-7}">${short(real[i])}</text>`;
+    }
+    // Esperado (roxo/marinho translúcido; mês atual em destaque)
+    if(esp[i]>0){
+      s+=`<path d="${barTop(xe,y(esp[i]),bwG,base-y(esp[i]),6)}" fill="${i===cur?'url(#gcur)':'rgba(99,120,255,.38)'}"/>`;
+      s+=`<text class="barval esp" x="${xe+bwG/2}" y="${y(esp[i])-7}">${short(esp[i])}</text>`;
     }
     s+=`<text class="xlab" x="${cx}" y="${H-8}" text-anchor="middle" ${i===cur?'style="fill:#fff;font-weight:700"':''}>${String(labels[i]||'').toUpperCase()}</text>`;
   }

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useLayoutEffect, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
@@ -136,6 +136,21 @@ function leafHrefs(itens: NavItem[]): string[] {
   return itens.flatMap(i => (isGroup(i) ? leafHrefs(i.children) : [i.href]))
 }
 
+// Quanto um painel precisa subir para não passar da borda inferior da janela (mede o
+// painel real depois de renderizado; 0 quando cabe).
+function useSobeSePassar(ref: React.RefObject<HTMLElement>, dep: unknown): number {
+  const [dy, setDy] = useState(0)
+  useLayoutEffect(() => {
+    setDy(0)
+    const el = ref.current
+    if (!el) return
+    const r = el.getBoundingClientRect()
+    const sobra = r.bottom - (window.innerHeight - 8)
+    if (sobra > 0) setDy(-Math.min(sobra, Math.max(0, r.top - 8)))
+  }, [ref, dep])
+  return dy
+}
+
 export default function Sidebar({ email }: { email?: string | null }) {
   const pathname = usePathname()
   const router = useRouter()
@@ -218,6 +233,19 @@ export default function Sidebar({ email }: { email?: string | null }) {
     )
   }
 
+  // Painel de subgrupo: à direita do item (left-full), subindo o necessário para caber na tela
+  const SubPainel = ({ children, onEnter, onLeave }: { children: React.ReactNode; onEnter: () => void; onLeave: () => void }) => {
+    const ref = useRef<HTMLDivElement>(null)
+    const dy = useSobeSePassar(ref, null)
+    return (
+      <div ref={ref} className="absolute left-full z-50 min-w-60 rounded-md p-1 pl-2 shadow-xl"
+        style={{ top: dy, background: 'var(--m-bg)', border: '1px solid var(--m-bd)' }}
+        onMouseEnter={onEnter} onMouseLeave={onLeave}>
+        {children}
+      </div>
+    )
+  }
+
   // Lista dentro de um flyout: subgrupos abrem outro painel à direita ao passar o mouse
   // (mesma mecânica do MenuLista do Obrigô: painel absoluto left-full top-0).
   const FlyLista = ({ itens }: { itens: NavItem[] }) => {
@@ -232,23 +260,34 @@ export default function Sidebar({ email }: { email?: string | null }) {
             const on = aberto === item.label || grupoAtivo(item)
             return (
               <div key={item.label} className="relative" onMouseEnter={() => abrir(item.label)} onMouseLeave={agendarFechar}>
-                <button className={grpCls(on, false)}>
+                <button className={`${grpCls(on, false)} whitespace-nowrap`}>
                   <item.icon size={20} className={on ? 'text-[color:var(--m-afg)]' : 'text-[color:var(--m-ic)]'} />
                   <span className="flex-1">{item.label}</span>
                   <ChevronRight size={15} className="text-[color:var(--m-ic)]" />
                 </button>
                 {aberto === item.label && (
-                  <div className="absolute left-full top-0 z-50 min-w-60 rounded-md p-1 pl-2 shadow-xl"
-                    style={{ background: 'var(--m-bg)', border: '1px solid var(--m-bd)' }}
-                    onMouseEnter={() => abrir(item.label)} onMouseLeave={agendarFechar}>
+                  <SubPainel onEnter={() => abrir(item.label)} onLeave={agendarFechar}>
                     <FlyLista itens={item.children} />
-                  </div>
+                  </SubPainel>
                 )}
               </div>
             )
           }
-          return <Leaf key={item.href} c={item} col={false} />
+          return <div key={item.href} className="whitespace-nowrap"><Leaf c={item} col={false} /></div>
         })}
+      </div>
+    )
+  }
+
+  // Flyout principal (fixo, à direita da sidebar): mede e sobe se passar da tela
+  const FlyPrincipal = ({ grupo, top, left }: { grupo: NavGroup; top: number; left: number }) => {
+    const ref = useRef<HTMLDivElement>(null)
+    const dy = useSobeSePassar(ref, grupo.label)
+    return (
+      <div ref={ref} className="hidden lg:block fixed z-40 min-w-[240px] rounded-md p-1 pl-2 shadow-xl text-[16px]"
+        style={{ ...MVARS, left, top: top + dy, background: 'var(--m-bg)', border: '1px solid var(--m-bd)' }}
+        onMouseEnter={cancelarFecharFly} onMouseLeave={fecharFly}>
+        <FlyLista itens={grupo.children} />
       </div>
     )
   }
@@ -359,9 +398,7 @@ export default function Sidebar({ email }: { email?: string | null }) {
   }
 
   const grpFly = fly ? (nav.find(i => isGroup(i) && i.label === fly.label) as NavGroup | undefined) : undefined
-  const estFlyH = grpFly ? grpFly.children.length * 46 + 16 : 0
-  const vh = typeof window !== 'undefined' ? window.innerHeight : 800
-  const flyTop = fly ? Math.max(8, Math.min(fly.top, vh - estFlyH - 8)) : 8
+  const flyTop = fly ? Math.max(8, fly.top) : 8
   const flyLeft = (recolhido ? 64 : 224) + 2
 
   return (
@@ -378,13 +415,7 @@ export default function Sidebar({ email }: { email?: string | null }) {
       </aside>
 
       {/* Flyout do grupo (desktop); subgrupos abrem mais um painel à direita */}
-      {grpFly && fly && (
-        <div className="hidden lg:block fixed z-40 min-w-[240px] rounded-md p-1 pl-2 shadow-xl text-[16px]"
-          style={{ ...MVARS, left: flyLeft, top: flyTop, background: 'var(--m-bg)', border: '1px solid var(--m-bd)' }}
-          onMouseEnter={cancelarFecharFly} onMouseLeave={fecharFly}>
-          <FlyLista itens={grpFly.children} />
-        </div>
-      )}
+      {grpFly && fly && <FlyPrincipal key={grpFly.label} grupo={grpFly} top={flyTop} left={flyLeft} />}
 
       {/* Drawer mobile */}
       {mobileOpen && (

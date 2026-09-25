@@ -41,8 +41,9 @@ const NAV: NavItem[] = [
   { label: 'Onboarding', href: '/sistema/onboarding', icon: Rocket },
   { label: 'Dashboard',  href: '/sistema', icon: LayoutDashboard },
   { label: 'Clientes', icon: Users, children: [
-    { label: 'Cadastrar', href: '/sistema/clientes/cadastrar', icon: UserPlus },
-    { label: 'Consultar', href: '/sistema/clientes/consultar', icon: Search },
+    // Cadastro único = o do Obrigô (abre logado via SSO). As telas antigas do ERP ficam como fallback.
+    { label: 'Cadastrar', href: `${GESTOROA_URL}?next=/empresas/nova`, icon: UserPlus, external: true },
+    { label: 'Consultar', href: `${GESTOROA_URL}?next=/empresas`, icon: Search, external: true },
     { label: 'Atualizar clientes', href: '/sistema/clientes/atualizar', icon: RefreshCw },
     { label: 'Inativos',  href: '/sistema/clientes/inativos',  icon: UserX },
   ] },

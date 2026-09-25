@@ -8,8 +8,11 @@ import { signSsoToken } from '@/lib/sso'
 // o endpoint de SSO do Obrigô, que grava a sessão e devolve o usuário já logado.
 export const dynamic = 'force-dynamic'
 
-export async function GET() {
+export async function GET(req: Request) {
   const session = await getServerSession(authOptions)
+  // ?next=/empresas/nova → abre essa tela do Obrigô já logado (só caminho relativo simples)
+  const nextRaw = new URL(req.url).searchParams.get('next') ?? ''
+  const next = /^\/[A-Za-z0-9\-_/]*(\?[A-Za-z0-9\-_=&%]*)?$/.test(nextRaw) ? nextRaw : ''
   const user = session?.user as { email?: string; name?: string; role?: string } | undefined
 
   // Sem sessão: manda para o login da Nauta e volta para cá depois de autenticar.
@@ -36,6 +39,7 @@ export async function GET() {
 <body onload="document.forms[0].submit()" style="font-family:system-ui,sans-serif;background:#0E2240;color:#fff;display:grid;place-items:center;height:100vh;margin:0">
   <form method="POST" action="${action}">
     <input type="hidden" name="token" value="${token}">
+    <input type="hidden" name="next" value="${next}">
     <noscript><button type="submit" style="padding:12px 20px;font-size:16px">Continuar para o Obrigô</button></noscript>
   </form>
   <p style="opacity:.8">Entrando no Obrigô…</p>

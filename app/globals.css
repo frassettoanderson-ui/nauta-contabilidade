@@ -22,6 +22,17 @@
      O painel sobrescreve --sys-accent inline pela cor da empresa ativa. */
   --sys-accent:    #F47920;
   --sys-accent-2:  #D9650F;
+  /* Marca Obrigô (canais RGB) — usada pelas classes marca-* do módulo Obrigô (index.css do gestor-oa) */
+  --marca-50: 254 243 234;
+  --marca-100: 253 230 211;
+  --marca-200: 251 205 166;
+  --marca-300: 248 176 122;
+  --marca-400: 245 148 66;
+  --marca-500: 244 121 32;
+  --marca-600: 217 101 15;
+  --marca-700: 181 82 14;
+  --marca-800: 143 66 16;
+  --marca-900: 116 55 16;
 }
 
 /* ═══════════════════════════════════════════
@@ -54,21 +65,24 @@
 /* Conteúdo com zoom 120% (Layout.tsx do Obrigô: <main style={{ zoom: 1.2 }}>) */
 .sys-zoom { zoom: 1.2; }
 
-/* Remapeia as classes de tema escuro fixadas nas telas → escala slate do Obrigô */
-.sys-theme .text-white    { color: #1e293b !important; }
-.sys-theme .text-gray-100,
-.sys-theme .text-gray-200 { color: #1e293b !important; }
-.sys-theme .text-gray-300 { color: #334155 !important; }
-.sys-theme .text-gray-400 { color: #475569 !important; }
-.sys-theme .text-gray-500 { color: #64748b !important; }
-.sys-theme .text-gray-600 { color: #94a3b8 !important; }
-.sys-theme .text-gray-700 { color: #94a3b8 !important; }
-.sys-theme .placeholder-gray-500::placeholder,
-.sys-theme .placeholder-gray-600::placeholder { color: #94a3b8 !important; }
-.sys-theme [class*="border-white"] { border-color: #e2e8f0 !important; }
-.sys-theme [class^="bg-white/"], .sys-theme [class*=" bg-white/"] { background-color: #f1f5f9 !important; }
-.sys-theme [class*="hover:bg-white/"]:hover { background-color: #f1f5f9 !important; }
-.sys-theme [class*="bg-black/"] { background-color: rgba(0,0,0,0.4) !important; } /* backdrops: bg-black/40 do Obrigô */
+/* Remapeia as classes de tema escuro fixadas nas telas antigas da Nauta → escala slate do Obrigô.
+   O módulo Obrigô (.obrigo-app) já é claro nativo: fica FORA do remapeamento (:not). */
+.sys-theme .text-white:not(.obrigo-app *)    { color: #1e293b !important; }
+.sys-theme .text-gray-100:not(.obrigo-app *),
+.sys-theme .text-gray-200:not(.obrigo-app *) { color: #1e293b !important; }
+.sys-theme .text-gray-300:not(.obrigo-app *) { color: #334155 !important; }
+.sys-theme .text-gray-400:not(.obrigo-app *) { color: #475569 !important; }
+.sys-theme .text-gray-500:not(.obrigo-app *) { color: #64748b !important; }
+.sys-theme .text-gray-600:not(.obrigo-app *) { color: #94a3b8 !important; }
+.sys-theme .text-gray-700:not(.obrigo-app *) { color: #94a3b8 !important; }
+.sys-theme .placeholder-gray-500:not(.obrigo-app *)::placeholder,
+.sys-theme .placeholder-gray-600:not(.obrigo-app *)::placeholder { color: #94a3b8 !important; }
+.sys-theme [class*="border-white"]:not(.obrigo-app *) { border-color: #e2e8f0 !important; }
+.sys-theme [class^="bg-white/"]:not(.obrigo-app *), .sys-theme [class*=" bg-white/"]:not(.obrigo-app *) { background-color: #f1f5f9 !important; }
+.sys-theme [class*="hover:bg-white/"]:not(.obrigo-app *):hover { background-color: #f1f5f9 !important; }
+.sys-theme [class*="bg-black/"]:not(.obrigo-app *) { background-color: rgba(0,0,0,0.4) !important; } /* backdrops: bg-black/40 do Obrigô */
+/* Módulo Obrigô: body do index.css (bg-fundo text-slate-800 antialiased) */
+.obrigo-app { color: #1e293b; -webkit-font-smoothing: antialiased; }
 
 /* Componentes do Obrigô (@layer components do index.css) */
 .sys-theme .card { border-radius: 0.5rem; border: 1px solid #e2e8f0; background: #ffffff; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); }
@@ -103,7 +117,7 @@
 }
 
 /* Foco e scrollbar: no sistema, iguais ao Obrigô (padrão do navegador) */
-.sys-theme *:focus-visible { outline: 2px solid #F47920; outline-offset: 2px; }
+.sys-theme *:focus-visible:not(.obrigo-app *) { outline: 2px solid #F47920; outline-offset: 2px; }
 .sys-theme ::-webkit-scrollbar       { width: 10px; }
 .sys-theme ::-webkit-scrollbar-track { background: #f1f5f9; }
 .sys-theme ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 5px; }

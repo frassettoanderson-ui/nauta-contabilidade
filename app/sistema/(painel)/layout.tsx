@@ -31,14 +31,19 @@ export default function PainelLayout({ children }: { children: React.ReactNode }
 
   const mustChange = (session.user as unknown as { mustChangePassword?: boolean })?.mustChangePassword
 
+  // O módulo Obrigô (/sistema/obrigo/*) tem router próprio: não remontar a cada troca de
+  // tela interna (a animação por rota é feita lá dentro).
+  const animKey = pathname.startsWith('/sistema/obrigo') ? '/sistema/obrigo' : pathname
+
   return (
-    <div className="sys-theme min-h-screen" style={{ background: 'var(--sys-bg)' }}>
+    <div className="sys-theme h-screen overflow-hidden" style={{ background: 'var(--sys-bg)' }}>
       <Sidebar email={session.user?.email} />
-      {/* Conteúdo: deslocado pela sidebar no desktop; topbar mobile do menu no celular */}
-      <div className="sys-content pt-14 lg:pt-0 min-h-screen flex flex-col">
+      {/* Conteúdo: deslocado pela sidebar no desktop; topbar mobile do menu no celular.
+          Coluna de altura fixa com rolagem no conteúdo (como o <main> do Obrigô). */}
+      <div className="sys-content pt-14 lg:pt-0 h-screen flex flex-col">
         <Topbar />
-        <div className="sys-zoom flex-1">
-          <div key={pathname} className="page-anim">
+        <div className="sys-zoom flex-1 overflow-y-auto">
+          <div key={animKey} className="page-anim h-full">
             {children}
           </div>
         </div>

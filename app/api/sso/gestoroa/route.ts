@@ -14,10 +14,14 @@ export async function GET(req: Request) {
   const nextRaw = new URL(req.url).searchParams.get('next') ?? ''
   const next = /^\/[A-Za-z0-9\-_/]*(\?[A-Za-z0-9\-_=&%]*)?$/.test(nextRaw) ? nextRaw : ''
   const user = session?.user as { email?: string; name?: string; role?: string } | undefined
+  // ?json=1 → usado pelo módulo Obrigô embutido em /sistema/obrigo: devolve o token para o
+  // próprio navegador apresentar à API do Obrigô via fetch (sem página intermediária).
+  const modoJson = new URL(req.url).searchParams.get('json') === '1'
 
   // Sem sessão: manda para o login da Nauta e volta para cá depois de autenticar.
   // Location relativo: resolve no domínio do navegador (atrás do proxy, req.url vê localhost:3000).
   if (!user?.email) {
+    if (modoJson) return NextResponse.json({ error: 'nao autenticado' }, { status: 401 })
     return new NextResponse(null, {
       status: 307,
       headers: { Location: '/sistema/login?callbackUrl=%2Fapi%2Fsso%2Fgestoroa' },
@@ -32,6 +36,10 @@ export async function GET(req: Request) {
   const base = (process.env.GESTOROA_BASE_URL || '/gestoroa').replace(/\/$/, '')
   const token = signSsoToken({ email: user.email, nome: user.name, role: user.role }, secret)
   const action = `${base}/api/v1/auth/sso`
+
+  if (modoJson) {
+    return NextResponse.json({ token, action }, { headers: { 'cache-control': 'no-store' } })
+  }
 
   // Página mínima que submete o token via POST (token fora da URL, não vaza em logs).
   const html = `<!doctype html>

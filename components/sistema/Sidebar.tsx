@@ -13,10 +13,13 @@ import {
   Briefcase, LayoutGrid, Inbox, BarChart3, TrendingUp, Calculator, UserCog, Building2,
   Rocket, Settings, DollarSign, LayoutDashboard, MessageCircle,
   ArrowDownCircle, ArrowUpCircle, Repeat, CalendarCheck, Target, UserX, Percent, AlertTriangle, Receipt,
-  RefreshCw, ChevronRight, ChevronLeft, Menu, X, Home, User, HelpCircle, Power, type LucideIcon,
+  RefreshCw, ChevronRight, ChevronLeft, Menu, X, Home, User, HelpCircle, Power,
+  Globe, List, Heart, CheckCircle, Folder, MessageSquare, UploadCloud, Tags, Bot, Download, HardDrive,
+  Smartphone, Star, ClipboardList, type LucideIcon,
 } from 'lucide-react'
 
-const GESTOROA_URL = '/api/sso/gestoroa'
+// Módulo Obrigô embutido (app/sistema/(painel)/obrigo/[[...slug]])
+const OB = '/sistema/obrigo'
 
 // Paleta EXATA do menu do Obrigô (estilo "marinho" — gestor-oa/web/src/index.css)
 const MVARS = {
@@ -34,16 +37,16 @@ const MVARS = {
 } as unknown as React.CSSProperties
 
 interface NavLeaf { label: string; href: string; icon: LucideIcon; external?: boolean }
-interface NavGroup { label: string; icon: LucideIcon; children: NavLeaf[] }
+interface NavGroup { label: string; icon: LucideIcon; children: NavItem[] }
 type NavItem = NavLeaf | NavGroup
 
 const NAV: NavItem[] = [
   { label: 'Onboarding', href: '/sistema/onboarding', icon: Rocket },
   { label: 'Dashboard',  href: '/sistema', icon: LayoutDashboard },
   { label: 'Clientes', icon: Users, children: [
-    // Cadastro único = o do Obrigô (abre logado via SSO). As telas antigas do ERP ficam como fallback.
-    { label: 'Cadastrar', href: `${GESTOROA_URL}?next=/empresas/nova`, icon: UserPlus, external: true },
-    { label: 'Consultar', href: `${GESTOROA_URL}?next=/empresas`, icon: Search, external: true },
+    // Cadastro único = o do Obrigô (tela embutida). As telas antigas do ERP ficam como fallback.
+    { label: 'Cadastrar', href: `${OB}/empresas/nova`, icon: UserPlus },
+    { label: 'Consultar', href: `${OB}/empresas`, icon: Search },
     { label: 'Atualizar clientes', href: '/sistema/clientes/atualizar', icon: RefreshCw },
     { label: 'Inativos',  href: '/sistema/clientes/inativos',  icon: UserX },
   ] },
@@ -64,7 +67,40 @@ const NAV: NavItem[] = [
   ] },
   { label: 'Fiscal',     href: '/sistema/fiscal',     icon: Calculator },
   { label: 'Pessoal',    href: '/sistema/pessoal',    icon: Users },
-  { label: 'Obrigô',     href: GESTOROA_URL, icon: CalendarCheck, external: true },
+  // Menu do Obrigô, igual ao do app separado (gestor-oa/web/src/components/Layout.tsx),
+  // menos "Dados do meu perfil" (fica na barra de cima) e "Trocar estilo" (estilo único).
+  { label: 'Obrigô', icon: CalendarCheck, children: [
+    { label: 'Sistema', icon: Globe, children: [
+      { label: 'Usuarios e Permissoes', icon: Users, href: `${OB}/usuarios` },
+      { label: 'Departamentos', icon: Tags, href: `${OB}/cadastros` },
+      { label: 'Configuracoes gerais', icon: Settings, href: `${OB}/configuracoes` },
+      { label: 'e-Continuo', icon: Bot, children: [
+        { label: 'Configurar obrigacoes', icon: Settings, href: `${OB}/robo/assinaturas` },
+        { label: 'Conectar Google Drive', icon: HardDrive, href: `${OB}/robo/drive` },
+        { label: 'Envio manual', icon: UploadCloud, href: `${OB}/robo/envio` },
+        { label: 'Revisao', icon: ClipboardList, href: `${OB}/robo/revisao` },
+      ] },
+      { label: 'Aplicativo e Area VIP', icon: MessageSquare, children: [
+        { label: 'Area VIP e App', icon: Smartphone, href: `${OB}/area-vip/app` },
+        { label: 'Comunicados', icon: MessageSquare, href: `${OB}/area-vip/comunicados` },
+        { label: 'Avaliacao NPS', icon: Star, href: `${OB}/area-vip/nps` },
+        { label: 'Avaliacao das Solicitacoes', icon: Star, href: `${OB}/area-vip/avaliacoes` },
+        { label: 'Usuarios do APP', icon: Users, href: `${OB}/area-vip/usuarios-app` },
+      ] },
+    ] },
+    { label: 'Obrigacoes', icon: List, href: `${OB}/obrigacoes` },
+    { label: 'Empresas', icon: Heart, href: `${OB}/empresas` },
+    { label: 'Lista de Entregas', icon: CheckCircle, href: `${OB}/entregas` },
+    { label: 'Relatorios', icon: Folder, children: [
+      { label: 'Insights com filtros', icon: TrendingUp, href: `${OB}/insights` },
+      { label: 'Indicadores (Dashboard)', icon: TrendingUp, href: `${OB}/dashboard/indicadores` },
+      { label: 'Paineis (Dashboard)', icon: TrendingUp, href: `${OB}/dashboard/paineis` },
+      { label: 'Estatisticas semanais', icon: ClipboardList, href: `${OB}/relatorios/semanais` },
+      { label: 'Estatisticas mensais', icon: ClipboardList, href: `${OB}/relatorios/mensais` },
+      { label: 'Responsaveis Dptos', icon: Users, href: `${OB}/relatorios/responsaveis` },
+      { label: 'Exportar e-mails p/ CSV', icon: Download, href: `${OB}/relatorios/exportar-emails` },
+    ] },
+  ] },
   { label: 'Financeiro', icon: DollarSign, children: [
     { label: 'Faturamento',    href: '/sistema/financeiro/faturamento',    icon: DollarSign },
     { label: 'Cobrança',       href: '/sistema/financeiro/cobranca',       icon: AlertTriangle },
@@ -83,6 +119,23 @@ const NAV: NavItem[] = [
 
 function isGroup(i: NavItem): i is NavGroup { return (i as NavGroup).children !== undefined }
 
+// Filtra recursivamente pelo que o usuário pode ver (grupos sem filhos somem)
+function filtrar(itens: NavItem[], perms: string[] | null): NavItem[] {
+  return itens
+    .map(item => {
+      if (isGroup(item)) {
+        const children = filtrar(item.children, perms)
+        return children.length ? { ...item, children } : null
+      }
+      return (item.external || podeVer(perms, item.href)) ? item : null
+    })
+    .filter((i): i is NavItem => i !== null)
+}
+
+function leafHrefs(itens: NavItem[]): string[] {
+  return itens.flatMap(i => (isGroup(i) ? leafHrefs(i.children) : [i.href]))
+}
+
 export default function Sidebar({ email }: { email?: string | null }) {
   const pathname = usePathname()
   const router = useRouter()
@@ -90,20 +143,19 @@ export default function Sidebar({ email }: { email?: string | null }) {
   const su = session?.user as unknown as { role?: string; menuPerms?: string[] | null } | undefined
   const perms = effectivePerms(su?.role ?? '', su?.menuPerms ?? null)
 
-  const nav: NavItem[] = NAV
-    .map(item => {
-      if (isGroup(item)) {
-        const children = item.children.filter(c => podeVer(perms, c.href))
-        return children.length ? { ...item, children } : null
-      }
-      return (item.external || podeVer(perms, item.href)) ? item : null
-    })
-    .filter((i): i is NavItem => i !== null)
+  const nav = filtrar(NAV, perms)
+  const todosHrefs = leafHrefs(NAV)
+
+  // Item ativo: caminho exato; nas telas do Obrigô (rotas internas como /empresas/123) vale o prefixo,
+  // desde que nenhum outro item case exatamente.
+  const ativo = (href: string) =>
+    pathname === href || (href.startsWith(OB) && pathname.startsWith(href + '/') && !todosHrefs.includes(pathname))
+  const grupoAtivo = (g: NavGroup): boolean => g.children.some(c => (isGroup(c) ? grupoAtivo(c) : ativo(c.href)))
 
   const [mobileOpen, setMobileOpen] = useState(false)
   const [comNovos, setComNovos] = useState(false)
   const [openGroups, setOpenGroups] = useState<string[]>(
-    NAV.filter(isGroup).filter(g => g.children.some(c => pathname.startsWith(c.href))).map(g => g.label)
+    NAV.filter(isGroup).filter(g => leafHrefs(g.children).some(h => pathname.startsWith(h))).map(g => g.label)
   )
   const [fly, setFly] = useState<{ label: string; top: number } | null>(null)
   const flyTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -148,7 +200,16 @@ export default function Sidebar({ email }: { email?: string | null }) {
     : 'text-[color:var(--m-fg)] hover:bg-[var(--m-hv)] hover:text-[color:var(--m-afg)]'}`
 
   const Leaf = ({ c, col }: { c: NavLeaf; col: boolean }) => {
-    const active = pathname === c.href
+    const active = ativo(c.href)
+    if (c.external) {
+      return (
+        <a href={c.href} title={col ? c.label : undefined} target="_blank" rel="noopener noreferrer" onClick={() => { playClick(); setFly(null); setMobileOpen(false) }} className={grpCls(false, col)}>
+          <c.icon size={20} className="text-[color:var(--m-ic)]" />
+          {!col && <span className="flex-1">{c.label}</span>}
+          {!col && <span className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--m-acc)' }}>abrir</span>}
+        </a>
+      )
+    }
     return (
       <Link href={c.href} title={col ? c.label : undefined} onClick={() => { playClick(); setFly(null); setMobileOpen(false) }} className={leafCls(active, col)}>
         <c.icon size={20} className={active ? 'text-[color:var(--m-afg)]' : 'text-[color:var(--m-ic)]'} />
@@ -156,6 +217,70 @@ export default function Sidebar({ email }: { email?: string | null }) {
       </Link>
     )
   }
+
+  // Lista dentro de um flyout: subgrupos abrem outro painel à direita ao passar o mouse
+  // (mesma mecânica do MenuLista do Obrigô: painel absoluto left-full top-0).
+  const FlyLista = ({ itens }: { itens: NavItem[] }) => {
+    const [aberto, setAberto] = useState<string | null>(null)
+    const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
+    const abrir = (l: string) => { if (timer.current) clearTimeout(timer.current); setAberto(l) }
+    const agendarFechar = () => { if (timer.current) clearTimeout(timer.current); timer.current = setTimeout(() => setAberto(null), 350) }
+    return (
+      <div>
+        {itens.map(item => {
+          if (isGroup(item)) {
+            const on = aberto === item.label || grupoAtivo(item)
+            return (
+              <div key={item.label} className="relative" onMouseEnter={() => abrir(item.label)} onMouseLeave={agendarFechar}>
+                <button className={grpCls(on, false)}>
+                  <item.icon size={20} className={on ? 'text-[color:var(--m-afg)]' : 'text-[color:var(--m-ic)]'} />
+                  <span className="flex-1">{item.label}</span>
+                  <ChevronRight size={15} className="text-[color:var(--m-ic)]" />
+                </button>
+                {aberto === item.label && (
+                  <div className="absolute left-full top-0 z-50 min-w-60 rounded-md p-1 pl-2 shadow-xl"
+                    style={{ background: 'var(--m-bg)', border: '1px solid var(--m-bd)' }}
+                    onMouseEnter={() => abrir(item.label)} onMouseLeave={agendarFechar}>
+                    <FlyLista itens={item.children} />
+                  </div>
+                )}
+              </div>
+            )
+          }
+          return <Leaf key={item.href} c={item} col={false} />
+        })}
+      </div>
+    )
+  }
+
+  // Lista em acordeão (menu mobile): subgrupos abrem para baixo, indentados
+  const Acordeao = ({ itens, nivel = 0 }: { itens: NavItem[]; nivel?: number }) => (
+    <>
+      {itens.map(item => {
+        if (isGroup(item)) {
+          const open = openGroups.includes(item.label)
+          const on = grupoAtivo(item)
+          return (
+            <div key={item.label} className={nivel === 0 ? 'border-b border-[color:var(--m-bd)] last:border-0' : ''} style={{ paddingLeft: nivel ? 12 : 0 }}>
+              <button onClick={() => toggleGroup(item.label)} className={grpCls(on, false)}>
+                <item.icon size={20} className={on ? 'text-[color:var(--m-afg)]' : 'text-[color:var(--m-ic)]'} />
+                <span className="flex-1">{item.label}
+                  {item.label === 'Comercial' && comNovos && <span className="onb-badge ml-2">Novo</span>}
+                </span>
+                <ChevronRight size={15} className={`text-[color:var(--m-ic)] transition-transform ${open ? 'rotate-90' : ''}`} />
+              </button>
+              {open && <div className="pb-1"><Acordeao itens={item.children} nivel={nivel + 1} /></div>}
+            </div>
+          )
+        }
+        return (
+          <div key={item.href} className={nivel === 0 ? 'border-b border-[color:var(--m-bd)] last:border-0' : ''} style={{ paddingLeft: nivel ? 12 : 0 }}>
+            <Leaf c={item} col={false} />
+          </div>
+        )
+      })}
+    </>
+  )
 
   const QuickBtn = ({ color, title, onClick, children }: { color: string; title: string; onClick: () => void; children: React.ReactNode }) => (
     <button onClick={() => { playClick(); onClick() }} title={title}
@@ -186,50 +311,22 @@ export default function Sidebar({ email }: { email?: string | null }) {
 
       {/* Menu */}
       <nav className="flex-1 overflow-y-auto px-1.5 pb-2 text-[16px]">
-        {nav.map(item => {
+        {!flyout ? <Acordeao itens={nav} /> : nav.map(item => {
           const divisoria = 'border-b border-[color:var(--m-bd)] last:border-0'
 
           if (isGroup(item)) {
-            const activeChild = item.children.some(c => pathname === c.href)
-            if (flyout) {
-              const on = activeChild || fly?.label === item.label
-              return (
-                <div key={item.label} className={divisoria}
-                  onMouseEnter={e => abrirFly(item.label, (e.currentTarget as HTMLElement).getBoundingClientRect().top)}
-                  onMouseLeave={fecharFly}>
-                  <button title={col ? item.label : undefined} className={grpCls(on, col)}>
-                    <item.icon size={20} className={on ? 'text-[color:var(--m-afg)]' : 'text-[color:var(--m-ic)]'} />
-                    {!col && <span className="flex-1">{item.label}
-                      {item.label === 'Comercial' && comNovos && <span className="onb-badge ml-2">Novo</span>}
-                    </span>}
-                    {!col && <ChevronRight size={15} className="text-[color:var(--m-ic)]" />}
-                  </button>
-                </div>
-              )
-            }
-            const open = openGroups.includes(item.label)
+            const on = grupoAtivo(item) || fly?.label === item.label
             return (
-              <div key={item.label} className={divisoria}>
-                <button onClick={() => toggleGroup(item.label)} className={grpCls(activeChild, false)}>
-                  <item.icon size={20} className={activeChild ? 'text-[color:var(--m-afg)]' : 'text-[color:var(--m-ic)]'} />
-                  <span className="flex-1">{item.label}
+              <div key={item.label} className={divisoria}
+                onMouseEnter={e => abrirFly(item.label, (e.currentTarget as HTMLElement).getBoundingClientRect().top)}
+                onMouseLeave={fecharFly}>
+                <button title={col ? item.label : undefined} className={grpCls(on, col)}>
+                  <item.icon size={20} className={on ? 'text-[color:var(--m-afg)]' : 'text-[color:var(--m-ic)]'} />
+                  {!col && <span className="flex-1">{item.label}
                     {item.label === 'Comercial' && comNovos && <span className="onb-badge ml-2">Novo</span>}
-                  </span>
-                  <ChevronRight size={15} className={`text-[color:var(--m-ic)] transition-transform ${open ? 'rotate-90' : ''}`} />
+                  </span>}
+                  {!col && <ChevronRight size={15} className="text-[color:var(--m-ic)]" />}
                 </button>
-                {open && <div className="pb-1">{item.children.map(c => <Leaf key={c.href} c={c} col={false} />)}</div>}
-              </div>
-            )
-          }
-
-          if (item.external) {
-            return (
-              <div key={item.href} className={divisoria}>
-                <a href={item.href} title={col ? item.label : undefined} target="_blank" rel="noopener noreferrer" onClick={() => { playClick(); setMobileOpen(false) }} className={grpCls(false, col)}>
-                  <item.icon size={20} className="text-[color:var(--m-ic)]" />
-                  {!col && <span className="flex-1">{item.label}</span>}
-                  {!col && <span className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--m-acc)' }}>abrir</span>}
-                </a>
               </div>
             )
           }
@@ -280,12 +377,12 @@ export default function Sidebar({ email }: { email?: string | null }) {
         {renderContent(true)}
       </aside>
 
-      {/* Flyout do grupo (desktop) */}
+      {/* Flyout do grupo (desktop); subgrupos abrem mais um painel à direita */}
       {grpFly && fly && (
-        <div className="hidden lg:block fixed z-40 min-w-[240px] max-h-[75vh] overflow-y-auto rounded-md p-1 pl-2 shadow-xl text-[16px]"
+        <div className="hidden lg:block fixed z-40 min-w-[240px] rounded-md p-1 pl-2 shadow-xl text-[16px]"
           style={{ ...MVARS, left: flyLeft, top: flyTop, background: 'var(--m-bg)', border: '1px solid var(--m-bd)' }}
           onMouseEnter={cancelarFecharFly} onMouseLeave={fecharFly}>
-          {grpFly.children.map(c => <Leaf key={c.href} c={c} col={false} />)}
+          <FlyLista itens={grpFly.children} />
         </div>
       )}
 

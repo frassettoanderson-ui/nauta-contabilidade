@@ -55,6 +55,32 @@ export const MENU_GRUPOS: MenuGrupo[] = [
     { href: '/sistema/usuarios/consultar', label: 'Consultar' },
     { href: '/sistema/usuarios/historico-chat', label: 'Histórico de chat' },
   ] },
+  // Módulo Obrigô (obrigações acessórias) — telas em /sistema/obrigo/*
+  { grupo: 'Obrigô', itens: [
+    { href: '/sistema/obrigo/empresas', label: 'Empresas' },
+    { href: '/sistema/obrigo/empresas/nova', label: 'Empresas — cadastrar' },
+    { href: '/sistema/obrigo/obrigacoes', label: 'Obrigações' },
+    { href: '/sistema/obrigo/entregas', label: 'Lista de Entregas' },
+    { href: '/sistema/obrigo/usuarios', label: 'Sistema — Usuários e Permissões' },
+    { href: '/sistema/obrigo/cadastros', label: 'Sistema — Departamentos' },
+    { href: '/sistema/obrigo/configuracoes', label: 'Sistema — Configurações gerais' },
+    { href: '/sistema/obrigo/robo/assinaturas', label: 'e-Contínuo — Configurar obrigações' },
+    { href: '/sistema/obrigo/robo/drive', label: 'e-Contínuo — Conectar Google Drive' },
+    { href: '/sistema/obrigo/robo/envio', label: 'e-Contínuo — Envio manual' },
+    { href: '/sistema/obrigo/robo/revisao', label: 'e-Contínuo — Revisão' },
+    { href: '/sistema/obrigo/area-vip/app', label: 'Área VIP — App' },
+    { href: '/sistema/obrigo/area-vip/comunicados', label: 'Área VIP — Comunicados' },
+    { href: '/sistema/obrigo/area-vip/nps', label: 'Área VIP — Avaliação NPS' },
+    { href: '/sistema/obrigo/area-vip/avaliacoes', label: 'Área VIP — Avaliação das Solicitações' },
+    { href: '/sistema/obrigo/area-vip/usuarios-app', label: 'Área VIP — Usuários do APP' },
+    { href: '/sistema/obrigo/insights', label: 'Relatórios — Insights' },
+    { href: '/sistema/obrigo/dashboard/indicadores', label: 'Relatórios — Indicadores' },
+    { href: '/sistema/obrigo/dashboard/paineis', label: 'Relatórios — Painéis' },
+    { href: '/sistema/obrigo/relatorios/semanais', label: 'Relatórios — Estatísticas semanais' },
+    { href: '/sistema/obrigo/relatorios/mensais', label: 'Relatórios — Estatísticas mensais' },
+    { href: '/sistema/obrigo/relatorios/responsaveis', label: 'Relatórios — Responsáveis Dptos' },
+    { href: '/sistema/obrigo/relatorios/exportar-emails', label: 'Relatórios — Exportar e-mails' },
+  ] },
 ]
 
 const ONBOARDING = ['/sistema/onboarding']

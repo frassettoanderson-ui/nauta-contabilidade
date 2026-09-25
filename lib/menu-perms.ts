@@ -12,8 +12,10 @@ export interface MenuGrupo {
 
 // Estrutura completa de itens que podem ser liberados (espelha a Sidebar)
 export const MENU_GRUPOS: MenuGrupo[] = [
-  { grupo: 'Clientes', itens: [
-    { href: '/sistema/clientes/cadastrar', label: 'Cadastrar' },
+  { grupo: 'Empresas', itens: [
+    { href: '/sistema/obrigo/empresas', label: 'Empresas (lista)' },
+    { href: '/sistema/obrigo/empresas/nova', label: 'Cadastrar' },
+    { href: '/sistema/clientes/cadastrar', label: 'Cadastrar (tela antiga)' },
     { href: '/sistema/clientes/consultar', label: 'Consultar' },
     { href: '/sistema/clientes/atualizar', label: 'Atualizar clientes' },
     { href: '/sistema/clientes/inativos', label: 'Inativos' },
@@ -57,8 +59,6 @@ export const MENU_GRUPOS: MenuGrupo[] = [
   ] },
   // Módulo Obrigô (obrigações acessórias) — telas em /sistema/obrigo/*
   { grupo: 'Obrigô', itens: [
-    { href: '/sistema/obrigo/empresas', label: 'Empresas' },
-    { href: '/sistema/obrigo/empresas/nova', label: 'Empresas — cadastrar' },
     { href: '/sistema/obrigo/obrigacoes', label: 'Obrigações' },
     { href: '/sistema/obrigo/entregas', label: 'Lista de Entregas' },
     { href: '/sistema/obrigo/usuarios', label: 'Sistema — Usuários e Permissões' },

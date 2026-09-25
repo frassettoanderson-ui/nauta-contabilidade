@@ -37,13 +37,15 @@ const MVARS = {
 } as unknown as React.CSSProperties
 
 interface NavLeaf { label: string; href: string; icon: LucideIcon; external?: boolean }
-interface NavGroup { label: string; icon: LucideIcon; children: NavItem[] }
+// href num grupo = o próprio rótulo é clicável (abre a tela) e o flyout continua no hover
+interface NavGroup { label: string; icon: LucideIcon; children: NavItem[]; href?: string }
 type NavItem = NavLeaf | NavGroup
 
 const NAV: NavItem[] = [
   { label: 'Onboarding', href: '/sistema/onboarding', icon: Rocket },
   { label: 'Dashboard',  href: '/sistema', icon: LayoutDashboard },
-  { label: 'Clientes', icon: Users, children: [
+  // "Empresas" (ex-Clientes): o rótulo abre a lista do Obrigô; o flyout mantém os atalhos.
+  { label: 'Empresas', icon: Heart, href: `${OB}/empresas`, children: [
     // Cadastro único = o do Obrigô (tela embutida). As telas antigas do ERP ficam como fallback.
     { label: 'Cadastrar', href: `${OB}/empresas/nova`, icon: UserPlus },
     { label: 'Consultar', href: `${OB}/empresas`, icon: Search },
@@ -165,7 +167,7 @@ export default function Sidebar({ email }: { email?: string | null }) {
   // desde que nenhum outro item case exatamente.
   const ativo = (href: string) =>
     pathname === href || (href.startsWith(OB) && pathname.startsWith(href + '/') && !todosHrefs.includes(pathname))
-  const grupoAtivo = (g: NavGroup): boolean => g.children.some(c => (isGroup(c) ? grupoAtivo(c) : ativo(c.href)))
+  const grupoAtivo = (g: NavGroup): boolean => (!!g.href && ativo(g.href)) || g.children.some(c => (isGroup(c) ? grupoAtivo(c) : ativo(c.href)))
 
   const [mobileOpen, setMobileOpen] = useState(false)
   const [comNovos, setComNovos] = useState(false)
@@ -302,6 +304,18 @@ export default function Sidebar({ email }: { email?: string | null }) {
           const on = grupoAtivo(item)
           return (
             <div key={item.label} className={nivel === 0 ? 'border-b border-[color:var(--m-bd)] last:border-0' : ''} style={{ paddingLeft: nivel ? 12 : 0 }}>
+              {item.href ? (
+                // rótulo abre a tela; a seta abre/fecha o acordeão
+                <div className={`${grpCls(on, false)} p-0`}>
+                  <Link href={item.href} onClick={() => { playClick(); setMobileOpen(false) }} className="flex flex-1 items-center gap-3 px-3 py-2">
+                    <item.icon size={18} className={on ? 'text-[color:var(--m-afg)]' : 'text-[color:var(--m-ic)]'} />
+                    <span className="flex-1">{item.label}</span>
+                  </Link>
+                  <button onClick={() => toggleGroup(item.label)} className="px-3 py-2" aria-label="Abrir submenu">
+                    <ChevronRight size={15} className={`text-[color:var(--m-ic)] transition-transform ${open ? 'rotate-90' : ''}`} />
+                  </button>
+                </div>
+              ) : (
               <button onClick={() => toggleGroup(item.label)} className={grpCls(on, false)}>
                 <item.icon size={18} className={on ? 'text-[color:var(--m-afg)]' : 'text-[color:var(--m-ic)]'} />
                 <span className="flex-1">{item.label}
@@ -309,6 +323,7 @@ export default function Sidebar({ email }: { email?: string | null }) {
                 </span>
                 <ChevronRight size={15} className={`text-[color:var(--m-ic)] transition-transform ${open ? 'rotate-90' : ''}`} />
               </button>
+              )}
               {open && <div className="pb-1"><Acordeao itens={item.children} nivel={nivel + 1} /></div>}
             </div>
           )
@@ -356,17 +371,22 @@ export default function Sidebar({ email }: { email?: string | null }) {
 
           if (isGroup(item)) {
             const on = grupoAtivo(item) || fly?.label === item.label
+            const miolo = (
+              <>
+                <item.icon size={18} className={on ? 'text-[color:var(--m-afg)]' : 'text-[color:var(--m-ic)]'} />
+                {!col && <span className="flex-1">{item.label}
+                  {item.label === 'Comercial' && comNovos && <span className="onb-badge ml-2">Novo</span>}
+                </span>}
+                {!col && <ChevronRight size={15} className="text-[color:var(--m-ic)]" />}
+              </>
+            )
             return (
               <div key={item.label} className={divisoria}
                 onMouseEnter={e => abrirFly(item.label, (e.currentTarget as HTMLElement).getBoundingClientRect().top)}
                 onMouseLeave={fecharFly}>
-                <button title={col ? item.label : undefined} className={grpCls(on, col)}>
-                  <item.icon size={18} className={on ? 'text-[color:var(--m-afg)]' : 'text-[color:var(--m-ic)]'} />
-                  {!col && <span className="flex-1">{item.label}
-                    {item.label === 'Comercial' && comNovos && <span className="onb-badge ml-2">Novo</span>}
-                  </span>}
-                  {!col && <ChevronRight size={15} className="text-[color:var(--m-ic)]" />}
-                </button>
+                {item.href
+                  ? <Link href={item.href} title={col ? item.label : undefined} onClick={() => { playClick(); setFly(null) }} className={grpCls(on, col)}>{miolo}</Link>
+                  : <button title={col ? item.label : undefined} className={grpCls(on, col)}>{miolo}</button>}
               </div>
             )
           }

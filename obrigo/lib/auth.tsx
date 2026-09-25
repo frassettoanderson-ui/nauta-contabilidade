@@ -55,6 +55,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // assinado e apresenta na API do Obrigo, que grava o cookie de refresh.
   useEffect(() => {
     (async () => {
+      // Sempre re-entra pelo SSO uma vez por aba: um cookie antigo do Obrigo (de outro
+      // escritorio/usuario) nao pode "ganhar" do usuario logado na Nauta.
+      let precisaSso = true;
+      try { precisaSso = sessionStorage.getItem('obrigo_sso_ok') !== '1'; } catch { /* ignora */ }
+      if (precisaSso && (await ssoSilencioso())) {
+        try { sessionStorage.setItem('obrigo_sso_ok', '1'); } catch { /* ignora */ }
+      }
       let ok = await api.refresh();
       if (!ok && (await ssoSilencioso())) ok = await api.refresh();
       if (ok) {

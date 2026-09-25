@@ -189,7 +189,8 @@ function Rotas() {
 
 export default function ObrigoApp() {
   return (
-    <div className="obrigo-app h-full">
+    // p-6 = o padding do <main> original do Obrigô (varias telas usam -m-6 contando com ele)
+    <div className="obrigo-app h-full p-6">
       <BrowserRouter basename={OBRIGO_BASE}>
         <SincronizaComNext />
         <ToastProvider>

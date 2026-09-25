@@ -71,7 +71,8 @@ const NAV: NavItem[] = [
   { label: 'Pessoal',    href: '/sistema/pessoal',    icon: Users },
   // Menu do Obrigô, igual ao do app separado (gestor-oa/web/src/components/Layout.tsx),
   // menos "Dados do meu perfil" (fica na barra de cima) e "Trocar estilo" (estilo único).
-  { label: 'Obrigô', icon: CalendarCheck, children: [
+  // Clicar em "Obrigô" abre a tela inicial dele (painel das entregas); o flyout segue no hover.
+  { label: 'Obrigô', icon: CalendarCheck, href: OB, children: [
     { label: 'Sistema', icon: Globe, children: [
       { label: 'Usuarios e Permissoes', icon: Users, href: `${OB}/usuarios` },
       { label: 'Departamentos', icon: Tags, href: `${OB}/cadastros` },
@@ -166,7 +167,7 @@ export default function Sidebar({ email }: { email?: string | null }) {
   // Item ativo: caminho exato; nas telas do Obrigô (rotas internas como /empresas/123) vale o prefixo,
   // desde que nenhum outro item case exatamente.
   const ativo = (href: string) =>
-    pathname === href || (href.startsWith(OB) && pathname.startsWith(href + '/') && !todosHrefs.includes(pathname))
+    pathname === href || (href.startsWith(OB) && href !== OB && pathname.startsWith(href + '/') && !todosHrefs.includes(pathname))
   const grupoAtivo = (g: NavGroup): boolean => (!!g.href && ativo(g.href)) || g.children.some(c => (isGroup(c) ? grupoAtivo(c) : ativo(c.href)))
 
   const [mobileOpen, setMobileOpen] = useState(false)

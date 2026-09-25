@@ -59,6 +59,7 @@ export const MENU_GRUPOS: MenuGrupo[] = [
   ] },
   // Módulo Obrigô (obrigações acessórias) — telas em /sistema/obrigo/*
   { grupo: 'Obrigô', itens: [
+    { href: '/sistema/obrigo', label: 'Dashboard (entregas)' },
     { href: '/sistema/obrigo/obrigacoes', label: 'Obrigações' },
     { href: '/sistema/obrigo/entregas', label: 'Lista de Entregas' },
     { href: '/sistema/obrigo/usuarios', label: 'Sistema — Usuários e Permissões' },

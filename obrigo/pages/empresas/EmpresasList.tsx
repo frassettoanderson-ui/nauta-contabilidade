@@ -1,6 +1,7 @@
 import { Fragment, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Heart, Search, SlidersHorizontal, Mail, Download, XCircle, Network, Tags as TagsIcon, Printer, Calendar, Plus, MessageCircle, CheckCircle2, Users, ArrowUpDown, RotateCcw, Pencil, Trash2 } from 'lucide-react';
+import { Heart, Search, SlidersHorizontal, Mail, Download, XCircle, Network, Tags as TagsIcon, Printer, Calendar, Plus, MessageCircle, CheckCircle2, Users, ArrowUpDown, RotateCcw, Pencil, Trash2, RefreshCw } from 'lucide-react';
+import AtualizarCnpjModal from './AtualizarCnpjModal';
 import { api, ApiError } from '../../lib/api';
 import { useAuth, temPermissao } from '../../lib/auth';
 import { useScrollInfinito } from '../../lib/useScrollInfinito';
@@ -64,6 +65,8 @@ export default function EmpresasList() {
   }
   // barra de acao ativa (so uma por vez; clicar de novo recolhe)
   const [barra, setBarra] = useState<'resp' | 'tags' | 'export' | 'relacao' | 'datas' | null>(null);
+  // modal "Atualizar" (reconsulta a Receita e atualiza os cadastros)
+  const [atualizarAberto, setAtualizarAberto] = useState(false);
   const toggleBarra = (b: 'resp' | 'tags' | 'export' | 'relacao' | 'datas') => setBarra((atual) => (atual === b ? null : b));
   const [respDepto, setRespDepto] = useState('');
   const [respUser, setRespUser] = useState('');
@@ -214,9 +217,12 @@ export default function EmpresasList() {
           <button title="Exibir/Ocultar datas" onClick={() => toggleBarra('datas')} className={`${ICONE} bg-red-100 text-red-500`}><Calendar size={18} /></button>
         </div>
 
-        <button className="flex items-center gap-2 rounded bg-status-ok px-5 py-2 text-sm font-medium text-white hover:bg-emerald-600"><Search size={16} /> Filtrar</button>
-        {podeCriar && <button onClick={() => navigate('/empresas/nova')} className="flex items-center gap-2 rounded bg-marca-500 px-5 py-2 text-sm font-medium text-white hover:bg-marca-600"><Plus size={16} /> Nova empresa</button>}
+        <button className="flex items-center gap-2 rounded bg-status-ok px-4 py-2 text-sm font-medium text-white hover:bg-emerald-600"><Search size={16} /> Filtrar</button>
+        {podeEditar && <button title="Reconsultar a Receita e atualizar os dados cadastrais (CNPJ)" onClick={() => setAtualizarAberto(true)} className="flex items-center gap-2 rounded bg-status-info px-4 py-2 text-sm font-medium text-white hover:opacity-90"><RefreshCw size={16} /> Atualizar</button>}
+        {podeCriar && <button onClick={() => navigate('/empresas/nova')} className="flex items-center gap-2 rounded bg-marca-500 px-4 py-2 text-sm font-medium text-white hover:bg-marca-600"><Plus size={16} /> Nova empresa</button>}
       </div>
+
+      <AtualizarCnpjModal aberto={atualizarAberto} onFechar={() => setAtualizarAberto(false)} onConcluido={() => setRefresh((r) => r + 1)} />
 
       {/* Barra: Alterar responsavel pelo dpto */}
       {barra === 'resp' && (

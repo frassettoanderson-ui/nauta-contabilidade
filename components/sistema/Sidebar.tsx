@@ -12,8 +12,8 @@ import {
   Users, UserPlus, Search, FileText, FilePlus, FileClock, FileSearch,
   Briefcase, LayoutGrid, Inbox, BarChart3, TrendingUp, Calculator, UserCog, Building2,
   Rocket, Settings, DollarSign, LayoutDashboard, MessageCircle,
-  ArrowDownCircle, ArrowUpCircle, Repeat, CalendarCheck, Target, UserX, Percent, AlertTriangle, Receipt,
-  RefreshCw, ChevronRight, ChevronLeft, Menu, X, Home, User, HelpCircle, Power,
+  ArrowDownCircle, ArrowUpCircle, Repeat, CalendarCheck, Target, Percent, AlertTriangle, Receipt,
+  ChevronRight, ChevronLeft, Menu, X, Home, User, HelpCircle, Power,
   Globe, List, Heart, CheckCircle, Folder, MessageSquare, UploadCloud, Tags, Bot, Download, HardDrive,
   Smartphone, Star, ClipboardList, type LucideIcon,
 } from 'lucide-react'
@@ -44,14 +44,9 @@ type NavItem = NavLeaf | NavGroup
 const NAV: NavItem[] = [
   { label: 'Onboarding', href: '/sistema/onboarding', icon: Rocket },
   { label: 'Dashboard',  href: '/sistema', icon: LayoutDashboard },
-  // "Empresas" (ex-Clientes): o rótulo abre a lista do Obrigô; o flyout mantém os atalhos.
-  { label: 'Empresas', icon: Heart, href: `${OB}/empresas`, children: [
-    // Cadastro único = o do Obrigô (tela embutida). As telas antigas do ERP ficam como fallback.
-    { label: 'Cadastrar', href: `${OB}/empresas/nova`, icon: UserPlus },
-    { label: 'Consultar', href: `${OB}/empresas`, icon: Search },
-    { label: 'Atualizar clientes', href: '/sistema/clientes/atualizar', icon: RefreshCw },
-    { label: 'Inativos',  href: '/sistema/clientes/inativos',  icon: UserX },
-  ] },
+  // "Empresas" (ex-Clientes): abre a lista do Obrigô. Cadastrar / atualizar pela Receita /
+  // inativos ficam na própria lista (botões e filtro). Telas antigas do ERP seguem como fallback.
+  { label: 'Empresas', icon: Heart, href: `${OB}/empresas` },
   { label: 'Geração de Contrato', icon: FileText, children: [
     { label: 'Gerar Contrato',     href: '/sistema/contratos/gerar',     icon: FilePlus },
     { label: 'Em Andamento',       href: '/sistema/contratos/andamento', icon: FileClock },

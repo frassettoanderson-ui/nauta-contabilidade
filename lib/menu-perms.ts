@@ -13,12 +13,8 @@ export interface MenuGrupo {
 // Estrutura completa de itens que podem ser liberados (espelha a Sidebar)
 export const MENU_GRUPOS: MenuGrupo[] = [
   { grupo: 'Empresas', itens: [
-    { href: '/sistema/obrigo/empresas', label: 'Empresas (lista)' },
+    { href: '/sistema/obrigo/empresas', label: 'Empresas (lista e cadastro)' },
     { href: '/sistema/obrigo/empresas/nova', label: 'Cadastrar' },
-    { href: '/sistema/clientes/cadastrar', label: 'Cadastrar (tela antiga)' },
-    { href: '/sistema/clientes/consultar', label: 'Consultar' },
-    { href: '/sistema/clientes/atualizar', label: 'Atualizar clientes' },
-    { href: '/sistema/clientes/inativos', label: 'Inativos' },
   ] },
   { grupo: 'Geração de Contrato', itens: [
     { href: '/sistema/contratos/gerar', label: 'Gerar Contrato' },

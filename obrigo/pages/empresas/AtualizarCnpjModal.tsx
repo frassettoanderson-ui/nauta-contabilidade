@@ -9,6 +9,7 @@ import { formatarIdent } from '../../lib/tipos';
 // das empresas escolhidas. Uma por vez, com intervalo, para respeitar o limite dos provedores.
 type St = { tipo: 'aguardando' | 'buscando' | 'ok' | 'erro'; msg?: string };
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+const temCnpj = (e: EmpresaLista) => (e.cnpj ?? '').replace(/\D/g, '').length === 14;
 
 export default function AtualizarCnpjModal({ aberto, onFechar, onConcluido }: { aberto: boolean; onFechar: () => void; onConcluido: () => void }) {
   const [empresas, setEmpresas] = useState<EmpresaLista[]>([]);
@@ -31,18 +32,19 @@ export default function AtualizarCnpjModal({ aberto, onFechar, onConcluido }: { 
         if (page >= r.totalPages) break;
       }
       if (cancelado) return;
-      const comCnpj = todas.filter((e) => (e.cnpj ?? '').replace(/\D/g, '').length === 14)
-        .sort((a, b) => a.razaoSocial.localeCompare(b.razaoSocial));
-      setEmpresas(comCnpj);
-      setSel(new Set(comCnpj.map((e) => e.id)));
+      // mostra todas (inclusive sem CNPJ, so' para conferencia); marca de inicio apenas as consultaveis
+      todas.sort((a, b) => a.razaoSocial.localeCompare(b.razaoSocial));
+      setEmpresas(todas);
+      setSel(new Set(todas.filter(temCnpj).map((e) => e.id)));
       setCarregando(false);
     })().catch(() => { if (!cancelado) setCarregando(false); });
     return () => { cancelado = true; };
   }, [aberto]);
 
-  const todasSel = empresas.length > 0 && empresas.every((e) => sel.has(e.id));
+  const consultaveis = useMemo(() => empresas.filter(temCnpj), [empresas]);
+  const todasSel = consultaveis.length > 0 && consultaveis.every((e) => sel.has(e.id));
   const toggle = (id: string) => setSel((p) => { const n = new Set(p); if (n.has(id)) n.delete(id); else n.add(id); return n; });
-  const toggleTodas = () => setSel(todasSel ? new Set() : new Set(empresas.map((e) => e.id)));
+  const toggleTodas = () => setSel(todasSel ? new Set() : new Set(consultaveis.map((e) => e.id)));
   const setSt = (id: string, st: St) => setStatus((p) => ({ ...p, [id]: st }));
 
   async function processar(lista: EmpresaLista[]) {
@@ -75,15 +77,15 @@ export default function AtualizarCnpjModal({ aberto, onFechar, onConcluido }: { 
     <Modal aberto={aberto} titulo="Atualizar dados pela Receita (CNPJ)" onFechar={() => { if (!rodando) onFechar(); }} largura="max-w-2xl">
       <p className="mb-3 text-[13px] text-slate-600">
         Reconsulta o CNPJ de cada empresa e atualiza razao social, nome fantasia, endereco, telefone e atividade.
-        E-mail, socios e demais campos nao sao alterados. Empresas sem CNPJ nao aparecem aqui.
+        E-mail, socios e demais campos nao sao alterados. Empresas sem CNPJ (em abertura) aparecem apenas para conferencia.
       </p>
 
       <div className="mb-3 flex flex-wrap items-center gap-2">
         <button onClick={() => processar(selecionadas)} disabled={rodando || !selecionadas.length} className="btn-primary">
           {rodando ? <Loader2 size={16} className="animate-spin" /> : <RefreshCw size={16} />} Atualizar selecionadas ({selecionadas.length})
         </button>
-        <button onClick={() => processar(empresas)} disabled={rodando || !empresas.length} className="btn bg-status-info text-white hover:opacity-90">
-          Atualizar todas ({empresas.length})
+        <button onClick={() => processar(consultaveis)} disabled={rodando || !consultaveis.length} className="btn bg-status-info text-white hover:opacity-90">
+          Atualizar todas com CNPJ ({consultaveis.length})
         </button>
         {rodando && <span className="text-[13px] text-slate-500">{progresso.feitos}/{progresso.total}…</span>}
         {!rodando && (okCount + erroCount) > 0 && (
@@ -107,12 +109,14 @@ export default function AtualizarCnpjModal({ aberto, onFechar, onConcluido }: { 
             <tbody>
               {empresas.map((e) => {
                 const st = status[e.id];
+                const ok = temCnpj(e);
                 return (
-                  <tr key={e.id}>
-                    <td className="px-2 py-1.5"><input type="checkbox" checked={sel.has(e.id)} onChange={() => toggle(e.id)} disabled={rodando} /></td>
+                  <tr key={e.id} className={ok ? '' : 'text-slate-400'}>
+                    <td className="px-2 py-1.5"><input type="checkbox" checked={sel.has(e.id)} onChange={() => toggle(e.id)} disabled={rodando || !ok} /></td>
                     <td className="px-2 py-1.5">{e.razaoSocial}{!e.ativo && <span className="ml-1 text-[11px] text-slate-400">(inativa)</span>}</td>
-                    <td className="px-2 py-1.5 text-slate-500">{formatarIdent('CNPJ', e.cnpj ?? '')}</td>
+                    <td className="px-2 py-1.5 text-slate-500">{ok ? formatarIdent('CNPJ', e.cnpj ?? '') : <span className="italic">sem CNPJ</span>}</td>
                     <td className="px-2 py-1.5">
+                      {!ok && <span className="text-slate-400">nao consultavel</span>}
                       {st?.tipo === 'buscando' && <span className="flex items-center gap-1 text-marca-600"><Loader2 size={14} className="animate-spin" /> consultando…</span>}
                       {st?.tipo === 'aguardando' && <span className="text-slate-400">na fila</span>}
                       {st?.tipo === 'ok' && <span className="flex items-center gap-1 text-status-ok"><CheckCircle2 size={14} /> atualizada</span>}
@@ -121,7 +125,7 @@ export default function AtualizarCnpjModal({ aberto, onFechar, onConcluido }: { 
                   </tr>
                 );
               })}
-              {!empresas.length && <tr><td colSpan={4} className="px-2 py-4 text-center text-slate-400">Nenhuma empresa com CNPJ.</td></tr>}
+              {!empresas.length && <tr><td colSpan={4} className="px-2 py-4 text-center text-slate-400">Nenhuma empresa.</td></tr>}
             </tbody>
           </table>
         </div>

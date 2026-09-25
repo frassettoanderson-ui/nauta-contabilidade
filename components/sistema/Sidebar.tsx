@@ -7,6 +7,7 @@ import { signOut, useSession } from 'next-auth/react'
 import { effectivePerms, podeVer } from '@/lib/menu-perms'
 import { getComercialStatus } from '@/lib/api'
 import { getSomAtivo } from '@/lib/sys-prefs'
+import LogoObrigo from './LogoObrigo'
 import {
   Users, UserPlus, Search, FileText, FilePlus, FileClock, FileSearch,
   Briefcase, LayoutGrid, Inbox, BarChart3, TrendingUp, Calculator, UserCog, Building2,
@@ -80,19 +81,6 @@ const NAV: NavItem[] = [
 ]
 
 function isGroup(i: NavItem): i is NavGroup { return (i as NavGroup).children !== undefined }
-
-// Logo/wordmark provisório da Atuan (troca pela logo oficial quando o arquivo chegar).
-function LogoAtuan() {
-  return (
-    <span className="leading-none select-none text-center">
-      <span className="block text-2xl font-extrabold text-white tracking-tight">Atuan</span>
-      <span className="block text-[10px] font-bold uppercase tracking-[0.3em]" style={{ color: 'var(--m-acc)' }}>Contabilidade</span>
-    </span>
-  )
-}
-function MonogramA() {
-  return <span className="grid h-9 w-9 place-items-center rounded-lg text-white font-extrabold text-lg select-none" style={{ background: 'var(--m-acc)' }}>A</span>
-}
 
 export default function Sidebar({ email }: { email?: string | null }) {
   const pathname = usePathname()
@@ -180,8 +168,8 @@ export default function Sidebar({ email }: { email?: string | null }) {
     return (
     <div className="flex flex-col h-full">
       {/* Logo */}
-      <div className={`flex items-center ${col ? 'justify-center' : 'justify-between'} px-4 py-3 shrink-0`}>
-        <Link href="/sistema" onClick={() => setMobileOpen(false)}>{col ? <MonogramA /> : <LogoAtuan />}</Link>
+      <div className={`flex items-center ${flyout ? 'justify-center' : 'justify-between'} px-4 py-3 shrink-0`}>
+        <Link href="/sistema" onClick={() => setMobileOpen(false)}><LogoObrigo size={30} showText={!col} variant="light" /></Link>
         {!col && <button onClick={() => setMobileOpen(false)} className="lg:hidden p-1 text-[color:var(--m-ic)]" aria-label="Fechar menu"><X size={20} /></button>}
       </div>
 
@@ -282,7 +270,7 @@ export default function Sidebar({ email }: { email?: string | null }) {
     <>
       {/* Topbar mobile */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-30 flex items-center justify-between px-4 h-14" style={{ ...MVARS, background: 'var(--m-sbg)', borderBottom: '1px solid var(--m-bd)' }}>
-        <LogoAtuan />
+        <LogoObrigo size={26} variant="light" />
         <button onClick={() => setMobileOpen(true)} className="p-2 text-[color:var(--m-ic)]" aria-label="Abrir menu"><Menu size={22} /></button>
       </div>
 

@@ -13,7 +13,7 @@ const BASE_SEL = 'w-full h-10 px-3.5 rounded-lg text-sm text-white placeholder-g
 // Largura agora é controlada pelo span do grid; estes mantêm a compatibilidade.
 const BASE_NARROW = BASE
 const SEL_NARROW  = BASE_SEL
-const FS   = { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.10)' }
+const FS   = { background: 'var(--sys-surface-3)', border: '1px solid var(--sys-border-2)' }
 const FSE  = { ...FS, borderColor: 'rgba(239,68,68,0.6)' }
 const FSS  = { ...FS } // removido colorScheme:'dark' — causava texto branco nas options
 const FSSE = { ...FSS, borderColor: 'rgba(239,68,68,0.6)' }

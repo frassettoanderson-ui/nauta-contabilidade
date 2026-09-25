@@ -1,8 +1,8 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { Settings, Sun, Moon, Volume2, VolumeX, Tag, Plus, Trash2, Loader2 } from 'lucide-react'
-import { getTema, setTema, getSomAtivo, setSomAtivo, type Tema } from '@/lib/sys-prefs'
+import { Settings, Volume2, VolumeX, Tag, Plus, Trash2, Loader2 } from 'lucide-react'
+import { getSomAtivo, setSomAtivo } from '@/lib/sys-prefs'
 import { listCategoriasServico, addCategoriaServico, deleteCategoriaServico, type CategoriaServico } from '@/lib/api'
 
 function Toggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => void }) {
@@ -17,15 +17,10 @@ function Toggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => void 
 }
 
 export default function ConfiguracoesPage() {
-  const [tema, setTemaUI] = useState<Tema>('dark')
   const [som, setSomUI] = useState(true)
 
-  useEffect(() => { setTemaUI(getTema()); setSomUI(getSomAtivo()) }, [])
+  useEffect(() => { setSomUI(getSomAtivo()) }, [])
 
-  function trocarTema(claro: boolean) {
-    const t: Tema = claro ? 'light' : 'dark'
-    setTemaUI(t); setTema(t)
-  }
   function trocarSom(on: boolean) {
     setSomUI(on); setSomAtivo(on)
   }
@@ -54,21 +49,6 @@ export default function ConfiguracoesPage() {
       </div>
 
       <div className="space-y-3">
-        {/* Tema */}
-        <div className="flex items-center justify-between gap-4 rounded-2xl p-5"
-          style={{ background: 'var(--sys-surface)', border: '1px solid var(--sys-border)' }}>
-          <div className="flex items-center gap-3">
-            <span className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'var(--sys-surface-3)' }}>
-              {tema === 'light' ? <Sun size={18} className="text-amber-400" /> : <Moon size={18} className="text-[color:var(--sys-accent)]" />}
-            </span>
-            <div>
-              <p className="text-sm font-bold text-white">Tema {tema === 'light' ? 'claro' : 'escuro'}</p>
-              <p className="text-xs text-gray-500">Alterna a aparência do sistema entre claro e escuro</p>
-            </div>
-          </div>
-          <Toggle on={tema === 'light'} onChange={trocarTema} />
-        </div>
-
         {/* Sons */}
         <div className="flex items-center justify-between gap-4 rounded-2xl p-5"
           style={{ background: 'var(--sys-surface)', border: '1px solid var(--sys-border)' }}>

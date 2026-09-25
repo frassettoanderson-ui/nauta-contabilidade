@@ -1,36 +1,30 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useEffect } from 'react'
+import { usePathname, useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { Loader2 } from 'lucide-react'
 import Sidebar from '@/components/sistema/Sidebar'
+import Topbar from '@/components/sistema/Topbar'
 import ForcePasswordChange from '@/components/sistema/ForcePasswordChange'
 import ReminderWatcher from '@/components/sistema/ReminderWatcher'
-import ChatButton from '@/components/sistema/ChatButton'
-import ProfileButton from '@/components/sistema/ProfileButton'
-import { getTema, onPrefsChange, type Tema } from '@/lib/sys-prefs'
 
+// Layout do sistema no padrão do Obrigô (gestor-oa/web/src/components/Layout.tsx):
+// sidebar marinho fixa + coluna de conteúdo com topbar marinho, fundo #f3f5f9,
+// zoom 1.2 e animação page-anim a cada troca de rota. Tema claro único.
 export default function PainelLayout({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession()
   const router = useRouter()
-  const [tema, setTemaState] = useState<Tema>('dark')
-
-  useEffect(() => {
-    setTemaState(getTema())
-    return onPrefsChange(() => setTemaState(getTema()))
-  }, [])
+  const pathname = usePathname()
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/sistema/login')
   }, [status, router])
 
-  const themeClass = `sys-theme ${tema === 'light' ? 'theme-light' : ''}`
-
   if (status !== 'authenticated') {
     return (
-      <div className={`${themeClass} min-h-screen flex items-center justify-center`} style={{ background: 'var(--sys-bg)' }}>
-        <Loader2 size={28} className="animate-spin text-[color:var(--sys-accent)]" />
+      <div className="sys-theme min-h-screen flex items-center justify-center" style={{ background: 'var(--sys-bg)' }}>
+        <Loader2 size={28} className="animate-spin" style={{ color: '#F47920' }} />
       </div>
     )
   }
@@ -38,13 +32,16 @@ export default function PainelLayout({ children }: { children: React.ReactNode }
   const mustChange = (session.user as unknown as { mustChangePassword?: boolean })?.mustChangePassword
 
   return (
-    <div className={`${themeClass} min-h-screen`} style={{ background: 'var(--sys-bg)' }}>
+    <div className="sys-theme min-h-screen" style={{ background: 'var(--sys-bg)' }}>
       <Sidebar email={session.user?.email} />
-      <ProfileButton />
-      <ChatButton />
-      {/* Conteúdo: deslocado pela sidebar no desktop; topbar no mobile */}
-      <div className="sys-content pt-14 lg:pt-0">
-        {children}
+      {/* Conteúdo: deslocado pela sidebar no desktop; topbar mobile do menu no celular */}
+      <div className="sys-content pt-14 lg:pt-0 min-h-screen flex flex-col">
+        <Topbar />
+        <div className="sys-zoom flex-1">
+          <div key={pathname} className="page-anim">
+            {children}
+          </div>
+        </div>
       </div>
       {mustChange && <ForcePasswordChange />}
       <ReminderWatcher />

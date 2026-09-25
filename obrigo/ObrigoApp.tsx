@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './lib/auth';
@@ -188,6 +188,27 @@ function Rotas() {
 }
 
 export default function ObrigoApp() {
+  // O Next grava a URL nova no navegador so' DURANTE o commit da navegacao: na primeira
+  // renderizacao desta tela, window.location ainda e' a tela anterior (ex.: /sistema).
+  // O BrowserRouter le a URL ao montar; se montasse agora com uma URL fora do basename,
+  // o react-router nao renderizaria nada (tela em branco ate' o F5). Entao so' montamos o
+  // router depois de confirmar que a URL ja' comeca com /sistema/obrigo.
+  const [pronto, setPronto] = useState(false);
+  useEffect(() => {
+    let vivo = true;
+    let tentativas = 0;
+    const checar = () => {
+      if (!vivo) return;
+      if (window.location.pathname.startsWith(OBRIGO_BASE)) setPronto(true);
+      else if (tentativas++ < 60) requestAnimationFrame(checar); // ~1s de tolerancia
+      else setPronto(true);
+    };
+    checar();
+    return () => { vivo = false; };
+  }, []);
+  if (!pronto) {
+    return <div className="grid h-full place-items-center text-slate-400">Carregando...</div>;
+  }
   return (
     // p-6 = o padding do <main> original do Obrigô (varias telas usam -m-6 contando com ele)
     <div className="obrigo-app h-full p-6">

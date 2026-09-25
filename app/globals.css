@@ -62,8 +62,8 @@
   --status-warn:    #ffb752;
   --status-danger:  #d15b47;
 }
-/* Conteúdo com zoom 120% (Layout.tsx do Obrigô: <main style={{ zoom: 1.2 }}>) */
-.sys-zoom { zoom: 1.2; }
+/* Conteúdo com zoom 90% (pedido 25/09; o Obrigô original usava 1.2) */
+.sys-zoom { zoom: 0.9; }
 
 /* Remapeia as classes de tema escuro fixadas nas telas antigas da Nauta → escala slate do Obrigô.
    O módulo Obrigô (.obrigo-app) já é claro nativo: fica FORA do remapeamento (:not). */

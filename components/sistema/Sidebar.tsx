@@ -206,7 +206,8 @@ export default function Sidebar({ email }: { email?: string | null }) {
   const irPara = (href: string) => { playClick(); setMobileOpen(false); router.push(href) }
 
   // ── Classes idênticas ao MenuLista do Obrigô ──
-  const itemCls = (col: boolean) => `flex w-full items-center gap-3 rounded px-3 py-2.5 text-left transition ${col ? 'justify-center' : ''}`
+  // Menu um pouco menor que o do Obrigô original (w-52, 15px, py-2, ícones 18) — pedido 25/09
+  const itemCls = (col: boolean) => `flex w-full items-center gap-3 rounded px-3 py-2 text-left transition ${col ? 'justify-center' : ''}`
   const leafCls = (active: boolean, col: boolean) => `${itemCls(col)} border-l-[3px] ${active
     ? 'border-[color:var(--m-acc)] bg-[var(--m-abg)] font-medium text-[color:var(--m-afg)]'
     : 'border-transparent text-[color:var(--m-fg)] hover:bg-[var(--m-hv)] hover:text-[color:var(--m-afg)]'}`
@@ -219,7 +220,7 @@ export default function Sidebar({ email }: { email?: string | null }) {
     if (c.external) {
       return (
         <a href={c.href} title={col ? c.label : undefined} target="_blank" rel="noopener noreferrer" onClick={() => { playClick(); setFly(null); setMobileOpen(false) }} className={grpCls(false, col)}>
-          <c.icon size={20} className="text-[color:var(--m-ic)]" />
+          <c.icon size={18} className="text-[color:var(--m-ic)]" />
           {!col && <span className="flex-1">{c.label}</span>}
           {!col && <span className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--m-acc)' }}>abrir</span>}
         </a>
@@ -227,7 +228,7 @@ export default function Sidebar({ email }: { email?: string | null }) {
     }
     return (
       <Link href={c.href} title={col ? c.label : undefined} onClick={() => { playClick(); setFly(null); setMobileOpen(false) }} className={leafCls(active, col)}>
-        <c.icon size={20} className={active ? 'text-[color:var(--m-afg)]' : 'text-[color:var(--m-ic)]'} />
+        <c.icon size={18} className={active ? 'text-[color:var(--m-afg)]' : 'text-[color:var(--m-ic)]'} />
         {!col && <span className="flex-1">{c.label}</span>}
       </Link>
     )
@@ -261,7 +262,7 @@ export default function Sidebar({ email }: { email?: string | null }) {
             return (
               <div key={item.label} className="relative" onMouseEnter={() => abrir(item.label)} onMouseLeave={agendarFechar}>
                 <button className={`${grpCls(on, false)} whitespace-nowrap`}>
-                  <item.icon size={20} className={on ? 'text-[color:var(--m-afg)]' : 'text-[color:var(--m-ic)]'} />
+                  <item.icon size={18} className={on ? 'text-[color:var(--m-afg)]' : 'text-[color:var(--m-ic)]'} />
                   <span className="flex-1">{item.label}</span>
                   <ChevronRight size={15} className="text-[color:var(--m-ic)]" />
                 </button>
@@ -284,7 +285,7 @@ export default function Sidebar({ email }: { email?: string | null }) {
     const ref = useRef<HTMLDivElement>(null)
     const dy = useSobeSePassar(ref, grupo.label)
     return (
-      <div ref={ref} className="hidden lg:block fixed z-40 min-w-[240px] rounded-md p-1 pl-2 shadow-xl text-[16px]"
+      <div ref={ref} className="hidden lg:block fixed z-40 min-w-[240px] rounded-md p-1 pl-2 shadow-xl text-[15px]"
         style={{ ...MVARS, left, top: top + dy, background: 'var(--m-bg)', border: '1px solid var(--m-bd)' }}
         onMouseEnter={cancelarFecharFly} onMouseLeave={fecharFly}>
         <FlyLista itens={grupo.children} />
@@ -302,7 +303,7 @@ export default function Sidebar({ email }: { email?: string | null }) {
           return (
             <div key={item.label} className={nivel === 0 ? 'border-b border-[color:var(--m-bd)] last:border-0' : ''} style={{ paddingLeft: nivel ? 12 : 0 }}>
               <button onClick={() => toggleGroup(item.label)} className={grpCls(on, false)}>
-                <item.icon size={20} className={on ? 'text-[color:var(--m-afg)]' : 'text-[color:var(--m-ic)]'} />
+                <item.icon size={18} className={on ? 'text-[color:var(--m-afg)]' : 'text-[color:var(--m-ic)]'} />
                 <span className="flex-1">{item.label}
                   {item.label === 'Comercial' && comNovos && <span className="onb-badge ml-2">Novo</span>}
                 </span>
@@ -334,8 +335,8 @@ export default function Sidebar({ email }: { email?: string | null }) {
     <div className="flex flex-col h-full">
       {/* Logo */}
       <div className={`flex items-center ${flyout ? 'justify-center' : 'justify-between'} px-4 py-3 shrink-0`}>
-        <Link href="/sistema" onClick={() => setMobileOpen(false)}><LogoObrigo size={30} showText={!col} variant="light" /></Link>
-        {!col && <button onClick={() => setMobileOpen(false)} className="lg:hidden p-1 text-[color:var(--m-ic)]" aria-label="Fechar menu"><X size={20} /></button>}
+        <Link href="/sistema" onClick={() => setMobileOpen(false)}><LogoObrigo size={27} showText={!col} variant="light" /></Link>
+        {!col && <button onClick={() => setMobileOpen(false)} className="lg:hidden p-1 text-[color:var(--m-ic)]" aria-label="Fechar menu"><X size={18} /></button>}
       </div>
 
       {/* Botões de atalho */}
@@ -349,7 +350,7 @@ export default function Sidebar({ email }: { email?: string | null }) {
       )}
 
       {/* Menu */}
-      <nav className="flex-1 overflow-y-auto px-1.5 pb-2 text-[16px]">
+      <nav className="flex-1 overflow-y-auto px-1.5 pb-2 text-[15px]">
         {!flyout ? <Acordeao itens={nav} /> : nav.map(item => {
           const divisoria = 'border-b border-[color:var(--m-bd)] last:border-0'
 
@@ -360,7 +361,7 @@ export default function Sidebar({ email }: { email?: string | null }) {
                 onMouseEnter={e => abrirFly(item.label, (e.currentTarget as HTMLElement).getBoundingClientRect().top)}
                 onMouseLeave={fecharFly}>
                 <button title={col ? item.label : undefined} className={grpCls(on, col)}>
-                  <item.icon size={20} className={on ? 'text-[color:var(--m-afg)]' : 'text-[color:var(--m-ic)]'} />
+                  <item.icon size={18} className={on ? 'text-[color:var(--m-afg)]' : 'text-[color:var(--m-ic)]'} />
                   {!col && <span className="flex-1">{item.label}
                     {item.label === 'Comercial' && comNovos && <span className="onb-badge ml-2">Novo</span>}
                   </span>}
@@ -399,7 +400,7 @@ export default function Sidebar({ email }: { email?: string | null }) {
 
   const grpFly = fly ? (nav.find(i => isGroup(i) && i.label === fly.label) as NavGroup | undefined) : undefined
   const flyTop = fly ? Math.max(8, fly.top) : 8
-  const flyLeft = (recolhido ? 64 : 224) + 2
+  const flyLeft = (recolhido ? 64 : 208) + 2
 
   return (
     <>
@@ -410,7 +411,7 @@ export default function Sidebar({ email }: { email?: string | null }) {
       </div>
 
       {/* Sidebar desktop */}
-      <aside className={`hidden lg:flex fixed top-0 left-0 bottom-0 z-30 flex-col transition-[width] duration-200 ${recolhido ? 'w-16' : 'w-56'}`} style={{ ...MVARS, background: 'var(--m-sbg)', borderRight: '2px solid var(--m-acc)' }}>
+      <aside className={`hidden lg:flex fixed top-0 left-0 bottom-0 z-30 flex-col transition-[width] duration-200 ${recolhido ? 'w-16' : 'w-52'}`} style={{ ...MVARS, background: 'var(--m-sbg)', borderRight: '2px solid var(--m-acc)' }}>
         {renderContent(true)}
       </aside>
 

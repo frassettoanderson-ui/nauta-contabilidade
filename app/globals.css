@@ -5,7 +5,7 @@
 
 /* Deslocamento do conteúdo conforme a sidebar (expandida x recolhida) — desktop */
 @media (min-width: 1024px) {
-  .sys-content { padding-left: 14rem; transition: padding-left .2s ease; }
+  .sys-content { padding-left: 13rem; transition: padding-left .2s ease; }
   html[data-menu-collapsed="1"] .sys-content { padding-left: 4rem; }
 }
 
@@ -62,8 +62,8 @@
   --status-warn:    #ffb752;
   --status-danger:  #d15b47;
 }
-/* Conteúdo com zoom 90% (pedido 25/09; o Obrigô original usava 1.2) */
-.sys-zoom { zoom: 0.9; }
+/* Conteúdo em 100% (pedido 25/09; o Obrigô original usava 1.2) */
+.sys-zoom { zoom: 1; }
 
 /* Remapeia as classes de tema escuro fixadas nas telas antigas da Nauta → escala slate do Obrigô.
    O módulo Obrigô (.obrigo-app) já é claro nativo: fica FORA do remapeamento (:not). */

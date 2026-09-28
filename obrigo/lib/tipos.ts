@@ -139,6 +139,7 @@ export interface EmpresaDetalhe {
   proprietarioNome: string | null;
   proprietarioCpf: string | null;
   usaGlp: boolean | null;
+  certSenha?: string | null;
   filiais: Filial[] | null;
   nautaClienteId: string | null;
   nautaLeadId: string | null;

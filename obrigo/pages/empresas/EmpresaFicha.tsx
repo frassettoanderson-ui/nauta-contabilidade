@@ -978,6 +978,15 @@ function SecAnexos({ empresa, departamentos, onMudou }: { empresa: EmpresaDetalh
   const [descricao, setDescricao] = useState('');
   const [departamentoId, setDepartamentoId] = useState('');
   const [arquivo, setArquivo] = useState<File | null>(null);
+  // Senha do certificado digital da empresa (e-CNPJ) — fica aqui, junto do certificado anexado.
+  const podeEditar = temPermissao(sessao, 'empresas_editar');
+  const [certSenha, setCertSenha] = useState(empresa.certSenha ?? '');
+  const [salvandoCert, setSalvandoCert] = useState(false);
+  async function salvarCert() {
+    setSalvandoCert(true);
+    try { await api.put(`/empresas/${empresa.id}`, { certSenha: certSenha || null }); toast('ok', 'Senha do certificado salva.'); onMudou(); }
+    catch (e) { toast('erro', e instanceof ApiError ? e.message : 'Erro'); } finally { setSalvandoCert(false); }
+  }
   async function adicionar() {
     if (!arquivo) return toast('erro', 'Escolha um arquivo.');
     const fd = new FormData(); fd.append('arquivos', arquivo);
@@ -994,6 +1003,14 @@ function SecAnexos({ empresa, departamentos, onMudou }: { empresa: EmpresaDetalh
   async function remover(anexoId: string) { try { await api.del(`/empresas/${empresa.id}/anexos/${anexoId}`); onMudou(); } catch (e) { toast('erro', e instanceof ApiError ? e.message : 'Erro'); } }
   return (
     <div className="space-y-3">
+      {/* Senha do certificado digital da empresa (e-CNPJ) */}
+      <div className="flex flex-wrap items-end gap-2 rounded border border-slate-200 bg-slate-50 p-2">
+        <div className="min-w-[220px] flex-1">
+          <label className={LBL}>Senha do certificado digital da empresa (e-CNPJ)</label>
+          <input className={INP} type="password" disabled={!podeEditar} value={certSenha} onChange={(e) => setCertSenha(e.target.value)} placeholder="anexe o certificado abaixo e guarde a senha aqui" />
+        </div>
+        {podeEditar && <button onClick={salvarCert} disabled={salvandoCert} className="rounded bg-status-ok px-4 py-2 text-sm font-medium text-white hover:bg-emerald-600 disabled:opacity-50">{salvandoCert ? '...' : 'Salvar senha'}</button>}
+      </div>
       {podeUpload && (
         <div className="flex flex-wrap items-end gap-2">
           <input className={`${INP} min-w-[200px] flex-1`} placeholder="Descricao do arquivo a ser anexado(s)..." value={descricao} onChange={(e) => setDescricao(e.target.value)} />

@@ -14,7 +14,7 @@ const ESTADO_CIVIL = ['Solteiro(a)', 'Casado(a)', 'Divorciado(a)', 'Viúvo(a)', 
 const fmtCpf = (v: string) => { const d = v.replace(/\D/g, '').slice(0, 11); return d.replace(/^(\d{3})(\d{3})(\d{3})(\d{0,2}).*/, (_m, a, b, c, e) => `${a}.${b}.${c}${e ? `-${e}` : ''}`); };
 const fmtCnpj = (v: string) => { const d = v.replace(/\D/g, '').slice(0, 14); return d.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{0,2}).*/, (_m, a, b, c, e, f) => `${a}.${b}.${c}/${e}${f ? `-${f}` : ''}`); };
 const s = (v: unknown) => (v == null ? '' : String(v));
-const socioVazio = (): Socio => ({ nomeCompleto: '', cpf: '', rg: '', nascimento: '', nomePai: '', nomeMae: '', participacao: '', estadoCivil: '', reciboIrpf: '', tituloEleitor: '', senhaGov: '', email: '', telefone: '' });
+const socioVazio = (): Socio => ({ nomeCompleto: '', cpf: '', rg: '', nascimento: '', nomePai: '', nomeMae: '', participacao: '', estadoCivil: '', reciboIrpf: '', tituloEleitor: '', senhaGov: '', certSenha: '', email: '', telefone: '' });
 
 export default function SecContratoSocios({ empresa, podeEditar, onMudou }: { empresa: EmpresaDetalhe; podeEditar: boolean; onMudou: () => void }) {
   const toast = useToast();
@@ -124,10 +124,11 @@ export default function SecContratoSocios({ empresa, podeEditar, onMudou }: { em
                 <div><label className={LBL}>Recibo IRPF</label><input className={INP} disabled={ro} value={s(x.reciboIrpf)} onChange={(e) => setSocio(i, 'reciboIrpf', e.target.value)} /></div>
                 <div><label className={LBL}>Título de eleitor</label><input className={INP} disabled={ro} value={s(x.tituloEleitor)} onChange={(e) => setSocio(i, 'tituloEleitor', e.target.value)} /></div>
               </div>
-              <div className="mt-2 grid grid-cols-1 gap-3 md:grid-cols-[1.5fr_1fr_1fr]">
+              <div className="mt-2 grid grid-cols-1 gap-3 md:grid-cols-[1.5fr_1fr_1fr_1fr]">
                 <div><label className={LBL}>E-mail</label><input className={INP} disabled={ro} value={s(x.email)} onChange={(e) => setSocio(i, 'email', e.target.value)} /></div>
                 <div><label className={LBL}>Telefone</label><input className={INP} disabled={ro} value={s(x.telefone)} onChange={(e) => setSocio(i, 'telefone', e.target.value)} /></div>
                 <div><label className={LBL}>Senha gov.br</label><input className={INP} disabled={ro} type="password" value={s(x.senhaGov)} onChange={(e) => setSocio(i, 'senhaGov', e.target.value)} /></div>
+                <div><label className={LBL}>Senha do certificado</label><input className={INP} disabled={ro} type="password" value={s(x.certSenha)} onChange={(e) => setSocio(i, 'certSenha', e.target.value)} /></div>
               </div>
             </div>
           ))}

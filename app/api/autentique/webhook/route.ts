@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import pool from '@/lib/db'
 import { emitCrmChange } from '@/lib/realtime'
+import { anexarContratoAssinadoPorAutentiqueId } from '@/lib/obrigo-sync'
 
 export const dynamic = 'force-dynamic'
 
@@ -44,6 +45,8 @@ export async function POST(req: NextRequest) {
         [signedUrl, documentId]
       )
       emitCrmChange()
+      // Grava o contrato assinado nos Arquivos anexos da empresa no Obrigô.
+      void anexarContratoAssinadoPorAutentiqueId(documentId)
     }
 
     return NextResponse.json({ ok: true })

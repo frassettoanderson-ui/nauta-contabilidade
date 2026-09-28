@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { marcarAssinaturaManual } from '@/lib/contrato-gen'
+import { anexarNoObrigo } from '@/lib/obrigo-sync'
+import pool from '@/lib/db'
 import { writeFile, mkdir } from 'fs/promises'
 import path from 'path'
 
@@ -38,6 +40,12 @@ export async function POST(req: NextRequest) {
     await writeFile(path.join(PRIV, filename), buf)
     const url = `/api/sistema/arquivo/${filename}`
     const r = await marcarAssinaturaManual(leadId, url)
+    // Grava o contrato/comprovante assinado nos Arquivos anexos da empresa no Obrigô.
+    try {
+      const cli = await pool.query('SELECT id FROM clientes WHERE lead_id = $1 LIMIT 1', [leadId])
+      const clienteId = cli.rows[0]?.id
+      if (clienteId) void anexarNoObrigo(clienteId, `Contrato assinado.${ext}`, file.type, buf)
+    } catch { /* não bloqueia a assinatura */ }
     return NextResponse.json(r)
   } catch (e) {
     return NextResponse.json({ error: (e as Error).message || 'Falha ao marcar assinatura' }, { status: 400 })

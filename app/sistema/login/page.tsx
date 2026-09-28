@@ -62,10 +62,6 @@ export default function SistemaLoginPage() {
             </div>
           </form>
         </div>
-        <div className="mt-4 text-center text-sm" style={{ color: '#d6e0ee' }}>
-          Ainda não tem usuário?{' '}
-          <Link href="/sistema/criar-usuario" className="font-medium underline" style={{ color: '#ffffff' }}>Criar usuário</Link>
-        </div>
       </div>
     </main>
   )

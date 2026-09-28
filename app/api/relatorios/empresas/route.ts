@@ -4,12 +4,10 @@ import { authOptions } from '@/lib/auth'
 import { empresaAtivaId } from '@/lib/tenant'
 import { listClientes } from '@/lib/clientes'
 import { buildRelatorioEmpresasHtml } from '@/lib/relatorio-empresas-html'
-import { writeFile, readFile, mkdir } from 'fs/promises'
+import { renderHtmlToPdf } from '@/lib/html-pdf'
+import { readFile } from 'fs/promises'
 import path from 'path'
-import { exec } from 'child_process'
-import { promisify } from 'util'
 
-const execP = promisify(exec)
 export const dynamic = 'force-dynamic'
 export const maxDuration = 120
 
@@ -23,17 +21,9 @@ const ORDENS: Record<string, { campo: string; label: string }> = {
   cadastro:    { campo: 'criado_em', label: 'Data de cadastro' },
 }
 
+// Reusa o helper compartilhado (wkhtmltopdf com fallback para LibreOffice).
 async function htmlToPdf(html: string): Promise<Buffer> {
-  const stamp = Date.now()
-  const dir = path.join('/tmp', `rel-empresas-${stamp}`)
-  await mkdir(dir, { recursive: true })
-  const htmlPath = path.join(dir, 'rel.html')
-  const pdfPath = path.join(dir, 'rel.pdf')
-  await writeFile(htmlPath, html, 'utf-8')
-  const wk = `wkhtmltopdf --quiet --encoding utf-8 --page-size A4 -T 14 -B 12 -L 14 -R 14 "${htmlPath}" "${pdfPath}"`
-  try { await execP(`xvfb-run -a ${wk}`, { timeout: 90000 }) }
-  catch { await execP(wk, { timeout: 90000 }) }
-  return readFile(pdfPath)
+  return renderHtmlToPdf(html)
 }
 
 export async function POST(req: NextRequest) {

@@ -1,5 +1,6 @@
 import pool from './db'
 import { emitCrmChange } from './realtime'
+import { syncEmpresaFromNauta } from './obrigo-sync'
 import { asaasConfigurado, sincronizarLead, cancelarAssinatura } from './asaas'
 
 const CLI_COLS = [
@@ -207,6 +208,8 @@ export async function saveCliente(payload: AnyObj & { id?: string; lead_id?: str
   }
 
   emitCrmChange()
+  // Sobe o cadastro para a Empresa do Obrigô (não bloqueia; fire-and-forget).
+  void syncEmpresaFromNauta(clienteId as string)
   return clienteId
 }
 

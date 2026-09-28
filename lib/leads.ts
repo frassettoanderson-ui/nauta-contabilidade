@@ -3,6 +3,7 @@ import { asaasConfigurado, sincronizarLead } from './asaas'
 import { isContratoPronto } from './contratos'
 import { emitCrmChange } from './realtime'
 import { calcStatusFinanceiro, vencimentoAjustado } from './financeiro-calc'
+import { syncEmpresaFromLead } from './obrigo-sync'
 
 export type Lead = {
   id?: string
@@ -287,6 +288,8 @@ export async function concluirOnboarding(leadId: string, valor?: number | null, 
     [leadId, valor ?? null, vencimento ?? null]
   )
   emitCrmChange()
+  // Libera a empresa no Obrigô (sai do onboarding → aparece no menu Empresas).
+  void syncEmpresaFromLead(leadId)
 }
 
 // ─── FINANCEIRO ──────────────────────────────────────────────────────────

@@ -171,6 +171,12 @@ export default function EmpresaFicha() {
     catch (e) { toast('erro', e instanceof ApiError ? e.message : 'Erro ao trocar ID.'); }
   }
 
+  // Volta para a tela anterior (lista de Empresas OU lista de Onboarding, conforme de onde veio).
+  function voltar() {
+    if (typeof window !== 'undefined' && window.history.length > 1) navigate(-1);
+    else navigate('/empresas');
+  }
+
   async function excluir() {
     if (!empresa || !podeExcluir) return;
     if (!confirm(`Excluir a empresa "${empresa.razaoSocial}"? Acao irreversivel.`)) return;
@@ -286,7 +292,7 @@ export default function EmpresaFicha() {
         <div className="flex gap-2">
           {empresa.dataEntrada && <span className="self-center text-[12px] font-bold text-slate-600">Cadastro: {new Date(empresa.dataEntrada).toLocaleDateString('pt-BR')}</span>}
           {podeEditar && <button onClick={salvar} disabled={salvando} className="flex items-center gap-2 rounded-md bg-status-ok px-6 py-2 text-sm font-medium text-white hover:bg-emerald-600 disabled:opacity-50"><Save size={16} /> {salvando ? '...' : 'Salvar'}</button>}
-          <button onClick={() => navigate('/empresas')} className="flex items-center gap-2 rounded-md bg-status-warn px-6 py-2 text-sm font-medium text-white hover:bg-amber-500"><RotateCcw size={16} /> Voltar</button>
+          <button onClick={voltar} className="flex items-center gap-2 rounded-md bg-status-warn px-6 py-2 text-sm font-medium text-white hover:bg-amber-500"><RotateCcw size={16} /> Voltar</button>
         </div>
       </div>
 

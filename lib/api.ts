@@ -282,6 +282,13 @@ export function gerarLinkCadastro(id: string): Promise<{ token: string; url: str
   return fetch(`/api/clientes/${id}/link`, { method: 'POST' }).then(r => json<{ token: string; url: string }>(r))
 }
 
+// Abre (criando/vinculando se preciso) a ficha do cliente no Obrigô a partir do lead.
+export function abrirFichaObrigo(leadId: string): Promise<{ empresaId: string; path: string }> {
+  return fetch(`/api/onboarding/abrir-ficha`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ leadId }),
+  }).then(r => json<{ empresaId: string; path: string }>(r))
+}
+
 // ─── USUÁRIOS ────────────────────────────────────────────────────────────────
 
 export function createUsuario(username: string, password: string, role: string): Promise<void> {

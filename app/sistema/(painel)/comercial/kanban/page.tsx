@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Loader2, Plus, Bell, Check, XCircle, FileText, MessageCircle, Pencil, ClipboardCheck, AlertCircle, Rocket } from 'lucide-react'
-import { getLeads, updateLead, iniciarOnboarding, cancelarAssinatura, marcarAssinaturaManual, type LeadRow } from '@/lib/api'
+import { getLeads, updateLead, iniciarOnboarding, cancelarAssinatura, marcarAssinaturaManual, abrirFichaObrigo, type LeadRow } from '@/lib/api'
 import { ETAPAS } from '@/lib/crm-config'
 import { versiculoAleatorio, type Versiculo } from '@/lib/versiculos'
 import ClassBar from '@/components/sistema/ClassBar'
@@ -46,6 +46,12 @@ export default function KanbanPage() {
   const [overCol, setOverCol] = useState<string | null>(null)
   const [fecharLead, setFecharLead] = useState<LeadRow | null>(null)
   const [dadosContrato, setDadosContrato] = useState<LeadRow | null>(null)
+
+  // Abre a ficha do cliente no Obrigô (cria/vincula sob demanda)
+  async function abrirCadastro(leadId: string) {
+    try { const r = await abrirFichaObrigo(leadId); router.push(r.path) }
+    catch { alert('Não foi possível abrir o cadastro no Obrigô.') }
+  }
 
   const [versiculo, setVersiculo] = useState<Versiculo | null>(null)
 
@@ -232,7 +238,7 @@ export default function KanbanPage() {
                             <MessageCircle size={19} />
                           </a>
                           <AcaoBtn title="Editar" onClick={() => abrir(l.id, 'edit')}><Pencil size={18} /></AcaoBtn>
-                          <AcaoBtn title="Cadastro completo" onClick={() => router.push(`/sistema/clientes/cadastrar?lead=${l.id}&edit=1`)} color="#22c55e"><ClipboardCheck size={19} /></AcaoBtn>
+                          <AcaoBtn title="Cadastro completo (Obrigô)" onClick={() => abrirCadastro(l.id)} color="#22c55e"><ClipboardCheck size={19} /></AcaoBtn>
                           <AcaoBtn title="Cadastrar lembrete" onClick={() => abrir(l.id, 'lembrete')} color="#f59e0b"><Bell size={18} /></AcaoBtn>
                         </div>
 
@@ -295,7 +301,7 @@ export default function KanbanPage() {
                                   style={{ background: 'linear-gradient(135deg, var(--sys-accent), #6355e0)' }}>
                                   <FileText size={13} /> Preencher dados do contrato
                                 </button>
-                                <button onClick={() => router.push(`/sistema/clientes/cadastrar?lead=${l.id}&edit=1`)}
+                                <button onClick={() => abrirCadastro(l.id)}
                                   className="w-full flex items-center justify-center gap-1 mt-1.5 text-[11px] font-bold text-gray-500 hover:text-[color:var(--sys-accent)]">
                                   <AlertCircle size={11} /> Abrir cadastro completo
                                 </button>

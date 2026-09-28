@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { Loader2, Lock, Check, CheckCircle2, Link2, Rocket, MessageCircle, Pencil, ClipboardCheck, X, ChevronDown, ChevronUp, Copy, ExternalLink, Clock } from 'lucide-react'
-import { getOnboardingBoard, setOnboardingCheck, concluirOnboarding, gerarLinkCadastro, type OnboardingCliente } from '@/lib/api'
+import { getOnboardingBoard, setOnboardingCheck, concluirOnboarding, gerarLinkCadastro, abrirFichaObrigo, type OnboardingCliente } from '@/lib/api'
 import { SETORES, itensDoSetor, gerenteConcluido, podeEditarSetor, checksEfetivos, setorConcluido, setorItensCompletos, tudoConcluido, doneKey, ITEM_CADASTRO, type SetorId } from '@/lib/onboarding-checklist'
 import { ONBOARDING_CATEGORIAS } from '@/lib/onboarding'
 import { useRealtime } from '@/components/sistema/useRealtime'
@@ -73,6 +73,19 @@ export default function OnboardingPage() {
     if (!concluindo) return
     try { await concluirOnboarding(concluindo.id, valor, vencimento); setConcluindo(null); load() }
     catch { alert('Erro ao concluir.') }
+  }
+
+  const [abrindo, setAbrindo] = useState<string | null>(null)
+  async function abrirCadastro(c: OnboardingCliente) {
+    setAbrindo(c.id)
+    try {
+      const r = await abrirFichaObrigo(c.id)
+      router.push(r.path)
+    } catch {
+      alert('Não foi possível abrir o cadastro no Obrigô.')
+    } finally {
+      setAbrindo(null)
+    }
   }
 
   async function enviarLink(c: OnboardingCliente) {
@@ -145,7 +158,9 @@ export default function OnboardingPage() {
                       </a>
                       <MiniBtn title="Editar lead" onClick={() => setEditId(c.id)}><Pencil size={14} /></MiniBtn>
                       <MiniBtn title="Anotações do cliente" onClick={() => setAnotacoesLead({ id: c.id, nome: c.emp_nome || c.nome })} color="var(--sys-accent)"><Clock size={14} /></MiniBtn>
-                      <MiniBtn title="Cadastro" onClick={() => router.push(`/sistema/clientes/cadastrar?lead=${c.id}&edit=1`)} color="#22c55e"><ClipboardCheck size={15} /></MiniBtn>
+                      <MiniBtn title="Cadastro (Obrigô)" onClick={() => abrirCadastro(c)} color="#22c55e">
+                        {abrindo === c.id ? <Loader2 size={15} className="animate-spin" /> : <ClipboardCheck size={15} />}
+                      </MiniBtn>
                     </div>
                   </div>
                   {c.emp_cnpj && (

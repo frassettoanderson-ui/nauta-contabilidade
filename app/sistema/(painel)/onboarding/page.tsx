@@ -3,7 +3,8 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { Loader2, Lock, Check, CheckCircle2, Link2, Rocket, MessageCircle, Pencil, ClipboardCheck, X, ChevronDown, ChevronUp, Copy, ExternalLink, Clock } from 'lucide-react'
+import { Loader2, Lock, Check, CheckCircle2, Link2, Rocket, MessageCircle, Pencil, ClipboardCheck, X, ChevronDown, ChevronUp, Copy, ExternalLink, Clock, LayoutGrid, List as ListIcon } from 'lucide-react'
+import Link from 'next/link'
 import { getOnboardingBoard, setOnboardingCheck, concluirOnboarding, gerarLinkCadastro, abrirFichaObrigo, type OnboardingCliente } from '@/lib/api'
 import { SETORES, itensDoSetor, gerenteConcluido, podeEditarSetor, checksEfetivos, setorConcluido, setorItensCompletos, tudoConcluido, doneKey, ITEM_CADASTRO, type SetorId } from '@/lib/onboarding-checklist'
 import { ONBOARDING_CATEGORIAS } from '@/lib/onboarding'
@@ -108,10 +109,23 @@ export default function OnboardingPage() {
 
   return (
     <div className="p-6 lg:p-8">
-      <h1 className="text-2xl font-black text-white mb-1 flex items-center gap-2" style={{ letterSpacing: '-0.02em' }}>
-        <Rocket size={22} className="text-[color:var(--sys-accent)]" /> Onboarding
-      </h1>
-      <p className="text-gray-500 text-sm mb-6">Clientes em processo. Marque os itens do seu setor conforme conclui.</p>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-black text-white mb-1 flex items-center gap-2" style={{ letterSpacing: '-0.02em' }}>
+            <Rocket size={22} className="text-[color:var(--sys-accent)]" /> Onboarding
+          </h1>
+          <p className="text-gray-500 text-sm mb-6">Clientes em processo. Marque os itens do seu setor conforme conclui.</p>
+        </div>
+        {/* Alternador Kanban / Lista (Lista = mesma tela de Empresas, só onboarding) */}
+        <div className="flex items-center gap-1.5 shrink-0">
+          <button className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[13px] font-semibold bg-[color:var(--sys-accent)] text-white" title="Ver em Kanban">
+            <LayoutGrid size={15} /> Kanban
+          </button>
+          <Link href="/sistema/obrigo/empresas?onboarding=1" className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[13px] font-semibold border border-slate-300 bg-white text-slate-500 hover:bg-slate-100" title="Ver em lista">
+            <ListIcon size={15} /> Lista
+          </Link>
+        </div>
+      </div>
 
       {board === null ? (
         <div className="flex justify-center py-20"><Loader2 size={24} className="animate-spin text-[color:var(--sys-accent)]" /></div>

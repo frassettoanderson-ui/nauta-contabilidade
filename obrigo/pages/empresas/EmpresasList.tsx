@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Heart, Search, SlidersHorizontal, Mail, Download, XCircle, Network, Tags as TagsIcon, Printer, Calendar, Plus, MessageCircle, CheckCircle2, Users, ArrowUpDown, RotateCcw, Pencil, Trash2, RefreshCw } from 'lucide-react';
+import { Heart, Search, SlidersHorizontal, Mail, Download, XCircle, Network, Tags as TagsIcon, Printer, Calendar, Plus, MessageCircle, CheckCircle2, Users, ArrowUpDown, RotateCcw, Pencil, Trash2, RefreshCw, LayoutGrid, List as ListIcon, Rocket } from 'lucide-react';
 import AtualizarCnpjModal from './AtualizarCnpjModal';
 import { api, ApiError } from '../../lib/api';
 import { useAuth, temPermissao } from '../../lib/auth';
@@ -27,6 +27,24 @@ interface Pagina {
 
 interface ChipF { kind: 'status' | 'grupo' | 'tag' | 'departamento'; valor: string; label: string }
 
+// Alternador Kanban/Lista da tela de Onboarding (botões com ícones, estilo do sistema).
+// Kanban = página de Onboarding (/sistema/onboarding); Lista = a lista de empresas em onboarding.
+export function VisaoToggle({ modo }: { modo: 'kanban' | 'lista' }) {
+  const base = 'flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[13px] font-semibold transition';
+  const on = 'bg-marca-500 text-white';
+  const off = 'bg-white text-slate-500 hover:bg-slate-100 border border-slate-300';
+  return (
+    <div className="flex items-center gap-1.5">
+      <a href="/sistema/onboarding" className={`${base} ${modo === 'kanban' ? on : off}`} title="Ver em Kanban">
+        <LayoutGrid size={15} /> Kanban
+      </a>
+      <a href="/sistema/obrigo/empresas?onboarding=1" className={`${base} ${modo === 'lista' ? on : off}`} title="Ver em lista">
+        <ListIcon size={15} /> Lista
+      </a>
+    </div>
+  );
+}
+
 export default function EmpresasList() {
   const { sessao } = useAuth();
   const toast = useToast();
@@ -38,6 +56,9 @@ export default function EmpresasList() {
   const [searchParams] = useSearchParams();
   const motivoUrl = searchParams.get('motivo') ?? '';
   const grupoUrl = searchParams.get('grupo') ?? '';
+  // Modo "Onboarding em lista": mostra só empresas ainda em onboarding, sem "Nova empresa",
+  // com toggle Kanban/Lista (acessado a partir da tela de Onboarding).
+  const onboardingMode = searchParams.get('onboarding') === '1';
 
   const [busca, setBusca] = useState('');
   const [status, setStatus] = useState<'ativos' | 'inativos' | 'todos'>('ativos');
@@ -98,6 +119,7 @@ export default function EmpresasList() {
     if (departamentoId) qs.set('departamentoId', departamentoId);
     if (grupoId) qs.set('grupoId', grupoId);
     if (motivoUrl) { qs.set('motivoId', motivoUrl); qs.set('status', 'todos'); }
+    if (onboardingMode) { qs.set('somenteOnboarding', '1'); qs.set('status', 'todos'); }
     return qs.toString();
   }
   // scroll infinito: carrega mais empresas ao rolar
@@ -119,6 +141,7 @@ export default function EmpresasList() {
     if (tagId) qs.set('tagId', tagId);
     if (departamentoId) qs.set('departamentoId', departamentoId);
     if (motivoUrl) { qs.set('motivoId', motivoUrl); qs.set('status', 'todos'); }
+    if (onboardingMode) { qs.set('somenteOnboarding', '1'); qs.set('status', 'todos'); }
     const todas = await api.get<Pagina>(`/empresas?${qs}`);
     return todas.items.map((e) => e.id);
   }
@@ -192,11 +215,13 @@ export default function EmpresasList() {
       {/* Cabecalho */}
       <div className="mb-3 flex items-center justify-between">
         <div className="flex items-center gap-2 text-slate-500">
-          <Heart size={16} className="text-slate-400" />
+          {onboardingMode ? <Rocket size={16} className="text-marca-500" /> : <Heart size={16} className="text-slate-400" />}
           <span className="text-slate-300">›</span>
-          <span className="text-slate-700">Empresas clientes do escritorio [F3]</span>
+          <span className="text-slate-700">{onboardingMode ? 'Onboarding — clientes em processo' : 'Empresas clientes do escritorio [F3]'}</span>
         </div>
-        <input className="w-48 rounded border border-slate-300 bg-white px-2 py-1 text-[12px]" placeholder="Central de ajuda" disabled />
+        {onboardingMode
+          ? <VisaoToggle modo="lista" />
+          : <input className="w-48 rounded border border-slate-300 bg-white px-2 py-1 text-[12px]" placeholder="Central de ajuda" disabled />}
       </div>
 
       {/* Toolbar */}
@@ -219,7 +244,7 @@ export default function EmpresasList() {
 
         <button className="flex items-center gap-2 rounded bg-status-ok px-4 py-2 text-sm font-medium text-white hover:bg-emerald-600"><Search size={16} /> Filtrar</button>
         {podeEditar && <button title="Reconsultar a Receita e atualizar os dados cadastrais (CNPJ)" onClick={() => setAtualizarAberto(true)} className="flex items-center gap-2 rounded bg-status-info px-4 py-2 text-sm font-medium text-white hover:opacity-90"><RefreshCw size={16} /> Atualizar</button>}
-        {podeCriar && <button onClick={() => navigate('/empresas/nova')} className="flex items-center gap-2 rounded bg-marca-500 px-4 py-2 text-sm font-medium text-white hover:bg-marca-600"><Plus size={16} /> Nova empresa</button>}
+        {podeCriar && !onboardingMode && <button onClick={() => navigate('/empresas/nova')} className="flex items-center gap-2 rounded bg-marca-500 px-4 py-2 text-sm font-medium text-white hover:bg-marca-600"><Plus size={16} /> Nova empresa</button>}
       </div>
 
       <AtualizarCnpjModal aberto={atualizarAberto} onFechar={() => setAtualizarAberto(false)} onConcluido={() => setRefresh((r) => r + 1)} />

@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import {
   Heart, Search, Save, RotateCcw, Lock, Unlock, Pencil, Trash2, Eye, EyeOff, RefreshCw, Info, CalendarDays, ChevronDown,
   MapPin, MessageCircle, Tag as TagIcon, CheckSquare, Users, List, LayoutTemplate, CheckCircle2,
-  MessagesSquare, Network, Paperclip, Plus, Smartphone, History, Mail, Check, X,
+  MessagesSquare, Network, Paperclip, Plus, Smartphone, History, Mail, Check, X, Printer, Loader2,
 } from 'lucide-react';
 import { api, ApiError, getAccessToken } from '../../lib/api';
 import { useAuth, temPermissao } from '../../lib/auth';
@@ -13,6 +13,7 @@ import type {
 } from '../../lib/tipos';
 import { formatarIdent, formatarBytes, LABEL_TIPO_IDENT } from '../../lib/tipos';
 import SecObrigacoes from './SecObrigacoes';
+import { gerarFichaPdf } from '../../lib/fichaPdf';
 import SecContratoSocios from './SecContratoSocios';
 import { FileSignature } from 'lucide-react';
 
@@ -171,6 +172,22 @@ export default function EmpresaFicha() {
     catch (e) { toast('erro', e instanceof ApiError ? e.message : 'Erro ao trocar ID.'); }
   }
 
+  // Gera o PDF de impressão com toda a ficha da empresa.
+  const [imprimindo, setImprimindo] = useState(false);
+  async function imprimirFicha() {
+    if (!empresa) return;
+    setImprimindo(true);
+    try {
+      const regimeNome = regimes.find((r) => r.id === empresa.regimeTributarioId)?.nome;
+      const grupoNome = grupos.find((g) => g.id === empresa.grupoEmpresaId)?.nome;
+      await gerarFichaPdf(empresa, { regimeNome, grupoNome });
+    } catch (e) {
+      toast('erro', e instanceof Error ? e.message : 'Falha ao gerar o PDF.');
+    } finally {
+      setImprimindo(false);
+    }
+  }
+
   // Volta para a tela anterior (lista de Empresas OU lista de Onboarding, conforme de onde veio).
   function voltar() {
     if (typeof window !== 'undefined' && window.history.length > 1) navigate(-1);
@@ -287,6 +304,10 @@ export default function EmpresaFicha() {
                 <Icon size={20} />
               </button>
             ))}
+            <span className="mx-1 h-5 w-px bg-slate-300" />
+            <button title="Imprimir ficha completa (PDF)" onClick={imprimirFicha} disabled={imprimindo} className="text-marca-500 transition-colors hover:text-marca-700 disabled:opacity-50">
+              {imprimindo ? <Loader2 size={20} className="animate-spin" /> : <Printer size={20} />}
+            </button>
           </div>
         </div>
         <div className="flex gap-2">

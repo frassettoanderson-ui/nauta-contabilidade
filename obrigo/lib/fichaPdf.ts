@@ -54,14 +54,17 @@ export async function gerarFichaPdf(
     y = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 12;
   };
   const tabela = (titulo: string, head: string[], body: string[][]) => {
+    if (y > doc.internal.pageSize.getHeight() - 90) { doc.addPage(); y = 50; }
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5); doc.setTextColor(...MARCA);
+    doc.text(titulo, 40, y); y += 6;
     const corpo = body.length ? body : [[{ content: 'Nenhum registro.', colSpan: head.length }]];
     autoTable(doc, {
       startY: y,
-      head: [[{ content: titulo, colSpan: head.length }], head],
+      head: [head],
       body: corpo as unknown as import('jspdf-autotable').RowInput[],
       theme: 'grid',
       styles: { fontSize: 8, cellPadding: 3, lineColor: [220, 220, 220], lineWidth: 0.5, textColor: [30, 41, 59] },
-      headStyles: { fillColor: MARCA, textColor: 255, fontStyle: 'bold', fontSize: 8.5 },
+      headStyles: { fillColor: MARINHO, textColor: 255, fontStyle: 'bold', fontSize: 8.5 },
       margin: { left: 40, right: 40 },
     });
     y = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 12;
@@ -116,10 +119,30 @@ export async function gerarFichaPdf(
     ['Usa gás GLP', e.usaGlp == null ? '—' : e.usaGlp ? 'Sim' : 'Não'],
   ]);
 
-  tabela('Quadro societário', ['Nome', 'CPF', 'Part.%', 'Nascimento', 'Estado civil', 'Cidade/UF'],
-    (e.socios ?? []).map((x) => [
-      s(x.nomeCompleto), x.cpf ? doc0(x.cpf) : '—', s(x.participacao), s(x.nascimento), s(x.estadoCivil), s(x.cidadeEstado),
-    ]));
+  const socios = e.socios ?? [];
+  if (!socios.length) {
+    secao('Quadro societário', [['Sócios', 'Nenhum sócio cadastrado.']]);
+  } else {
+    socios.forEach((x, i) => {
+      const end = [x.endereco, x.bairro].filter(Boolean).join(', ');
+      secao(`Sócio ${i + 1}${x.nomeCompleto ? ` — ${x.nomeCompleto}` : ''}`, [
+        ['CPF', x.cpf ? doc0(x.cpf) : '—'],
+        ['RG', s(x.rg)],
+        ['Participação', x.participacao == null || x.participacao === '' ? '—' : `${x.participacao}%`],
+        ['Nascimento', s(x.nascimento)],
+        ['Estado civil', s(x.estadoCivil)],
+        ['Nome do pai', s(x.nomePai)],
+        ['Nome da mãe', s(x.nomeMae)],
+        ['Recibo IRPF', s(x.reciboIrpf)],
+        ['Título de eleitor', s(x.tituloEleitor)],
+        ['E-mail', s(x.email)],
+        ['Telefone', s(x.telefone)],
+        ['CEP', s(x.cep)],
+        ['Endereço', end || '—'],
+        ['Cidade / UF', s(x.cidadeEstado)],
+      ]);
+    });
+  }
 
   if (e.identificadores.length) {
     tabela('Identificadores', ['Tipo', 'Valor', 'Apelido'],

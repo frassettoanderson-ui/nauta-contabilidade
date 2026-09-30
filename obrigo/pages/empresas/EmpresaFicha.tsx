@@ -748,10 +748,10 @@ function ContatoLinha({ empresaId, contato, departamentos, obrigacoes, podeEdita
           <button onClick={salvarEdicao} className={`${ICO_CT} bg-status-ok hover:bg-green-600`} title="Salvar"><Check size={15} /></button>
           <button onClick={() => setEditando(false)} className={`${ICO_CT} bg-slate-400 hover:bg-slate-500`} title="Cancelar"><X size={15} /></button>
         </> : <>
-          <div className={`${INP} min-w-[160px] flex-1 bg-fundo`}>{contato.nome}</div>
-          <div className={`${INP} min-w-[120px] flex-1 bg-fundo`}>{contato.cargo ?? ''}</div>
-          <div className={`${INP} min-w-[120px] flex-1 bg-fundo`}>{contato.whatsapp ?? ''}</div>
-          <div className={`${INP} min-w-[160px] flex-1 bg-fundo`}>{contato.email ?? ''}</div>
+          <div className={`${INP} min-w-[160px] flex-1 truncate bg-fundo`} title={contato.nome}>{contato.nome}</div>
+          <div className={`${INP} min-w-[120px] flex-1 truncate bg-fundo`} title={contato.cargo ?? ''}>{contato.cargo ?? ''}</div>
+          <div className={`${INP} min-w-[120px] flex-1 truncate bg-fundo`} title={contato.whatsapp ?? ''}>{contato.whatsapp ?? ''}</div>
+          <div className={`${INP} min-w-[160px] flex-1 truncate bg-fundo`} title={contato.email ?? ''}>{contato.email ?? ''}</div>
           <button onClick={() => setPainel((p) => (p === 'dep' ? 'none' : 'dep'))} className={`${ICO_CT} bg-roxo-500 hover:bg-roxo-600`} title="Selecionar departamentos"><Network size={15} /></button>
           <button onClick={() => setPainel((p) => (p === 'app' ? 'none' : 'app'))} className={`${ICO_CT} bg-marca-400 hover:bg-marca-500`} title="Acesso ao App"><Smartphone size={15} /></button>
           {podeEditar && <>

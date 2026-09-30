@@ -28,9 +28,9 @@ interface Pagina {
 
 interface ChipF { kind: 'status' | 'grupo' | 'tag' | 'departamento'; valor: string; label: string }
 
-type OrdenarCampo = 'razao' | 'fantasia' | 'cnpj' | 'cidade' | 'regime' | 'cadastro';
+type OrdenarCampo = 'razao' | 'fantasia' | 'cnpj' | 'cidade' | 'uf' | 'regime' | 'cadastro';
 const CAMPO_ORDEM: Record<OrdenarCampo, keyof EmpresaLista> = {
-  razao: 'razaoSocial', fantasia: 'nomeFantasia', cnpj: 'cnpj', cidade: 'cidade', regime: 'regimeNome', cadastro: 'dataEntrada',
+  razao: 'razaoSocial', fantasia: 'nomeFantasia', cnpj: 'cnpj', cidade: 'cidade', uf: 'uf', regime: 'regimeNome', cadastro: 'dataEntrada',
 };
 
 // Alternador Kanban/Lista da tela de Onboarding (botões com ícones, estilo do sistema).
@@ -442,7 +442,12 @@ export default function EmpresasList() {
                   <div className="font-normal text-slate-500">Telefone</div>
                 </th>
                 <th className="px-4 py-2">
-                  <button onClick={() => ordenarPor('cidade')} className="flex items-center gap-1 hover:underline">Cidade / UF <ArrowUpDown size={12} /></button>
+                  <span className="flex items-center gap-1">
+                    <button onClick={() => ordenarPor('cidade')} className={`hover:underline ${ordenar === 'cidade' ? 'text-marca-700' : ''}`}>Cidade</button>
+                    <span className="text-slate-300">/</span>
+                    <button onClick={() => ordenarPor('uf')} className={`hover:underline ${ordenar === 'uf' ? 'text-marca-700' : ''}`}>UF</button>
+                    <ArrowUpDown size={12} />
+                  </span>
                   <div className="flex items-center gap-1 font-normal text-slate-500">
                     Grupo de empresas
                     <button title="Cadastro de grupos" onClick={() => navigate('/empresas/grupos')} className="text-marca-500 hover:text-marca-700"><Pencil size={12} /></button>

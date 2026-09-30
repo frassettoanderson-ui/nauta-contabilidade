@@ -1,7 +1,8 @@
 import { Fragment, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Heart, Search, SlidersHorizontal, Mail, Download, XCircle, Network, Tags as TagsIcon, Printer, Calendar, Plus, MessageCircle, CheckCircle2, Users, ArrowUpDown, RotateCcw, Pencil, Trash2, RefreshCw, LayoutGrid, List as ListIcon, Rocket } from 'lucide-react';
+import { Heart, Search, SlidersHorizontal, Mail, Download, XCircle, Network, Tags as TagsIcon, Printer, Calendar, Plus, MessageCircle, CheckCircle2, Users, ArrowUpDown, RotateCcw, Pencil, Trash2, RefreshCw, LayoutGrid, List as ListIcon, Rocket, Loader2 } from 'lucide-react';
 import AtualizarCnpjModal from './AtualizarCnpjModal';
+import { gerarFichaPdf } from '../../lib/fichaPdf';
 import { api, ApiError } from '../../lib/api';
 import { useAuth, temPermissao } from '../../lib/auth';
 import { useScrollInfinito } from '../../lib/useScrollInfinito';
@@ -134,6 +135,30 @@ export default function EmpresasList() {
       return dir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
     });
   }, [items, ordenar, dir]);
+
+  // Imprime a ficha completa (busca o detalhe e gera o PDF)
+  const [imprimindoId, setImprimindoId] = useState<string | null>(null);
+  async function imprimirFicha(e: EmpresaLista) {
+    setImprimindoId(e.id);
+    try {
+      const det = await api.get<EmpresaDetalhe>(`/empresas/${e.id}`);
+      await gerarFichaPdf(det, { regimeNome: e.regimeNome ?? undefined, grupoNome: e.grupoNome ?? undefined });
+    } catch (err) { toast('erro', err instanceof ApiError ? err.message : 'Falha ao gerar o PDF.'); }
+    finally { setImprimindoId(null); }
+  }
+
+  // Devolve o cliente ao Onboarding (some de Empresas, volta pro Kanban/lista de onboarding)
+  const [reabrindoId, setReabrindoId] = useState<string | null>(null);
+  async function reabrirOnboarding(e: EmpresaLista) {
+    if (!confirm('Ao continuar esse cliente irá voltar para onboarding, deseja continuar?')) return;
+    setReabrindoId(e.id);
+    try {
+      await api.post(`/empresas/${e.id}/reabrir-onboarding`);
+      toast('ok', 'Cliente devolvido ao Onboarding.');
+      setRefresh((r) => r + 1);
+    } catch (err) { toast('erro', err instanceof ApiError ? err.message : 'Erro ao devolver ao Onboarding.'); }
+    finally { setReabrindoId(null); }
+  }
 
   async function idsListados(): Promise<string[]> {
     const qs = new URLSearchParams({ page: '1', limit: '10000', status });
@@ -455,11 +480,13 @@ export default function EmpresasList() {
                     <div className="mt-0.5 flex flex-wrap gap-1">{e.tags.map((t) => <Badge key={t.id} cor={t.cor}>{t.nome}</Badge>)}</div>
                   </td>
                   <td className="px-4 py-2" onClick={(ev) => ev.stopPropagation()}>
-                    <div className="grid w-fit grid-cols-2 gap-x-2 gap-y-1">
+                    <div className="grid w-fit grid-cols-3 gap-x-2 gap-y-1">
                       <button title="Comentarios e anotacoes gerais" onClick={() => togglePainel(e.id, 'coment')} className={`hover:opacity-70 ${expandido?.id === e.id && expandido.painel === 'coment' ? 'text-status-ok ring-2 ring-status-ok/40 rounded' : 'text-status-ok'}`}><MessageCircle size={15} /></button>
                       <button title="Tarefas agendadas" onClick={() => togglePainel(e.id, 'tarefas')} className={`hover:opacity-70 ${expandido?.id === e.id && expandido.painel === 'tarefas' ? 'text-roxo-500 ring-2 ring-roxo-500/40 rounded' : 'text-roxo-500'}`}><CheckCircle2 size={15} /></button>
                       <button title="Contatos" onClick={() => togglePainel(e.id, 'contatos')} className={`hover:opacity-70 ${expandido?.id === e.id && expandido.painel === 'contatos' ? 'text-roxo-500 ring-2 ring-roxo-500/40 rounded' : 'text-roxo-500'}`}><Users size={15} /></button>
                       <button title="Responsaveis pelos departamentos" onClick={() => togglePainel(e.id, 'resp')} className={`hover:opacity-70 ${expandido?.id === e.id && expandido.painel === 'resp' ? 'text-marca-600 ring-2 ring-marca-600/40 rounded' : 'text-marca-600'}`}><Network size={15} /></button>
+                      <button title="Imprimir ficha (PDF)" onClick={() => imprimirFicha(e)} disabled={imprimindoId === e.id} className="text-slate-500 hover:opacity-70 disabled:opacity-50">{imprimindoId === e.id ? <Loader2 size={15} className="animate-spin" /> : <Printer size={15} />}</button>
+                      {!onboardingMode && <button title="Devolver ao Onboarding" onClick={() => reabrirOnboarding(e)} disabled={reabrindoId === e.id} className="text-marca-500 hover:opacity-70 disabled:opacity-50">{reabrindoId === e.id ? <Loader2 size={15} className="animate-spin" /> : <Rocket size={15} />}</button>}
                     </div>
                   </td>
                 </tr>

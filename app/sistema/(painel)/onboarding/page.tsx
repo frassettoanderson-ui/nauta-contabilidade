@@ -3,10 +3,10 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { Loader2, Lock, Check, CheckCircle2, Link2, Rocket, MessageCircle, Pencil, ClipboardCheck, X, ChevronDown, ChevronUp, Copy, ExternalLink, Clock, LayoutGrid, List as ListIcon } from 'lucide-react'
+import { Loader2, Check, CheckCircle2, Link2, Rocket, MessageCircle, Pencil, ClipboardCheck, X, ChevronDown, ChevronUp, Copy, ExternalLink, Clock, LayoutGrid, List as ListIcon } from 'lucide-react'
 import Link from 'next/link'
 import { getOnboardingBoard, setOnboardingCheck, concluirOnboarding, gerarLinkCadastro, abrirFichaObrigo, type OnboardingCliente } from '@/lib/api'
-import { SETORES, itensDoSetor, gerenteConcluido, podeEditarSetor, checksEfetivos, setorConcluido, setorItensCompletos, tudoConcluido, doneKey, ITEM_CADASTRO, type SetorId } from '@/lib/onboarding-checklist'
+import { SETORES, itensDoSetor, podeEditarSetor, checksEfetivos, setorConcluido, setorItensCompletos, tudoConcluido, doneKey, ITEM_CADASTRO, type SetorId } from '@/lib/onboarding-checklist'
 import { ONBOARDING_CATEGORIAS } from '@/lib/onboarding'
 import { useRealtime } from '@/components/sistema/useRealtime'
 import AnotacoesModal from '@/components/sistema/AnotacoesModal'
@@ -138,7 +138,6 @@ export default function OnboardingPage() {
           {board.map(c => {
             const cat = c.onboarding_categoria ?? ''
             const checks = checksEfetivos(c.checks, c.cadastro_completo)
-            const gerOk = gerenteConcluido(cat, checks)
             // Setores que pertencem ao usuário (gerente/admin = todos)
             const setoresDoUsuario = ehGestor ? SETORES : SETORES.filter(s => s.id === role)
             const itens = setoresDoUsuario.flatMap(s => itensDoSetor(s.id, cat))
@@ -204,8 +203,8 @@ export default function OnboardingPage() {
                   {setoresVisiveis.map(s => {
                     const setor = s.id as SetorId
                     const setorItens = itensDoSetor(setor, cat)
-                    const bloqueado = setor !== 'gerente' && !gerOk
-                    const editavel = !bloqueado && podeEditarSetor(role, setor)
+                    // Todos os setores liberados desde o início (sem esperar o gerente).
+                    const editavel = podeEditarSetor(role, setor)
                     const concluido = setorConcluido(setor, checks)
                     const podeConcluir = editavel && setorItensCompletos(setor, cat, checks)
                     return (
@@ -213,12 +212,10 @@ export default function OnboardingPage() {
                         <div className="flex items-center gap-1.5 mb-1.5">
                           <span className="text-[11px] font-bold uppercase tracking-wide text-gray-400">{s.label}</span>
                           {concluido && <CheckCircle2 size={12} className="text-[#22c55e]" />}
-                          {bloqueado && <Lock size={11} className="text-gray-600" />}
-                          {bloqueado && <span className="text-[10px] text-gray-600">aguardando gerente</span>}
                         </div>
 
                         {setorItens.length === 0 ? (
-                          <p className="text-[11px] text-gray-600 italic pl-0.5">{bloqueado ? '—' : 'Itens a definir.'}</p>
+                          <p className="text-[11px] text-gray-600 italic pl-0.5">Itens a definir.</p>
                         ) : (
                           <div className="space-y-1">
                             {setorItens.map(it => {

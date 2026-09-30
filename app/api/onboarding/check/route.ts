@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { setOnboardingCheck, getOnboardingBoard } from '@/lib/leads'
 import { empresaAtivaId } from '@/lib/tenant'
-import { podeEditarSetor, gerenteConcluido, checksEfetivos, setorItensCompletos, doneKey, ITEM_CADASTRO, type SetorId } from '@/lib/onboarding-checklist'
+import { podeEditarSetor, checksEfetivos, setorItensCompletos, doneKey, ITEM_CADASTRO, type SetorId } from '@/lib/onboarding-checklist'
 
 export const dynamic = 'force-dynamic'
 
@@ -32,15 +32,8 @@ export async function POST(req: NextRequest) {
 
   const ehMarcadorDone = itemKey === doneKey(setor)
 
-  // Gating: setores não-gerente só liberam após o gerente concluir
-  if (setor !== 'gerente') {
-    const board = await getOnboardingBoard(empresaId)
-    const cli = board.find(c => c.id === leadId)
-    const efetivos = cli ? checksEfetivos(cli.checks, cli.cadastro_completo) : []
-    if (!cli || !gerenteConcluido(cli.onboarding_categoria ?? '', efetivos)) {
-      return NextResponse.json({ error: 'Aguardando o gerente concluir a etapa dele' }, { status: 409 })
-    }
-  }
+  // (Removida a trava que exigia o gerente concluir antes dos demais setores —
+  //  agora todos os setores ficam liberados desde o início.)
 
   // Para concluir um setor, todos os itens dele precisam estar marcados
   if (ehMarcadorDone && done) {

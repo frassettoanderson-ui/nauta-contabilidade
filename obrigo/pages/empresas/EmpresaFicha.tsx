@@ -24,7 +24,7 @@ const LBL = 'mb-1 block text-[13px] font-bold text-slate-700';
 type SecaoKey = 'endereco' | 'contrato' | 'comentarios' | 'tags' | 'processos' | 'contatos' | 'obrigacoes' | 'gruposEnvio' | 'tarefas' | 'recorrentes' | 'solicitacoes' | 'responsaveis' | 'anexos';
 const SECOES: { key: SecaoKey; icon: typeof MapPin; titulo: string }[] = [
   { key: 'endereco', icon: MapPin, titulo: 'Endereco, atividade e imoveis' },
-  { key: 'contrato', icon: FileSignature, titulo: 'Contrato e socios' },
+  { key: 'contrato', icon: FileSignature, titulo: 'Quadro societario' },
   { key: 'comentarios', icon: MessageCircle, titulo: 'Comentarios e anotacoes gerais' },
   { key: 'tags', icon: TagIcon, titulo: 'Tags da empresa' },
   { key: 'processos', icon: CheckSquare, titulo: 'Gestao de Processos' },
@@ -72,6 +72,7 @@ export default function EmpresaFicha() {
   const [form, setForm] = useState({
     razaoSocial: '', nomeFantasia: '', apelidoEcontinuo: '', grupoEmpresaId: '',
     honorario: '', regimeTributarioId: '', ativo: true,
+    interesse: '', emAbertura: false,
     dataAbertura: '', dataEntrada: '', dataSaida: '',
   });
   const [tagIds, setTagIds] = useState<string[]>([]);
@@ -87,6 +88,8 @@ export default function EmpresaFicha() {
         honorario: e.honorario != null ? String(e.honorario) : '',
         regimeTributarioId: e.regimeTributarioId ?? '',
         ativo: e.ativo,
+        interesse: e.interesse ?? '',
+        emAbertura: !!e.emAbertura,
         dataAbertura: e.dataAbertura ? e.dataAbertura.slice(0, 10) : '',
         dataEntrada: e.dataEntrada ? e.dataEntrada.slice(0, 10) : '',
         dataSaida: e.dataSaida ? e.dataSaida.slice(0, 10) : '',
@@ -143,6 +146,8 @@ export default function EmpresaFicha() {
         honorario: form.honorario === '' ? null : Number(form.honorario),
         regimeTributarioId: form.regimeTributarioId || null,
         ativo: form.ativo,
+        interesse: form.interesse || null,
+        emAbertura: form.emAbertura,
         dataAbertura: isoOuNull(form.dataAbertura),
         dataEntrada: isoOuNull(form.dataEntrada),
         dataSaida: isoOuNull(form.dataSaida),
@@ -271,6 +276,18 @@ export default function EmpresaFicha() {
             <button title="Sobre o apelido e-Continuo" onClick={() => setInfoApelido(true)} className="text-marca-400 hover:text-marca-600"><Info size={13} /></button>
           </div>
           <input className={INP} value={form.apelidoEcontinuo} disabled={!podeEditar} onChange={(e) => set('apelidoEcontinuo', e.target.value)} />
+        </div>
+      </div>
+
+      {/* Linha 3: Tipo de contrato / Em abertura */}
+      <div className="mt-3 grid grid-cols-1 gap-x-4 gap-y-3 md:grid-cols-[1.6fr_0.6fr_1.2fr_1fr]">
+        <div><label className={LBL}>Tipo de contrato</label>
+          <select className={INP} value={form.interesse} disabled={!podeEditar} onChange={(e) => set('interesse', e.target.value)}>
+            <option value="">—</option>{INTERESSES.map((x) => <option key={x} value={x}>{x}</option>)}
+          </select>
+        </div>
+        <div><label className={LBL}>Em abertura?</label>
+          <select className={INP} value={form.emAbertura ? 'sim' : 'nao'} disabled={!podeEditar} onChange={(e) => set('emAbertura', e.target.value === 'sim')}><option value="nao">Nao</option><option value="sim">Sim</option></select>
         </div>
       </div>
 
@@ -410,6 +427,7 @@ const fmtFone = (v: string) => {
 const UFS = ['AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'];
 const fmtCnpjF = (v: string) => { const d = v.replace(/\D/g, '').slice(0, 14); return d.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{0,2}).*/, (_m, a, b, c, e, f) => `${a}.${b}.${c}/${e}${f ? `-${f}` : ''}`); };
 const fmtCpfF = (v: string) => { const d = v.replace(/\D/g, '').slice(0, 11); return d.replace(/^(\d{3})(\d{3})(\d{3})(\d{0,2}).*/, (_m, a, b, c, e) => `${a}.${b}.${c}${e ? `-${e}` : ''}`); };
+const INTERESSES = ['Abrir minha empresa', 'Abrir MEI', 'Trocar de contador', 'Deixar de ser MEI', 'BPO Financeiro', 'Contabilidade Eleitoral', 'Outro'];
 
 interface IE { valor: string; data?: string | null; uf?: string | null }
 
@@ -580,6 +598,13 @@ export function SecComentarios({ empresa, departamentos, onMudou }: { empresa: E
   const lista = empresa.comentarios.filter((c) => (!termo || c.texto.toLowerCase().includes(termo)) && (!filtroDep || c.departamento?.nome === departamentos.find((d) => d.id === filtroDep)?.nome));
   return (
     <div className="space-y-3">
+      {/* Condições negociadas no comercial (preenchidas na negociação do lead) — só leitura */}
+      {empresa.negociacaoObs?.trim() && (
+        <div className="rounded border border-marca-200 bg-marca-50 p-3">
+          <p className="mb-1 text-[11px] font-bold uppercase tracking-wide text-marca-600">Condições negociadas (comercial)</p>
+          <p className="whitespace-pre-wrap text-[13px] text-slate-700">{empresa.negociacaoObs}</p>
+        </div>
+      )}
       <div className="flex flex-wrap items-center gap-2">
         <input className={`${INP} min-w-[240px] flex-1`} placeholder="Comentario/anotacao a procurar..." value={busca} onChange={(e) => setBusca(e.target.value)} />
         <select className={`${INP} w-auto`} value={filtroDep} onChange={(e) => setFiltroDep(e.target.value)}><option value="">Todos Dptos</option>{departamentos.map((d) => <option key={d.id} value={d.id}>{d.nome}</option>)}</select>

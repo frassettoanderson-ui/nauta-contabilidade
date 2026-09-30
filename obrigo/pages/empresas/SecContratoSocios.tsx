@@ -8,7 +8,6 @@ import type { EmpresaDetalhe, Socio } from '../../lib/tipos';
 // e passam a viver aqui (cadastro único). Estilo denso, igual às demais seções da ficha.
 const INP = 'block w-full rounded border border-slate-300 bg-white px-2 py-1.5 text-[13px] text-slate-700 outline-none focus:border-marca-400 focus:ring-1 focus:ring-marca-100';
 const LBL = 'mb-1 block text-[13px] font-bold text-slate-700';
-const INTERESSES = ['Abrir minha empresa', 'Abrir MEI', 'Trocar de contador', 'Deixar de ser MEI', 'BPO Financeiro', 'Contabilidade Eleitoral', 'Outro'];
 const ESTADO_CIVIL = ['Solteiro(a)', 'Casado(a)', 'Divorciado(a)', 'Viúvo(a)', 'União estável'];
 
 const fmtCep = (v: string) => { const d = v.replace(/\D/g, '').slice(0, 8); return d.length > 5 ? `${d.slice(0, 5)}-${d.slice(5)}` : d; };
@@ -19,13 +18,10 @@ const socioVazio = (): Socio => ({ nomeCompleto: '', cpf: '', rg: '', nascimento
 export default function SecContratoSocios({ empresa, podeEditar, onMudou }: { empresa: EmpresaDetalhe; podeEditar: boolean; onMudou: () => void }) {
   const toast = useToast();
   const [salvando, setSalvando] = useState(false);
-  // Honorários, vencimentos, valor de abertura → foram para o Financeiro.
-  // Atividade/capital/imóvel e filiais → foram para a seção "Endereço e inscrições".
-  const [f, setF] = useState({
-    negociacaoObs: s(empresa.negociacaoObs), interesse: s(empresa.interesse), emAbertura: !!empresa.emAbertura,
-  });
+  // Tipo de contrato / Em abertura → foram para o cabeçalho da ficha.
+  // Condições negociadas → aparecem em "Comentários e anotações gerais".
+  // Honorários/abertura → Financeiro. Atividade/imóvel/filiais → seção "Endereço".
   const [socios, setSocios] = useState<Socio[]>(empresa.socios?.length ? empresa.socios.map((x) => ({ ...x, participacao: s(x.participacao) })) : []);
-  const set = <K extends keyof typeof f>(k: K, v: (typeof f)[K]) => setF((x) => ({ ...x, [k]: v }));
   const setSocio = (i: number, k: keyof Socio, v: string) => setSocios((xs) => xs.map((x, j) => (j === i ? { ...x, [k]: v } : x)));
   // Busca automática de endereço do sócio pelo CEP (ViaCEP), preenchendo o que estiver vazio.
   async function buscarCepSocio(i: number, cep: string) {
@@ -51,10 +47,9 @@ export default function SecContratoSocios({ empresa, podeEditar, onMudou }: { em
     setSalvando(true);
     try {
       await api.put(`/empresas/${empresa.id}`, {
-        negociacaoObs: f.negociacaoObs || null, interesse: f.interesse || null, emAbertura: f.emAbertura,
         socios: socios.map((x) => ({ ...x, id: undefined, ordem: undefined, participacao: x.participacao === '' || x.participacao == null ? null : Number(x.participacao) })),
       });
-      toast('ok', 'Contrato e sócios salvos.');
+      toast('ok', 'Sócios salvos.');
       onMudou();
     } catch (e) { toast('erro', e instanceof ApiError ? e.message : 'Erro ao salvar.'); }
     finally { setSalvando(false); }
@@ -63,21 +58,6 @@ export default function SecContratoSocios({ empresa, podeEditar, onMudou }: { em
   const ro = !podeEditar;
   return (
     <div className="space-y-5">
-      {/* Contrato / comercial (honorários e custos de abertura ficam no Financeiro) */}
-      <div>
-        <p className="mb-2 text-[12px] font-semibold text-marca-600">Contrato</p>
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-[1.6fr_0.8fr]">
-          <div><label className={LBL}>Tipo de contrato</label>
-            <select className={INP} disabled={ro} value={f.interesse} onChange={(e) => set('interesse', e.target.value)}>
-              <option value="">—</option>{INTERESSES.map((x) => <option key={x} value={x}>{x}</option>)}
-            </select></div>
-          <div><label className={LBL}>Em abertura?</label>
-            <select className={INP} disabled={ro} value={f.emAbertura ? 'sim' : 'nao'} onChange={(e) => set('emAbertura', e.target.value === 'sim')}><option value="nao">Não</option><option value="sim">Sim</option></select></div>
-        </div>
-        <div className="mt-3"><label className={LBL}>Condições especiais negociadas (vão para o contrato)</label>
-          <textarea className={`${INP} min-h-[90px]`} disabled={ro} value={f.negociacaoObs} onChange={(e) => set('negociacaoObs', e.target.value)} /></div>
-      </div>
-
       {/* Sócios */}
       <div>
         <div className="mb-2 flex items-center justify-between">

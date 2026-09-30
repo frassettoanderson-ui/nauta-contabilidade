@@ -11,10 +11,11 @@ const LBL = 'mb-1 block text-[13px] font-bold text-slate-700';
 const INTERESSES = ['Abrir minha empresa', 'Abrir MEI', 'Trocar de contador', 'Deixar de ser MEI', 'BPO Financeiro', 'Contabilidade Eleitoral', 'Outro'];
 const ESTADO_CIVIL = ['Solteiro(a)', 'Casado(a)', 'Divorciado(a)', 'Viúvo(a)', 'União estável'];
 
+const fmtCep = (v: string) => { const d = v.replace(/\D/g, '').slice(0, 8); return d.length > 5 ? `${d.slice(0, 5)}-${d.slice(5)}` : d; };
 const fmtCpf = (v: string) => { const d = v.replace(/\D/g, '').slice(0, 11); return d.replace(/^(\d{3})(\d{3})(\d{3})(\d{0,2}).*/, (_m, a, b, c, e) => `${a}.${b}.${c}${e ? `-${e}` : ''}`); };
 const fmtCnpj = (v: string) => { const d = v.replace(/\D/g, '').slice(0, 14); return d.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{0,2}).*/, (_m, a, b, c, e, f) => `${a}.${b}.${c}/${e}${f ? `-${f}` : ''}`); };
 const s = (v: unknown) => (v == null ? '' : String(v));
-const socioVazio = (): Socio => ({ nomeCompleto: '', cpf: '', rg: '', nascimento: '', nomePai: '', nomeMae: '', participacao: '', estadoCivil: '', reciboIrpf: '', tituloEleitor: '', senhaGov: '', certSenha: '', email: '', telefone: '' });
+const socioVazio = (): Socio => ({ nomeCompleto: '', cpf: '', rg: '', nascimento: '', nomePai: '', nomeMae: '', participacao: '', estadoCivil: '', reciboIrpf: '', tituloEleitor: '', senhaGov: '', certSenha: '', email: '', telefone: '', cep: '', endereco: '', bairro: '', cidadeEstado: '' });
 
 export default function SecContratoSocios({ empresa, podeEditar, onMudou }: { empresa: EmpresaDetalhe; podeEditar: boolean; onMudou: () => void }) {
   const toast = useToast();
@@ -30,6 +31,22 @@ export default function SecContratoSocios({ empresa, podeEditar, onMudou }: { em
   const [filiais, setFiliais] = useState<Filial[]>(empresa.filiais ?? []);
   const set = <K extends keyof typeof f>(k: K, v: (typeof f)[K]) => setF((x) => ({ ...x, [k]: v }));
   const setSocio = (i: number, k: keyof Socio, v: string) => setSocios((xs) => xs.map((x, j) => (j === i ? { ...x, [k]: v } : x)));
+  // Busca automática de endereço do sócio pelo CEP (ViaCEP), preenchendo o que estiver vazio.
+  async function buscarCepSocio(i: number, cep: string) {
+    const d = cep.replace(/\D/g, '');
+    if (d.length !== 8) return;
+    try {
+      const r = await fetch(`https://viacep.com.br/ws/${d}/json/`);
+      const j = await r.json();
+      if (j?.erro) return;
+      setSocios((xs) => xs.map((x, k) => k === i ? {
+        ...x,
+        endereco: x.endereco || j.logradouro || '',
+        bairro: x.bairro || j.bairro || '',
+        cidadeEstado: x.cidadeEstado || (j.localidade ? `${j.localidade}/${j.uf}` : ''),
+      } : x));
+    } catch { /* ignora */ }
+  }
   const setFilial = (i: number, k: keyof Filial, v: string) => setFiliais((xs) => xs.map((x, j) => (j === i ? { ...x, [k]: v } : x)));
   const somaPart = socios.reduce((a, x) => a + (Number(x.participacao) || 0), 0);
 
@@ -129,6 +146,12 @@ export default function SecContratoSocios({ empresa, podeEditar, onMudou }: { em
                 <div><label className={LBL}>Telefone</label><input className={INP} disabled={ro} value={s(x.telefone)} onChange={(e) => setSocio(i, 'telefone', e.target.value)} /></div>
                 <div><label className={LBL}>Senha gov.br</label><input className={INP} disabled={ro} type="password" value={s(x.senhaGov)} onChange={(e) => setSocio(i, 'senhaGov', e.target.value)} /></div>
                 <div><label className={LBL}>Senha do certificado</label><input className={INP} disabled={ro} type="password" value={s(x.certSenha)} onChange={(e) => setSocio(i, 'certSenha', e.target.value)} /></div>
+              </div>
+              <div className="mt-2 grid grid-cols-1 gap-3 md:grid-cols-[0.8fr_2fr_1.2fr_1.2fr]">
+                <div><label className={LBL}>CEP</label><input className={INP} disabled={ro} inputMode="numeric" placeholder="00000-000" value={s(x.cep)} onChange={(e) => setSocio(i, 'cep', fmtCep(e.target.value))} onBlur={(e) => buscarCepSocio(i, e.target.value)} /></div>
+                <div><label className={LBL}>Endereço</label><input className={INP} disabled={ro} value={s(x.endereco)} onChange={(e) => setSocio(i, 'endereco', e.target.value)} /></div>
+                <div><label className={LBL}>Bairro</label><input className={INP} disabled={ro} value={s(x.bairro)} onChange={(e) => setSocio(i, 'bairro', e.target.value)} /></div>
+                <div><label className={LBL}>Cidade / UF</label><input className={INP} disabled={ro} placeholder="Cidade/UF" value={s(x.cidadeEstado)} onChange={(e) => setSocio(i, 'cidadeEstado', e.target.value)} /></div>
               </div>
             </div>
           ))}

@@ -28,6 +28,11 @@ interface Pagina {
 
 interface ChipF { kind: 'status' | 'grupo' | 'tag' | 'departamento'; valor: string; label: string }
 
+type OrdenarCampo = 'razao' | 'fantasia' | 'cnpj' | 'cidade' | 'regime' | 'cadastro';
+const CAMPO_ORDEM: Record<OrdenarCampo, keyof EmpresaLista> = {
+  razao: 'razaoSocial', fantasia: 'nomeFantasia', cnpj: 'cnpj', cidade: 'cidade', regime: 'regimeNome', cadastro: 'dataEntrada',
+};
+
 // Alternador Kanban/Lista da tela de Onboarding (botões com ícones, estilo do sistema).
 // Kanban = página de Onboarding (/sistema/onboarding); Lista = a lista de empresas em onboarding.
 export function VisaoToggle({ modo }: { modo: 'kanban' | 'lista' }) {
@@ -77,7 +82,7 @@ export default function EmpresasList() {
   const [comboTxt, setComboTxt] = useState('');
   const [comboAberto, setComboAberto] = useState(false);
   const [chips, setChips] = useState<ChipF[]>([]);
-  const [ordenar, setOrdenar] = useState<'razao' | 'fantasia'>('razao');
+  const [ordenar, setOrdenar] = useState<OrdenarCampo>('razao');
   const [dir, setDir] = useState<'asc' | 'desc'>('asc');
   // painel inline expandido na linha (comentarios/tarefas/contatos/responsaveis)
   type PainelLinha = 'coment' | 'tarefas' | 'contatos' | 'resp';
@@ -128,10 +133,11 @@ export default function EmpresasList() {
   const loading = lista.loading;
   const items = lista.items;
   const itensOrdenados = useMemo(() => {
-    const campo = ordenar === 'razao' ? 'razaoSocial' : 'nomeFantasia';
+    const campo = CAMPO_ORDEM[ordenar];
     return [...items].sort((a, b) => {
       const va = (a[campo] ?? '').toString().toLowerCase();
       const vb = (b[campo] ?? '').toString().toLowerCase();
+      // datas (ISO) e cnpj comparam bem como string; o resto por localeCompare
       return dir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
     });
   }, [items, ordenar, dir]);
@@ -192,7 +198,7 @@ export default function EmpresasList() {
       setBarra(null);
     } catch (e) { toast('erro', e instanceof ApiError ? e.message : 'Erro'); }
   }
-  function ordenarPor(campo: 'razao' | 'fantasia') {
+  function ordenarPor(campo: OrdenarCampo) {
     if (ordenar === campo) setDir((d) => (d === 'asc' ? 'desc' : 'asc'));
     else { setOrdenar(campo); setDir('asc'); }
   }
@@ -431,9 +437,12 @@ export default function EmpresasList() {
                   <button onClick={() => ordenarPor('razao')} className="flex items-center gap-1 hover:underline">Razao social [ID] <ArrowUpDown size={12} /></button>
                   <button onClick={() => ordenarPor('fantasia')} className="mt-0.5 block font-normal text-slate-500 hover:underline">Nome Fantasia</button>
                 </th>
-                <th className="px-4 py-2">CNPJ<div className="font-normal text-slate-500">Telefone</div></th>
                 <th className="px-4 py-2">
-                  Cidade
+                  <button onClick={() => ordenarPor('cnpj')} className="flex items-center gap-1 hover:underline">CNPJ <ArrowUpDown size={12} /></button>
+                  <div className="font-normal text-slate-500">Telefone</div>
+                </th>
+                <th className="px-4 py-2">
+                  <button onClick={() => ordenarPor('cidade')} className="flex items-center gap-1 hover:underline">Cidade / UF <ArrowUpDown size={12} /></button>
                   <div className="flex items-center gap-1 font-normal text-slate-500">
                     Grupo de empresas
                     <button title="Cadastro de grupos" onClick={() => navigate('/empresas/grupos')} className="text-marca-500 hover:text-marca-700"><Pencil size={12} /></button>
@@ -441,13 +450,16 @@ export default function EmpresasList() {
                 </th>
                 <th className="px-4 py-2">
                   <div className="flex items-center gap-1">
-                    Regime
+                    <button onClick={() => ordenarPor('regime')} className="flex items-center gap-1 hover:underline">Regime <ArrowUpDown size={12} /></button>
                     <button title="Cadastro de regimes" onClick={() => navigate('/obrigacoes/regimes')} className="text-marca-500 hover:text-marca-700"><Pencil size={12} /></button>
                   </div>
                   <div className="flex items-center gap-1 font-normal text-slate-500">
                     Tags
                     <button title="Cadastro de tags" onClick={() => navigate('/cadastros/tags')} className="text-marca-500 hover:text-marca-700"><Pencil size={12} /></button>
                   </div>
+                </th>
+                <th className="px-4 py-2">
+                  <button onClick={() => ordenarPor('cadastro')} className="flex items-center gap-1 hover:underline">Cadastro <ArrowUpDown size={12} /></button>
                 </th>
                 <th className="px-4 py-2 text-right align-top">
                   <div>[{lista.total} reg.]</div>
@@ -470,7 +482,7 @@ export default function EmpresasList() {
                     <div className="text-slate-400">{e.telefone ?? '—'}</div>
                   </td>
                   <td className="px-4 py-2">
-                    <div className="text-slate-600">{e.cidade ?? '—'}</div>
+                    <div className="text-slate-600">{[e.cidade, e.uf].filter(Boolean).join(' / ') || '—'}</div>
                     <div className="text-slate-400">{e.grupoNome ?? 'Geral'}</div>
                   </td>
                   <td className="px-4 py-2">
@@ -479,6 +491,7 @@ export default function EmpresasList() {
                     {e.motivoNome && <div className="text-[11px] text-status-warn">{e.motivoNome}</div>}
                     <div className="mt-0.5 flex flex-wrap gap-1">{e.tags.map((t) => <Badge key={t.id} cor={t.cor}>{t.nome}</Badge>)}</div>
                   </td>
+                  <td className="px-4 py-2 text-slate-600">{e.dataEntrada ? new Date(e.dataEntrada).toLocaleDateString('pt-BR') : '—'}</td>
                   <td className="px-4 py-2" onClick={(ev) => ev.stopPropagation()}>
                     <div className="grid w-fit grid-cols-3 gap-x-2 gap-y-1">
                       <button title="Comentarios e anotacoes gerais" onClick={() => togglePainel(e.id, 'coment')} className={`hover:opacity-70 ${expandido?.id === e.id && expandido.painel === 'coment' ? 'text-status-ok ring-2 ring-status-ok/40 rounded' : 'text-status-ok'}`}><MessageCircle size={15} /></button>
@@ -492,7 +505,7 @@ export default function EmpresasList() {
                 </tr>
                 {expandido?.id === e.id && (
                   <tr className="bg-fundo">
-                    <td colSpan={5} className="border-l-4 border-marca-400 px-6 py-4" onClick={(ev) => ev.stopPropagation()}>
+                    <td colSpan={6} className="border-l-4 border-marca-400 px-6 py-4" onClick={(ev) => ev.stopPropagation()}>
                       <PainelLinhaEmpresa
                         empresaId={e.id}
                         painel={expandido.painel}
@@ -507,7 +520,7 @@ export default function EmpresasList() {
                 </Fragment>
               ))}
               {items.length === 0 && !loading && (
-                <tr><td colSpan={5} className="px-4 py-10 text-center text-slate-400">Nenhuma empresa encontrada.</td></tr>
+                <tr><td colSpan={6} className="px-4 py-10 text-center text-slate-400">Nenhuma empresa encontrada.</td></tr>
               )}
             </tbody>
           </table>

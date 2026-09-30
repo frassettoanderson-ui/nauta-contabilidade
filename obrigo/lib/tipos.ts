@@ -51,6 +51,8 @@ export interface EmpresaLista {
   cnpj: string | null;
   telefone: string | null;
   cidade: string | null;
+  uf: string | null;
+  dataEntrada: string | null;
   regimeTributarioId: string | null;
   regimeNome: string | null;
   motivoNome: string | null;

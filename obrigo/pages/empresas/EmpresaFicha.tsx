@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
-  Heart, Search, Save, RotateCcw, Lock, Unlock, Pencil, Trash2, Eye, EyeOff, RefreshCw, Info, CalendarDays, ChevronDown,
+  Heart, Search, Save, RotateCcw, Lock, Unlock, Pencil, Trash2, RefreshCw, Info, CalendarDays, ChevronDown,
   MapPin, MessageCircle, Tag as TagIcon, CheckSquare, Users, List, LayoutTemplate, CheckCircle2,
   MessagesSquare, Network, Paperclip, Plus, Smartphone, History, Mail, Check, X, Printer, Loader2,
 } from 'lucide-react';
@@ -9,7 +9,7 @@ import { api, ApiError, getAccessToken } from '../../lib/api';
 import { useAuth, temPermissao } from '../../lib/auth';
 import { Spinner, useToast } from '../../components/ui';
 import type {
-  EmpresaDetalhe, Tag, Departamento, UsuarioBasico, GrupoEmpresa, TarefaAgendada, Regime, Contato,
+  EmpresaDetalhe, Tag, Departamento, UsuarioBasico, GrupoEmpresa, TarefaAgendada, Regime, Contato, Filial,
 } from '../../lib/tipos';
 import { formatarIdent, formatarBytes, LABEL_TIPO_IDENT } from '../../lib/tipos';
 import SecObrigacoes from './SecObrigacoes';
@@ -23,8 +23,8 @@ const LBL = 'mb-1 block text-[13px] font-bold text-slate-700';
 // As 12 secoes da ficha, na ordem/icones do original
 type SecaoKey = 'endereco' | 'contrato' | 'comentarios' | 'tags' | 'processos' | 'contatos' | 'obrigacoes' | 'gruposEnvio' | 'tarefas' | 'recorrentes' | 'solicitacoes' | 'responsaveis' | 'anexos';
 const SECOES: { key: SecaoKey; icon: typeof MapPin; titulo: string }[] = [
-  { key: 'endereco', icon: MapPin, titulo: 'Endereco e inscricoes' },
-  { key: 'contrato', icon: FileSignature, titulo: 'Contrato, imoveis e socios' },
+  { key: 'endereco', icon: MapPin, titulo: 'Endereco, atividade e imoveis' },
+  { key: 'contrato', icon: FileSignature, titulo: 'Contrato e socios' },
   { key: 'comentarios', icon: MessageCircle, titulo: 'Comentarios e anotacoes gerais' },
   { key: 'tags', icon: TagIcon, titulo: 'Tags da empresa' },
   { key: 'processos', icon: CheckSquare, titulo: 'Gestao de Processos' },
@@ -63,7 +63,6 @@ export default function EmpresaFicha() {
   const [usuarios, setUsuarios] = useState<UsuarioBasico[]>([]);
 
   // form do topo
-  const [verHonorario, setVerHonorario] = useState(false);
   const [salvando, setSalvando] = useState(false);
   const [cnpjDesbloqueado, setCnpjDesbloqueado] = useState(false);
   const [cnpjValor, setCnpjValor] = useState('');
@@ -222,8 +221,8 @@ export default function EmpresaFicha() {
         <div className="flex items-center gap-1 rounded border border-slate-300 bg-white px-2 py-1 text-slate-400"><Search size={13} /><span className="text-[12px]">Central de ajuda</span></div>
       </div>
 
-      {/* Linha 1: CNPJ / Regime / Grupo / Honorario / ID */}
-      <div className="grid grid-cols-1 gap-x-4 gap-y-3 md:grid-cols-[1.4fr_1.2fr_1fr_0.9fr_0.7fr]">
+      {/* Linha 1: CNPJ / Regime / Grupo / ID (honorário foi para o Financeiro) */}
+      <div className="grid grid-cols-1 gap-x-4 gap-y-3 md:grid-cols-[1.4fr_1.2fr_1fr_0.7fr]">
         <div>
           <div className="flex items-center justify-between"><label className={LBL}>CNPJ / CPF / CAEPF</label>
             {podeEditar && <button title={cnpjDesbloqueado ? 'Bloquear campo do CNPJ' : 'Desbloquear campo do CNPJ'} onClick={() => setCnpjDesbloqueado((v) => !v)}>{cnpjDesbloqueado ? <Unlock size={14} className="text-status-ok" /> : <Lock size={14} className="text-amber-500" />}</button>}
@@ -248,12 +247,6 @@ export default function EmpresaFicha() {
             <option value="">Geral</option>
             {grupos.map((g) => <option key={g.id} value={g.id}>{g.nome}</option>)}
           </select>
-        </div>
-        <div>
-          <div className="flex items-center gap-2"><label className={LBL}>Honorario</label>
-            <button title="Exibir/ocultar" onClick={() => setVerHonorario((v) => !v)} className="text-marca-500 hover:text-marca-700">{verHonorario ? <EyeOff size={14} /> : <Eye size={14} />}</button>
-          </div>
-          <input className={INP} type={verHonorario ? 'number' : 'password'} step="0.01" min="0" value={form.honorario} disabled={!podeEditar} onChange={(e) => set('honorario', e.target.value)} />
         </div>
         <div>
           <div className="flex items-center gap-2"><label className={LBL}>ID Empresa</label>
@@ -415,6 +408,8 @@ const fmtFone = (v: string) => {
   return d.replace(/^(\d{2})(\d{5})(\d{0,4}).*/, (_m, a, b, c) => `(${a}) ${b}${c ? `-${c}` : ''}`);
 };
 const UFS = ['AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'];
+const fmtCnpjF = (v: string) => { const d = v.replace(/\D/g, '').slice(0, 14); return d.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{0,2}).*/, (_m, a, b, c, e, f) => `${a}.${b}.${c}/${e}${f ? `-${f}` : ''}`); };
+const fmtCpfF = (v: string) => { const d = v.replace(/\D/g, '').slice(0, 11); return d.replace(/^(\d{3})(\d{3})(\d{3})(\d{0,2}).*/, (_m, a, b, c, e) => `${a}.${b}.${c}${e ? `-${e}` : ''}`); };
 
 interface IE { valor: string; data?: string | null; uf?: string | null }
 
@@ -426,10 +421,18 @@ function SecEndereco({ empresa, podeEditar, onMudou }: { empresa: EmpresaDetalhe
     logradouro: empresa.logradouro ?? '', numeroEndereco: empresa.numeroEndereco ?? '', complemento: empresa.complemento ?? '',
     cep: empresa.cep ?? '', bairro: empresa.bairro ?? '', cidade: empresa.cidade ?? '', uf: empresa.uf ?? '', telefone: empresa.telefone ?? '',
     nire: empresa.nire ?? '', inscricaoMunicipal: empresa.inscricaoMunicipal ?? '', inscMunicipalData: empresa.inscMunicipalData ?? '', website: empresa.website ?? '',
+    // Atividade, capital e imóvel (movidos da seção de contrato p/ o endereço da empresa)
+    atividade: empresa.atividade ?? '', capitalSocial: empresa.capitalSocial != null ? String(empresa.capitalSocial) : '',
+    inscricaoImobiliaria: empresa.inscricaoImobiliaria ?? '', areaOcupada: empresa.areaOcupada ?? '', areaEdificacao: empresa.areaEdificacao ?? '',
+    proprietarioNome: empresa.proprietarioNome ?? '', proprietarioCpf: empresa.proprietarioCpf ?? '',
+    usaGlp: empresa.usaGlp == null ? '' : (empresa.usaGlp ? 'sim' : 'nao'),
   });
   const [ieIsenta, setIeIsenta] = useState(empresa.ieIsenta);
   const [ies, setIes] = useState<IE[]>(empresa.inscricoesEstaduais ?? []);
   const [novaIe, setNovaIe] = useState<IE>({ valor: '', data: '', uf: '' });
+  const [filiais, setFiliais] = useState<Filial[]>(empresa.filiais ?? []);
+  const setFilial = (i: number, k: keyof Filial, v: string) => setFiliais((xs) => xs.map((x, j) => (j === i ? { ...x, [k]: v } : x)));
+  const sf = (v: unknown) => (v == null ? '' : String(v));
   // Outros identificadores (reusa o sistema de identificadores, exceto CNPJ)
   const outros = empresa.identificadores.filter((i) => i.tipo !== 'CNPJ');
   const [novoIdent, setNovoIdent] = useState<{ tipo: string; valor: string }>({ tipo: 'CPF', valor: '' });
@@ -447,7 +450,16 @@ function SecEndereco({ empresa, podeEditar, onMudou }: { empresa: EmpresaDetalhe
 
   async function salvar() {
     setSalvando(true);
-    try { await api.put(`/empresas/${empresa.id}`, { ...f, ieIsenta, inscricoesEstaduais: ies }); toast('ok', 'Endereco salvo.'); onMudou(); }
+    try {
+      const { capitalSocial, usaGlp, ...rest } = f;
+      await api.put(`/empresas/${empresa.id}`, {
+        ...rest, ieIsenta, inscricoesEstaduais: ies,
+        capitalSocial: capitalSocial === '' ? null : Number(capitalSocial),
+        usaGlp: usaGlp === '' ? null : usaGlp === 'sim',
+        filiais: filiais.filter((x) => sf(x.cnpj).trim() || sf(x.fantasia).trim()),
+      });
+      toast('ok', 'Endereço e dados da empresa salvos.'); onMudou();
+    }
     catch (e) { toast('erro', e instanceof ApiError ? e.message : 'Erro'); }
     finally { setSalvando(false); }
   }
@@ -507,7 +519,46 @@ function SecEndereco({ empresa, podeEditar, onMudou }: { empresa: EmpresaDetalhe
         </div>
       </div>
 
-      {podeEditar && <button onClick={salvar} disabled={salvando} className="rounded bg-status-ok px-4 py-1.5 text-sm font-medium text-white hover:bg-emerald-600 disabled:opacity-50">{salvando ? '...' : 'Salvar endereco'}</button>}
+      {/* Atividade, capital e imóvel */}
+      <div className="mt-1">
+        <p className="mb-2 text-[12px] font-semibold text-marca-600">Atividade, capital e imóvel</p>
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-[2fr_1fr_1fr_0.8fr]">
+          <div><label className={LBL}>Atividade da empresa</label><input className={INP} disabled={!podeEditar} value={f.atividade} onChange={(e) => s('atividade', e.target.value)} /></div>
+          <div><label className={LBL}>Capital social (R$)</label><input className={INP} disabled={!podeEditar} type="number" step="0.01" min={0} value={f.capitalSocial} onChange={(e) => s('capitalSocial', e.target.value)} /></div>
+          <div><label className={LBL}>Inscrição imobiliária</label><input className={INP} disabled={!podeEditar} value={f.inscricaoImobiliaria} onChange={(e) => s('inscricaoImobiliaria', e.target.value)} /></div>
+          <div><label className={LBL}>Usa gás GLP?</label>
+            <select className={INP} disabled={!podeEditar} value={f.usaGlp} onChange={(e) => s('usaGlp', e.target.value)}><option value="">—</option><option value="sim">Sim</option><option value="nao">Não</option></select></div>
+        </div>
+        <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-[1fr_1fr_2fr_1fr]">
+          <div><label className={LBL}>Área ocupada (m²)</label><input className={INP} disabled={!podeEditar} value={f.areaOcupada} onChange={(e) => s('areaOcupada', e.target.value)} /></div>
+          <div><label className={LBL}>Área da edificação (m²)</label><input className={INP} disabled={!podeEditar} value={f.areaEdificacao} onChange={(e) => s('areaEdificacao', e.target.value)} /></div>
+          <div><label className={LBL}>Proprietário do imóvel</label><input className={INP} disabled={!podeEditar} value={f.proprietarioNome} onChange={(e) => s('proprietarioNome', e.target.value)} /></div>
+          <div><label className={LBL}>CPF do proprietário</label><input className={INP} disabled={!podeEditar} value={f.proprietarioCpf} onChange={(e) => s('proprietarioCpf', fmtCpfF(e.target.value))} /></div>
+        </div>
+      </div>
+
+      {/* Filiais */}
+      <div className="mt-1">
+        <div className="mb-2 flex items-center justify-between">
+          <p className="text-[12px] font-semibold text-marca-600">Filiais</p>
+          {podeEditar && <button onClick={() => setFiliais((xs) => [...xs, { cnpj: '', fantasia: '', municipio: '', estado: '', telefone: '' }])} className="flex items-center gap-1 rounded bg-marca-500 px-3 py-1 text-[12px] font-medium text-white hover:bg-marca-600"><Plus size={13} /> Filial</button>}
+        </div>
+        {filiais.length === 0 && <p className="text-[12px] text-slate-400">Sem filiais.</p>}
+        <div className="space-y-2">
+          {filiais.map((x, i) => (
+            <div key={i} className="grid grid-cols-1 gap-2 md:grid-cols-[1.2fr_1.5fr_1.2fr_0.5fr_1fr_auto]">
+              <input className={INP} disabled={!podeEditar} placeholder="CNPJ" value={sf(x.cnpj)} onChange={(e) => setFilial(i, 'cnpj', fmtCnpjF(e.target.value))} />
+              <input className={INP} disabled={!podeEditar} placeholder="Nome fantasia" value={sf(x.fantasia)} onChange={(e) => setFilial(i, 'fantasia', e.target.value)} />
+              <input className={INP} disabled={!podeEditar} placeholder="Município" value={sf(x.municipio)} onChange={(e) => setFilial(i, 'municipio', e.target.value)} />
+              <input className={`${INP} text-center`} disabled={!podeEditar} placeholder="UF" maxLength={2} value={sf(x.estado)} onChange={(e) => setFilial(i, 'estado', e.target.value.toUpperCase())} />
+              <input className={INP} disabled={!podeEditar} placeholder="Telefone" value={sf(x.telefone)} onChange={(e) => setFilial(i, 'telefone', e.target.value)} />
+              {podeEditar && <button onClick={() => setFiliais((xs) => xs.filter((_, j) => j !== i))} className="text-status-danger hover:text-red-700" title="Remover"><Trash2 size={14} /></button>}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {podeEditar && <button onClick={salvar} disabled={salvando} className="rounded bg-status-ok px-4 py-1.5 text-sm font-medium text-white hover:bg-emerald-600 disabled:opacity-50">{salvando ? '...' : 'Salvar'}</button>}
     </div>
   );
 }

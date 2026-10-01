@@ -192,6 +192,22 @@ export default function EmpresaFicha() {
     }
   }
 
+  // Reconsulta a Receita pelo CNPJ e atualiza os dados cadastrais desta empresa (ficha).
+  const [atualizandoCnpj, setAtualizandoCnpj] = useState(false);
+  async function atualizarCnpj() {
+    if (!empresa) return;
+    setAtualizandoCnpj(true);
+    try {
+      await api.post(`/empresas/${empresa.id}/atualizar-cnpj`);
+      await recarregar();
+      toast('ok', 'Dados atualizados pela Receita.');
+    } catch (e) {
+      toast('erro', e instanceof ApiError ? e.message : 'Não foi possível atualizar pela Receita.');
+    } finally {
+      setAtualizandoCnpj(false);
+    }
+  }
+
   // Volta para a tela anterior (lista de Empresas OU lista de Onboarding, conforme de onde veio).
   function voltar() {
     if (typeof window !== 'undefined' && window.history.length > 1) navigate(-1);
@@ -229,8 +245,9 @@ export default function EmpresaFicha() {
       {/* Linha 1: CNPJ / Regime / Grupo / ID (honorário foi para o Financeiro) */}
       <div className="grid grid-cols-1 gap-x-4 gap-y-3 md:grid-cols-[1.4fr_1.2fr_1fr_0.7fr]">
         <div>
-          <div className="flex items-center justify-between"><label className={LBL}>CNPJ / CPF / CAEPF</label>
+          <div className="flex items-center gap-2"><label className={LBL}>CNPJ / CPF / CAEPF</label>
             {podeEditar && <button title={cnpjDesbloqueado ? 'Bloquear campo do CNPJ' : 'Desbloquear campo do CNPJ'} onClick={() => setCnpjDesbloqueado((v) => !v)}>{cnpjDesbloqueado ? <Unlock size={14} className="text-status-ok" /> : <Lock size={14} className="text-amber-500" />}</button>}
+            {podeEditar && <button title="Atualizar dados pela Receita (CNPJ)" onClick={atualizarCnpj} disabled={atualizandoCnpj} className="text-marca-500 hover:text-marca-700 disabled:opacity-50">{atualizandoCnpj ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}</button>}
           </div>
           <input className={`${INP} ${cnpjDesbloqueado ? '' : 'bg-slate-100'}`} value={cnpjDesbloqueado ? cnpjValor : cnpjFmt} readOnly={!cnpjDesbloqueado} onChange={(e) => setCnpjValor(e.target.value)} placeholder="Sem identificador" />
         </div>

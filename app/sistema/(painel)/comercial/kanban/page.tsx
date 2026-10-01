@@ -195,17 +195,15 @@ export default function KanbanPage() {
                         onClick={() => abrir(l.id, 'view')}
                         className={`relative rounded-lg p-4 pt-5 cursor-pointer${emChamas ? ' card-flame' : ''}`}
                         style={{
-                          background: temPend
-                            ? 'linear-gradient(160deg, #2a2238 0%, #1d1733 100%)'
-                            : 'linear-gradient(160deg, #1d1a3a 0%, #16142b 100%)',
-                          border: `1px solid ${temPend ? 'rgba(245,158,11,0.5)' : dragging ? 'color-mix(in srgb, var(--sys-accent) 50%, transparent)' : 'var(--sys-border)'}`,
+                          background: temPend ? '#fff7ed' : 'var(--sys-surface)',
+                          border: `1px solid ${temPend ? 'rgba(245,158,11,0.55)' : dragging ? 'color-mix(in srgb, var(--sys-accent) 50%, transparent)' : 'var(--sys-border)'}`,
                           borderLeft: temPend ? '3px solid #f59e0b' : undefined,
                           transform: dragging ? 'scale(1.04) rotate(-1.5deg)' : 'scale(1)',
                           boxShadow: dragging
-                            ? '0 18px 40px rgba(0,0,0,0.5), 0 0 0 1px color-mix(in srgb, var(--sys-accent) 30%, transparent)'
+                            ? '0 18px 40px rgba(14,34,64,0.22), 0 0 0 1px color-mix(in srgb, var(--sys-accent) 30%, transparent)'
                             : emChamas
                             ? undefined
-                            : '0 4px 10px rgba(0,0,0,0.35), 0 1px 2px rgba(0,0,0,0.3)',
+                            : '0 1px 3px rgba(14,34,64,0.12), 0 1px 2px rgba(14,34,64,0.08)',
                           transition: 'transform 0.18s cubic-bezier(0.16,1,0.3,1), box-shadow 0.18s ease, border-color 0.18s ease',
                         }}>
                         {/* Fita adesiva (post-it) */}

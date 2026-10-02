@@ -64,11 +64,12 @@ export async function GET(req: NextRequest) {
     const status = pago ? (statusPorPagamento(c.pago_em, c.venc) || 'pago_dia') : (new Date(c.venc) < hoje ? 'vencido' : 'a_vencer')
     map.set(c.comp, { competencia: c.comp, vencimento: c.venc, valor: Number(c.valor), status, pagoEm: c.pago_em, invoiceUrl: c.invoice_url, envios: envByCob[c.id] ?? [] })
   }
-  // 2) pagamentos lançados (histórico/manual) sem cobrança
+  // 2) pagamentos lançados (histórico/manual) sem cobrança. Sem pago_em = ainda não pago.
   for (const p of pagtos) {
-    if (map.has(p.comp)) continue
+    if (!p.comp || map.has(p.comp)) continue
     const venc = vencDe(p.comp)
-    map.set(p.comp, { competencia: p.comp, vencimento: venc, valor: Number(p.valor || honorario), status: statusPorPagamento(p.pago_em, venc) || 'pago_dia', pagoEm: p.pago_em, invoiceUrl: null, envios: [] })
+    const status = p.pago_em ? (statusPorPagamento(p.pago_em, venc) || 'pago_dia') : (new Date(venc) < hoje ? 'vencido' : 'a_vencer')
+    map.set(p.comp, { competencia: p.comp, vencimento: venc, valor: Number(p.valor || honorario), status, pagoEm: p.pago_em, invoiceUrl: null, envios: [] })
   }
   // 3) meses esperados pelo honorário, do 1º vencimento até o mês atual (preenche buracos: a vencer/vencido)
   if (honorario > 0 && lead?.venc0) {

@@ -315,7 +315,7 @@ export async function listFinanceiro(empresaId: string, competencia?: string) {
   if (ids.length === 0) return []
 
   // Meses pagos por lead (+ valor pago no mês vigente, p/ o resumo do Faturamento)
-  const pag = await pool.query(`SELECT lead_id, to_char(competencia, 'YYYY-MM') AS comp, to_char(pago_em, 'YYYY-MM') AS pago_mes, valor FROM financeiro_pagamentos WHERE lead_id = ANY($1)`, [ids])
+  const pag = await pool.query(`SELECT lead_id, to_char(competencia, 'YYYY-MM') AS comp, to_char(pago_em, 'YYYY-MM') AS pago_mes, valor FROM financeiro_pagamentos WHERE lead_id = ANY($1) AND pago_em IS NOT NULL`, [ids])
   const pagosByLead: Record<string, Set<string>> = {}
   // Competência selecionada (YYYY-MM); padrão = mês atual. O seletor de mês no
   // Faturamento manda a competência para toda a tela refletir aquele mês.

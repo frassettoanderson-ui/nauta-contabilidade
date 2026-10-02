@@ -93,9 +93,8 @@ export default function FinanceiroPage() {
 
   // Ordenação por cabeçalho (clique alterna asc/desc)
   const COLS: { label: string; key: string | null }[] = [
-    { label: 'Empresa', key: 'empresa' }, { label: 'Responsável', key: 'responsavel' },
-    { label: 'Telefone', key: 'telefone' }, { label: 'Honorário', key: 'honorario' },
-    { label: 'Vencimento', key: 'vencimento' }, { label: 'Prazo prometido', key: 'prazo' },
+    { label: 'Empresa', key: 'empresa' }, { label: 'Honorário', key: 'honorario' },
+    { label: 'Vencimento', key: 'vencimento' },
     { label: 'Status', key: 'status' }, { label: 'Cobrança Asaas', key: null }, { label: '', key: null },
   ]
   const sortKey = (r: Row, key: string): string | number => {
@@ -176,11 +175,8 @@ export default function FinanceiroPage() {
                   <tr key={s(r.lead_id)} onClick={() => setCobranca(r)}
                     className="cursor-pointer transition-colors hover:bg-white/[0.03]" style={{ borderBottom: '1px solid var(--sys-surface-4)' }}>
                     <td className="px-4 py-3 font-semibold text-white">{s(r.emp_nome) || s(r.lead_nome) || '—'}</td>
-                    <td className="px-4 py-3 text-gray-300">{s(r.responsavel) || '—'}</td>
-                    <td className="px-4 py-3 text-gray-400">{tel || '—'}</td>
                     <td className="px-4 py-3 text-[#22c55e] font-bold">{money(r.valor_honorario)}</td>
                     <td className="px-4 py-3 text-gray-400">{dataBR(r.proximo_vencimento)}</td>
-                    <td className="px-4 py-3">{r.prazo_prometido ? <span className="text-[#fbbf24]">{dataBR(r.prazo_prometido)}</span> : <span className="text-gray-600">—</span>}</td>
                     <td className="px-4 py-3"><StatusBadge status={s(r.status_global || r.financeiro_status)} meses={meses} /></td>
                     <td className="px-4 py-3" onClick={e => e.stopPropagation()}>
                       <AsaasCell item={asaas?.resumo[s(r.lead_id)]} configurado={!!asaas?.configurado} pixAuto={envios?.pixAuto[s(r.lead_id)]}
@@ -195,8 +191,8 @@ export default function FinanceiroPage() {
                         return (
                           <div className="flex items-center gap-2">
                             <button onClick={() => setPago(r)} title="Marcar como pago (dá baixa na cobrança do mês)"
-                              className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 h-7 rounded-lg text-white" style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)' }}>
-                              <Check size={12} /> Pago
+                              className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 h-7 rounded-lg text-white" style={{ background: '#2c4a80' }}>
+                              <Check size={12} /> Marcar pago
                             </button>
                             {envios?.whats ? (
                               <button onClick={() => enviar(lid, tipo)} disabled={enviando === lid || !temCob}

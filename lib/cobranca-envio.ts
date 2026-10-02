@@ -2,6 +2,7 @@ import pool from './db'
 import { emitCrmChange } from './realtime'
 import { getOrCreatePixAuto } from './pix-automatico'
 import { pixDaCobranca } from './asaas'
+import { calcStatusFinanceiro } from './financeiro-calc'
 
 // ─── Régua de cobrança pelos canais da Nauta ─────────────────────────────────
 // WhatsApp: API pública do Whats Profissional (número do atendimento) — sem custo por msg.
@@ -52,7 +53,7 @@ interface Ctx { leadId: string; empresaId: string | null; nome: string; empresa:
 
 async function contexto(leadId: string, cobrancaId?: string): Promise<Ctx> {
   const r = await pool.query(
-    `SELECT l.id, l.nome, l.whatsapp, l.email, l.valor_honorario, l.empresa_id,
+    `SELECT l.id, l.nome, l.whatsapp, l.email, l.valor_honorario, l.empresa_id, to_char(l.honorario_vencimento,'YYYY-MM-DD') AS honorario_vencimento,
             c.emp_nome, c.cli_nome_completo, c.emp_telefone, c.emp_email
        FROM leads l LEFT JOIN clientes c ON c.lead_id = l.id WHERE l.id = $1`, [leadId]
   )
@@ -62,16 +63,29 @@ async function contexto(leadId: string, cobrancaId?: string): Promise<Ctx> {
     ? (await pool.query(`SELECT id, asaas_payment_id, valor, to_char(vencimento,'YYYY-MM-DD') AS vencimento, invoice_url FROM financeiro_cobrancas WHERE id = $1`, [cobrancaId])).rows[0]
     : (await pool.query(`SELECT id, asaas_payment_id, valor, to_char(vencimento,'YYYY-MM-DD') AS vencimento, invoice_url FROM financeiro_cobrancas
                           WHERE lead_id = $1 AND status IN ('PENDING','OVERDUE') ORDER BY vencimento ASC LIMIT 1`, [leadId])).rows[0]
-  // PIX copia-e-cola: prioriza o Pix Automático (autoriza a recorrência); se indisponível, usa o PIX comum do boleto
+  // PIX/boleto só existem quando há cobrança Asaas. Clientes fora do Asaas (anteriores à
+  // adesão) são cobrados "do jeito antigo": mensagem só com honorário/vencimento, sem link.
   let pix = ''
-  try { pix = (await getOrCreatePixAuto(leadId)).payload || '' } catch { /* Pix Automático indisponível/não elegível */ }
-  if (!pix && cob?.asaas_payment_id) { try { pix = await pixDaCobranca(cob.asaas_payment_id) } catch { /* segue sem pix */ } }
+  if (cob) {
+    try { pix = (await getOrCreatePixAuto(leadId)).payload || '' } catch { /* Pix Automático indisponível/não elegível */ }
+    if (!pix && cob.asaas_payment_id) { try { pix = await pixDaCobranca(cob.asaas_payment_id) } catch { /* segue sem pix */ } }
+  }
+  // Vencimento: da cobrança Asaas, ou calculado pelo honorário (clientes fora do Asaas)
+  let venc = cob?.vencimento ? dataBR(cob.vencimento) : '—'
+  if (!cob && l.honorario_vencimento) {
+    try {
+      const pg = await pool.query(`SELECT to_char(competencia,'YYYY-MM') AS comp FROM financeiro_pagamentos WHERE lead_id = $1 AND pago_em IS NOT NULL`, [leadId])
+      const pagos = new Set(pg.rows.map((x: { comp: string }) => x.comp))
+      const calc = calcStatusFinanceiro(l.honorario_vencimento, pagos)
+      if (calc.proximoVencimento) venc = dataBR(calc.proximoVencimento.toISOString().slice(0, 10))
+    } catch { /* mantém '—' */ }
+  }
   return {
     leadId, empresaId: l.empresa_id,
     nome: primeiroNome(l.cli_nome_completo || l.nome), empresa: l.emp_nome || l.nome,
     whatsapp: soDigitos(l.whatsapp || l.emp_telefone), email: l.emp_email || l.email || '',
     cobrancaId: cob?.id ?? null, valor: Number(cob?.valor ?? l.valor_honorario ?? 0),
-    venc: cob?.vencimento ? dataBR(cob.vencimento) : '—', link: cob?.invoice_url || '', pix,
+    venc, link: cob?.invoice_url || '', pix,
   }
 }
 

@@ -191,18 +191,18 @@ export default function FinanceiroPage() {
                         return (
                           <div className="flex items-center gap-2">
                             <button onClick={() => setPago(r)} title="Marcar como pago (dá baixa na cobrança do mês)"
-                              className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 h-7 rounded-lg text-white" style={{ background: '#2c4a80' }}>
+                              className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 h-7 rounded-lg" style={{ background: '#69a8d9', color: '#fff' }}>
                               <Check size={12} /> Marcar pago
                             </button>
                             {envios?.whats ? (
-                              <button onClick={() => enviar(lid, tipo)} disabled={enviando === lid || !temCob}
-                                title={temCob ? `Enviar ${tipo} pelo WhatsApp da Nauta` : 'Sincronize no Asaas primeiro (sem cobrança gerada)'}
-                                className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 h-7 rounded-lg text-white disabled:opacity-40" style={{ background: '#25D366' }}>
+                              <button onClick={() => enviar(lid, tipo)} disabled={enviando === lid}
+                                title={temCob ? `Enviar ${tipo} pelo WhatsApp da Nauta (com PIX/boleto)` : `Enviar ${tipo} pelo WhatsApp da Nauta (sem Asaas — só o lembrete/honorário)`}
+                                className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 h-7 rounded-lg disabled:opacity-40" style={{ background: '#25D366', color: '#fff' }}>
                                 {enviando === lid ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} />} {tipo === 'atraso' ? 'Cobrar' : 'Lembrar'}
                               </button>
                             ) : s(r.status_global || r.financeiro_status) === 'atrasado' && (
                               <a href={`https://wa.me/55${waDigits(tel)}?text=${encodeURIComponent(msgCobranca(s(r.lead_nome) || s(r.responsavel), meses))}`} target="_blank" rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 h-7 rounded-lg text-white" style={{ background: '#25D366' }}>
+                                className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 h-7 rounded-lg" style={{ background: '#25D366', color: '#fff' }}>
                                 <MessageCircle size={12} /> Enviar cobrança
                               </a>
                             )}

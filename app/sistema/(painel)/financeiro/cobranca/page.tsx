@@ -79,10 +79,13 @@ export default function FinanceiroPage() {
 
   const base = rows ?? []
 
-  // Cobrança = apenas clientes em atraso
-  const totalEmAberto = base.filter(r => r.financeiro_status === 'atrasado').reduce((s, r) => s + Number(r.valor_honorario || 0), 0)
+  // Cobrança = clientes com honorário em atraso (qualquer mês passado não pago — status_global),
+  // exceto os da Nauta Contabilidade (cobrança manual, fora do fluxo automático).
+  const emAtraso = (r: Row) => s(r.status_global || r.financeiro_status) === 'atrasado' && s(r.contabilidade) !== 'nauta'
+  // "Em aberto" = honorário × meses em atraso (soma o que está devendo, não só 1 mês).
+  const totalEmAberto = base.filter(emAtraso).reduce((s2, r) => s2 + Number(r.valor_honorario || 0) * Math.max(1, Number(r.meses_atraso || 1)), 0)
   const filtered = base.filter(r => {
-    if (r.financeiro_status !== 'atrasado') return false
+    if (!emAtraso(r)) return false
     if (!busca.trim()) return true
     const q = busca.toLowerCase()
     return s(r.emp_nome).toLowerCase().includes(q) || s(r.responsavel).toLowerCase().includes(q) || s(r.lead_nome).toLowerCase().includes(q)
@@ -103,7 +106,7 @@ export default function FinanceiroPage() {
       case 'honorario': return Number(r.valor_honorario ?? 0)
       case 'vencimento': return s(r.proximo_vencimento)
       case 'prazo': return s(r.prazo_prometido)
-      case 'status': return ({ atrasado: 0, a_vencer: 1, em_dia: 2 } as Record<string, number>)[s(r.financeiro_status)] ?? 9
+      case 'status': return ({ atrasado: 0, a_vencer: 1, em_dia: 2 } as Record<string, number>)[s(r.status_global || r.financeiro_status)] ?? 9
       default: return ''
     }
   }
@@ -178,7 +181,7 @@ export default function FinanceiroPage() {
                     <td className="px-4 py-3 text-[#22c55e] font-bold">{money(r.valor_honorario)}</td>
                     <td className="px-4 py-3 text-gray-400">{dataBR(r.proximo_vencimento)}</td>
                     <td className="px-4 py-3">{r.prazo_prometido ? <span className="text-[#fbbf24]">{dataBR(r.prazo_prometido)}</span> : <span className="text-gray-600">—</span>}</td>
-                    <td className="px-4 py-3"><StatusBadge status={s(r.financeiro_status)} meses={meses} /></td>
+                    <td className="px-4 py-3"><StatusBadge status={s(r.status_global || r.financeiro_status)} meses={meses} /></td>
                     <td className="px-4 py-3" onClick={e => e.stopPropagation()}>
                       <AsaasCell item={asaas?.resumo[s(r.lead_id)]} configurado={!!asaas?.configurado} pixAuto={envios?.pixAuto[s(r.lead_id)]}
                         syncing={syncing === s(r.lead_id)} onSync={() => syncLead(s(r.lead_id))} />
@@ -187,7 +190,7 @@ export default function FinanceiroPage() {
                       {(() => {
                         const lid = s(r.lead_id)
                         const ult = envios?.envios[lid]
-                        const tipo: TipoEnvioCobranca = r.financeiro_status === 'atrasado' ? 'atraso' : 'lembrete'
+                        const tipo: TipoEnvioCobranca = s(r.status_global || r.financeiro_status) === 'atrasado' ? 'atraso' : 'lembrete'
                         const temCob = !!asaas?.resumo[lid]
                         return (
                           <div className="flex items-center gap-2">
@@ -201,7 +204,7 @@ export default function FinanceiroPage() {
                                 className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 h-7 rounded-lg text-white disabled:opacity-40" style={{ background: '#25D366' }}>
                                 {enviando === lid ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} />} {tipo === 'atraso' ? 'Cobrar' : 'Lembrar'}
                               </button>
-                            ) : r.financeiro_status === 'atrasado' && (
+                            ) : s(r.status_global || r.financeiro_status) === 'atrasado' && (
                               <a href={`https://wa.me/55${waDigits(tel)}?text=${encodeURIComponent(msgCobranca(s(r.lead_nome) || s(r.responsavel), meses))}`} target="_blank" rel="noopener noreferrer"
                                 className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 h-7 rounded-lg text-white" style={{ background: '#25D366' }}>
                                 <MessageCircle size={12} /> Enviar cobrança

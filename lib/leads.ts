@@ -298,7 +298,7 @@ export async function listFinanceiro(empresaId: string, competencia?: string) {
   const res = await pool.query(
     `SELECT
         l.id AS lead_id, l.nome AS lead_nome, l.whatsapp, l.email,
-        l.valor_honorario, l.honorario_vencimento,
+        l.valor_honorario, l.honorario_vencimento, l.contabilidade,
         l.origem AS lead_origem, l.interesse AS lead_interesse,
         c.id AS cliente_id, c.emp_nome, c.emp_telefone, c.emp_cidade_estado, c.emp_regime,
         COALESCE(

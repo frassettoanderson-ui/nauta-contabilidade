@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   Heart, Search, Save, RotateCcw, Lock, Unlock, Pencil, Trash2, RefreshCw, Info, CalendarDays, ChevronDown,
   MapPin, MessageCircle, Tag as TagIcon, CheckSquare, Users, List, LayoutTemplate, CheckCircle2,
-  MessagesSquare, Network, Paperclip, Plus, Smartphone, History, Mail, Check, X, Printer, Loader2,
+  MessagesSquare, Network, Paperclip, Plus, Smartphone, History, Mail, Check, X, Printer, Loader2, DollarSign,
 } from 'lucide-react';
 import { api, ApiError, getAccessToken } from '../../lib/api';
 import { useAuth, temPermissao } from '../../lib/auth';
@@ -21,7 +21,7 @@ const INP = 'block w-full rounded border border-slate-300 bg-white px-2 py-1.5 t
 const LBL = 'mb-1 block text-[13px] font-bold text-slate-700';
 
 // As 12 secoes da ficha, na ordem/icones do original
-type SecaoKey = 'endereco' | 'contrato' | 'comentarios' | 'tags' | 'processos' | 'contatos' | 'obrigacoes' | 'gruposEnvio' | 'tarefas' | 'recorrentes' | 'solicitacoes' | 'responsaveis' | 'anexos';
+type SecaoKey = 'endereco' | 'contrato' | 'comentarios' | 'tags' | 'processos' | 'contatos' | 'obrigacoes' | 'gruposEnvio' | 'tarefas' | 'recorrentes' | 'solicitacoes' | 'responsaveis' | 'anexos' | 'financeiro';
 const SECOES: { key: SecaoKey; icon: typeof MapPin; titulo: string }[] = [
   { key: 'endereco', icon: MapPin, titulo: 'Endereco, atividade e imoveis' },
   { key: 'contrato', icon: FileSignature, titulo: 'Quadro societario' },
@@ -36,6 +36,7 @@ const SECOES: { key: SecaoKey; icon: typeof MapPin; titulo: string }[] = [
   { key: 'solicitacoes', icon: MessagesSquare, titulo: 'Solicitacoes App' },
   { key: 'responsaveis', icon: Network, titulo: 'Responsaveis pelos departamentos' },
   { key: 'anexos', icon: Paperclip, titulo: 'Arquivos anexos' },
+  { key: 'financeiro', icon: DollarSign, titulo: 'Financeiro — pagamentos e acompanhamento' },
 ];
 
 export default function EmpresaFicha() {
@@ -426,6 +427,7 @@ function SecaoConteudo(props: {
     case 'tarefas': return <SecTarefas empresa={empresa} departamentos={departamentos} />;
     case 'responsaveis': return <SecResponsaveis empresa={empresa} departamentos={departamentos} usuarios={usuarios} podeEditar={podeEditar} onMudou={onMudou} />;
     case 'anexos': return <SecAnexos empresa={empresa} departamentos={departamentos} onMudou={onMudou} />;
+    case 'financeiro': return <SecFinanceiro empresa={empresa} />;
     case 'gruposEnvio': return <SecGruposEnvio />;
     case 'recorrentes': return <SecRecorrentes empresa={empresa} usuarios={usuarios} podeEditar={podeEditar} />;
     case 'solicitacoes': return <SecSolicitacoes empresa={empresa} />;
@@ -1153,6 +1155,95 @@ function SecAnexos({ empresa, departamentos, onMudou }: { empresa: EmpresaDetalh
         ))}
         {empresa.anexos.length === 0 && <p className="py-2 text-center text-[12px] text-slate-400">Nenhum arquivo.</p>}
       </div>
+    </div>
+  );
+}
+
+// 13 - Financeiro: histórico mês a mês (vencimento/pagamento) + linha do tempo da cobrança.
+// Os dados de cobrança vivem no ERP (Nauta); consultamos por nautaLeadId via endpoint da Nauta
+// (mesma origem; o módulo Obrigô roda dentro do app da Nauta).
+interface MesFin {
+  competencia: string; vencimento: string; valor: number; status: string;
+  pagoEm: string | null; invoiceUrl: string | null;
+  envios: { tipo: string; canal: string; ok: boolean; em: string }[];
+}
+const ST_FIN: Record<string, { label: string; cls: string }> = {
+  a_vencer:    { label: 'A vencer',        cls: 'bg-slate-100 text-slate-600' },
+  pago_antes:  { label: 'Pago adiantado',  cls: 'bg-emerald-100 text-emerald-700' },
+  pago_dia:    { label: 'Pago',            cls: 'bg-emerald-100 text-emerald-700' },
+  pago_depois: { label: 'Pago em atraso',  cls: 'bg-amber-100 text-amber-700' },
+  vencido:     { label: 'Vencido',         cls: 'bg-red-100 text-red-700' },
+};
+function compBR(c: string) { return `${c.slice(5, 7)}/${c.slice(0, 4)}`; }
+function dtBR(iso: string | null) { if (!iso) return '—'; const d = iso.slice(0, 10); return `${d.slice(8, 10)}/${d.slice(5, 7)}/${d.slice(0, 4)}`; }
+function dtHoraBR(iso: string) { return `${dtBR(iso)} ${iso.slice(11, 16)}`; }
+
+function SecFinanceiro({ empresa }: { empresa: EmpresaDetalhe }) {
+  const [meses, setMeses] = useState<MesFin[] | null>(null);
+  const [erro, setErro] = useState('');
+  const [aberto, setAberto] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!empresa.nautaLeadId) { setMeses([]); return; }
+    fetch(`/api/financeiro/historico-cliente?lead=${encodeURIComponent(empresa.nautaLeadId)}`, { credentials: 'include' })
+      .then(async (r) => { if (!r.ok) throw new Error('Falha ao carregar'); return r.json(); })
+      .then((d) => setMeses(d.meses ?? []))
+      .catch(() => setErro('Não foi possível carregar o histórico financeiro.'));
+  }, [empresa.nautaLeadId]);
+
+  if (!empresa.nautaLeadId) return <p className="text-[13px] text-slate-500">Esta empresa não está vinculada ao financeiro do ERP.</p>;
+  if (erro) return <p className="text-[13px] text-status-danger">{erro}</p>;
+  if (meses === null) return <div className="py-6 text-center text-slate-400"><Loader2 size={20} className="mx-auto animate-spin" /></div>;
+  if (meses.length === 0) return <p className="text-[13px] text-slate-500">Nenhuma cobrança registrada para este cliente ainda.</p>;
+
+  return (
+    <div className="overflow-hidden rounded border border-slate-200">
+      <table className="w-full text-[13px]">
+        <thead className="bg-slate-50 text-left text-[12px] font-semibold text-slate-500">
+          <tr><th className="px-3 py-2">Competência</th><th className="px-3 py-2">Vencimento</th><th className="px-3 py-2">Valor</th><th className="px-3 py-2">Situação</th><th className="px-3 py-2">Pago em</th><th className="w-8" /></tr>
+        </thead>
+        <tbody className="divide-y divide-slate-100">
+          {meses.map((m) => {
+            const st = ST_FIN[m.status] ?? ST_FIN.a_vencer;
+            const exp = aberto === m.competencia;
+            return (
+              <Fragment key={m.competencia + m.vencimento}>
+                <tr className="cursor-pointer hover:bg-slate-50" onClick={() => setAberto(exp ? null : m.competencia)}>
+                  <td className="px-3 py-2 font-medium text-slate-700">{compBR(m.competencia)}</td>
+                  <td className="px-3 py-2 text-slate-600">{dtBR(m.vencimento)}</td>
+                  <td className="px-3 py-2 text-slate-600">R$ {m.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+                  <td className="px-3 py-2"><span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${st.cls}`}>{st.label}</span></td>
+                  <td className="px-3 py-2 text-slate-600">{dtBR(m.pagoEm)}</td>
+                  <td className="px-3 py-2 text-slate-400">{exp ? '▲' : '▼'}</td>
+                </tr>
+                {exp && (
+                  <tr className="bg-fundo"><td colSpan={6} className="border-l-4 border-marca-400 px-4 py-3">
+                    <p className="mb-2 text-[12px] font-bold text-slate-600">Linha do tempo da cobrança {compBR(m.competencia)}</p>
+                    <ul className="space-y-1.5 text-[13px]">
+                      {m.envios.length === 0 && <li className="text-slate-400">Nenhum envio registrado.</li>}
+                      {m.envios.map((e, i) => (
+                        <li key={i} className="flex items-center gap-2">
+                          <span className={e.ok ? 'text-status-ok' : 'text-status-danger'}>●</span>
+                          <span className="text-slate-700">Cobrança enviada por <b>{e.canal === 'whatsapp' ? 'WhatsApp' : 'E-mail'}</b> ({e.tipo})</span>
+                          <span className="text-slate-400">— {dtHoraBR(e.em)}{e.ok ? '' : ' · falhou'}</span>
+                        </li>
+                      ))}
+                      <li className="flex items-center gap-2 text-slate-400"><span>○</span> E-mail aberto <span className="text-[11px]">— monitoramento ainda não ativo</span></li>
+                      <li className="flex items-center gap-2 text-slate-400"><span>○</span> Link de pagamento clicado <span className="text-[11px]">— monitoramento ainda não ativo</span></li>
+                      <li className="flex items-center gap-2">
+                        {m.pagoEm
+                          ? <><span className="text-status-ok">●</span><span className="text-slate-700">Pagamento confirmado</span><span className="text-slate-400">— {dtBR(m.pagoEm)}</span></>
+                          : <><span className="text-slate-300">○</span><span className="text-slate-500">{m.status === 'vencido' ? 'Pagamento em aberto (vencido)' : 'Aguardando pagamento'}</span></>}
+                      </li>
+                      {m.invoiceUrl && <li className="pt-1"><a href={m.invoiceUrl} target="_blank" rel="noopener noreferrer" className="text-marca-600 hover:underline">Abrir fatura/boleto ↗</a></li>}
+                    </ul>
+                  </td></tr>
+                )}
+              </Fragment>
+            );
+          })}
+        </tbody>
+      </table>
     </div>
   );
 }

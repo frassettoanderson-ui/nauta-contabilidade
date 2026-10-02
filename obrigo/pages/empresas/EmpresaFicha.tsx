@@ -73,7 +73,7 @@ export default function EmpresaFicha() {
   const [form, setForm] = useState({
     razaoSocial: '', nomeFantasia: '', apelidoEcontinuo: '', grupoEmpresaId: '',
     honorario: '', regimeTributarioId: '', ativo: true,
-    interesse: '', emAbertura: false,
+    interesse: '', emAbertura: false, contabilidade: 'atuan',
     dataAbertura: '', dataEntrada: '', dataSaida: '',
   });
   const [tagIds, setTagIds] = useState<string[]>([]);
@@ -91,6 +91,7 @@ export default function EmpresaFicha() {
         ativo: e.ativo,
         interesse: e.interesse ?? '',
         emAbertura: !!e.emAbertura,
+        contabilidade: (e.contabilidade as string) || 'atuan',
         dataAbertura: e.dataAbertura ? e.dataAbertura.slice(0, 10) : '',
         dataEntrada: e.dataEntrada ? e.dataEntrada.slice(0, 10) : '',
         dataSaida: e.dataSaida ? e.dataSaida.slice(0, 10) : '',
@@ -149,6 +150,7 @@ export default function EmpresaFicha() {
         ativo: form.ativo,
         interesse: form.interesse || null,
         emAbertura: form.emAbertura,
+        contabilidade: form.contabilidade === 'nauta' ? 'nauta' : 'atuan',
         dataAbertura: isoOuNull(form.dataAbertura),
         dataEntrada: isoOuNull(form.dataEntrada),
         dataSaida: isoOuNull(form.dataSaida),
@@ -297,7 +299,7 @@ export default function EmpresaFicha() {
         </div>
       </div>
 
-      {/* Linha 3: Tipo de contrato / Em abertura */}
+      {/* Linha 3: Tipo de contrato / Em abertura / Contabilidade */}
       <div className="mt-3 grid grid-cols-1 gap-x-4 gap-y-3 md:grid-cols-[1.6fr_0.6fr_1.2fr_1fr]">
         <div><label className={LBL}>Tipo de contrato</label>
           <select className={INP} value={form.interesse} disabled={!podeEditar} onChange={(e) => set('interesse', e.target.value)}>
@@ -306,6 +308,13 @@ export default function EmpresaFicha() {
         </div>
         <div><label className={LBL}>Em abertura?</label>
           <select className={INP} value={form.emAbertura ? 'sim' : 'nao'} disabled={!podeEditar} onChange={(e) => set('emAbertura', e.target.value === 'sim')}><option value="nao">Nao</option><option value="sim">Sim</option></select>
+        </div>
+        <div><label className={LBL}>Contabilidade</label>
+          <select className={INP} value={form.contabilidade} disabled={!podeEditar} onChange={(e) => set('contabilidade', e.target.value)}>
+            <option value="atuan">Atuan Digital</option>
+            <option value="nauta">Nauta Contabilidade</option>
+          </select>
+          {form.contabilidade === 'nauta' && <p className="mt-1 text-[11px] text-status-warn">Fora da cobrança automática (controle manual).</p>}
         </div>
       </div>
 

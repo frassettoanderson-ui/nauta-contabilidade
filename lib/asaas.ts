@@ -47,13 +47,13 @@ interface LeadBilling {
   valor_honorario: number | null; honorario_vencimento: string | null
   asaas_customer_id: string | null; asaas_subscription_id: string | null; empresa_id: string | null
   emp_nome: string | null; emp_cnpj: string | null; cli_cpf: string | null; emp_email: string | null; emp_telefone: string | null
-  situacao: string | null
+  situacao: string | null; contabilidade: string | null
 }
 
 async function dadosLead(leadId: string): Promise<LeadBilling> {
   const r = await pool.query(
     `SELECT l.id, l.nome, l.email, l.whatsapp, l.valor_honorario, l.honorario_vencimento,
-            l.asaas_customer_id, l.asaas_subscription_id, l.empresa_id,
+            l.asaas_customer_id, l.asaas_subscription_id, l.empresa_id, l.contabilidade,
             c.emp_nome, c.emp_cnpj, c.cli_cpf, c.emp_email, c.emp_telefone, c.situacao
        FROM leads l LEFT JOIN clientes c ON c.lead_id = l.id
       WHERE l.id = $1 LIMIT 1`,
@@ -213,6 +213,8 @@ async function syncPayments(leadId: string, subscriptionId: string, empresaId: s
 // ── Operações públicas ───────────────────────────────────────────────────────
 export async function sincronizarLead(leadId: string) {
   const d = await dadosLead(leadId)
+  // Clientes da Nauta Contabilidade são cobrados manualmente — ficam fora do Asaas/régua.
+  if ((d.contabilidade || 'atuan') === 'nauta') return { leadId, ok: true, pulado: 'nauta (cobrança manual)' }
   if (d.situacao === 'inativo') { await cancelarAssinatura(leadId); return { leadId, ok: true, cancelado: true } }
   if (!(Number(d.valor_honorario) > 0)) throw new Error('Lead sem honorário definido')
   const customerId = await ensureCustomer(d)

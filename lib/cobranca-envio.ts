@@ -198,6 +198,7 @@ export async function rodarRegua(opts: { hoje?: Date; intervaloMs?: [number, num
          LEFT JOIN clientes c ON c.lead_id = l.id
         WHERE fc.status IN ('PENDING','OVERDUE') AND fc.vencimento = $1::date
           AND COALESCE(l.pix_automatico_ativo, false) = false
+          AND COALESCE(l.contabilidade, 'atuan') <> 'nauta'
           AND COALESCE(c.situacao, 'ativo') <> 'inativo'
           AND NOT EXISTS (SELECT 1 FROM cobranca_envios e WHERE e.cobranca_id = fc.id AND e.tipo = $2 AND e.ok = true)
         ORDER BY empresa`, [a.data, a.tipo]

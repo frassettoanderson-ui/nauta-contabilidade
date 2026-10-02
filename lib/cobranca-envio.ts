@@ -15,21 +15,23 @@ const RAND = <T,>(arr: T[]) => arr[Math.floor(Math.random() * arr.length)]
 
 // Texto principal (sem o PIX/boleto embutidos — eles vão em mensagens separadas,
 // senão o WhatsApp cria preview da URL e embola o código copia-e-cola).
+// Estilo aprovado: saudação por horário + "Honorário", vencimento 📅, valor 💰,
+// "chave PIX e Boleto", fecho cordial. 3 variações por tipo (proteção do chip).
 const MENSAGENS: Record<TipoEnvio, string[]> = {
   lembrete: [
-    'Olá {nome}, tudo bem? 😊 Passando para lembrar que o honorário da {empresa} ({valor}) vence em {venc}. Logo abaixo deixo o *PIX copia e cola* e o *boleto* para facilitar. Qualquer dúvida estamos por aqui! 🙏',
-    'Oi {nome}! Aqui é da Nauta Contabilidade. O honorário de {venc} da {empresa} está chegando: {valor}. Mando abaixo o PIX e o boleto para você escolher como pagar. Obrigado!',
-    '{nome}, bom dia! Seu honorário da {empresa} ({valor}) vence em {venc}. Para facilitar, deixo abaixo o PIX copia e cola e o link do boleto. 😉',
+    '{saudacao} {nome}!!!\n\nPassando para lembrar do seu Honorário 😊\n\nO vencimento é dia *{venc}* 📅\nno valor de *{valor}* 💰\n\nSegue abaixo a chave PIX e o Boleto para pagar conforme sua preferência!\n\nAgradecemos a parceria e desejamos um excelente mês!!',
+    '{saudacao} {nome}!!!\n\nSeu Honorário está chegando 😉\n\nVence dia *{venc}* 📅\nno valor de *{valor}* 💰\n\nLogo abaixo deixo a chave PIX e o Boleto para facilitar o pagamento!\n\nObrigado pela parceria e um ótimo mês!!',
+    '{saudacao} {nome}!!!\n\nLembrete amigável do seu Honorário 🙏\n\nVencimento: *{venc}* 📅\nValor: *{valor}* 💰\n\nAbaixo você encontra a chave PIX e o Boleto para pagar como preferir!\n\nAgradecemos a confiança e desejamos um excelente mês!!',
   ],
   vencimento: [
-    'Olá {nome}! Hoje é o vencimento do honorário da {empresa} ({valor}). Deixo abaixo o PIX e o boleto. Se já efetuou o pagamento, pode ignorar esta mensagem. 😊',
-    'Oi {nome}, lembrete rápido: o honorário da {empresa} ({valor}) vence hoje, {venc}. Seguem abaixo o PIX (cai na hora) e o boleto.',
-    '{nome}, tudo certo? O honorário da {empresa} ({valor}) vence hoje. Deixo abaixo o PIX e o boleto. Qualquer coisa, chama a gente!',
+    '{saudacao} {nome}!!!\n\nSeu Honorário já está disponível para pagamento! 😊\n\nO vencimento é dia *{venc}* 📅\nno valor de *{valor}* 💰\n\nSegue abaixo a chave PIX e Boleto para pagar conforme sua preferência!\n\nAgradecemos a parceria e desejamos um excelente mês!!',
+    '{saudacao} {nome}!!!\n\nSeu Honorário está disponível para pagamento hoje 😉\n\nVencimento: *{venc}* 📅\nValor: *{valor}* 💰\n\nLogo abaixo deixo a chave PIX e o Boleto para você escolher como pagar!\n\nSe já efetuou o pagamento, pode desconsiderar. Um ótimo mês!!',
+    '{saudacao} {nome}!!!\n\nPassando para avisar que seu Honorário vence hoje 🙏\n\nDia *{venc}* 📅 · no valor de *{valor}* 💰\n\nSegue abaixo a chave PIX e o Boleto para pagar da forma que preferir!\n\nAgradecemos a parceria e desejamos um excelente mês!!',
   ],
   atraso: [
-    'Olá {nome}, tudo bem? Não identificamos o pagamento do honorário da {empresa} ({valor}, vencido em {venc}). Consegue nos passar uma previsão? Para facilitar, deixo abaixo o PIX e o boleto. 🙏',
-    'Oi {nome}. O honorário de {venc} da {empresa} ({valor}) ainda consta em aberto por aqui. Se já pagou, nos envia o comprovante? Senão, seguem abaixo o PIX e o boleto.',
-    '{nome}, passando para alinhar o honorário da {empresa} ({valor}) vencido em {venc}. Podemos combinar uma data? Deixo abaixo o PIX e o boleto. Estamos à disposição.',
+    '{saudacao} {nome}!!!\n\nNotamos que seu Honorário ainda consta em aberto 🙏\n\nVenceu dia *{venc}* 📅\nno valor de *{valor}* 💰\n\nSegue abaixo a chave PIX e Boleto para regularizar. Se já pagou, pode desconsiderar!\n\nContamos com você e agradecemos a parceria!!',
+    '{saudacao} {nome}!!!\n\nSeu Honorário está pendente por aqui 😊\n\nVencimento era dia *{venc}* 📅\nvalor de *{valor}* 💰\n\nDeixo abaixo a chave PIX e o Boleto para facilitar. Se já efetuou, nos envia o comprovante?\n\nObrigado pela parceria!!',
+    '{saudacao} {nome}!!!\n\nPassando para alinhar seu Honorário em aberto 🙏\n\nVenceu em *{venc}* 📅 · *{valor}* 💰\n\nSegue abaixo a chave PIX e o Boleto. Conseguimos combinar o pagamento?\n\nEstamos à disposição e agradecemos a parceria!!',
   ],
 }
 const PIX_AUTO_RODAPE = 'ℹ️ Pagando por este PIX, os próximos honorários entram no Pix Automático — você autoriza uma vez no app do banco e não precisa mais se preocupar com boleto.'
@@ -42,6 +44,8 @@ const ASSUNTO: Record<TipoEnvio, string> = {
 const brl = (n: number) => `R$ ${Number(n || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
 const dataBR = (iso: string) => `${iso.slice(8, 10)}/${iso.slice(5, 7)}/${iso.slice(0, 4)}`
 const primeiroNome = (n: string) => (n || '').trim().split(/\s+/)[0] || 'cliente'
+// Saudação pelo horário (fuso America/Sao_Paulo no servidor): Bom dia / Boa tarde / Boa noite
+const saudacao = () => { const h = new Date().getHours(); return h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite' }
 const soDigitos = (v: unknown) => String(v ?? '').replace(/\D/g, '')
 
 interface Ctx { leadId: string; empresaId: string | null; nome: string; empresa: string; whatsapp: string; email: string; cobrancaId: string | null; valor: number; venc: string; link: string; pix: string }
@@ -73,7 +77,7 @@ async function contexto(leadId: string, cobrancaId?: string): Promise<Ctx> {
 
 function montar(tipo: TipoEnvio, c: Ctx) {
   const fill = (t: string) => t
-    .replace(/{nome}/g, c.nome).replace(/{empresa}/g, c.empresa).replace(/{valor}/g, brl(c.valor)).replace(/{venc}/g, c.venc)
+    .replace(/{saudacao}/g, saudacao()).replace(/{nome}/g, c.nome).replace(/{empresa}/g, c.empresa).replace(/{valor}/g, brl(c.valor)).replace(/{venc}/g, c.venc)
   const pixAuto = !!c.pix && /\/rec\//.test(c.pix) // payload de recorrência (Pix Automático)
   return { corpo: fill(RAND(MENSAGENS[tipo])), assunto: fill(ASSUNTO[tipo]), pixAuto }
 }
@@ -88,7 +92,7 @@ function partesWhats(corpo: string, c: Ctx, pixAuto: boolean): string[] {
 }
 // Corpo do e-mail: seções rotuladas (no e-mail o código não gera preview, então fica tudo junto)
 function corpoEmail(corpo: string, c: Ctx, pixAuto: boolean): string {
-  const p: string[] = [corpo, '']
+  const p: string[] = [corpo.replace(/\*/g, ''), ''] // remove o negrito do WhatsApp no e-mail
   if (c.pix) p.push('PIX copia e cola:', c.pix, '')
   if (c.link) p.push(`Boleto: ${c.link}`, '')
   if (pixAuto) p.push(PIX_AUTO_RODAPE)

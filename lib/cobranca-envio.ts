@@ -90,13 +90,30 @@ function partesWhats(corpo: string, c: Ctx, pixAuto: boolean): string[] {
   if (pixAuto) partes.push(PIX_AUTO_RODAPE)
   return partes
 }
-// Corpo do e-mail: seções rotuladas (no e-mail o código não gera preview, então fica tudo junto)
-function corpoEmail(corpo: string, c: Ctx, pixAuto: boolean): string {
-  const p: string[] = [corpo.replace(/\*/g, ''), ''] // remove o negrito do WhatsApp no e-mail
-  if (c.pix) p.push('PIX copia e cola:', c.pix, '')
-  if (c.link) p.push(`Boleto: ${c.link}`, '')
-  if (pixAuto) p.push(PIX_AUTO_RODAPE)
-  return p.join('\n').trim()
+// Corpo do e-mail em HTML. O código PIX vai dentro de um <a> (bloco monoespaçado):
+// assim o Gmail/Outlook não quebra o copia-e-cola em "metade link, metade texto" por causa
+// do espaço no nome do recebedor — o código fica inteiro e copiável. Também devolve um
+// texto puro de fallback.
+const escHtml = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+function corpoEmail(corpo: string, c: Ctx, pixAuto: boolean): { html: string; text: string } {
+  const corpoLimpo = corpo.replace(/\*/g, '') // sem o negrito do WhatsApp
+  const box = 'display:block;font-family:Consolas,Menlo,monospace;font-size:13px;line-height:1.4;word-break:break-all;background:#f3f5f9;border:1px solid #e2e8f0;border-radius:8px;padding:12px;color:#0e2240;text-decoration:none'
+  const h: string[] = ['<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#1e293b;line-height:1.55">']
+  h.push(`<p style="margin:0 0 12px;white-space:pre-line">${escHtml(corpoLimpo)}</p>`)
+  if (c.pix) {
+    h.push('<p style="margin:14px 0 6px;font-weight:bold">PIX copia e cola:</p>')
+    h.push(`<a href="${escHtml(c.link || '#')}" style="${box}">${escHtml(c.pix)}</a>`)
+    h.push('<p style="margin:6px 0 0;color:#64748b;font-size:12px">Toque/segure o código acima para copiar.</p>')
+  }
+  if (c.link) h.push(`<p style="margin:16px 0 0"><a href="${escHtml(c.link)}" style="color:#F47920;font-weight:bold">📄 Abrir boleto / fatura</a></p>`)
+  if (pixAuto) h.push(`<p style="margin:16px 0 0;color:#64748b;font-size:12px">${escHtml(PIX_AUTO_RODAPE)}</p>`)
+  h.push('</div>')
+
+  const t: string[] = [corpoLimpo, '']
+  if (c.pix) t.push('PIX copia e cola:', c.pix, '')
+  if (c.link) t.push(`Boleto: ${c.link}`, '')
+  if (pixAuto) t.push(PIX_AUTO_RODAPE)
+  return { html: h.join(''), text: t.join('\n').trim() }
 }
 
 // ── Canais ───────────────────────────────────────────────────────────────────
@@ -122,7 +139,7 @@ async function enviarWhats(phone: string, messages: string[]) {
   return p
 }
 
-async function enviarEmail(to: string, subject: string, text: string) {
+async function enviarEmail(to: string, subject: string, html: string, text: string) {
   if (!emailConfigurado()) throw new Error('SMTP não configurado')
   const nodemailer = (await import('nodemailer')).default
   const port = Number(process.env.SMTP_PORT || 465)
@@ -130,7 +147,7 @@ async function enviarEmail(to: string, subject: string, text: string) {
     host: process.env.SMTP_HOST, port, secure: port === 465,
     auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
   })
-  await t.sendMail({ from: process.env.SMTP_FROM || process.env.SMTP_USER, to, subject, text })
+  await t.sendMail({ from: process.env.SMTP_FROM || process.env.SMTP_USER, to, subject, html, text })
   return to
 }
 
@@ -154,8 +171,8 @@ export async function enviarCobranca(leadId: string, tipo: TipoEnvio, cobrancaId
   }
   if (emailConfigurado() && c.email) {
     const corpoMail = corpoEmail(corpo, c, pixAuto)
-    try { await enviarEmail(c.email, assunto, corpoMail); await registrar(c, tipo, 'email', c.email, corpoMail, true); out.push({ canal: 'email', ok: true }) }
-    catch (e) { const erro = (e as Error).message; await registrar(c, tipo, 'email', c.email, corpoMail, false, erro); out.push({ canal: 'email', ok: false, erro }) }
+    try { await enviarEmail(c.email, assunto, corpoMail.html, corpoMail.text); await registrar(c, tipo, 'email', c.email, corpoMail.text, true); out.push({ canal: 'email', ok: true }) }
+    catch (e) { const erro = (e as Error).message; await registrar(c, tipo, 'email', c.email, corpoMail.text, false, erro); out.push({ canal: 'email', ok: false, erro }) }
   }
   emitCrmChange()
   return { leadId, tipo, envios: out }

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import pool from '@/lib/db'
-import { rodarRegua, alvosDisponivel, dispararDisponiveis, statusDisparo } from '@/lib/cobranca-envio'
+import { rodarRegua, alvosDisponivel, dispararDisponiveis, statusDisparo, enviarCobranca, type TipoEnvio } from '@/lib/cobranca-envio'
 import { sincronizarTodos } from '@/lib/asaas'
 
 export const dynamic = 'force-dynamic'
@@ -25,6 +25,14 @@ export async function POST(req: NextRequest) {
       const resultados = []
       for (const e of emp.rows) resultados.push(...await sincronizarTodos(String(e.empresa_id)))
       return NextResponse.json({ total: resultados.length, erros: resultados.filter(r => !r.ok), resultados })
+    }
+    if (acao === 'reenviar') {
+      // ?acao=reenviar&leadId=…&tipo=disponivel&canal=whatsapp → reenvia a cobrança aberta por um canal só
+      const leadId = sp.get('leadId') || ''
+      const tipo = (sp.get('tipo') || 'disponivel') as TipoEnvio
+      const canal = sp.get('canal')
+      if (!leadId || !['disponivel', 'lembrete', 'vencimento', 'atraso'].includes(tipo)) return NextResponse.json({ error: 'leadId/tipo inválidos' }, { status: 400 })
+      return NextResponse.json(await enviarCobranca(leadId, tipo, undefined, canal === 'whatsapp' || canal === 'email' ? [canal] : undefined))
     }
     if (acao === 'disponivel') {
       const ate = sp.get('ate') || ''

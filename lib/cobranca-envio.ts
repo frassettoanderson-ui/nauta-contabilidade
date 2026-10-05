@@ -180,17 +180,17 @@ async function registrar(c: Ctx, tipo: TipoEnvio, canal: string, destino: string
 }
 
 /** Envia (WhatsApp + e-mail se configurado) e registra. Usado pela régua e pelo botão manual. */
-export async function enviarCobranca(leadId: string, tipo: TipoEnvio, cobrancaId?: string) {
+export async function enviarCobranca(leadId: string, tipo: TipoEnvio, cobrancaId?: string, canais: ('whatsapp' | 'email')[] = ['whatsapp', 'email']) {
   const c = await contexto(leadId, cobrancaId)
   const out: { canal: string; ok: boolean; erro?: string }[] = []
   const { corpo, assunto, pixAuto } = montar(tipo, c)
-  if (whatsConfigurado()) {
+  if (whatsConfigurado() && canais.includes('whatsapp')) {
     const partes = partesWhats(corpo, c, pixAuto)
     const log = partes.join('\n\n')
     try { const dest = await enviarWhats(c.whatsapp, partes); await registrar(c, tipo, 'whatsapp', dest, log, true); out.push({ canal: 'whatsapp', ok: true }) }
     catch (e) { const erro = (e as Error).message; await registrar(c, tipo, 'whatsapp', c.whatsapp, log, false, erro); out.push({ canal: 'whatsapp', ok: false, erro }) }
   }
-  if (emailConfigurado() && c.email) {
+  if (emailConfigurado() && c.email && canais.includes('email')) {
     const corpoMail = corpoEmail(corpo, c, pixAuto)
     try { await enviarEmail(c.email, assunto, corpoMail.html, corpoMail.text); await registrar(c, tipo, 'email', c.email, corpoMail.text, true); out.push({ canal: 'email', ok: true }) }
     catch (e) { const erro = (e as Error).message; await registrar(c, tipo, 'email', c.email, corpoMail.text, false, erro); out.push({ canal: 'email', ok: false, erro }) }

@@ -211,12 +211,23 @@ async function syncPayments(leadId: string, subscriptionId: string, empresaId: s
 }
 
 // ── Operações públicas ───────────────────────────────────────────────────────
+// Antecedência máxima (dias) para criar a assinatura/1º boleto no Asaas.
+export const JANELA_ASSINATURA_DIAS = 7
+
 export async function sincronizarLead(leadId: string) {
   const d = await dadosLead(leadId)
   // Clientes da Nauta Contabilidade são cobrados manualmente — ficam fora do Asaas/régua.
   if ((d.contabilidade || 'atuan') === 'nauta') return { leadId, ok: true, pulado: 'nauta (cobrança manual)' }
   if (d.situacao === 'inativo') { await cancelarAssinatura(leadId); return { leadId, ok: true, cancelado: true } }
   if (!(Number(d.valor_honorario) > 0)) throw new Error('Lead sem honorário definido')
+  // Assinatura nova só nasce perto do 1º vencimento: o boleto registrado aparece na hora no DDA
+  // do cliente, então quem começa a pagar daqui a semanas não pode ver boleto antes da hora.
+  // A rotina diária (régua, acao=sincronizar) cria a assinatura quando entrar na janela.
+  if (!d.asaas_subscription_id) {
+    const prox = await proximoVencimento(d)
+    const limite = new Date(); limite.setHours(0, 0, 0, 0); limite.setDate(limite.getDate() + JANELA_ASSINATURA_DIAS)
+    if (new Date(`${prox}T00:00:00`) > limite) return { leadId, ok: true, pulado: `aguardando — 1º vencimento ${prox.split('-').reverse().join('/')}` }
+  }
   const customerId = await ensureCustomer(d)
   const subId = await ensureSubscription({ ...d, asaas_customer_id: customerId }, customerId)
   const n = await syncPayments(d.id, subId, d.empresa_id)

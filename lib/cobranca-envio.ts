@@ -58,7 +58,7 @@ const soDigitos = (v: unknown) => String(v ?? '').replace(/\D/g, '')
 
 interface Ctx { leadId: string; empresaId: string | null; nome: string; empresa: string; whatsapp: string; email: string; cobrancaId: string | null; valor: number; venc: string; link: string; pix: string }
 
-async function contexto(leadId: string, cobrancaId?: string): Promise<Ctx> {
+async function contexto(leadId: string, cobrancaId?: string, tipo?: TipoEnvio): Promise<Ctx> {
   const r = await pool.query(
     `SELECT l.id, l.nome, l.whatsapp, l.email, l.valor_honorario, l.empresa_id, to_char(l.honorario_vencimento,'YYYY-MM-DD') AS honorario_vencimento,
             c.emp_nome, c.cli_nome_completo, c.emp_telefone, c.emp_email
@@ -69,7 +69,10 @@ async function contexto(leadId: string, cobrancaId?: string): Promise<Ctx> {
   const cob = cobrancaId
     ? (await pool.query(`SELECT id, asaas_payment_id, valor, to_char(vencimento,'YYYY-MM-DD') AS vencimento, invoice_url FROM financeiro_cobrancas WHERE id = $1`, [cobrancaId])).rows[0]
     : (await pool.query(`SELECT id, asaas_payment_id, valor, to_char(vencimento,'YYYY-MM-DD') AS vencimento, invoice_url FROM financeiro_cobrancas
-                          WHERE lead_id = $1 AND status IN ('PENDING','OVERDUE') ORDER BY vencimento ASC LIMIT 1`, [leadId])).rows[0]
+                          WHERE lead_id = $1 AND status IN ('PENDING','OVERDUE')
+                            -- atraso: só cobrança JÁ vencida (nunca a do mês corrente, que ainda está no prazo)
+                            AND ($2::boolean = false OR vencimento < current_date)
+                          ORDER BY vencimento ASC LIMIT 1`, [leadId, tipo === 'atraso'])).rows[0]
   // PIX/boleto só existem quando há cobrança Asaas. Clientes fora do Asaas (anteriores à
   // adesão) são cobrados "do jeito antigo": mensagem só com honorário/vencimento, sem link.
   let pix = ''
@@ -181,7 +184,7 @@ async function registrar(c: Ctx, tipo: TipoEnvio, canal: string, destino: string
 
 /** Envia (WhatsApp + e-mail se configurado) e registra. Usado pela régua e pelo botão manual. */
 export async function enviarCobranca(leadId: string, tipo: TipoEnvio, cobrancaId?: string, canais: ('whatsapp' | 'email')[] = ['whatsapp', 'email']) {
-  const c = await contexto(leadId, cobrancaId)
+  const c = await contexto(leadId, cobrancaId, tipo)
   const out: { canal: string; ok: boolean; erro?: string }[] = []
   const { corpo, assunto, pixAuto } = montar(tipo, c)
   if (whatsConfigurado() && canais.includes('whatsapp')) {

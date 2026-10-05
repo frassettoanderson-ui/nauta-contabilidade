@@ -609,3 +609,21 @@ export function addContaPagar(c: { descricao: string; fornecedor?: string; categ
 export function pagarContaPagar(id: string, pagoEm: string): Promise<{ ok: boolean }> { return postConta({ action: 'pagar', id, pagoEm }) as Promise<{ ok: boolean }> }
 export function desmarcarContaPagar(id: string): Promise<{ ok: boolean }> { return postConta({ action: 'desmarcar', id }) as Promise<{ ok: boolean }> }
 export function deleteContaPagar(id: string): Promise<{ ok: boolean }> { return postConta({ action: 'delete', id }) as Promise<{ ok: boolean }> }
+
+// ─── SUGESTÕES DE ALTERAÇÃO DO SISTEMA ─────────────────────────────────────
+export type StatusSugestao = 'pendente' | 'concluida' | 'nao_aprovada'
+export interface Sugestao {
+  id: string; titulo: string; area: string | null; descricao: string; status: StatusSugestao
+  autor_id: string | null; autor_nome: string | null; resposta: string | null
+  resolvido_por: string | null; resolvido_em: string | null; criado_em: string
+}
+export function listSugestoes(): Promise<Sugestao[]> { return fetch('/api/sugestoes').then(r => json(r)) }
+export function addSugestao(d: { titulo: string; area?: string; descricao: string }): Promise<Sugestao> {
+  return fetch('/api/sugestoes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(d) }).then(r => json(r))
+}
+export function resolverSugestao(id: string, status: StatusSugestao, resposta?: string): Promise<Sugestao> {
+  return fetch('/api/sugestoes', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, status, resposta }) }).then(r => json(r))
+}
+export function deleteSugestao(id: string): Promise<{ ok: boolean }> {
+  return fetch(`/api/sugestoes?id=${encodeURIComponent(id)}`, { method: 'DELETE' }).then(r => json(r))
+}

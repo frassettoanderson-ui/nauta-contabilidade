@@ -15,7 +15,7 @@ import {
   ArrowDownCircle, ArrowUpCircle, Repeat, CalendarCheck, Target, Percent, AlertTriangle, Receipt,
   ChevronRight, ChevronLeft, Menu, X, Home, User, HelpCircle, Power,
   Globe, List, Heart, CheckCircle, Folder, MessageSquare, UploadCloud, Tags, Bot, Download, HardDrive,
-  Smartphone, Star, ClipboardList, type LucideIcon,
+  Smartphone, Star, ClipboardList, Lightbulb, type LucideIcon,
 } from 'lucide-react'
 
 // Módulo Obrigô embutido (app/sistema/(painel)/obrigo/[[...slug]])
@@ -107,6 +107,7 @@ const NAV: NavItem[] = [
     { label: 'Despesas Fixas', href: '/sistema/financeiro/despesas-fixas',  icon: Repeat },
     { label: 'Contas a Pagar', href: '/sistema/financeiro/contas-a-pagar', icon: Receipt },
   ] },
+  { label: 'Sugestões', href: '/sistema/sugestoes', icon: Lightbulb },
   { label: 'Configurações', href: '/sistema/configuracoes', icon: Settings },
   { label: 'Usuários', icon: UserCog, children: [
     { label: 'Criar Usuário',      href: '/sistema/usuarios/criar', icon: UserPlus },

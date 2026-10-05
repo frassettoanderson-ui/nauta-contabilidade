@@ -109,7 +109,10 @@ export function effectivePerms(role: string, stored: string[] | null | undefined
 }
 
 /** O usuário pode ver este href? perms null = vê tudo. */
+// Telas liberadas para todos os usuários, independente do cargo/permissões
+export const SEMPRE_VISIVEL = ['/sistema/sugestoes']
+
 export function podeVer(perms: string[] | null | undefined, href: string): boolean {
-  if (perms == null) return true
+  if (perms == null || SEMPRE_VISIVEL.includes(href)) return true
   return perms.includes(href)
 }

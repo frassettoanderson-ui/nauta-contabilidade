@@ -3,8 +3,8 @@
 import { useEffect, useState, useCallback } from 'react'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import { Loader2, Search, DollarSign, MessageCircle, X, Plus, Trash2, Phone, Mail, Smartphone, CalendarClock, ChevronUp, ChevronDown, ChevronsUpDown, ExternalLink, RefreshCw, Send, Copy, Zap, AlertTriangle, Check } from 'lucide-react'
-import { listFinanceiro, listPagamentos, addPagamento, deletePagamento, listEventos, addEvento, asaasResumo, asaasSincronizar, enviosResumo, enviarCobrancaAgora, listEnviosCobranca, gerarPixAutomatico, getPixAutomatico, cancelarPixAutomatico, type PagamentoRow, type EventoRow, type AsaasResumo, type AsaasResumoItem, type EnviosResumo, type EnvioRow, type PixAutoRow, type TipoEnvioCobranca } from '@/lib/api'
+import { Loader2, Search, DollarSign, MessageCircle, X, Plus, Trash2, Phone, Mail, Smartphone, CalendarClock, ChevronUp, ChevronDown, ChevronsUpDown, ExternalLink, RefreshCw, Send, Copy, Zap, AlertTriangle, Check, Link2 } from 'lucide-react'
+import { listFinanceiro, listPagamentos, addPagamento, deletePagamento, listEventos, addEvento, asaasResumo, asaasSincronizar, asaasGerarAtraso, enviosResumo, enviarCobrancaAgora, listEnviosCobranca, gerarPixAutomatico, getPixAutomatico, cancelarPixAutomatico, type PagamentoRow, type EventoRow, type AsaasResumo, type AsaasResumoItem, type EnviosResumo, type EnvioRow, type PixAutoRow, type TipoEnvioCobranca } from '@/lib/api'
 
 type Row = Record<string, unknown>
 const s = (v: unknown) => String(v ?? '')
@@ -51,6 +51,7 @@ export default function FinanceiroPage() {
   const [envios, setEnvios] = useState<EnviosResumo | null>(null)
   const [enviando, setEnviando] = useState<string | null>(null)
   const [pago, setPago] = useState<Row | null>(null)
+  const [gerando, setGerando] = useState<string | null>(null)
 
   const load = useCallback(() => {
     listFinanceiro().then(setRows).catch(() => setRows([]))
@@ -69,6 +70,24 @@ export default function FinanceiroPage() {
       if (falha.length) alert('Falha no envio:\n' + falha.map(f => `• ${f.canal}: ${f.erro}`).join('\n'))
     } catch (e) { alert('Envio: ' + ((e as Error).message || 'erro')) }
     finally { setEnviando(null) }
+  }
+  // Link do honorário atrasado (mês sem boleto Asaas): cobrança avulsa c/ multa e juros, vence em 3 dias
+  async function gerarLinkAtraso(r: Row) {
+    const lid = s(r.lead_id)
+    const nome = s(r.emp_nome) || s(r.lead_nome)
+    if (!confirm(`Gerar no Asaas o link do honorário atrasado de ${nome}?\n\nValor = honorário + multa 2% + juros 1% ao mês (desde o vencimento original). Vence em 3 dias.`)) return
+    setGerando(lid)
+    try {
+      const c = await asaasGerarAtraso(lid)
+      load()
+      const comp = `${c.competencia.slice(5, 7)}/${c.competencia.slice(0, 4)}`
+      const det = c.reaproveitada ? '(link já existia para este mês)'
+        : `Honorário ${money(c.honorario)} + multa ${money(c.multa)} + juros ${money(c.juros)} (${c.dias} dias)`
+      if (c.invoice_url) { try { await navigator.clipboard.writeText(c.invoice_url) } catch { /* sem clipboard */ } }
+      const enviarAgora = confirm(`Link do honorário ${comp} pronto${c.invoice_url ? ' (copiado)' : ''}:\n\n${money(c.valor)} · vence ${dataBR(c.vencimento)}\n${det}\n\nEnviar a cobrança de atraso agora (WhatsApp + e-mail) com esse PIX/boleto?`)
+      if (enviarAgora && envios?.whats) await enviar(lid, 'atraso')
+    } catch (e) { alert('Asaas: ' + ((e as Error).message || 'erro ao gerar o link')) }
+    finally { setGerando(null) }
   }
   async function syncLead(leadId: string) {
     setSyncing(leadId)
@@ -194,6 +213,13 @@ export default function FinanceiroPage() {
                               className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 h-7 rounded-lg" style={{ background: '#69a8d9', color: '#fff' }}>
                               <Check size={12} /> Marcar pago
                             </button>
+                            {tipo === 'atraso' && asaas?.configurado && (
+                              <button onClick={() => gerarLinkAtraso(r)} disabled={gerando === lid}
+                                title="Gerar no Asaas o PIX/boleto do honorário atrasado (multa 2% + juros 1% a.m., vence em 3 dias)"
+                                className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 h-7 rounded-lg disabled:opacity-40" style={{ background: '#F47920', color: '#fff' }}>
+                                {gerando === lid ? <Loader2 size={12} className="animate-spin" /> : <Link2 size={12} />} Gerar link
+                              </button>
+                            )}
                             {envios?.whats ? (
                               <button onClick={() => enviar(lid, tipo)} disabled={enviando === lid}
                                 title={temCob ? `Enviar ${tipo} pelo WhatsApp da Nauta (com PIX/boleto)` : `Enviar ${tipo} pelo WhatsApp da Nauta (sem Asaas — só o lembrete/honorário)`}

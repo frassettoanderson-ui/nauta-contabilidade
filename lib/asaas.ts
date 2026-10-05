@@ -1,5 +1,6 @@
 import pool from './db'
 import { emitCrmChange } from './realtime'
+import { calcStatusFinanceiro } from './financeiro-calc'
 
 // ─── Integração Asaas (cobrança automática dos honorários) ──────────────────
 // Cada lead ativo no financeiro vira um "customer" + uma "subscription" mensal no
@@ -147,19 +148,23 @@ async function ensureSubscription(d: LeadBilling, customerId: string): Promise<s
 const PAGO = new Set(['RECEIVED', 'CONFIRMED', 'RECEIVED_IN_CASH'])
 
 export async function upsertCobranca(p: AsaasPayment, leadId: string, empresaId: string | null, competenciaOverride?: string) {
-  const competencia = competenciaOverride ?? compOf(p.dueDate)
   const pagoEm = PAGO.has(p.status) ? (p.clientPaymentDate || p.paymentDate || null) : null
-  await pool.query(
+  // Competência: a já gravada na cobrança vale (ex.: link avulso de um mês atrasado, que vence
+  // no mês atual mas quita o mês antigo); só um override explícito a substitui.
+  const up = await pool.query(
     `INSERT INTO financeiro_cobrancas
        (empresa_id, lead_id, asaas_payment_id, asaas_subscription_id, competencia, valor, vencimento, status, billing_type, invoice_url, bank_slip_url, pago_em, raw)
      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
      ON CONFLICT (asaas_payment_id) DO UPDATE SET
-       status = EXCLUDED.status, valor = EXCLUDED.valor, vencimento = EXCLUDED.vencimento, competencia = EXCLUDED.competencia,
+       status = EXCLUDED.status, valor = EXCLUDED.valor, vencimento = EXCLUDED.vencimento,
+       competencia = CASE WHEN $14::boolean THEN EXCLUDED.competencia ELSE financeiro_cobrancas.competencia END,
        billing_type = EXCLUDED.billing_type, invoice_url = EXCLUDED.invoice_url, bank_slip_url = EXCLUDED.bank_slip_url,
-       pago_em = EXCLUDED.pago_em, raw = EXCLUDED.raw, atualizado_em = now()`,
-    [empresaId, leadId, p.id, p.subscription ?? null, competencia, Number(p.value || 0), p.dueDate, p.status, p.billingType,
-     p.invoiceUrl ?? null, p.bankSlipUrl ?? null, pagoEm, JSON.stringify(p)]
+       pago_em = EXCLUDED.pago_em, raw = EXCLUDED.raw, atualizado_em = now()
+     RETURNING to_char(competencia, 'YYYY-MM-DD') AS competencia`,
+    [empresaId, leadId, p.id, p.subscription ?? null, competenciaOverride ?? compOf(p.dueDate), Number(p.value || 0), p.dueDate, p.status, p.billingType,
+     p.invoiceUrl ?? null, p.bankSlipUrl ?? null, pagoEm, JSON.stringify(p), !!competenciaOverride]
   )
+  const competencia: string = up.rows[0].competencia
   // Baixa automática: pagamento recebido → financeiro_pagamentos (uma vez por competência)
   if (pagoEm) {
     const ja = await pool.query(`SELECT 1 FROM financeiro_pagamentos WHERE lead_id = $1 AND competencia = $2 LIMIT 1`, [leadId, competencia])
@@ -242,6 +247,57 @@ export async function cancelarAssinatura(leadId: string) {
     await pool.query(`UPDATE leads SET asaas_subscription_id = NULL WHERE id = $1`, [leadId])
   }
   return { ok: true }
+}
+
+// Link do honorário ATRASADO (meses de antes do Asaas, sem boleto): cobrança avulsa no Asaas
+// para o mês em aberto mais antigo, vencendo em 3 dias, com multa 2% + juros 1% a.m. pro rata
+// desde o vencimento original. A competência fica gravada → o pagamento quita o mês certo.
+export const MULTA_ATRASO = 0.02
+export const JUROS_MES_ATRASO = 0.01
+export async function gerarCobrancaAtraso(leadId: string) {
+  const d = await dadosLead(leadId)
+  if ((d.contabilidade || 'atuan') === 'nauta') throw new Error('Cliente da Nauta Contabilidade — cobrança manual')
+  const hon = Number(d.valor_honorario)
+  if (!(hon > 0)) throw new Error('Lead sem honorário definido')
+  if (!d.honorario_vencimento) throw new Error('Lead sem 1º vencimento definido')
+  const pagos = new Set((await pool.query(
+    `SELECT to_char(competencia,'YYYY-MM') AS c FROM financeiro_pagamentos WHERE lead_id = $1 AND pago_em IS NOT NULL`, [leadId]
+  )).rows.map(r => String(r.c)))
+  const st = calcStatusFinanceiro(d.honorario_vencimento, pagos)
+  if (st.status !== 'atrasado' || !st.proximoVencimento) throw new Error('Este cliente não tem honorário em atraso')
+  const vencOrig = st.proximoVencimento // 1º mês vencido e não pago
+  const comp = `${vencOrig.getFullYear()}-${String(vencOrig.getMonth() + 1).padStart(2, '0')}-01`
+
+  // Já existe cobrança (assinatura ou link anterior) para esse mês ainda em aberto? Reaproveita.
+  const ja = await pool.query(
+    `SELECT asaas_payment_id, invoice_url, valor, to_char(vencimento,'YYYY-MM-DD') AS vencimento FROM financeiro_cobrancas
+      WHERE lead_id = $1 AND competencia = $2::date AND status IN ('PENDING','OVERDUE') ORDER BY vencimento DESC LIMIT 1`, [leadId, comp]
+  )
+  if (ja.rows[0]) return { leadId, competencia: comp, reaproveitada: true, ...ja.rows[0] }
+
+  const due = new Date(); due.setHours(0, 0, 0, 0); due.setDate(due.getDate() + 3)
+  const dias = Math.max(0, Math.round((due.getTime() - new Date(vencOrig.getFullYear(), vencOrig.getMonth(), vencOrig.getDate()).getTime()) / 86400000))
+  const multa = +(hon * MULTA_ATRASO).toFixed(2)
+  const juros = +(hon * JUROS_MES_ATRASO * dias / 30).toFixed(2)
+  const valor = +(hon + multa + juros).toFixed(2)
+  const compBR = `${comp.slice(5, 7)}/${comp.slice(0, 4)}`
+  const customerId = await ensureCustomer(d)
+  const p = await api<AsaasPayment>('/payments', {
+    method: 'POST',
+    body: JSON.stringify({
+      customer: customerId,
+      billingType: 'UNDEFINED',
+      value: valor,
+      dueDate: ymd(due),
+      description: `Honorários contábeis — ${d.emp_nome || d.nome} — competência ${compBR} (em atraso: honorário ${hon.toFixed(2)} + multa ${multa.toFixed(2)} + juros ${juros.toFixed(2)})`,
+      externalReference: d.id,
+      fine: { value: MULTA_ATRASO * 100 },
+      interest: { value: JUROS_MES_ATRASO * 100 },
+    }),
+  })
+  await upsertCobranca(p, d.id, d.empresa_id, comp)
+  emitCrmChange()
+  return { leadId, competencia: comp, reaproveitada: false, asaas_payment_id: p.id, invoice_url: p.invoiceUrl ?? null, valor, vencimento: p.dueDate, honorario: hon, multa, juros, dias }
 }
 
 export async function sincronizarTodos(empresaId: string) {

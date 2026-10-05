@@ -564,6 +564,14 @@ export function asaasCobrancas(leadId: string): Promise<AsaasCobrancaRow[]> {
 export function asaasSincronizar(leadId: string): Promise<{ ok: boolean; cobrancas?: number; cancelado?: boolean }> {
   return fetch('/api/financeiro/asaas', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ leadId }) }).then(r => json(r))
 }
+export interface CobrancaAtraso {
+  leadId: string; competencia: string; reaproveitada: boolean; asaas_payment_id: string; invoice_url: string | null
+  valor: number; vencimento: string; honorario?: number; multa?: number; juros?: number; dias?: number
+}
+/** Gera (ou reaproveita) o link Asaas do honorário atrasado mais antigo — multa 2% + juros 1% a.m. */
+export function asaasGerarAtraso(leadId: string): Promise<CobrancaAtraso> {
+  return fetch('/api/financeiro/asaas', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ leadId, atraso: true }) }).then(r => json(r))
+}
 export function asaasSincronizarTodos(): Promise<{ resultados: { leadId: string; nome: string; ok: boolean; erro?: string }[] }> {
   return fetch('/api/financeiro/asaas', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ todos: true }) }).then(r => json(r))
 }

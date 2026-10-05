@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { empresaAtivaId } from '@/lib/tenant'
-import { asaasConfigurado, asaasAmbiente, sincronizarLead, sincronizarTodos, cancelarAssinatura, listCobrancasLead, resumoCobrancas } from '@/lib/asaas'
+import { asaasConfigurado, asaasAmbiente, sincronizarLead, sincronizarTodos, cancelarAssinatura, gerarCobrancaAtraso, listCobrancasLead, resumoCobrancas } from '@/lib/asaas'
 
 export const dynamic = 'force-dynamic'
 
@@ -34,6 +34,7 @@ export async function POST(req: NextRequest) {
     if (body.todos) return NextResponse.json({ resultados: await sincronizarTodos(g.empresaId!) })
     if (!body.leadId) return NextResponse.json({ error: 'leadId obrigatório' }, { status: 400 })
     if (body.cancelar) return NextResponse.json(await cancelarAssinatura(String(body.leadId)))
+    if (body.atraso) return NextResponse.json(await gerarCobrancaAtraso(String(body.leadId)))
     return NextResponse.json(await sincronizarLead(String(body.leadId)))
   } catch (e) {
     return NextResponse.json({ error: (e as Error).message }, { status: 400 })

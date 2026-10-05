@@ -2,7 +2,7 @@ import pool from './db'
 import { emitCrmChange } from './realtime'
 import { getOrCreatePixAuto } from './pix-automatico'
 import { pixDaCobranca } from './asaas'
-import { calcStatusFinanceiro } from './financeiro-calc'
+import { calcStatusFinanceiro, vencimentoAjustado } from './financeiro-calc'
 
 // ─── Régua de cobrança pelos canais da Nauta ─────────────────────────────────
 // WhatsApp: API pública do Whats Profissional (número do atendimento) — sem custo por msg.
@@ -68,11 +68,12 @@ async function contexto(leadId: string, cobrancaId?: string, tipo?: TipoEnvio): 
   if (!l) throw new Error('Lead não encontrado')
   const cob = cobrancaId
     ? (await pool.query(`SELECT id, asaas_payment_id, valor, to_char(vencimento,'YYYY-MM-DD') AS vencimento, invoice_url FROM financeiro_cobrancas WHERE id = $1`, [cobrancaId])).rows[0]
-    : (await pool.query(`SELECT id, asaas_payment_id, valor, to_char(vencimento,'YYYY-MM-DD') AS vencimento, invoice_url FROM financeiro_cobrancas
+    : (await pool.query(`SELECT id, asaas_payment_id, valor, to_char(vencimento,'YYYY-MM-DD') AS vencimento, to_char(competencia,'YYYY-MM-DD') AS competencia, invoice_url
+                           FROM financeiro_cobrancas
                           WHERE lead_id = $1 AND status IN ('PENDING','OVERDUE')
-                            -- atraso: só cobrança JÁ vencida (nunca a do mês corrente, que ainda está no prazo)
-                            AND ($2::boolean = false OR vencimento < current_date)
-                          ORDER BY vencimento ASC LIMIT 1`, [leadId, tipo === 'atraso'])).rows[0]
+                            -- atraso: só cobrança JÁ vencida ou de mês passado (link do atraso) — nunca a do mês corrente
+                            AND ($2::boolean = false OR vencimento < current_date OR competencia < date_trunc('month', current_date))
+                          ORDER BY competencia ASC, vencimento ASC LIMIT 1`, [leadId, tipo === 'atraso'])).rows[0]
   // PIX/boleto só existem quando há cobrança Asaas. Clientes fora do Asaas (anteriores à
   // adesão) são cobrados "do jeito antigo": mensagem só com honorário/vencimento, sem link.
   let pix = ''
@@ -82,6 +83,12 @@ async function contexto(leadId: string, cobrancaId?: string, tipo?: TipoEnvio): 
   }
   // Vencimento: da cobrança Asaas, ou calculado pelo honorário (clientes fora do Asaas)
   let venc = cob?.vencimento ? dataBR(cob.vencimento) : '—'
+  // Link do atraso (cobrança de mês passado com vencimento novo): na mensagem vale o vencimento ORIGINAL
+  if (tipo === 'atraso' && cob?.competencia && l.honorario_vencimento && cob.competencia.slice(0, 7) < (cob.vencimento || '').slice(0, 7)) {
+    const dia = Number(String(l.honorario_vencimento).slice(8, 10))
+    const orig = vencimentoAjustado(dia, Number(cob.competencia.slice(0, 4)), Number(cob.competencia.slice(5, 7)) - 1)
+    venc = dataBR(`${orig.getFullYear()}-${String(orig.getMonth() + 1).padStart(2, '0')}-${String(orig.getDate()).padStart(2, '0')}`)
+  }
   if (!cob && l.honorario_vencimento) {
     try {
       const pg = await pool.query(`SELECT to_char(competencia,'YYYY-MM') AS comp FROM financeiro_pagamentos WHERE lead_id = $1 AND pago_em IS NOT NULL`, [leadId])
@@ -256,6 +263,7 @@ export async function alvosDisponivel(ate: string) {
        JOIN leads l ON l.id = fc.lead_id
        LEFT JOIN clientes c ON c.lead_id = l.id
       WHERE fc.status = 'PENDING' AND fc.vencimento > current_date AND fc.vencimento <= $1::date
+        AND to_char(fc.competencia, 'YYYY-MM') = to_char(fc.vencimento, 'YYYY-MM') -- link de atraso não entra
         AND COALESCE(l.pix_automatico_ativo, false) = false
         AND COALESCE(l.contabilidade, 'atuan') <> 'nauta'
         AND COALESCE(c.situacao, 'ativo') <> 'inativo'

@@ -208,7 +208,7 @@ export default function FinanceiroPage() {
                             )}
                             {ult && (
                               <span className="text-[10px] text-gray-500 whitespace-nowrap" title={`Último envio: ${ult.tipo} por ${ult.canal}`}>
-                                {ult.ok ? '✓' : '✗'} {ult.tipo} {ult.data.slice(8, 10)}/{ult.data.slice(5, 7)}
+                                {ult.ok ? '✓' : '✗'} {ult.tipo === 'disponivel' ? 'disponível' : ult.tipo} {ult.data.slice(8, 10)}/{ult.data.slice(5, 7)}
                               </span>
                             )}
                           </div>
@@ -515,7 +515,7 @@ function CobrancaModal({ row, onClose, onChanged }: { row: Row; onClose: () => v
                   <div key={ev.id} className="p-2 rounded-lg text-xs" style={{ background: 'var(--sys-surface-3)' }} title={ev.mensagem}>
                     <div className="flex items-center gap-1.5 text-[11px] text-gray-400">
                       <span style={{ color: ev.ok ? '#22c55e' : '#f87171' }}>{ev.ok ? '✓' : '✗'}</span>
-                      <b className="text-gray-300 capitalize">{ev.tipo}</b> · {ev.canal} · {ev.destino}
+                      <b className="text-gray-300 capitalize">{ev.tipo === 'disponivel' ? 'disponível' : ev.tipo}</b> · {ev.canal} · {ev.destino}
                       <span className="ml-auto">{format(new Date(ev.criado_em), 'dd/MM HH:mm', { locale: ptBR })}</span>
                     </div>
                     {ev.erro && <p className="text-[11px] text-[#f87171] mt-0.5">{ev.erro}</p>}

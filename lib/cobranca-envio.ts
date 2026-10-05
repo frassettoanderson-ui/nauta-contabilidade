@@ -11,7 +11,8 @@ import { calcStatusFinanceiro } from './financeiro-calc'
 // Quem está no Pix Automático (autorização ACTIVE) NÃO recebe a régua.
 // Proteção do chip: 3 variações de texto sorteadas, intervalo entre envios, horário comercial.
 
-export type TipoEnvio = 'lembrete' | 'vencimento' | 'atraso'
+// 'disponivel' = aviso de que a fatura foi gerada (disparo inicial); substitui o lembrete D-3 daquela cobrança.
+export type TipoEnvio = 'disponivel' | 'lembrete' | 'vencimento' | 'atraso'
 const RAND = <T,>(arr: T[]) => arr[Math.floor(Math.random() * arr.length)]
 
 // Texto principal (sem o PIX/boleto embutidos — eles vão em mensagens separadas,
@@ -19,6 +20,11 @@ const RAND = <T,>(arr: T[]) => arr[Math.floor(Math.random() * arr.length)]
 // Estilo aprovado: saudação por horário + "Honorário", vencimento 📅, valor 💰,
 // "chave PIX e Boleto", fecho cordial. 3 variações por tipo (proteção do chip).
 const MENSAGENS: Record<TipoEnvio, string[]> = {
+  disponivel: [
+    '{saudacao} {nome}!!!\n\nSeu Honorário já está disponível para pagamento! 😊\n\nO vencimento é dia *{venc}* 📅\nno valor de *{valor}* 💰\n\nSegue abaixo a chave PIX e Boleto para pagar conforme sua preferência!\n\nAgradecemos a parceria e desejamos um excelente mês!!',
+    '{saudacao} {nome}!!!\n\nO seu Honorário deste mês já está liberado para pagamento 😉\n\nVencimento dia *{venc}* 📅\nno valor de *{valor}* 💰\n\nLogo abaixo deixo a chave PIX e o Boleto para você escolher como pagar!\n\nObrigado pela parceria e um ótimo mês!!',
+    '{saudacao} {nome}!!!\n\nJá está disponível o seu Honorário 🙏\n\nVence dia *{venc}* 📅\nValor: *{valor}* 💰\n\nAbaixo você encontra a chave PIX e o Boleto para pagar como preferir!\n\nAgradecemos a confiança e desejamos um excelente mês!!',
+  ],
   lembrete: [
     '{saudacao} {nome}!!!\n\nPassando para lembrar do seu Honorário 😊\n\nO vencimento é dia *{venc}* 📅\nno valor de *{valor}* 💰\n\nSegue abaixo a chave PIX e o Boleto para pagar conforme sua preferência!\n\nAgradecemos a parceria e desejamos um excelente mês!!',
     '{saudacao} {nome}!!!\n\nSeu Honorário está chegando 😉\n\nVence dia *{venc}* 📅\nno valor de *{valor}* 💰\n\nLogo abaixo deixo a chave PIX e o Boleto para facilitar o pagamento!\n\nObrigado pela parceria e um ótimo mês!!',
@@ -37,6 +43,7 @@ const MENSAGENS: Record<TipoEnvio, string[]> = {
 }
 const PIX_AUTO_RODAPE = 'ℹ️ Pagando por este PIX, os próximos honorários entram no Pix Automático — você autoriza uma vez no app do banco e não precisa mais se preocupar com boleto.'
 const ASSUNTO: Record<TipoEnvio, string> = {
+  disponivel: 'Honorário {empresa} — disponível para pagamento (vence {venc})',
   lembrete: 'Honorário {empresa} — vence em {venc}',
   vencimento: 'Honorário {empresa} — vence hoje',
   atraso: 'Honorário {empresa} — em aberto desde {venc}',
@@ -192,13 +199,13 @@ export async function enviarCobranca(leadId: string, tipo: TipoEnvio, cobrancaId
   return { leadId, tipo, envios: out }
 }
 
-// ── Régua automática (rodar 1x por dia útil, em horário comercial) ───────────
+// ── Régua automática (rodar 1x por dia, seg–sáb, em horário comercial) ───────
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms))
 
 export async function rodarRegua(opts: { hoje?: Date; intervaloMs?: [number, number]; dryRun?: boolean } = {}) {
   const hoje = opts.hoje ?? new Date()
   const dow = hoje.getDay(), hora = hoje.getHours()
-  if (!opts.dryRun && (dow === 0 || dow === 6 || hora < 8 || hora >= 18)) return { pulado: 'fora do horário comercial', enviados: [] }
+  if (!opts.dryRun && (dow === 0 || hora < 8 || hora >= 18)) return { pulado: 'fora do horário comercial', enviados: [] }
   const d = (n: number) => { const x = new Date(hoje); x.setDate(x.getDate() + n); return `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, '0')}-${String(x.getDate()).padStart(2, '0')}` }
   const alvos: { tipo: TipoEnvio; data: string }[] = [
     { tipo: 'lembrete', data: d(3) }, { tipo: 'vencimento', data: d(0) }, { tipo: 'atraso', data: d(-3) },
@@ -214,7 +221,8 @@ export async function rodarRegua(opts: { hoje?: Date; intervaloMs?: [number, num
           AND COALESCE(l.pix_automatico_ativo, false) = false
           AND COALESCE(l.contabilidade, 'atuan') <> 'nauta'
           AND COALESCE(c.situacao, 'ativo') <> 'inativo'
-          AND NOT EXISTS (SELECT 1 FROM cobranca_envios e WHERE e.cobranca_id = fc.id AND e.tipo = $2 AND e.ok = true)
+          AND NOT EXISTS (SELECT 1 FROM cobranca_envios e WHERE e.cobranca_id = fc.id AND e.ok = true
+                            AND (e.tipo = $2 OR ($2 = 'lembrete' AND e.tipo = 'disponivel')))
         ORDER BY empresa`, [a.data, a.tipo]
     )
     for (const row of r.rows) {
@@ -229,6 +237,47 @@ export async function rodarRegua(opts: { hoje?: Date; intervaloMs?: [number, num
     }
   }
   return { data: d(0), enviados }
+}
+
+// ── Disparo "fatura disponível" ──────────────────────────────────────────────
+// Avisa, uma única vez por cobrança, todas as faturas Asaas pendentes que vencem de amanhã
+// até `ate`. Roda em segundo plano (pode levar ~1h com o intervalo de proteção do chip);
+// o progresso fica em cobranca_envios. Trava em memória evita dois disparos simultâneos.
+let disparoEmAndamento: { inicio: string; total: number; feitos: number } | null = null
+export const statusDisparo = () => disparoEmAndamento
+
+export async function alvosDisponivel(ate: string) {
+  const r = await pool.query(
+    `SELECT fc.id AS cobranca_id, fc.lead_id, COALESCE(c.emp_nome, l.nome) AS empresa, to_char(fc.vencimento,'YYYY-MM-DD') AS vencimento, fc.valor
+       FROM financeiro_cobrancas fc
+       JOIN leads l ON l.id = fc.lead_id
+       LEFT JOIN clientes c ON c.lead_id = l.id
+      WHERE fc.status = 'PENDING' AND fc.vencimento > current_date AND fc.vencimento <= $1::date
+        AND COALESCE(l.pix_automatico_ativo, false) = false
+        AND COALESCE(l.contabilidade, 'atuan') <> 'nauta'
+        AND COALESCE(c.situacao, 'ativo') <> 'inativo'
+        AND NOT EXISTS (SELECT 1 FROM cobranca_envios e WHERE e.cobranca_id = fc.id AND e.ok = true)
+      ORDER BY empresa`, [ate]
+  )
+  return r.rows as { cobranca_id: string; lead_id: string; empresa: string; vencimento: string; valor: number }[]
+}
+
+export async function dispararDisponiveis(ate: string, intervaloMs: [number, number] = [75000, 120000]) {
+  if (disparoEmAndamento) throw new Error('Já existe um disparo em andamento')
+  const alvos = await alvosDisponivel(ate)
+  disparoEmAndamento = { inicio: new Date().toISOString(), total: alvos.length, feitos: 0 }
+  void (async () => {
+    try {
+      for (let i = 0; i < alvos.length; i++) {
+        const h = new Date().getHours()
+        if (h >= 19) break // não invade a noite; o restante sai no próximo disparo/régua
+        try { await enviarCobranca(alvos[i].lead_id, 'disponivel', alvos[i].cobranca_id) } catch { /* registrado em cobranca_envios */ }
+        disparoEmAndamento!.feitos = i + 1
+        if (i < alvos.length - 1) await sleep(intervaloMs[0] + Math.random() * (intervaloMs[1] - intervaloMs[0]))
+      }
+    } finally { disparoEmAndamento = null }
+  })()
+  return { iniciado: true, total: alvos.length, empresas: alvos.map(a => `${a.empresa} (${a.vencimento})`) }
 }
 
 export async function listEnvios(leadId: string) {

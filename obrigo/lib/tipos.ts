@@ -59,6 +59,7 @@ export interface EmpresaLista {
   grupoNome: string | null;
   tags: { id: string; nome: string; cor: string }[];
   qtdContatos: number;
+  socioResponsavel?: string | null; // 1º sócio do quadro societário (ou contato Titular)
 }
 
 export interface GrupoEmpresa {

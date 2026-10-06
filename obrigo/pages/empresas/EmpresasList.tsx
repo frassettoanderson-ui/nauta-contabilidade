@@ -28,9 +28,9 @@ interface Pagina {
 
 interface ChipF { kind: 'status' | 'grupo' | 'tag' | 'departamento'; valor: string; label: string }
 
-type OrdenarCampo = 'razao' | 'fantasia' | 'cnpj' | 'cidade' | 'uf' | 'regime' | 'cadastro';
+type OrdenarCampo = 'razao' | 'fantasia' | 'socio' | 'cnpj' | 'cidade' | 'uf' | 'regime' | 'cadastro';
 const CAMPO_ORDEM: Record<OrdenarCampo, keyof EmpresaLista> = {
-  razao: 'razaoSocial', fantasia: 'nomeFantasia', cnpj: 'cnpj', cidade: 'cidade', uf: 'uf', regime: 'regimeNome', cadastro: 'dataEntrada',
+  razao: 'razaoSocial', fantasia: 'nomeFantasia', socio: 'socioResponsavel', cnpj: 'cnpj', cidade: 'cidade', uf: 'uf', regime: 'regimeNome', cadastro: 'dataEntrada',
 };
 
 // Alternador Kanban/Lista da tela de Onboarding (botões com ícones, estilo do sistema).
@@ -437,6 +437,11 @@ export default function EmpresasList() {
                   <button onClick={() => ordenarPor('razao')} className="flex items-center gap-1 hover:underline">Razao social [ID] <ArrowUpDown size={12} /></button>
                   <button onClick={() => ordenarPor('fantasia')} className="mt-0.5 block font-normal text-slate-500 hover:underline">Nome Fantasia</button>
                 </th>
+                {onboardingMode && (
+                  <th className="px-4 py-2">
+                    <button onClick={() => ordenarPor('socio')} className={`flex items-center gap-1 hover:underline ${ordenar === 'socio' ? 'text-marca-700' : ''}`}>Sócio responsável <ArrowUpDown size={12} /></button>
+                  </th>
+                )}
                 <th className="px-4 py-2">
                   <button onClick={() => ordenarPor('cnpj')} className="flex items-center gap-1 hover:underline">CNPJ <ArrowUpDown size={12} /></button>
                   <div className="font-normal text-slate-500">Telefone</div>
@@ -479,6 +484,7 @@ export default function EmpresasList() {
                     <div className="font-medium text-marca-600">{e.razaoSocial} <span className="font-normal text-slate-400">[{e.numero ?? '-'}]</span>{!e.ativo && <span className="text-slate-400"> [inativa]</span>}</div>
                     <div className="text-slate-500">{e.nomeFantasia ?? '—'}</div>
                   </td>
+                  {onboardingMode && <td className="px-4 py-2 text-slate-700">{e.socioResponsavel || '—'}</td>}
                   <td className="px-4 py-2" onClick={(ev) => ev.stopPropagation()}>
                     <div className="flex items-center gap-1.5 text-slate-600">
                       {podeExcluir && <button title={`Apagar empresa [${e.numero ?? '-'}]`} onClick={() => excluirEmpresa(e.id, e.razaoSocial)} className="text-status-danger hover:text-red-700"><Trash2 size={14} /></button>}
@@ -510,7 +516,7 @@ export default function EmpresasList() {
                 </tr>
                 {expandido?.id === e.id && (
                   <tr className="bg-fundo">
-                    <td colSpan={6} className="border-l-4 border-marca-400 px-6 py-4" onClick={(ev) => ev.stopPropagation()}>
+                    <td colSpan={onboardingMode ? 7 : 6} className="border-l-4 border-marca-400 px-6 py-4" onClick={(ev) => ev.stopPropagation()}>
                       <PainelLinhaEmpresa
                         empresaId={e.id}
                         painel={expandido.painel}
@@ -525,7 +531,7 @@ export default function EmpresasList() {
                 </Fragment>
               ))}
               {items.length === 0 && !loading && (
-                <tr><td colSpan={6} className="px-4 py-10 text-center text-slate-400">Nenhuma empresa encontrada.</td></tr>
+                <tr><td colSpan={onboardingMode ? 7 : 6} className="px-4 py-10 text-center text-slate-400">Nenhuma empresa encontrada.</td></tr>
               )}
             </tbody>
           </table>

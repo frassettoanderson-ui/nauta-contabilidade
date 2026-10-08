@@ -178,7 +178,14 @@ export default function OnboardingPage() {
                   </div>
                   {c.emp_cnpj && (
                     <div className="flex items-center justify-between gap-2 mt-1.5">
-                      <span className="text-gray-400 text-xs font-mono tracking-tight truncate">{c.emp_cnpj}</span>
+                      <span className="min-w-0 flex items-baseline gap-1.5 truncate">
+                        <span className="text-gray-400 text-xs font-mono tracking-tight">{c.emp_cnpj}</span>
+                        {c.emp_data_abertura && (
+                          <span className="text-[11px] text-gray-500 whitespace-nowrap" title="Data de abertura do CNPJ (Receita Federal)">
+                            · {c.emp_data_abertura.split('-').reverse().join('/')}
+                          </span>
+                        )}
+                      </span>
                       <div className="flex items-center gap-0.5 shrink-0">
                         <MiniBtn title={cnpjCopiado === c.id ? 'Copiado!' : 'Copiar CNPJ'} onClick={() => copiarCnpj(c.emp_cnpj!, c.id)} color={cnpjCopiado === c.id ? '#22c55e' : '#9ca3af'}>
                           {cnpjCopiado === c.id ? <Check size={13} /> : <Copy size={13} />}

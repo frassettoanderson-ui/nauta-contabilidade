@@ -329,6 +329,7 @@ export interface OnboardingCliente {
   onboarding_categoria: string | null; cliente_id: string | null
   emp_nome?: string | null
   emp_cnpj?: string | null
+  emp_data_abertura?: string | null // 'YYYY-MM-DD' — início de atividade na Receita
   cadastro_completo: boolean; checks: string[]
 }
 export function getOnboardingBoard(): Promise<OnboardingCliente[]> {

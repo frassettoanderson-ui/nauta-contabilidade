@@ -4,6 +4,8 @@ import { isContratoPronto } from './contratos'
 import { emitCrmChange } from './realtime'
 import { calcStatusFinanceiro, vencimentoAjustado } from './financeiro-calc'
 import { syncEmpresaFromLead } from './obrigo-sync'
+import { preencherDatasAbertura } from './cnpj-abertura'
+const ymdLocal = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 
 export type Lead = {
   id?: string
@@ -243,6 +245,7 @@ export async function getOnboardingBoard(empresaId: string): Promise<OnboardingC
   for (const s of soc.rows) (sociosByCliente[s.cliente_id] ||= []).push(s)
   const cliByLead: Record<string, Record<string, unknown>> = {}
   for (const c of cli.rows) cliByLead[c.lead_id] = { ...c, socios: sociosByCliente[c.id] || [] }
+  preencherDatasAbertura(cli.rows) // data de abertura do CNPJ (Receita), em segundo plano
 
   return leads.map(l => {
     const c = cliByLead[l.id]
@@ -257,6 +260,10 @@ export async function getOnboardingBoard(empresaId: string): Promise<OnboardingC
       cliente_id: c ? (c.id as string) : null,
       emp_nome: c ? ((c.emp_nome as string) ?? null) : null,
       emp_cnpj: c ? ((c.emp_cnpj as string) ?? null) : null,
+      // só vale se foi consultada para o CNPJ atual
+      emp_data_abertura: c && c.emp_data_abertura && String(c.emp_data_abertura_cnpj ?? '') === String(c.emp_cnpj ?? '').replace(/\D/g, '')
+        ? (c.emp_data_abertura instanceof Date ? ymdLocal(c.emp_data_abertura as Date) : String(c.emp_data_abertura).slice(0, 10))
+        : null,
       cadastro_completo: isContratoPronto(c, l),
       checks: checksByLead[l.id] || [],
     }

@@ -249,6 +249,56 @@ export async function cancelarAssinatura(leadId: string) {
   return { ok: true }
 }
 
+// Baixa manual (cliente pagou fora do Asaas: PIX direto, dinheiro…): avisa o Asaas que as
+// cobranças daquela competência foram recebidas ("receiveInCash"), senão ele — e a nossa régua —
+// continuam cobrando. lancado=true: o caixa da baixa manual não vira lançamento duplicado.
+export async function quitarNoAsaas(leadId: string, competencia: string, valor: number | null, pagoEm: string | null) {
+  if (!asaasConfigurado()) return []
+  const data = pagoEm && pagoEm <= ymd(new Date()) ? pagoEm : ymd(new Date())
+  const r = await pool.query(
+    `SELECT id, asaas_payment_id, valor FROM financeiro_cobrancas
+      WHERE lead_id = $1 AND to_char(competencia,'YYYY-MM') = $2 AND status IN ('PENDING','OVERDUE') AND asaas_payment_id IS NOT NULL`,
+    [leadId, competencia.slice(0, 7)]
+  )
+  const out: { asaasPaymentId: string; ok: boolean; erro?: string }[] = []
+  for (const c of r.rows) {
+    await pool.query(`UPDATE financeiro_cobrancas SET lancado = true WHERE id = $1`, [c.id])
+    try {
+      const p = await api<AsaasPayment>(`/payments/${c.asaas_payment_id}/receiveInCash`, {
+        method: 'POST',
+        body: JSON.stringify({ paymentDate: data, value: Number(valor ?? c.valor), notifyCustomer: false }),
+      })
+      await pool.query(`UPDATE financeiro_cobrancas SET status = $2, pago_em = $3, atualizado_em = now() WHERE id = $1`, [c.id, p.status || 'RECEIVED_IN_CASH', data])
+      out.push({ asaasPaymentId: c.asaas_payment_id, ok: true })
+    } catch (e) {
+      await pool.query(`UPDATE financeiro_cobrancas SET lancado = false WHERE id = $1`, [c.id])
+      out.push({ asaasPaymentId: c.asaas_payment_id, ok: false, erro: (e as Error).message })
+    }
+  }
+  if (out.length) emitCrmChange()
+  return out
+}
+
+// Desfaz a baixa manual no Asaas (quando o pagamento lançado à mão é excluído): a cobrança volta a ficar em aberto.
+export async function desfazerQuitacaoAsaas(leadId: string, competencia: string) {
+  if (!asaasConfigurado()) return []
+  const r = await pool.query(
+    `SELECT id, asaas_payment_id FROM financeiro_cobrancas
+      WHERE lead_id = $1 AND to_char(competencia,'YYYY-MM') = $2 AND status = 'RECEIVED_IN_CASH' AND asaas_payment_id IS NOT NULL`,
+    [leadId, competencia.slice(0, 7)]
+  )
+  const out: { asaasPaymentId: string; ok: boolean; erro?: string }[] = []
+  for (const c of r.rows) {
+    try {
+      const p = await api<AsaasPayment>(`/payments/${c.asaas_payment_id}/undoReceivedInCash`, { method: 'POST' })
+      await pool.query(`UPDATE financeiro_cobrancas SET status = $2, pago_em = NULL, lancado = false, atualizado_em = now() WHERE id = $1`, [c.id, p.status || 'PENDING'])
+      out.push({ asaasPaymentId: c.asaas_payment_id, ok: true })
+    } catch (e) { out.push({ asaasPaymentId: c.asaas_payment_id, ok: false, erro: (e as Error).message }) }
+  }
+  if (out.length) emitCrmChange()
+  return out
+}
+
 // Link do honorário ATRASADO (meses de antes do Asaas, sem boleto): cobrança avulsa no Asaas
 // para o mês em aberto mais antigo, vencendo em 3 dias, com multa 2% + juros 1% a.m. pro rata
 // desde o vencimento original. A competência fica gravada → o pagamento quita o mês certo.

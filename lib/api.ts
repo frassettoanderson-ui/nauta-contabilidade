@@ -479,10 +479,17 @@ export interface PagamentoRow { id: string; competencia: string; valor: number |
 export function listPagamentos(leadId: string): Promise<PagamentoRow[]> {
   return fetch(`/api/financeiro/${leadId}/pagamentos`).then(r => json<PagamentoRow[]>(r))
 }
+// A baixa manual também quita a cobrança no Asaas; se o Asaas recusar, avisa (a baixa local fica feita).
 export function addPagamento(leadId: string, competencia: string, valor: number | null, pago_em: string | null): Promise<PagamentoRow> {
   return fetch(`/api/financeiro/${leadId}/pagamentos`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ competencia, valor, pago_em }),
-  }).then(r => json<PagamentoRow>(r))
+  }).then(r => json<PagamentoRow & { asaas?: { asaasPaymentId: string; ok: boolean; erro?: string }[] }>(r)).then(p => {
+    const falhas = (p.asaas ?? []).filter(a => !a.ok)
+    if (falhas.length && typeof window !== 'undefined') {
+      window.alert('Baixa registrada no sistema, mas o Asaas não confirmou o recebimento — ele pode continuar cobrando:\n' + falhas.map(f => `• ${f.asaasPaymentId}: ${f.erro}`).join('\n'))
+    }
+    return p
+  })
 }
 export function deletePagamento(leadId: string, id: string): Promise<void> {
   return fetch(`/api/financeiro/${leadId}/pagamentos?id=${id}`, { method: 'DELETE' }).then(r => json(r)).then(() => undefined)

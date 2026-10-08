@@ -18,7 +18,7 @@ export interface AsaasPayment {
   value: number; netValue?: number | null; dueDate: string; status: string; billingType: string
   invoiceUrl?: string | null; bankSlipUrl?: string | null
   paymentDate?: string | null; clientPaymentDate?: string | null
-  externalReference?: string | null; description?: string | null
+  externalReference?: string | null; description?: string | null; deleted?: boolean
 }
 
 async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
@@ -378,6 +378,13 @@ export async function sincronizarTodos(empresaId: string) {
 export async function processarWebhook(body: { event?: string; payment?: AsaasPayment }) {
   const p = body.payment
   if (!p?.id) return { ignored: true }
+  // Cobrança apagada no Asaas: só marca como DELETED (o payload vem com status PENDING + deleted:true,
+  // e gravar isso faria a cobrança "renascer" em aberto aqui)
+  if (body.event === 'PAYMENT_DELETED' || p.deleted) {
+    await pool.query(`UPDATE financeiro_cobrancas SET status = 'DELETED', atualizado_em = now() WHERE asaas_payment_id = $1`, [p.id])
+    emitCrmChange()
+    return { ok: true, event: body.event, deleted: p.id }
+  }
   const r = await pool.query(
     `SELECT id, empresa_id FROM leads
       WHERE ($1::text IS NOT NULL AND asaas_subscription_id = $1)

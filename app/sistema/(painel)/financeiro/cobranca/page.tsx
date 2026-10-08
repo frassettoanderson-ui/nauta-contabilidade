@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { Loader2, Search, DollarSign, MessageCircle, X, Plus, Trash2, Phone, Mail, Smartphone, CalendarClock, ChevronUp, ChevronDown, ChevronsUpDown, ExternalLink, RefreshCw, Send, Copy, Zap, AlertTriangle, Check, Link2 } from 'lucide-react'
+import { referenciaDe } from '@/lib/referencia'
 import { listFinanceiro, listPagamentos, addPagamento, deletePagamento, listEventos, addEvento, asaasResumo, asaasSincronizar, asaasGerarAtraso, enviosResumo, enviarCobrancaAgora, listEnviosCobranca, gerarPixAutomatico, getPixAutomatico, cancelarPixAutomatico, type PagamentoRow, type EventoRow, type AsaasResumo, type AsaasResumoItem, type EnviosResumo, type EnvioRow, type PixAutoRow, type TipoEnvioCobranca } from '@/lib/api'
 
 type Row = Record<string, unknown>
@@ -80,7 +81,7 @@ export default function FinanceiroPage() {
     try {
       const c = await asaasGerarAtraso(lid)
       load()
-      const comp = `${c.competencia.slice(5, 7)}/${c.competencia.slice(0, 4)}`
+      const comp = `vencido em ${c.competencia.slice(5, 7)}/${c.competencia.slice(0, 4)} (referente a ${referenciaDe(c.competencia)?.extenso ?? '—'})`
       const det = c.reaproveitada ? '(link já existia para este mês)'
         : `Honorário ${money(c.honorario)} + multa ${money(c.multa)} + juros ${money(c.juros)} (${c.dias} dias)`
       if (c.invoice_url) { try { await navigator.clipboard.writeText(c.invoice_url) } catch { /* sem clipboard */ } }
@@ -334,7 +335,7 @@ function PagoModal({ row, onClose, onSaved }: { row: Row; onClose: () => void; o
           <h2 className="text-lg font-black text-white flex items-center gap-2"><Check size={18} className="text-[#22c55e]" /> Marcar como pago</h2>
           <button onClick={onClose} className="text-gray-500 hover:text-white"><X size={20} /></button>
         </div>
-        <p className="text-sm text-gray-500 mb-4">{nome} · competência <b className="text-gray-300">{compVenc.split('-').reverse().join('/')}</b></p>
+        <p className="text-sm text-gray-500 mb-4 text-center">{nome}<br />boleto que vence em <b className="text-gray-300">{row.proximo_vencimento ? dataBR(row.proximo_vencimento) : compVenc.split('-').reverse().join('/')}</b> · referente a <b className="text-gray-300">{referenciaDe(compVenc)?.extenso}</b></p>
         <div className="space-y-3">
           <div>
             <label className="block text-[11px] font-semibold text-gray-400 mb-1 uppercase tracking-wide">Valor pago</label>
@@ -388,7 +389,7 @@ function CobrancaModal({ row, onClose, onChanged }: { row: Row; onClose: () => v
   const FIELD = 'w-full h-10 px-3 rounded-lg text-sm text-white placeholder-gray-600 outline-none'
 
   async function salvarPagamento() {
-    if (!comp) { alert('Selecione a competência (mês).'); return }
+    if (!comp) { alert('Selecione o mês do vencimento do boleto.'); return }
     setSaving(true)
     try { await addPagamento(leadId, comp, valorPg ? Number(valorPg) : null, pagoEm || null); setComp(''); setPagoEm(''); load(); onChanged() }
     catch { alert('Erro ao registrar pagamento.') }
@@ -454,7 +455,7 @@ function CobrancaModal({ row, onClose, onChanged }: { row: Row; onClose: () => v
               <div className="space-y-1.5 mb-3 max-h-44 overflow-y-auto">
                 {pagamentos.length === 0 ? <p className="text-gray-600 text-xs">Nenhum pagamento registrado.</p> : pagamentos.map(p => (
                   <div key={p.id} className="flex items-center justify-between gap-2 p-2 rounded-lg text-sm" style={{ background: 'var(--sys-surface-3)' }}>
-                    <span className="text-gray-200">{p.competencia.split('-').reverse().join('/')}</span>
+                    <span className="text-gray-200" title="Mês do vencimento · mês dos serviços">Venc. {p.competencia.split('-').reverse().join('/')} <span className="text-gray-500 text-xs">· ref. {referenciaDe(p.competencia)?.curto ?? '—'}</span></span>
                     <span className="text-[#22c55e] text-xs font-bold">{money(p.valor)}</span>
                     <button onClick={() => excluirPagamento(p.id)} className="text-red-400 hover:text-red-300"><Trash2 size={13} /></button>
                   </div>
@@ -463,8 +464,9 @@ function CobrancaModal({ row, onClose, onChanged }: { row: Row; onClose: () => v
               <div className="rounded-xl p-3 space-y-2" style={{ background: 'var(--sys-surface)', border: '1px solid var(--sys-border)' }}>
                 <p className="text-[11px] font-bold text-gray-400">Registrar pagamento</p>
                 <div>
-                  <label className="block text-[11px] text-gray-500 mb-0.5">Competência (mês)</label>
+                  <label className="block text-[11px] text-gray-500 mb-0.5">Mês do vencimento do boleto</label>
                   <input type="month" value={comp} onChange={e => setComp(e.target.value)} className={FIELD} style={{ ...FS, colorScheme: 'dark' }} />
+                  {comp && <p className="text-[11px] text-gray-500 mt-0.5">Referente aos serviços de <b className="text-gray-300">{referenciaDe(comp)?.extenso}</b></p>}
                 </div>
                 <div className="flex gap-2">
                   <div className="flex-1">

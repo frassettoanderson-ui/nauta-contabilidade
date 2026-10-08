@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { Loader2, Search, DollarSign, ChevronUp, ChevronDown, ChevronsUpDown, ChevronLeft, ChevronRight, RefreshCw, X, Plus, Trash2, Wallet, CheckCircle2, CircleDollarSign } from 'lucide-react'
+import { referenciaDe } from '@/lib/referencia'
 import { listFinanceiro, listPagamentos, addPagamento, deletePagamento, asaasResumo, asaasSincronizarTodos, type PagamentoRow, type AsaasResumo } from '@/lib/api'
 import type { ReactNode } from 'react'
 
@@ -153,7 +154,7 @@ export default function FaturamentoPage() {
         </button>
         <div className="min-w-[180px] text-center">
           <p className="text-sm font-black text-white capitalize leading-tight">{mesLabel}</p>
-          <p className="text-[11px] text-gray-500">{isMesAtual ? 'mês atual' : 'competência'}</p>
+          <p className="text-[11px] text-gray-500">vencimentos do mês · referente a {referenciaDe(`${cy}-${String(cm).padStart(2, '0')}`)?.extenso}</p>
         </div>
         <button onClick={() => mudarMes(1)} title="Próximo mês"
           className="w-9 h-9 rounded-lg flex items-center justify-center text-gray-300 hover:text-white transition-colors"
@@ -262,7 +263,7 @@ function PagamentosModal({ row, compInicial, onClose, onChanged }: { row: Row; c
   useEffect(() => { load() }, [load])
 
   async function salvar() {
-    if (!comp) { alert('Selecione a competência (mês).'); return }
+    if (!comp) { alert('Selecione o mês do vencimento do boleto.'); return }
     setSaving(true)
     try { await addPagamento(leadId, comp, valorPg ? Number(valorPg) : null, pagoEm || null); setComp(''); setPagoEm(''); load(); onChanged() }
     catch { alert('Erro ao registrar pagamento.') } finally { setSaving(false) }
@@ -289,7 +290,7 @@ function PagamentosModal({ row, compInicial, onClose, onChanged }: { row: Row; c
             <div className="space-y-1.5 mb-4 max-h-52 overflow-y-auto">
               {pagamentos.length === 0 ? <p className="text-gray-600 text-xs">Nenhum pagamento registrado.</p> : pagamentos.map(p => (
                 <div key={p.id} className="flex items-center justify-between gap-2 p-2 rounded-lg text-sm" style={{ background: 'var(--sys-surface-3)' }}>
-                  <span className="text-gray-200">{p.competencia.split('-').reverse().join('/')}</span>
+                  <span className="text-gray-200" title="Mês do vencimento · mês dos serviços">Venc. {p.competencia.split('-').reverse().join('/')} <span className="text-gray-500 text-xs">· ref. {referenciaDe(p.competencia)?.curto ?? '—'}</span></span>
                   <span className="text-[#22c55e] text-xs font-bold">{brl(p.valor)}</span>
                   <span className="text-gray-500 text-xs">{p.pago_em ? dataBR(p.pago_em) : '—'}</span>
                   <button onClick={() => excluir(p.id)} className="text-red-400 hover:text-red-300"><Trash2 size={13} /></button>
@@ -300,8 +301,9 @@ function PagamentosModal({ row, compInicial, onClose, onChanged }: { row: Row; c
               <p className="text-[11px] font-bold text-gray-400">Registrar pagamento (baixa manual)</p>
               <div className="flex gap-2">
                 <div className="flex-1">
-                  <label className="block text-[11px] text-gray-500 mb-0.5">Competência</label>
+                  <label className="block text-[11px] text-gray-500 mb-0.5">Mês do vencimento do boleto</label>
                   <input type="month" value={comp} onChange={e => setComp(e.target.value)} className={FIELD} style={{ ...FS, colorScheme: 'dark' }} />
+                  {comp && <p className="text-[11px] text-gray-500 mt-0.5">Referente aos serviços de <b className="text-gray-300">{referenciaDe(comp)?.extenso}</b></p>}
                 </div>
                 <div className="flex-1">
                   <label className="block text-[11px] text-gray-500 mb-0.5">Valor</label>

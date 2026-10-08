@@ -3,6 +3,7 @@ import { emitCrmChange } from './realtime'
 import { getOrCreatePixAuto } from './pix-automatico'
 import { pixDaCobranca } from './asaas'
 import { calcStatusFinanceiro, vencimentoAjustado } from './financeiro-calc'
+import { referenciaDe } from './referencia'
 
 // ─── Régua de cobrança pelos canais da Nauta ─────────────────────────────────
 // WhatsApp: API pública do Whats Profissional (número do atendimento) — sem custo por msg.
@@ -56,7 +57,7 @@ const primeiroNome = (n: string) => (n || '').trim().split(/\s+/)[0] || 'cliente
 const saudacao = () => { const h = new Date().getHours(); return h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite' }
 const soDigitos = (v: unknown) => String(v ?? '').replace(/\D/g, '')
 
-interface Ctx { leadId: string; empresaId: string | null; nome: string; empresa: string; whatsapp: string; email: string; cobrancaId: string | null; valor: number; venc: string; link: string; pix: string }
+interface Ctx { leadId: string; empresaId: string | null; nome: string; empresa: string; whatsapp: string; email: string; cobrancaId: string | null; valor: number; venc: string; ref: string; link: string; pix: string }
 
 async function contexto(leadId: string, cobrancaId?: string, tipo?: TipoEnvio): Promise<Ctx> {
   const r = await pool.query(
@@ -67,7 +68,7 @@ async function contexto(leadId: string, cobrancaId?: string, tipo?: TipoEnvio): 
   const l = r.rows[0]
   if (!l) throw new Error('Lead não encontrado')
   const cob = cobrancaId
-    ? (await pool.query(`SELECT id, asaas_payment_id, valor, to_char(vencimento,'YYYY-MM-DD') AS vencimento, invoice_url FROM financeiro_cobrancas WHERE id = $1`, [cobrancaId])).rows[0]
+    ? (await pool.query(`SELECT id, asaas_payment_id, valor, to_char(vencimento,'YYYY-MM-DD') AS vencimento, to_char(competencia,'YYYY-MM-DD') AS competencia, invoice_url FROM financeiro_cobrancas WHERE id = $1`, [cobrancaId])).rows[0]
     : (await pool.query(`SELECT id, asaas_payment_id, valor, to_char(vencimento,'YYYY-MM-DD') AS vencimento, to_char(competencia,'YYYY-MM-DD') AS competencia, invoice_url
                            FROM financeiro_cobrancas
                           WHERE lead_id = $1 AND status IN ('PENDING','OVERDUE')
@@ -83,6 +84,8 @@ async function contexto(leadId: string, cobrancaId?: string, tipo?: TipoEnvio): 
   }
   // Vencimento: da cobrança Asaas, ou calculado pelo honorário (clientes fora do Asaas)
   let venc = cob?.vencimento ? dataBR(cob.vencimento) : '—'
+  // Mês dos serviços (referência) = mês anterior ao do vencimento da mensalidade
+  let mesVenc: string | null = cob?.competencia ?? null
   // Link do atraso (cobrança de mês passado com vencimento novo): na mensagem vale o vencimento ORIGINAL
   if (tipo === 'atraso' && cob?.competencia && l.honorario_vencimento && cob.competencia.slice(0, 7) < (cob.vencimento || '').slice(0, 7)) {
     const dia = Number(String(l.honorario_vencimento).slice(8, 10))
@@ -94,7 +97,10 @@ async function contexto(leadId: string, cobrancaId?: string, tipo?: TipoEnvio): 
       const pg = await pool.query(`SELECT to_char(competencia,'YYYY-MM') AS comp FROM financeiro_pagamentos WHERE lead_id = $1 AND pago_em IS NOT NULL`, [leadId])
       const pagos = new Set(pg.rows.map((x: { comp: string }) => x.comp))
       const calc = calcStatusFinanceiro(l.honorario_vencimento, pagos)
-      if (calc.proximoVencimento) venc = dataBR(calc.proximoVencimento.toISOString().slice(0, 10))
+      if (calc.proximoVencimento) {
+        venc = dataBR(calc.proximoVencimento.toISOString().slice(0, 10))
+        mesVenc = `${calc.proximoVencimento.getFullYear()}-${String(calc.proximoVencimento.getMonth() + 1).padStart(2, '0')}`
+      }
     } catch { /* mantém '—' */ }
   }
   return {
@@ -102,7 +108,7 @@ async function contexto(leadId: string, cobrancaId?: string, tipo?: TipoEnvio): 
     nome: primeiroNome(l.cli_nome_completo || l.nome), empresa: l.emp_nome || l.nome,
     whatsapp: soDigitos(l.whatsapp || l.emp_telefone), email: l.emp_email || l.email || '',
     cobrancaId: cob?.id ?? null, valor: Number(cob?.valor ?? l.valor_honorario ?? 0),
-    venc, link: cob?.invoice_url || '', pix,
+    venc, ref: referenciaDe(mesVenc)?.extenso ?? '', link: cob?.invoice_url || '', pix,
   }
 }
 
@@ -110,7 +116,15 @@ function montar(tipo: TipoEnvio, c: Ctx) {
   const fill = (t: string) => t
     .replace(/{saudacao}/g, saudacao()).replace(/{nome}/g, c.nome).replace(/{empresa}/g, c.empresa).replace(/{valor}/g, brl(c.valor)).replace(/{venc}/g, c.venc)
   const pixAuto = !!c.pix && /\/rec\//.test(c.pix) // payload de recorrência (Pix Automático)
-  return { corpo: fill(RAND(MENSAGENS[tipo])), assunto: fill(ASSUNTO[tipo]), pixAuto }
+  let corpo = fill(RAND(MENSAGENS[tipo]))
+  if (c.ref) {
+    // linha do mês dos serviços logo abaixo da linha do valor
+    const linhas = corpo.split('\n')
+    const i = linhas.findIndex(x => x.includes(brl(c.valor)))
+    linhas.splice(i >= 0 ? i + 1 : linhas.length, 0, `📋 Referente aos serviços de *${c.ref}*`)
+    corpo = linhas.join('\n')
+  }
+  return { corpo, assunto: fill(ASSUNTO[tipo]), pixAuto }
 }
 
 // Monta as partes do WhatsApp: texto → PIX (sozinho, fácil de copiar) → boleto → aviso Pix Automático

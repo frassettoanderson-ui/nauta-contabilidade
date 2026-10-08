@@ -1183,7 +1183,8 @@ const ST_FIN: Record<string, { label: string; cls: string }> = {
   pago_depois: { label: 'Pago em atraso',  cls: 'bg-amber-100 text-amber-700' },
   vencido:     { label: 'Vencido',         cls: 'bg-red-100 text-red-700' },
 };
-function compBR(c: string) { return `${c.slice(5, 7)}/${c.slice(0, 4)}`; }
+// Mês dos serviços = mês anterior ao do vencimento (vence 10/10 → referente a 09)
+function refBR(c: string) { let a = Number(c.slice(0, 4)), m = Number(c.slice(5, 7)) - 1; if (m === 0) { m = 12; a--; } return `${String(m).padStart(2, '0')}/${a}`; }
 function dtBR(iso: string | null) { if (!iso) return '—'; const d = iso.slice(0, 10); return `${d.slice(8, 10)}/${d.slice(5, 7)}/${d.slice(0, 4)}`; }
 function dtHoraBR(iso: string) { return `${dtBR(iso)} ${iso.slice(11, 16)}`; }
 
@@ -1209,7 +1210,7 @@ function SecFinanceiro({ empresa }: { empresa: EmpresaDetalhe }) {
     <div className="overflow-hidden rounded border border-slate-200">
       <table className="w-full text-[13px]">
         <thead className="bg-slate-50 text-left text-[12px] font-semibold text-slate-500">
-          <tr><th className="px-3 py-2">Competência</th><th className="px-3 py-2">Vencimento</th><th className="px-3 py-2">Valor</th><th className="px-3 py-2">Situação</th><th className="px-3 py-2">Pago em</th><th className="w-8" /></tr>
+          <tr><th className="px-3 py-2" title="Mês dos serviços cobrados (mês anterior ao vencimento)">Referente a</th><th className="px-3 py-2">Vencimento</th><th className="px-3 py-2">Valor</th><th className="px-3 py-2">Situação</th><th className="px-3 py-2">Pago em</th><th className="w-8" /></tr>
         </thead>
         <tbody className="divide-y divide-slate-100">
           {meses.map((m) => {
@@ -1218,7 +1219,7 @@ function SecFinanceiro({ empresa }: { empresa: EmpresaDetalhe }) {
             return (
               <Fragment key={m.competencia + m.vencimento}>
                 <tr className="cursor-pointer hover:bg-slate-50" onClick={() => setAberto(exp ? null : m.competencia)}>
-                  <td className="px-3 py-2 font-medium text-slate-700">{compBR(m.competencia)}</td>
+                  <td className="px-3 py-2 font-medium text-slate-700">{refBR(m.competencia)}</td>
                   <td className="px-3 py-2 text-slate-600">{dtBR(m.vencimento)}</td>
                   <td className="px-3 py-2 text-slate-600">R$ {m.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
                   <td className="px-3 py-2"><span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${st.cls}`}>{st.label}</span></td>
@@ -1227,7 +1228,7 @@ function SecFinanceiro({ empresa }: { empresa: EmpresaDetalhe }) {
                 </tr>
                 {exp && (
                   <tr className="bg-fundo"><td colSpan={6} className="border-l-4 border-marca-400 px-4 py-3">
-                    <p className="mb-2 text-[12px] font-bold text-slate-600">Linha do tempo da cobrança {compBR(m.competencia)}</p>
+                    <p className="mb-2 text-[12px] font-bold text-slate-600">Linha do tempo da cobrança referente a {refBR(m.competencia)} (vence {dtBR(m.vencimento)})</p>
                     <ul className="space-y-1.5 text-[13px]">
                       {m.envios.length === 0 && <li className="text-slate-400">Nenhum envio registrado.</li>}
                       {m.envios.map((e, i) => (

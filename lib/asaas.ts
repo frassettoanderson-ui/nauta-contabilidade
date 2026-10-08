@@ -1,6 +1,7 @@
 import pool from './db'
 import { emitCrmChange } from './realtime'
 import { calcStatusFinanceiro } from './financeiro-calc'
+import { referenciaDe } from './referencia'
 
 // ─── Integração Asaas (cobrança automática dos honorários) ──────────────────
 // Cada lead ativo no financeiro vira um "customer" + uma "subscription" mensal no
@@ -165,6 +166,14 @@ export async function upsertCobranca(p: AsaasPayment, leadId: string, empresaId:
      p.invoiceUrl ?? null, p.bankSlipUrl ?? null, pagoEm, JSON.stringify(p), !!competenciaOverride]
   )
   const competencia: string = up.rows[0].competencia
+  // Descrição no Asaas (aparece no boleto/fatura): "… — referente a setembro/2026" (mês dos serviços)
+  if (p.status === 'PENDING' && !/referente a/i.test(p.description ?? '')) {
+    const ref = referenciaDe(competencia)?.extenso
+    if (ref) {
+      const base = (p.description || 'Honorários contábeis').trim()
+      api(`/payments/${p.id}`, { method: 'PUT', body: JSON.stringify({ description: `${base} — referente a ${ref}` }) }).catch(() => { /* não bloqueia */ })
+    }
+  }
   // Baixa automática: pagamento recebido → financeiro_pagamentos (uma vez por competência)
   if (pagoEm) {
     const ja = await pool.query(`SELECT 1 FROM financeiro_pagamentos WHERE lead_id = $1 AND competencia = $2 LIMIT 1`, [leadId, competencia])
@@ -217,7 +226,7 @@ async function syncPayments(leadId: string, subscriptionId: string, empresaId: s
 
 // ── Operações públicas ───────────────────────────────────────────────────────
 // Antecedência máxima (dias) para criar a assinatura/1º boleto no Asaas.
-export const JANELA_ASSINATURA_DIAS = 7
+export const JANELA_ASSINATURA_DIAS = 14 // = antecedência configurada no painel do Asaas (14 dias)
 
 export async function sincronizarLead(leadId: string) {
   const d = await dadosLead(leadId)
@@ -339,7 +348,7 @@ export async function gerarCobrancaAtraso(leadId: string) {
       billingType: 'UNDEFINED',
       value: valor,
       dueDate: ymd(due),
-      description: `Honorários contábeis — ${d.emp_nome || d.nome} — competência ${compBR} (em atraso: honorário ${hon.toFixed(2)} + multa ${multa.toFixed(2)} + juros ${juros.toFixed(2)})`,
+      description: `Honorários contábeis — ${d.emp_nome || d.nome} — referente a ${referenciaDe(comp)?.extenso ?? compBR} (venc. original ${vencOrig.toLocaleDateString('pt-BR')}; em atraso: honorário ${hon.toFixed(2)} + multa ${multa.toFixed(2)} + juros ${juros.toFixed(2)})`,
       externalReference: d.id,
       fine: { value: MULTA_ATRASO * 100 },
       interest: { value: JUROS_MES_ATRASO * 100 },

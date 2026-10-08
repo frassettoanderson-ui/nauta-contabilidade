@@ -87,7 +87,6 @@ const NAV: NavItem[] = [
       ] },
     ] },
     { label: 'Obrigacoes', icon: List, href: `${OB}/obrigacoes` },
-    { label: 'Empresas', icon: Heart, href: `${OB}/empresas` },
     { label: 'Lista de Entregas', icon: CheckCircle, href: `${OB}/entregas` },
     { label: 'Relatorios', icon: Folder, children: [
       { label: 'Insights com filtros', icon: TrendingUp, href: `${OB}/insights` },

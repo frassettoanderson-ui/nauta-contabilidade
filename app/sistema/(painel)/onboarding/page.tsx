@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { Loader2, Check, CheckCircle2, Link2, Rocket, MessageCircle, Pencil, ClipboardCheck, X, ChevronDown, ChevronUp, Copy, ExternalLink, Clock, LayoutGrid, List as ListIcon } from 'lucide-react'
+import { Loader2, Check, CheckCircle2, Link2, Rocket, MessageCircle, Pencil, ClipboardCheck, X, ChevronDown, ChevronUp, Copy, ExternalLink, Clock, LayoutGrid, List as ListIcon, Eye, EyeOff } from 'lucide-react'
 import Link from 'next/link'
 import { getOnboardingBoard, setOnboardingCheck, concluirOnboarding, gerarLinkCadastro, abrirFichaObrigo, type OnboardingCliente } from '@/lib/api'
 import { SETORES, itensDoSetor, podeEditarSetor, checksEfetivos, setorConcluido, setorItensCompletos, tudoConcluido, doneKey, ITEM_CADASTRO, type SetorId } from '@/lib/onboarding-checklist'
@@ -29,6 +29,9 @@ export default function OnboardingPage() {
   const [concluindo, setConcluindo] = useState<OnboardingCliente | null>(null)
   const [anotacoesLead, setAnotacoesLead] = useState<{ id: string; nome: string } | null>(null)
   const [expandidos, setExpandidos] = useState<Set<string>>(new Set())
+  // Itens marcados ficam ocultos; o olho do card mostra todos (feitos e pendentes)
+  const [verTodos, setVerTodos] = useState<Set<string>>(new Set())
+  const toggleVerTodos = (id: string) => setVerTodos(s => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n })
   const toggleExpandir = (id: string) => setExpandidos(s => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n })
 
   const load = useCallback(() => { getOnboardingBoard().then(setBoard).catch(() => setBoard([])) }, [])
@@ -165,6 +168,10 @@ export default function OnboardingPage() {
                   <div className="flex items-center justify-between gap-2 mt-1.5">
                     <span className="text-[color:var(--sys-accent)] text-xs truncate">{catLabel(c.onboarding_categoria)}</span>
                     <div className="flex items-center gap-0.5 shrink-0">
+                      <MiniBtn title={verTodos.has(c.id) ? 'Ocultar itens concluídos' : 'Mostrar todos os itens (concluídos e pendentes)'}
+                        onClick={() => toggleVerTodos(c.id)} color={verTodos.has(c.id) ? 'var(--sys-accent)' : '#9ca3af'}>
+                        {verTodos.has(c.id) ? <EyeOff size={14} /> : <Eye size={14} />}
+                      </MiniBtn>
                       <a title="WhatsApp" href={waLink(c.whatsapp)} target="_blank" rel="noopener noreferrer"
                         className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors hover:bg-green-500/15" style={{ color: '#25D366' }}>
                         <MessageCircle size={15} />
@@ -214,6 +221,9 @@ export default function OnboardingPage() {
                     const editavel = podeEditarSetor(role, setor)
                     const concluido = setorConcluido(setor, checks)
                     const podeConcluir = editavel && setorItensCompletos(setor, cat, checks)
+                    const mostrarTodos = verTodos.has(c.id)
+                    const itensVisiveis = mostrarTodos ? setorItens : setorItens.filter(it => !checks.includes(it.key))
+                    const ocultos = setorItens.length - itensVisiveis.length
                     return (
                       <div key={setor}>
                         <div className="flex items-center gap-1.5 mb-1.5">
@@ -225,7 +235,7 @@ export default function OnboardingPage() {
                           <p className="text-[11px] text-gray-600 italic pl-0.5">Itens a definir.</p>
                         ) : (
                           <div className="space-y-1">
-                            {setorItens.map(it => {
+                            {itensVisiveis.map(it => {
                               const done = checks.includes(it.key)
                               const auto = it.key === ITEM_CADASTRO
                               const loading = busy === it.key + c.id
@@ -245,6 +255,12 @@ export default function OnboardingPage() {
                                 </button>
                               )
                             })}
+                            {ocultos > 0 && (
+                              <button onClick={() => toggleVerTodos(c.id)} title="Mostrar os itens concluídos"
+                                className="w-full text-center text-[11px] text-gray-500 hover:text-[color:var(--sys-accent)] py-0.5">
+                                {itensVisiveis.length === 0 ? `✓ Todos os ${ocultos} itens concluídos` : `+${ocultos} concluído${ocultos > 1 ? 's' : ''} oculto${ocultos > 1 ? 's' : ''}`}
+                              </button>
+                            )}
                           </div>
                         )}
 

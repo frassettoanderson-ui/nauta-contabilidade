@@ -476,7 +476,7 @@ export function chatHistorico(): Promise<ChatHistorico[]> {
   return fetch('/api/chat/historico').then(r => json<ChatHistorico[]>(r))
 }
 
-export interface PagamentoRow { id: string; competencia: string; valor: number | string | null; pago_em: string | null; criado_em: string }
+export interface PagamentoRow { id: string; competencia: string; valor: number | string | null; pago_em: string | null; criado_em: string; dispensado?: boolean }
 export function listPagamentos(leadId: string): Promise<PagamentoRow[]> {
   return fetch(`/api/financeiro/${leadId}/pagamentos`).then(r => json<PagamentoRow[]>(r))
 }

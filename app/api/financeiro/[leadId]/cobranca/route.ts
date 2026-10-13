@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import pool from '@/lib/db'
-import { alterarDiaVencimento } from '@/lib/asaas'
+import { alterarDiaVencimento, excluirCobrancaMes } from '@/lib/asaas'
 import { syncEmpresaFromLead } from '@/lib/obrigo-sync'
 
 export const dynamic = 'force-dynamic'
@@ -44,6 +44,16 @@ export async function PUT(req: NextRequest, { params }: { params: { leadId: stri
     [params.leadId, nome || null, email || null, whats || null]
   )
   return NextResponse.json({ ok: true })
+}
+
+// DELETE ?competencia=YYYY-MM → exclui a cobrança do mês (apaga no Asaas + mês dispensado). Só se não paga.
+export async function DELETE(req: NextRequest, { params }: { params: { leadId: string } }) {
+  if (!(await autorizado())) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
+  try {
+    return NextResponse.json(await excluirCobrancaMes(params.leadId, req.nextUrl.searchParams.get('competencia') || ''))
+  } catch (e) {
+    return NextResponse.json({ error: (e as Error).message }, { status: 400 })
+  }
 }
 
 export async function POST(req: NextRequest, { params }: { params: { leadId: string } }) {

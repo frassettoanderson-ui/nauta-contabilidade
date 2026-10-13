@@ -388,7 +388,7 @@ export async function listFinanceiro(empresaId: string, competencia?: string) {
 
 export async function listPagamentos(leadId: string) {
   const res = await pool.query(
-    `SELECT id, to_char(competencia, 'YYYY-MM') AS competencia, valor, pago_em, criado_em
+    `SELECT id, to_char(competencia, 'YYYY-MM') AS competencia, valor, pago_em, criado_em, dispensado
        FROM financeiro_pagamentos WHERE lead_id = $1 ORDER BY competencia DESC`, [leadId]
   )
   return res.rows

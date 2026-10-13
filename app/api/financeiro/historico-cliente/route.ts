@@ -41,12 +41,14 @@ export async function GET(req: NextRequest) {
   const cobr = (await pool.query(
     `SELECT id, to_char(competencia,'YYYY-MM') AS comp, to_char(vencimento,'YYYY-MM-DD') AS venc,
             valor, status, to_char(pago_em,'YYYY-MM-DD"T"HH24:MI:SS') AS pago_em, invoice_url
-       FROM financeiro_cobrancas WHERE lead_id = $1`, [leadId]
+       FROM financeiro_cobrancas WHERE lead_id = $1 AND status <> 'DELETED'`, [leadId]
   )).rows
   const pagtos = (await pool.query(
-    `SELECT to_char(competencia,'YYYY-MM') AS comp, valor, to_char(pago_em,'YYYY-MM-DD"T"HH24:MI:SS') AS pago_em
+    `SELECT to_char(competencia,'YYYY-MM') AS comp, valor, to_char(pago_em,'YYYY-MM-DD"T"HH24:MI:SS') AS pago_em, dispensado
        FROM financeiro_pagamentos WHERE lead_id = $1`, [leadId]
   )).rows
+  // Meses com a cobrança excluída (dispensados) não aparecem no histórico
+  const dispensados = new Set(pagtos.filter((p: { dispensado: boolean }) => p.dispensado).map((p: { comp: string }) => p.comp))
   const envs = (await pool.query(
     `SELECT cobranca_id, tipo, canal, ok, to_char(criado_em,'YYYY-MM-DD"T"HH24:MI:SS') AS em
        FROM cobranca_envios WHERE lead_id = $1 ORDER BY criado_em ASC`, [leadId]
@@ -60,13 +62,14 @@ export async function GET(req: NextRequest) {
 
   // 1) cobranças Asaas (fonte mais rica)
   for (const c of cobr) {
+    if (dispensados.has(c.comp)) continue
     const pago = PAGO.has(c.status) || !!c.pago_em
     const status = pago ? (statusPorPagamento(c.pago_em, c.venc) || 'pago_dia') : (new Date(c.venc) < hoje ? 'vencido' : 'a_vencer')
     map.set(c.comp, { competencia: c.comp, vencimento: c.venc, valor: Number(c.valor), status, pagoEm: c.pago_em, invoiceUrl: c.invoice_url, envios: envByCob[c.id] ?? [] })
   }
   // 2) pagamentos lançados (histórico/manual) sem cobrança. Sem pago_em = ainda não pago.
   for (const p of pagtos) {
-    if (!p.comp || map.has(p.comp)) continue
+    if (!p.comp || map.has(p.comp) || dispensados.has(p.comp)) continue
     const venc = vencDe(p.comp)
     const status = p.pago_em ? (statusPorPagamento(p.pago_em, venc) || 'pago_dia') : (new Date(venc) < hoje ? 'vencido' : 'a_vencer')
     map.set(p.comp, { competencia: p.comp, vencimento: venc, valor: Number(p.valor || honorario), status, pagoEm: p.pago_em, invoiceUrl: null, envios: [] })
@@ -77,7 +80,7 @@ export async function GET(req: NextRequest) {
     const fim = new Date(hoje.getFullYear(), hoje.getMonth(), 1)
     for (let d = new Date(ini); d <= fim; d.setMonth(d.getMonth() + 1)) {
       const comp = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
-      if (map.has(comp)) continue
+      if (map.has(comp) || dispensados.has(comp)) continue
       const venc = vencDe(comp)
       map.set(comp, { competencia: comp, vencimento: venc, valor: honorario, status: new Date(venc) < hoje ? 'vencido' : 'a_vencer', pagoEm: null, invoiceUrl: null, envios: [] })
     }

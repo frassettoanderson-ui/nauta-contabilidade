@@ -456,7 +456,7 @@ function CobrancaModal({ row, onClose, onChanged }: { row: Row; onClose: () => v
                 {pagamentos.length === 0 ? <p className="text-gray-600 text-xs">Nenhum pagamento registrado.</p> : pagamentos.map(p => (
                   <div key={p.id} className="flex items-center justify-between gap-2 p-2 rounded-lg text-sm" style={{ background: 'var(--sys-surface-3)' }}>
                     <span className="text-gray-200" title="Mês do vencimento · mês dos serviços">Venc. {p.competencia.split('-').reverse().join('/')} <span className="text-gray-500 text-xs">· ref. {referenciaDe(p.competencia)?.curto ?? '—'}</span></span>
-                    <span className="text-[#22c55e] text-xs font-bold">{money(p.valor)}</span>
+                    <span className="text-[#22c55e] text-xs font-bold">{p.dispensado ? <span className="text-gray-500 font-semibold" title="Cobrança excluída — mês não cobrado">dispensado</span> : money(p.valor)}</span>
                     <button onClick={() => excluirPagamento(p.id)} className="text-red-400 hover:text-red-300"><Trash2 size={13} /></button>
                   </div>
                 ))}

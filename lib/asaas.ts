@@ -340,6 +340,39 @@ export async function alterarDiaVencimento(leadId: string, dia: number) {
   return { ok: true, dia, boletos }
 }
 
+// Exclui a cobrança de um mês (pela ficha › Financeiro): apaga o boleto no Asaas, se houver, e marca o
+// mês como DISPENSADO (linha em financeiro_pagamentos c/ valor 0 e dispensado=true) para a régua/atraso
+// não recriarem a cobrança. Só para meses ainda não liquidados. Desfazer = excluir o "pagamento" dispensado.
+export async function excluirCobrancaMes(leadId: string, competencia: string) {
+  const comp = competencia.slice(0, 7)
+  if (!/^\d{4}-\d{2}$/.test(comp)) throw new Error('Mês inválido')
+  const pago = await pool.query(
+    `SELECT 1 FROM financeiro_pagamentos WHERE lead_id = $1 AND to_char(competencia,'YYYY-MM') = $2 AND pago_em IS NOT NULL AND NOT dispensado LIMIT 1`,
+    [leadId, comp]
+  )
+  if (pago.rows[0]) throw new Error('Esta cobrança já foi paga — não pode ser excluída')
+  const cobs = (await pool.query(
+    `SELECT id, asaas_payment_id, status FROM financeiro_cobrancas WHERE lead_id = $1 AND to_char(competencia,'YYYY-MM') = $2 AND status <> 'DELETED'`,
+    [leadId, comp]
+  )).rows
+  if (cobs.some(c => PAGO.has(c.status))) throw new Error('Esta cobrança já foi paga no Asaas — não pode ser excluída')
+  for (const c of cobs) {
+    if (c.asaas_payment_id && asaasConfigurado()) {
+      try { await api(`/payments/${c.asaas_payment_id}`, { method: 'DELETE' }) }
+      catch (e) { if (!/404|not found|não encontrad/i.test((e as Error).message)) throw new Error('Asaas recusou a exclusão: ' + (e as Error).message) }
+    }
+    await pool.query(`UPDATE financeiro_cobrancas SET status = 'DELETED', atualizado_em = now() WHERE id = $1`, [c.id])
+  }
+  await pool.query(
+    `INSERT INTO financeiro_pagamentos (lead_id, competencia, valor, pago_em, empresa_id, dispensado)
+     SELECT $1, ($2 || '-01')::date, 0, now(), (SELECT empresa_id FROM leads WHERE id = $1), true
+      WHERE NOT EXISTS (SELECT 1 FROM financeiro_pagamentos WHERE lead_id = $1 AND to_char(competencia,'YYYY-MM') = $2 AND dispensado)`,
+    [leadId, comp]
+  )
+  emitCrmChange()
+  return { ok: true, competencia: comp, boletosApagados: cobs.filter(c => c.asaas_payment_id).length }
+}
+
 // Desfaz a baixa manual no Asaas (quando o pagamento lançado à mão é excluído): a cobrança volta a ficar em aberto.
 export async function desfazerQuitacaoAsaas(leadId: string, competencia: string) {
   if (!asaasConfigurado()) return []

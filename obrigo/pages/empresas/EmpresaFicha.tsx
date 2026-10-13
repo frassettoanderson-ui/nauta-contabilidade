@@ -16,6 +16,7 @@ import SecObrigacoes from './SecObrigacoes';
 import { gerarFichaPdf } from '../../lib/fichaPdf';
 import SecContratoSocios from './SecContratoSocios';
 import { FileSignature } from 'lucide-react';
+import { maskPhone } from '../../../lib/form-masks';
 
 const INP = 'block w-full rounded border border-slate-300 bg-white px-2 py-1.5 text-[13px] text-slate-700 outline-none focus:border-marca-400 focus:ring-1 focus:ring-marca-100';
 const LBL = 'mb-1 block text-[13px] font-bold text-slate-700';
@@ -1202,11 +1203,15 @@ function SecFinanceiro({ empresa }: { empresa: EmpresaDetalhe }) {
   }, [empresa.nautaLeadId]);
 
   if (!empresa.nautaLeadId) return <p className="text-[13px] text-slate-500">Esta empresa não está vinculada ao financeiro do ERP.</p>;
-  if (erro) return <p className="text-[13px] text-status-danger">{erro}</p>;
-  if (meses === null) return <div className="py-6 text-center text-slate-400"><Loader2 size={20} className="mx-auto animate-spin" /></div>;
-  if (meses.length === 0) return <p className="text-[13px] text-slate-500">Nenhuma cobrança registrada para este cliente ainda.</p>;
-
-  return (
+  const recarregar = () => {
+    fetch(`/api/financeiro/historico-cliente?lead=${encodeURIComponent(empresa.nautaLeadId!)}`, { credentials: 'include' })
+      .then((r) => (r.ok ? r.json() : null)).then((d) => d && setMeses(d.meses ?? [])).catch(() => {});
+  };
+  let historico: JSX.Element;
+  if (erro) historico = <p className="text-[13px] text-status-danger">{erro}</p>;
+  else if (meses === null) historico = <div className="py-6 text-center text-slate-400"><Loader2 size={20} className="mx-auto animate-spin" /></div>;
+  else if (meses.length === 0) historico = <p className="text-[13px] text-slate-500">Nenhuma cobrança registrada para este cliente ainda.</p>;
+  else historico = (
     <div className="overflow-hidden rounded border border-slate-200">
       <table className="w-full text-[13px]">
         <thead className="bg-slate-50 text-left text-[12px] font-semibold text-slate-500">
@@ -1254,6 +1259,123 @@ function SecFinanceiro({ empresa }: { empresa: EmpresaDetalhe }) {
           })}
         </tbody>
       </table>
+    </div>
+  );
+
+  return (
+    <div className="space-y-4">
+      <CobrancaConfig leadId={empresa.nautaLeadId} onVencimentoAlterado={recarregar} />
+      {historico}
+    </div>
+  );
+}
+
+// Responsável pelo financeiro (destino de boleto/WhatsApp/e-mail) + alteração do dia de vencimento
+function CobrancaConfig({ leadId, onVencimentoAlterado }: { leadId: string; onVencimentoAlterado: () => void }) {
+  const toast = useToast();
+  const [resp, setResp] = useState<{ nome: string; email: string; whatsapp: string } | null>(null);
+  const [dia, setDia] = useState<number | null>(null);
+  const [salvando, setSalvando] = useState(false);
+  const [modal, setModal] = useState(false);
+  const url = `/api/financeiro/${encodeURIComponent(leadId)}/cobranca`;
+
+  useEffect(() => {
+    fetch(url, { credentials: 'include' }).then((r) => (r.ok ? r.json() : null)).then((d) => {
+      if (!d) return;
+      setResp({ nome: d.responsavel.nome, email: d.responsavel.email, whatsapp: d.responsavel.whatsapp ? maskPhone(d.responsavel.whatsapp) : '' });
+      setDia(d.diaVencimento);
+    }).catch(() => {});
+  }, [url]);
+
+  async function salvar() {
+    if (!resp) return;
+    setSalvando(true);
+    try {
+      const r = await fetch(url, { method: 'PUT', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(resp) });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(j.error || 'Erro ao salvar');
+      toast('ok', 'Responsável pelo financeiro salvo — as próximas cobranças vão para esses contatos.');
+    } catch (e) { toast('erro', (e as Error).message); }
+    finally { setSalvando(false); }
+  }
+
+  if (!resp) return <div className="py-3 text-center text-slate-400"><Loader2 size={18} className="mx-auto animate-spin" /></div>;
+  const campo = 'w-full rounded border border-slate-300 px-2.5 py-1.5 text-[13px] focus:border-marca-500 focus:outline-none';
+  return (
+    <div className="rounded border border-slate-200 bg-white p-4">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <p className="text-[13px] font-bold text-slate-700">Responsável pelo financeiro</p>
+          <p className="text-[12px] text-slate-500">O sistema envia boletos e avisos de cobrança para estes contatos.</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-[12px] text-slate-500">{dia ? <>Vence todo dia <b className="text-slate-700">{dia}</b></> : 'Sem dia de vencimento'}</span>
+          <button onClick={() => setModal(true)} className="inline-flex items-center gap-1.5 rounded bg-marca-500 px-3 py-1.5 text-[12px] font-semibold text-white hover:bg-marca-600">
+            <CalendarDays size={14} /> Alterar vencimento
+          </button>
+        </div>
+      </div>
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+        <label className="block"><span className="mb-0.5 block text-[11px] font-semibold text-slate-500">Nome</span>
+          <input className={campo} value={resp.nome} onChange={(e) => setResp({ ...resp, nome: e.target.value })} placeholder="Quem recebe a cobrança" /></label>
+        <label className="block"><span className="mb-0.5 block text-[11px] font-semibold text-slate-500">E-mail</span>
+          <input type="email" className={campo} value={resp.email} onChange={(e) => setResp({ ...resp, email: e.target.value.trim() })} placeholder="financeiro@empresa.com.br" /></label>
+        <label className="block"><span className="mb-0.5 block text-[11px] font-semibold text-slate-500">WhatsApp</span>
+          <input className={campo} value={resp.whatsapp} onChange={(e) => setResp({ ...resp, whatsapp: maskPhone(e.target.value) })} placeholder="(00) 00000-0000" inputMode="tel" /></label>
+      </div>
+      <div className="mt-3 flex justify-end">
+        <button onClick={salvar} disabled={salvando} className="inline-flex items-center gap-1.5 rounded bg-status-ok px-4 py-1.5 text-[12px] font-semibold text-white hover:opacity-90 disabled:opacity-60">
+          {salvando ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} Salvar responsável
+        </button>
+      </div>
+      {modal && <AlterarVencimentoModal url={url} diaAtual={dia} onClose={() => setModal(false)}
+        onFeito={(novo) => { setDia(novo); setModal(false); onVencimentoAlterado(); }} />}
+    </div>
+  );
+}
+
+function AlterarVencimentoModal({ url, diaAtual, onClose, onFeito }: { url: string; diaAtual: number | null; onClose: () => void; onFeito: (dia: number) => void }) {
+  const toast = useToast();
+  const [dia, setDia] = useState(diaAtual ? String(diaAtual) : '');
+  const [enviando, setEnviando] = useState(false);
+  async function confirmar() {
+    const n = Number(dia);
+    if (!Number.isInteger(n) || n < 1 || n > 31) { toast('erro', 'Informe um dia entre 1 e 31.'); return; }
+    setEnviando(true);
+    try {
+      const r = await fetch(url, { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ dia: n }) });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(j.error || 'Erro ao alterar o vencimento');
+      const boletos: { ok: boolean; vencimentoAntigo: string; erro?: string }[] = j.boletos ?? [];
+      const falhas = boletos.filter((b) => !b.ok);
+      const ok = boletos.length - falhas.length;
+      toast(falhas.length ? 'erro' : 'ok', falhas.length
+        ? `Vencimento alterado para o dia ${n}, mas ${falhas.length} boleto(s) não mudaram: ${falhas.map((x) => `${x.vencimentoAntigo} (${x.erro})`).join('; ')}`
+        : `Vencimento alterado para todo dia ${n}${ok ? ` — ${ok} boleto(s) em aberto ajustado(s) no Asaas` : ''}.`);
+      onFeito(n);
+    } catch (e) { toast('erro', (e as Error).message); setEnviando(false); }
+  }
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      <div className="relative w-full max-w-sm rounded-lg bg-white p-6 text-center shadow-xl">
+        <button onClick={onClose} className="absolute right-3 top-3 text-slate-400 hover:text-slate-600"><X size={18} /></button>
+        <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-marca-500/10 text-marca-500"><CalendarDays size={22} /></div>
+        <h3 className="text-[16px] font-bold text-slate-800">Alterar vencimento</h3>
+        <p className="mt-1 text-[12px] text-slate-500">Novo dia fixo de vencimento do honorário. Vale para os boletos em aberto que ainda não venceram e para os próximos meses.</p>
+        <div className="mt-4 flex items-center justify-center gap-2">
+          <span className="text-[13px] text-slate-600">Todo dia</span>
+          <input type="number" min={1} max={31} value={dia} onChange={(e) => setDia(e.target.value.replace(/\D/g, '').slice(0, 2))}
+            className="w-20 rounded border border-slate-300 px-2 py-1.5 text-center text-[15px] font-bold focus:border-marca-500 focus:outline-none" autoFocus />
+        </div>
+        <p className="mt-2 text-[11px] text-slate-400">Boletos vencidos e links de atraso não mudam.</p>
+        <div className="mt-5 flex justify-center gap-2">
+          <button onClick={onClose} className="rounded bg-status-warn px-4 py-1.5 text-[13px] font-semibold text-white hover:opacity-90">Cancelar</button>
+          <button onClick={confirmar} disabled={enviando} className="inline-flex items-center gap-1.5 rounded bg-status-ok px-4 py-1.5 text-[13px] font-semibold text-white hover:opacity-90 disabled:opacity-60">
+            {enviando ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />} Confirmar
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

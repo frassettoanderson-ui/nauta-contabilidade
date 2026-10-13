@@ -50,12 +50,14 @@ interface LeadBilling {
   asaas_customer_id: string | null; asaas_subscription_id: string | null; empresa_id: string | null
   emp_nome: string | null; emp_cnpj: string | null; cli_cpf: string | null; emp_email: string | null; emp_telefone: string | null
   situacao: string | null; contabilidade: string | null
+  fin_resp_email: string | null; fin_resp_whatsapp: string | null
 }
+const EMAIL_OK = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 async function dadosLead(leadId: string): Promise<LeadBilling> {
   const r = await pool.query(
     `SELECT l.id, l.nome, l.email, l.whatsapp, l.valor_honorario, l.honorario_vencimento,
-            l.asaas_customer_id, l.asaas_subscription_id, l.empresa_id, l.contabilidade,
+            l.asaas_customer_id, l.asaas_subscription_id, l.empresa_id, l.contabilidade, l.fin_resp_email, l.fin_resp_whatsapp,
             c.emp_nome, c.emp_cnpj, c.cli_cpf, c.emp_email, c.emp_telefone, c.situacao
        FROM leads l LEFT JOIN clientes c ON c.lead_id = l.id
       WHERE l.id = $1 LIMIT 1`,
@@ -75,13 +77,15 @@ async function ensureCustomer(d: LeadBilling): Promise<string> {
   if (!id) {
     const doc = digits(d.emp_cnpj) || digits(d.cli_cpf)
     if (!doc) throw new Error('Cliente sem CNPJ/CPF no cadastro — necessário para cobrar no Asaas')
-    const tel = digits(d.emp_telefone || d.whatsapp)
+    const tel = digits(d.fin_resp_whatsapp || d.emp_telefone || d.whatsapp)
+    // e-mail inválido derruba o cadastro no Asaas → só manda o primeiro válido (responsável financeiro primeiro)
+    const email = [d.fin_resp_email, d.emp_email, d.email].find(e => e && EMAIL_OK.test(e.trim()))?.trim()
     const c = await api<{ id: string }>('/customers', {
       method: 'POST',
       body: JSON.stringify({
         name: d.emp_nome || d.nome,
         cpfCnpj: doc,
-        email: d.emp_email || d.email || undefined,
+        email: email || undefined,
         mobilePhone: tel.length >= 10 ? tel.slice(-11) : undefined,
         externalReference: d.id,
         notificationDisabled: true, // quem avisa o cliente é a Nauta (WhatsApp/e-mail), não o Asaas
@@ -286,6 +290,54 @@ export async function quitarNoAsaas(leadId: string, competencia: string, valor: 
   }
   if (out.length) emitCrmChange()
   return out
+}
+
+// Muda o DIA de vencimento do cliente (ex.: todo dia 10 → todo dia 15):
+//  • leads.honorario_vencimento (mesmo mês do 1º vencimento, dia novo)
+//  • boletos Asaas em aberto que ainda não venceram (mesmo mês, dia novo) — links de atraso ficam como estão
+//  • assinatura no Asaas (próximas cobranças nascem no dia novo)
+const diaNoMes = (ym: string, dia: number) => {
+  const [y, m] = ym.split('-').map(Number)
+  return `${ym}-${String(Math.min(dia, new Date(y, m, 0).getDate())).padStart(2, '0')}`
+}
+export async function alterarDiaVencimento(leadId: string, dia: number) {
+  if (!Number.isInteger(dia) || dia < 1 || dia > 31) throw new Error('Dia inválido (1 a 31)')
+  const d = await dadosLead(leadId)
+  const hoje = ymd(new Date())
+  if (d.honorario_vencimento) {
+    const v1 = typeof d.honorario_vencimento === 'string' ? d.honorario_vencimento.slice(0, 7) : ymd(new Date(d.honorario_vencimento)).slice(0, 7)
+    await pool.query(`UPDATE leads SET honorario_vencimento = $2 WHERE id = $1`, [leadId, diaNoMes(v1, dia)])
+  }
+  const boletos: { vencimentoAntigo: string; vencimentoNovo: string; ok: boolean; erro?: string }[] = []
+  if (asaasConfigurado()) {
+    const r = await pool.query(
+      `SELECT id, asaas_payment_id, to_char(vencimento,'YYYY-MM-DD') AS venc FROM financeiro_cobrancas
+        WHERE lead_id = $1 AND status = 'PENDING' AND asaas_payment_id IS NOT NULL AND vencimento >= current_date
+          AND to_char(competencia,'YYYY-MM') = to_char(vencimento,'YYYY-MM')`, [leadId]
+    )
+    for (const c of r.rows) {
+      const novo = diaNoMes(String(c.venc).slice(0, 7), dia)
+      if (novo === c.venc) continue
+      if (novo <= hoje) { boletos.push({ vencimentoAntigo: c.venc, vencimentoNovo: novo, ok: false, erro: 'data nova já passou — boleto mantido' }); continue }
+      try {
+        await api(`/payments/${c.asaas_payment_id}`, { method: 'PUT', body: JSON.stringify({ dueDate: novo }) })
+        await pool.query(`UPDATE financeiro_cobrancas SET vencimento = $2, atualizado_em = now() WHERE id = $1`, [c.id, novo])
+        boletos.push({ vencimentoAntigo: c.venc, vencimentoNovo: novo, ok: true })
+      } catch (e) { boletos.push({ vencimentoAntigo: c.venc, vencimentoNovo: novo, ok: false, erro: (e as Error).message }) }
+    }
+    if (d.asaas_subscription_id) {
+      try {
+        const s = await api<{ nextDueDate: string }>(`/subscriptions/${d.asaas_subscription_id}`)
+        if (s.nextDueDate) {
+          let prox = diaNoMes(s.nextDueDate.slice(0, 7), dia)
+          if (prox <= hoje) { const n = new Date(`${prox}T00:00:00`); n.setMonth(n.getMonth() + 1, 1); prox = diaNoMes(ymd(n).slice(0, 7), dia) }
+          await api(`/subscriptions/${d.asaas_subscription_id}`, { method: 'PUT', body: JSON.stringify({ nextDueDate: prox }) })
+        }
+      } catch (e) { boletos.push({ vencimentoAntigo: 'assinatura', vencimentoNovo: '', ok: false, erro: (e as Error).message }) }
+    }
+  }
+  emitCrmChange()
+  return { ok: true, dia, boletos }
 }
 
 // Desfaz a baixa manual no Asaas (quando o pagamento lançado à mão é excluído): a cobrança volta a ficar em aberto.

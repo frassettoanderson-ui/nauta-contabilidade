@@ -62,6 +62,7 @@ interface Ctx { leadId: string; empresaId: string | null; nome: string; empresa:
 async function contexto(leadId: string, cobrancaId?: string, tipo?: TipoEnvio): Promise<Ctx> {
   const r = await pool.query(
     `SELECT l.id, l.nome, l.whatsapp, l.email, l.valor_honorario, l.empresa_id, to_char(l.honorario_vencimento,'YYYY-MM-DD') AS honorario_vencimento,
+            l.fin_resp_nome, l.fin_resp_email, l.fin_resp_whatsapp,
             c.emp_nome, c.cli_nome_completo, c.emp_telefone, c.emp_email
        FROM leads l LEFT JOIN clientes c ON c.lead_id = l.id WHERE l.id = $1`, [leadId]
   )
@@ -105,8 +106,9 @@ async function contexto(leadId: string, cobrancaId?: string, tipo?: TipoEnvio): 
   }
   return {
     leadId, empresaId: l.empresa_id,
-    nome: primeiroNome(l.cli_nome_completo || l.nome), empresa: l.emp_nome || l.nome,
-    whatsapp: soDigitos(l.whatsapp || l.emp_telefone), email: l.emp_email || l.email || '',
+    // Destinatário = responsável pelo financeiro (cadastro da seção Financeiro); sem ele, o contato de sempre
+    nome: primeiroNome(l.fin_resp_nome || l.cli_nome_completo || l.nome), empresa: l.emp_nome || l.nome,
+    whatsapp: soDigitos(l.fin_resp_whatsapp || l.whatsapp || l.emp_telefone), email: l.fin_resp_email || l.emp_email || l.email || '',
     cobrancaId: cob?.id ?? null, valor: Number(cob?.valor ?? l.valor_honorario ?? 0),
     venc, ref: referenciaDe(mesVenc)?.extenso ?? '', link: cob?.invoice_url || '', pix,
   }

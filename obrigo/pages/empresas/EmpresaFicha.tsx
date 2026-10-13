@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { api, ApiError, getAccessToken } from '../../lib/api';
 import { useAuth, temPermissao } from '../../lib/auth';
-import { Spinner, useToast } from '../../components/ui';
+import { Spinner, useToast, CampoSenha } from '../../components/ui';
 import type {
   EmpresaDetalhe, Tag, Departamento, UsuarioBasico, GrupoEmpresa, TarefaAgendada, Regime, Contato, Filial,
 } from '../../lib/tipos';
@@ -1139,7 +1139,7 @@ function SecAnexos({ empresa, departamentos, onMudou }: { empresa: EmpresaDetalh
       <div className="flex flex-wrap items-end gap-2 rounded border border-slate-200 bg-slate-50 p-2">
         <div className="min-w-[220px] flex-1">
           <label className={LBL}>Senha do certificado digital da empresa (e-CNPJ)</label>
-          <input className={INP} type="password" disabled={!podeEditar} value={certSenha} onChange={(e) => setCertSenha(e.target.value)} placeholder="anexe o certificado abaixo e guarde a senha aqui" />
+          <CampoSenha className={INP} disabled={!podeEditar} value={certSenha} onChange={setCertSenha} placeholder="anexe o certificado abaixo e guarde a senha aqui" />
         </div>
         {podeEditar && <button onClick={salvarCert} disabled={salvandoCert} className="rounded bg-status-ok px-4 py-2 text-sm font-medium text-white hover:bg-emerald-600 disabled:opacity-50">{salvandoCert ? '...' : 'Salvar senha'}</button>}
       </div>

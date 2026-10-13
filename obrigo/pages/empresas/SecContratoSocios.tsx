@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Save, Plus, Trash2 } from 'lucide-react';
 import { api, ApiError } from '../../lib/api';
-import { useToast } from '../../components/ui';
+import { useToast, CampoSenha } from '../../components/ui';
 import type { EmpresaDetalhe, Socio } from '../../lib/tipos';
 
 // Seção "Contrato, imóveis e sócios" — dados que vieram do cadastro do ERP (Nauta/Atuan)
@@ -90,8 +90,8 @@ export default function SecContratoSocios({ empresa, podeEditar, onMudou }: { em
               <div className="mt-2 grid grid-cols-1 gap-3 md:grid-cols-[1.5fr_1fr_1fr_1fr]">
                 <div><label className={LBL}>E-mail</label><input className={INP} disabled={ro} value={s(x.email)} onChange={(e) => setSocio(i, 'email', e.target.value)} /></div>
                 <div><label className={LBL}>Telefone</label><input className={INP} disabled={ro} value={s(x.telefone)} onChange={(e) => setSocio(i, 'telefone', e.target.value)} /></div>
-                <div><label className={LBL}>Senha gov.br</label><input className={INP} disabled={ro} type="password" value={s(x.senhaGov)} onChange={(e) => setSocio(i, 'senhaGov', e.target.value)} /></div>
-                <div><label className={LBL}>Senha do certificado</label><input className={INP} disabled={ro} type="password" value={s(x.certSenha)} onChange={(e) => setSocio(i, 'certSenha', e.target.value)} /></div>
+                <div><label className={LBL}>Senha gov.br</label><CampoSenha className={INP} disabled={ro} value={s(x.senhaGov)} onChange={(v) => setSocio(i, 'senhaGov', v)} /></div>
+                <div><label className={LBL}>Senha do certificado</label><CampoSenha className={INP} disabled={ro} value={s(x.certSenha)} onChange={(v) => setSocio(i, 'certSenha', v)} /></div>
               </div>
               <div className="mt-2 grid grid-cols-1 gap-3 md:grid-cols-[0.8fr_2fr_1.2fr_1.2fr]">
                 <div><label className={LBL}>CEP</label><input className={INP} disabled={ro} inputMode="numeric" placeholder="00000-000" value={s(x.cep)} onChange={(e) => setSocio(i, 'cep', fmtCep(e.target.value))} onBlur={(e) => buscarCepSocio(i, e.target.value)} /></div>

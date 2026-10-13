@@ -6,6 +6,27 @@ import {
   useState,
   type ReactNode,
 } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
+
+// ---------- Campo de senha com "olho" (mostrar/ocultar) ----------
+// Senhas de clientes (gov.br, certificado) precisam ser consultadas pela equipe — começa oculta.
+export function CampoSenha({ className, value, onChange, disabled, placeholder }: {
+  className: string; value: string; onChange: (v: string) => void; disabled?: boolean; placeholder?: string;
+}) {
+  const [ver, setVer] = useState(false);
+  return (
+    <div className="relative">
+      <input className={`${className} pr-8`} type={ver ? 'text' : 'password'} disabled={disabled} value={value}
+        onChange={(e) => onChange(e.target.value)} placeholder={placeholder} autoComplete="off" />
+      {value && (
+        <button type="button" onClick={() => setVer((v) => !v)} title={ver ? 'Ocultar senha' : 'Mostrar senha'}
+          className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-marca-600">
+          {ver ? <EyeOff size={15} /> : <Eye size={15} />}
+        </button>
+      )}
+    </div>
+  );
+}
 
 // ---------- Spinner ----------
 export function Spinner({ texto = 'Carregando...' }: { texto?: string }) {

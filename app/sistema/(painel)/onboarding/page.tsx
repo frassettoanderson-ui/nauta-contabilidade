@@ -323,7 +323,7 @@ function ConcluirModal({ cliente, onClose, onConfirm }: {
   onConfirm: (valor: number | null, vencimento: string) => Promise<void>
 }) {
   const [valor, setValor] = useState(cliente.valor_honorario != null ? String(cliente.valor_honorario) : '')
-  const [venc, setVenc] = useState('')
+  const [venc, setVenc] = useState(cliente.honorario_vencimento ?? '') // vem do comercial; vazio só se não cadastrado
   const [saving, setSaving] = useState(false)
 
   const FS = { background: 'var(--sys-surface-3)', border: '1px solid var(--sys-border-2)' }

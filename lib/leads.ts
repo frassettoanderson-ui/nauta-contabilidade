@@ -256,6 +256,8 @@ export async function getOnboardingBoard(empresaId: string): Promise<OnboardingC
       email: l.email,
       interesse: l.interesse,
       valor_honorario: l.valor_honorario ?? null,
+      // 1º honorário cadastrado pelo comercial (pré-preenche o "Concluir onboarding")
+      honorario_vencimento: l.honorario_vencimento ? (l.honorario_vencimento instanceof Date ? ymdLocal(l.honorario_vencimento) : String(l.honorario_vencimento).slice(0, 10)) : null,
       onboarding_categoria: l.onboarding_categoria,
       cliente_id: c ? (c.id as string) : null,
       emp_nome: c ? ((c.emp_nome as string) ?? null) : null,

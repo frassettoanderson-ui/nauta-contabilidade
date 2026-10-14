@@ -327,6 +327,7 @@ export interface OnboardingCliente {
   id: string; nome: string; whatsapp: string; email: string; interesse: string
   valor_honorario: number | string | null
   onboarding_categoria: string | null; cliente_id: string | null
+  honorario_vencimento?: string | null // 'YYYY-MM-DD'
   emp_nome?: string | null
   emp_cnpj?: string | null
   emp_data_abertura?: string | null // 'YYYY-MM-DD' — início de atividade na Receita

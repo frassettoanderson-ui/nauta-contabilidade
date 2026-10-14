@@ -20,10 +20,7 @@ export async function POST(req: NextRequest) {
   const setor = (itemKey.split(':')[0]) as SetorId
   const role = su.role ?? ''
 
-  // Item de cadastro é automático — não pode ser marcado/desmarcado manualmente
-  if (itemKey === ITEM_CADASTRO) {
-    return NextResponse.json({ error: 'Item automático (marca sozinho quando o cadastro fica completo)' }, { status: 409 })
-  }
+  // Item de cadastro: marca sozinho quando o cadastro fica completo, mas também pode ser marcado à mão
 
   // Permissão de cargo
   if (!podeEditarSetor(role, setor)) {

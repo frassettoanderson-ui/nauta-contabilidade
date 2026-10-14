@@ -239,11 +239,12 @@ export default function OnboardingPage() {
                               const done = checks.includes(it.key)
                               const auto = it.key === ITEM_CADASTRO
                               const loading = busy === it.key + c.id
-                              const podeClicar = editavel && !auto
+                              // cadastro: marca sozinho quando completo; à mão também (só não desmarca o automático)
+                              const podeClicar = editavel && !(auto && c.cadastro_completo)
                               return (
                                 <button key={it.key} disabled={!podeClicar || loading}
                                   onClick={() => toggle(c, it.key, !done)}
-                                  title={auto ? 'Marca sozinho quando o cadastro fica completo' : undefined}
+                                  title={auto ? (c.cadastro_completo ? 'Marcado automaticamente: o cadastro está completo' : 'Marca sozinho quando o cadastro fica completo — ou clique para marcar à mão') : undefined}
                                   className="w-full flex items-center gap-2 text-left text-sm rounded-lg px-2 py-1.5 transition-colors disabled:cursor-default"
                                   style={{ background: done ? 'rgba(34,197,94,0.10)' : 'transparent' }}>
                                   <span className="w-4 h-4 rounded flex items-center justify-center shrink-0"

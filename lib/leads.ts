@@ -226,7 +226,7 @@ export async function getOnboardingBoard(empresaId: string): Promise<OnboardingC
     `SELECT l.* FROM leads l
       WHERE l.em_onboarding = true AND COALESCE(l.onboarding_concluido, false) = false
         AND l.empresa_id = $1
-      ORDER BY COALESCE(l.onboarding_iniciado_em, l.criado_em) ASC`,
+      ORDER BY COALESCE(l.onboarding_iniciado_em, l.criado_em) DESC`, // mais novas primeiro (à esquerda)
     [empresaId]
   )
   const leads = res.rows

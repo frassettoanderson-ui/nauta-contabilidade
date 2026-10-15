@@ -31,6 +31,15 @@ export default function OnboardingPage() {
   const [expandidos, setExpandidos] = useState<Set<string>>(new Set())
   // Itens marcados ficam ocultos; o olho do card mostra todos (feitos e pendentes)
   const [verTodos, setVerTodos] = useState<Set<string>>(new Set())
+  // Ordenação dos cards: chegada (padrão = mais recentes) ou andamento (% de itens concluídos). Lembra a escolha.
+  const [ordem, setOrdemState] = useState<string>('recentes')
+  useEffect(() => { try { const v = localStorage.getItem('onb_ordem'); if (v) setOrdemState(v) } catch { /* sem storage */ } }, [])
+  const setOrdem = (v: string) => { setOrdemState(v); try { localStorage.setItem('onb_ordem', v) } catch { /* sem storage */ } }
+  const progresso = (c: OnboardingCliente) => {
+    const ck = checksEfetivos(c.checks, c.cadastro_completo)
+    const todos = SETORES.flatMap(s => itensDoSetor(s.id, c.onboarding_categoria ?? ''))
+    return todos.length ? todos.filter(i => ck.includes(i.key)).length / todos.length : 0
+  }
   const toggleVerTodos = (id: string) => setVerTodos(s => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n })
   const toggleExpandir = (id: string) => setExpandidos(s => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n })
 
@@ -119,8 +128,15 @@ export default function OnboardingPage() {
           </h1>
           <p className="text-gray-500 text-sm mb-6">Clientes em processo. Marque os itens do seu setor conforme conclui.</p>
         </div>
-        {/* Alternador Kanban / Lista (Lista = mesma tela de Empresas, só onboarding) */}
+        {/* Ordenação + alternador Kanban / Lista (Lista = mesma tela de Empresas, só onboarding) */}
         <div className="flex items-center gap-1.5 shrink-0">
+          <select value={ordem} onChange={e => setOrdem(e.target.value)} title="Ordenar os cards"
+            className="rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-[13px] font-semibold text-slate-600 outline-none mr-1.5">
+            <option value="recentes">Chegada: mais recentes primeiro</option>
+            <option value="antigos">Chegada: mais antigos primeiro</option>
+            <option value="mais">Mais processos finalizados</option>
+            <option value="menos">Menos processos finalizados</option>
+          </select>
           <button className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[13px] font-semibold bg-[color:var(--sys-accent)] text-white" title="Ver em Kanban">
             <LayoutGrid size={15} /> Kanban
           </button>
@@ -138,7 +154,10 @@ export default function OnboardingPage() {
         </div>
       ) : (
         <div className="flex gap-5 overflow-x-auto pb-4">
-          {board.map(c => {
+          {(ordem === 'recentes' ? board
+            : ordem === 'antigos' ? [...board].reverse()
+            : [...board].sort((a, b) => (progresso(b) - progresso(a)) * (ordem === 'mais' ? 1 : -1))
+          ).map(c => {
             const cat = c.onboarding_categoria ?? ''
             const checks = checksEfetivos(c.checks, c.cadastro_completo)
             // Setores que pertencem ao usuário (gerente/admin = todos)

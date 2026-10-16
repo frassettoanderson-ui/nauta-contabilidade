@@ -60,6 +60,7 @@ export interface EmpresaLista {
   tags: { id: string; nome: string; cor: string }[];
   qtdContatos: number;
   socioResponsavel?: string | null; // 1º sócio do quadro societário (ou contato Titular)
+  nautaLeadId?: string | null; // lead do ERP (financeiro/cobrança)
 }
 
 export interface GrupoEmpresa {

@@ -18,6 +18,8 @@ import type {
 } from '../../lib/tipos';
 import { formatarIdent } from '../../lib/tipos';
 import { SecComentarios, SecContatos, SecTarefas, SecResponsaveis } from './EmpresaFicha';
+import CobrancaModal from '../../../components/sistema/CobrancaModal';
+import { Receipt } from 'lucide-react';
 
 interface Pagina {
   items: EmpresaLista[];
@@ -82,6 +84,8 @@ export default function EmpresasList() {
   const [comboTxt, setComboTxt] = useState('');
   const [comboAberto, setComboAberto] = useState(false);
   const [chips, setChips] = useState<ChipF[]>([]);
+  // Popup "Cadastrar Cobrança" (copia a mensagem 🧾 NOVA COBRANÇA p/ o WhatsApp)
+  const [cobrancaEmp, setCobrancaEmp] = useState<EmpresaLista | null>(null);
   const [contabilidade, setContabilidade] = useState<'' | 'atuan' | 'nauta'>('');
   const [ordenar, setOrdenar] = useState<OrdenarCampo>('razao');
   const [dir, setDir] = useState<'asc' | 'desc'>('asc');
@@ -252,6 +256,9 @@ export default function EmpresasList() {
 
   return (
     <div className="-m-6 min-h-full bg-fundo p-5 text-[13px]">
+      {cobrancaEmp?.nautaLeadId && (
+        <CobrancaModal leadId={cobrancaEmp.nautaLeadId} nome={cobrancaEmp.razaoSocial} cnpj={cobrancaEmp.cnpj ? formatarIdent('CNPJ', cobrancaEmp.cnpj) : undefined} onClose={() => setCobrancaEmp(null)} />
+      )}
       {/* Cabecalho */}
       <div className="mb-3 flex items-center justify-between">
         <div className="flex items-center gap-2 text-slate-500">
@@ -523,6 +530,7 @@ export default function EmpresasList() {
                       <button title="Contatos" onClick={() => togglePainel(e.id, 'contatos')} className={`hover:opacity-70 ${expandido?.id === e.id && expandido.painel === 'contatos' ? 'text-roxo-500 ring-2 ring-roxo-500/40 rounded' : 'text-roxo-500'}`}><Users size={15} /></button>
                       <button title="Responsaveis pelos departamentos" onClick={() => togglePainel(e.id, 'resp')} className={`hover:opacity-70 ${expandido?.id === e.id && expandido.painel === 'resp' ? 'text-marca-600 ring-2 ring-marca-600/40 rounded' : 'text-marca-600'}`}><Network size={15} /></button>
                       <button title="Imprimir ficha (PDF)" onClick={() => imprimirFicha(e)} disabled={imprimindoId === e.id} className="text-slate-500 hover:opacity-70 disabled:opacity-50">{imprimindoId === e.id ? <Loader2 size={15} className="animate-spin" /> : <Printer size={15} />}</button>
+                      {e.nautaLeadId && <button title="Cadastrar Cobrança (copia a mensagem p/ o WhatsApp)" onClick={() => setCobrancaEmp(e)} className="text-status-ok hover:opacity-70"><Receipt size={15} /></button>}
                       {!onboardingMode && <button title="Devolver ao Onboarding" onClick={() => reabrirOnboarding(e)} disabled={reabrindoId === e.id} className="text-marca-500 hover:opacity-70 disabled:opacity-50">{reabrindoId === e.id ? <Loader2 size={15} className="animate-spin" /> : <Rocket size={15} />}</button>}
                     </div>
                   </td>

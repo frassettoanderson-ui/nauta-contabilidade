@@ -2,6 +2,8 @@
 // conclusão de onboarding) para a Empresa correspondente. Server-to-server, fire-and-forget:
 // nunca bloqueia nem quebra o fluxo do ERP — falha só vai pro log.
 import pool from './db'
+import path from 'path'
+import { readFile } from 'fs/promises'
 import { empresaAtivaId } from './tenant'
 
 const OBRIGO_API = (process.env.OBRIGO_API_URL || 'http://127.0.0.1:4002').replace(/\/$/, '')
@@ -73,12 +75,22 @@ export async function anexarContratoAssinadoDoLead(leadId: string): Promise<bool
     const assinado: string | null = row.autentique_url || row.assinado_url || null
     const url: string | null = assinado || row.pdf_url || null
     if (!url) return false
-    const abs = url.startsWith('http') ? url : `${process.env.NEXTAUTH_URL || 'http://127.0.0.1:3000'}${url}`
-    const resp = await fetch(abs)
-    if (!resp.ok) { console.error('[obrigo-sync] baixar contrato assinado', resp.status); return false }
-    const buf = Buffer.from(await resp.arrayBuffer())
-    const mime = resp.headers.get('content-type') || 'application/pdf'
-    return await anexarNoObrigo(row.cliente_id, assinado ? 'Contrato assinado.pdf' : 'Contrato.pdf', mime, buf)
+    let buf: Buffer, mime: string
+    const local = /^\/api\/sistema\/arquivo\/([^/?#]+)$/.exec(url)
+    if (local) {
+      // arquivo guardado no próprio ERP (uploads-private) — lê do disco (a rota exige login)
+      const nome = path.basename(decodeURIComponent(local[1]))
+      buf = await readFile(path.join(process.cwd(), 'uploads-private', nome))
+      const ext = path.extname(nome).toLowerCase()
+      mime = ext === '.pdf' ? 'application/pdf' : ext === '.png' ? 'image/png' : ext === '.jpg' || ext === '.jpeg' ? 'image/jpeg' : 'application/octet-stream'
+    } else {
+      const resp = await fetch(url.startsWith('http') ? url : `${process.env.NEXTAUTH_URL || 'http://127.0.0.1:3000'}${url}`)
+      if (!resp.ok) { console.error('[obrigo-sync] baixar contrato assinado', resp.status); return false }
+      buf = Buffer.from(await resp.arrayBuffer())
+      mime = resp.headers.get('content-type') || 'application/pdf'
+    }
+    const ext = mime.includes('png') ? 'png' : mime.includes('jpeg') ? 'jpg' : 'pdf'
+    return await anexarNoObrigo(row.cliente_id, `${assinado ? 'Contrato assinado' : 'Contrato'}.${ext}`, mime, buf)
   } catch (e) {
     console.error('[obrigo-sync] anexarContratoAssinadoDoLead', leadId, (e as Error).message)
     return false

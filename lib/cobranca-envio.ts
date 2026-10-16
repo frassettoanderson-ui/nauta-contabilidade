@@ -4,6 +4,7 @@ import { getOrCreatePixAuto } from './pix-automatico'
 import { pixDaCobranca } from './asaas'
 import { calcStatusFinanceiro, vencimentoAjustado } from './financeiro-calc'
 import { referenciaDe } from './referencia'
+import { gerarCobrancaAtraso } from './asaas'
 import { MODELOS_COBRANCA, preencherModelo } from './cobranca-modelos'
 
 // ─── Régua de cobrança pelos canais da Nauta ─────────────────────────────────
@@ -14,7 +15,7 @@ import { MODELOS_COBRANCA, preencherModelo } from './cobranca-modelos'
 // Proteção do chip: 3 variações de texto sorteadas, intervalo entre envios, horário comercial.
 
 // 'disponivel' = aviso de que a fatura foi gerada (disparo inicial); substitui o lembrete D-3 daquela cobrança.
-export type TipoEnvio = 'disponivel' | 'lembrete' | 'vencimento' | 'atraso'
+export type TipoEnvio = 'disponivel' | 'lembrete' | 'vencimento' | 'atraso' | 'prometido'
 const RAND = <T,>(arr: T[]) => arr[Math.floor(Math.random() * arr.length)]
 
 // Texto principal (sem o PIX/boleto embutidos — eles vão em mensagens separadas,
@@ -37,6 +38,12 @@ const MENSAGENS: Record<TipoEnvio, string[]> = {
     '{saudacao} {nome}!!!\n\nSeu Honorário está disponível para pagamento hoje 😉\n\nVencimento: *{venc}* 📅\nValor: *{valor}* 💰\n\nLogo abaixo deixo a chave PIX e o Boleto para você escolher como pagar!\n\nSe já efetuou o pagamento, pode desconsiderar. Um ótimo mês!!',
     '{saudacao} {nome}!!!\n\nPassando para avisar que seu Honorário vence hoje 🙏\n\nDia *{venc}* 📅 · no valor de *{valor}* 💰\n\nSegue abaixo a chave PIX e o Boleto para pagar da forma que preferir!\n\nAgradecemos a parceria e desejamos um excelente mês!!',
   ],
+  // Prazo prometido no acionamento: no dia combinado, link com valor reajustado (multa + juros)
+  prometido: [
+    '{saudacao} {nome}!!!\n\nConforme combinado, segue para pagamento o seu Honorário 😊\n\nVencimento original: *{venc}* 📅\nValor atualizado: *{valor}* 💰 (com multa e juros)\n\nAbaixo a chave PIX e o Boleto para pagar conforme sua preferência!\n\nAgradecemos a parceria!!',
+    '{saudacao} {nome}!!!\n\nConforme combinado, segue para pagamento 🙏\n\nHonorário vencido em *{venc}* 📅\nValor atualizado: *{valor}* 💰 (multa e juros incluídos)\n\nLogo abaixo deixo a chave PIX e o Boleto para facilitar!\n\nObrigado pela parceria!!',
+    '{saudacao} {nome}!!!\n\nConforme combinado, segue o link para pagamento do seu Honorário 😉\n\nVencimento original: *{venc}* 📅 · valor atualizado *{valor}* 💰 (com multa e juros)\n\nSegue abaixo a chave PIX e o Boleto!\n\nAgradecemos a confiança!!',
+  ],
   atraso: [
     '{saudacao} {nome}!!!\n\nNotamos que seu Honorário ainda consta em aberto 🙏\n\nVenceu dia *{venc}* 📅\nno valor de *{valor}* 💰\n\nSegue abaixo a chave PIX e Boleto para regularizar. Se já pagou, pode desconsiderar!\n\nContamos com você e agradecemos a parceria!!',
     '{saudacao} {nome}!!!\n\nSeu Honorário está pendente por aqui 😊\n\nVencimento era dia *{venc}* 📅\nvalor de *{valor}* 💰\n\nDeixo abaixo a chave PIX e o Boleto para facilitar. Se já efetuou, nos envia o comprovante?\n\nObrigado pela parceria!!',
@@ -49,6 +56,7 @@ const ASSUNTO: Record<TipoEnvio, string> = {
   lembrete: 'Honorário {empresa} — vence em {venc}',
   vencimento: 'Honorário {empresa} — vence hoje',
   atraso: 'Honorário {empresa} — em aberto desde {venc}',
+  prometido: 'Honorário {empresa} — conforme combinado, segue para pagamento',
 }
 
 const brl = (n: number) => `R$ ${Number(n || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
@@ -89,7 +97,7 @@ async function contexto(leadId: string, cobrancaId?: string, tipo?: TipoEnvio): 
   // Mês dos serviços (referência) = mês anterior ao do vencimento da mensalidade
   let mesVenc: string | null = cob?.competencia ?? null
   // Link do atraso (cobrança de mês passado com vencimento novo): na mensagem vale o vencimento ORIGINAL
-  if (tipo === 'atraso' && cob?.competencia && l.honorario_vencimento && String(cob.vencimento || '') >= new Date().toLocaleDateString('sv-SE')) {
+  if ((tipo === 'atraso' || tipo === 'prometido') && cob?.competencia && l.honorario_vencimento && String(cob.vencimento || '') >= new Date().toLocaleDateString('sv-SE')) {
     const dia = Number(String(l.honorario_vencimento).slice(8, 10))
     const y = Number(cob.competencia.slice(0, 4)), m = Number(cob.competencia.slice(5, 7))
     venc = dataBR(`${y}-${String(m).padStart(2, '0')}-${String(Math.min(dia, new Date(y, m, 0).getDate())).padStart(2, '0')}`)
@@ -238,6 +246,8 @@ export async function rodarRegua(opts: { hoje?: Date; intervaloMs?: [number, num
     { tipo: 'lembrete', data: d(3) }, { tipo: 'vencimento', data: d(0) }, { tipo: 'atraso', data: d(-3) },
   ]
   const enviados: { leadId: string; empresa: string; tipo: TipoEnvio; ok: boolean; erro?: string }[] = []
+  // Prazos prometidos que chegaram hoje (ou caíram no domingo): link reajustado "conforme combinado"
+  const prometidos = opts.dryRun ? [] : await processarPrazosPrometidos().catch(e => [{ leadId: '', empresa: '', ok: false, erro: (e as Error).message }])
   for (const a of alvos) {
     const r = await pool.query(
       `SELECT fc.id AS cobranca_id, fc.lead_id, COALESCE(c.emp_nome, l.nome) AS empresa
@@ -263,7 +273,7 @@ export async function rodarRegua(opts: { hoje?: Date; intervaloMs?: [number, num
       await sleep(min + Math.random() * (max - min))
     }
   }
-  return { data: d(0), enviados }
+  return { data: d(0), enviados, prometidos }
 }
 
 // ── Disparo "fatura disponível" ──────────────────────────────────────────────
@@ -444,4 +454,37 @@ export async function enviarServicoAvulso(leadId: string, cobrancaId: string) {
   }
   emitCrmChange()
   return { envios: out }
+}
+
+// ── Prazo prometido (acionamento na tela de Cobrança) ───────────────────────
+// No dia do prazo (ou no 1º dia de régua depois, até 7 dias), se o cliente continua em atraso:
+// atualiza o boleto do mês em aberto com multa + juros até hoje, vencendo hoje, e envia
+// "Conforme combinado, segue para pagamento" (WhatsApp + e-mail, com PIX e boleto). 1 envio por prazo.
+export async function processarPrazosPrometidos() {
+  const r = await pool.query(
+    `SELECT DISTINCT ON (e.lead_id) e.id, e.lead_id, COALESCE(c.emp_nome, l.nome) AS empresa, COALESCE(l.contabilidade, 'atuan') AS contab,
+            to_char(l.honorario_vencimento,'YYYY-MM-DD') AS v1
+       FROM financeiro_eventos e JOIN leads l ON l.id = e.lead_id LEFT JOIN clientes c ON c.lead_id = l.id
+      WHERE e.prazo_pagamento IS NOT NULL AND e.prazo_enviado_em IS NULL
+        AND e.prazo_pagamento <= current_date AND e.prazo_pagamento >= current_date - 7
+      ORDER BY e.lead_id, e.prazo_pagamento DESC, e.criado_em DESC`
+  )
+  const out: { leadId: string; empresa: string; ok: boolean; erro?: string }[] = []
+  for (const row of r.rows) {
+    const marcar = () => pool.query(`UPDATE financeiro_eventos SET prazo_enviado_em = now() WHERE lead_id = $1 AND prazo_pagamento IS NOT NULL AND prazo_enviado_em IS NULL AND prazo_pagamento <= current_date`, [row.lead_id])
+    try {
+      if (row.contab === 'nauta') { await marcar(); continue } // Nauta: cobrança manual
+      const pagos = new Set((await pool.query(`SELECT to_char(competencia,'YYYY-MM') AS c FROM financeiro_pagamentos WHERE lead_id = $1 AND pago_em IS NOT NULL`, [row.lead_id])).rows.map(x => String(x.c)))
+      const st = row.v1 ? calcStatusFinanceiro(row.v1, pagos) : null
+      if (!st || st.status !== 'atrasado') { await marcar(); continue } // já pagou
+      const c = await gerarCobrancaAtraso(String(row.lead_id), 0)
+      const cob = (await pool.query(`SELECT id FROM financeiro_cobrancas WHERE asaas_payment_id = $1`, [c.asaas_payment_id])).rows[0]
+      const res = await enviarCobranca(String(row.lead_id), 'prometido', cob?.id ? String(cob.id) : undefined)
+      await marcar()
+      const w = res.envios.find(x => x.canal === 'whatsapp') ?? res.envios[0]
+      out.push({ leadId: String(row.lead_id), empresa: row.empresa, ok: !!w?.ok, erro: w?.erro })
+    } catch (e) { out.push({ leadId: String(row.lead_id), empresa: row.empresa, ok: false, erro: (e as Error).message }) }
+    await sleep(45000 + Math.random() * 30000)
+  }
+  return out
 }

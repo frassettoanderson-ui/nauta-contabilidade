@@ -642,6 +642,7 @@ function CobrancaModal({ row, onClose, onChanged }: { row: Row; onClose: () => v
 // Rótulo do último envio (régua, link ou cobrança manual "cobranca_N")
 function rotuloEnvio(tipo: string) {
   if (tipo === 'disponivel') return 'disponível'
+  if (tipo === 'prometido') return 'prazo prometido'
   const m = /^cobranca_(\d)$/.exec(tipo)
   return m ? `cobrança nível ${m[1]}` : tipo
 }

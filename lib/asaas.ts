@@ -406,7 +406,7 @@ export async function desfazerQuitacaoAsaas(leadId: string, competencia: string)
 // desde o vencimento original. A competência fica gravada → o pagamento quita o mês certo.
 export const MULTA_ATRASO = 0.02
 export const JUROS_MES_ATRASO = 0.01
-export async function gerarCobrancaAtraso(leadId: string) {
+export async function gerarCobrancaAtraso(leadId: string, diasVencimento = 3) {
   const d = await dadosLead(leadId)
   if ((d.contabilidade || 'atuan') === 'nauta') throw new Error('Cliente da Nauta Contabilidade — cobrança manual')
   const hon = Number(d.valor_honorario)
@@ -420,7 +420,7 @@ export async function gerarCobrancaAtraso(leadId: string) {
   const vencOrig = st.proximoVencimento // 1º mês vencido e não pago
   const comp = `${vencOrig.getFullYear()}-${String(vencOrig.getMonth() + 1).padStart(2, '0')}-01`
 
-  const due = new Date(); due.setHours(0, 0, 0, 0); due.setDate(due.getDate() + 3)
+  const due = new Date(); due.setHours(0, 0, 0, 0); due.setDate(due.getDate() + diasVencimento)
   const dias = Math.max(0, Math.round((due.getTime() - new Date(vencOrig.getFullYear(), vencOrig.getMonth(), vencOrig.getDate()).getTime()) / 86400000))
   const multa = +(hon * MULTA_ATRASO).toFixed(2)
   const juros = +(hon * JUROS_MES_ATRASO * dias / 30).toFixed(2)

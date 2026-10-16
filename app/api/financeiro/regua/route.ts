@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import pool from '@/lib/db'
 import { rodarRegua, alvosDisponivel, dispararDisponiveis, statusDisparo, enviarCobranca, type TipoEnvio } from '@/lib/cobranca-envio'
 import { sincronizarTodos } from '@/lib/asaas'
+import { anexarContratoAssinadoDoLead } from '@/lib/obrigo-sync'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 300
@@ -20,6 +21,13 @@ export async function POST(req: NextRequest) {
   const acao = sp.get('acao') || 'regua'
   try {
     if (acao === 'status') return NextResponse.json({ disparo: statusDisparo() })
+    // ?acao=anexar-contratos → anexa na ficha (Arquivos anexos) o contrato assinado de cada cliente (substitui o de mesmo nome)
+    if (acao === 'anexar-contratos') {
+      const r = await pool.query(`SELECT DISTINCT lead_id FROM contratos WHERE status = 'assinado' AND cliente_id IS NOT NULL AND lead_id IS NOT NULL`)
+      let ok = 0; const falhas: string[] = []
+      for (const row of r.rows) { if (await anexarContratoAssinadoDoLead(String(row.lead_id))) ok++; else falhas.push(String(row.lead_id)) }
+      return NextResponse.json({ total: r.rows.length, anexados: ok, falhas })
+    }
     if (acao === 'sincronizar') {
       const emp = await pool.query(`SELECT DISTINCT empresa_id FROM leads WHERE financeiro_ativo = true AND valor_honorario > 0 AND empresa_id IS NOT NULL`)
       const resultados = []

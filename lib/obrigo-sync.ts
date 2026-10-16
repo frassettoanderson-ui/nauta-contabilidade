@@ -42,9 +42,9 @@ async function ensureClienteForLead(leadId: string): Promise<string | null> {
 }
 
 // Anexa um arquivo (contrato assinado, comprovante) aos Arquivos anexos da empresa do Obrigô.
-export async function anexarNoObrigo(nautaClienteId: string, nomeArquivo: string, mime: string, buffer: Buffer): Promise<void> {
+export async function anexarNoObrigo(nautaClienteId: string, nomeArquivo: string, mime: string, buffer: Buffer): Promise<boolean> {
   const secret = process.env.SSO_GESTOROA_SECRET
-  if (!secret || !nautaClienteId || !buffer?.length) return
+  if (!secret || !nautaClienteId || !buffer?.length) return false
   try {
     const fd = new FormData()
     fd.append('nautaClienteId', nautaClienteId)
@@ -53,30 +53,35 @@ export async function anexarNoObrigo(nautaClienteId: string, nomeArquivo: string
     const r = await fetch(`${OBRIGO_API}/api/v1/interno/anexo-from-nauta`, {
       method: 'POST', headers: { 'x-internal-secret': secret }, body: fd,
     })
-    if (!r.ok) console.error('[obrigo-sync] anexo resposta', r.status, await r.text().catch(() => ''))
+    if (!r.ok) { console.error('[obrigo-sync] anexo resposta', r.status, await r.text().catch(() => '')); return false }
+    return true
   } catch (e) {
     console.error('[obrigo-sync] falha ao anexar', nautaClienteId, (e as Error).message)
+    return false
   }
 }
 
 // Anexa o contrato assinado de um contrato do ERP (por lead): baixa o PDF assinado e envia ao Obrigô.
-export async function anexarContratoAssinadoDoLead(leadId: string): Promise<void> {
+// Sem PDF assinado (ex.: assinatura manual sem upload), anexa o PDF gerado pelo sistema.
+export async function anexarContratoAssinadoDoLead(leadId: string): Promise<boolean> {
   try {
     const r = await pool.query(
-      `SELECT cliente_id, autentique_url, assinado_url FROM contratos
-        WHERE lead_id = $1 ORDER BY atualizado_em DESC NULLS LAST LIMIT 1`, [leadId])
+      `SELECT cliente_id, autentique_url, assinado_url, pdf_url FROM contratos
+        WHERE lead_id = $1 AND status = 'assinado' ORDER BY atualizado_em DESC NULLS LAST LIMIT 1`, [leadId])
     const row = r.rows[0]
-    if (!row?.cliente_id) return
-    const url: string | null = row.autentique_url || row.assinado_url || null
-    if (!url) return
+    if (!row?.cliente_id) return false
+    const assinado: string | null = row.autentique_url || row.assinado_url || null
+    const url: string | null = assinado || row.pdf_url || null
+    if (!url) return false
     const abs = url.startsWith('http') ? url : `${process.env.NEXTAUTH_URL || 'http://127.0.0.1:3000'}${url}`
     const resp = await fetch(abs)
-    if (!resp.ok) { console.error('[obrigo-sync] baixar contrato assinado', resp.status); return }
+    if (!resp.ok) { console.error('[obrigo-sync] baixar contrato assinado', resp.status); return false }
     const buf = Buffer.from(await resp.arrayBuffer())
     const mime = resp.headers.get('content-type') || 'application/pdf'
-    await anexarNoObrigo(row.cliente_id, 'Contrato assinado.pdf', mime, buf)
+    return await anexarNoObrigo(row.cliente_id, assinado ? 'Contrato assinado.pdf' : 'Contrato.pdf', mime, buf)
   } catch (e) {
     console.error('[obrigo-sync] anexarContratoAssinadoDoLead', leadId, (e as Error).message)
+    return false
   }
 }
 

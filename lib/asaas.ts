@@ -412,19 +412,39 @@ export async function gerarCobrancaAtraso(leadId: string) {
   const vencOrig = st.proximoVencimento // 1º mês vencido e não pago
   const comp = `${vencOrig.getFullYear()}-${String(vencOrig.getMonth() + 1).padStart(2, '0')}-01`
 
-  // Já existe cobrança (assinatura ou link anterior) para esse mês ainda em aberto? Reaproveita.
-  const ja = await pool.query(
-    `SELECT asaas_payment_id, invoice_url, valor, to_char(vencimento,'YYYY-MM-DD') AS vencimento FROM financeiro_cobrancas
-      WHERE lead_id = $1 AND competencia = $2::date AND status IN ('PENDING','OVERDUE') ORDER BY vencimento DESC LIMIT 1`, [leadId, comp]
-  )
-  if (ja.rows[0]) return { leadId, competencia: comp, reaproveitada: true, ...ja.rows[0] }
-
   const due = new Date(); due.setHours(0, 0, 0, 0); due.setDate(due.getDate() + 3)
   const dias = Math.max(0, Math.round((due.getTime() - new Date(vencOrig.getFullYear(), vencOrig.getMonth(), vencOrig.getDate()).getTime()) / 86400000))
   const multa = +(hon * MULTA_ATRASO).toFixed(2)
   const juros = +(hon * JUROS_MES_ATRASO * dias / 30).toFixed(2)
   const valor = +(hon + multa + juros).toFixed(2)
   const compBR = `${comp.slice(5, 7)}/${comp.slice(0, 4)}`
+
+  // Já existe cobrança (assinatura ou link anterior) desse mês em aberto? Atualiza o próprio boleto
+  // com os valores do dia (multa + juros) e vencimento em 3 dias — não cria outro. Se já foi
+  // atualizado hoje e ainda vale, só reaproveita.
+  const ja = (await pool.query(
+    `SELECT id, asaas_payment_id, invoice_url, valor, to_char(vencimento,'YYYY-MM-DD') AS vencimento, (atualizado_em::date = current_date) AS hoje
+       FROM financeiro_cobrancas
+      WHERE lead_id = $1 AND competencia = $2::date AND status IN ('PENDING','OVERDUE') AND asaas_payment_id IS NOT NULL
+      ORDER BY vencimento DESC LIMIT 1`, [leadId, comp]
+  )).rows[0]
+  if (ja) {
+    if (ja.hoje && ja.vencimento >= ymd(new Date())) return { leadId, competencia: comp, reaproveitada: true, ...ja }
+    const up = await api<AsaasPayment>(`/payments/${ja.asaas_payment_id}`, {
+      method: 'PUT',
+      body: JSON.stringify({
+        value: valor, dueDate: ymd(due),
+        description: `Honorários contábeis — ${d.emp_nome || d.nome} — referente a ${referenciaDe(comp)?.extenso ?? compBR} (venc. original ${vencOrig.toLocaleDateString('pt-BR')}; em atraso: honorário ${hon.toFixed(2)} + multa ${multa.toFixed(2)} + juros ${juros.toFixed(2)})`,
+        fine: { value: MULTA_ATRASO * 100 }, interest: { value: JUROS_MES_ATRASO * 100 },
+      }),
+    })
+    await pool.query(
+      `UPDATE financeiro_cobrancas SET valor = $2, vencimento = $3, status = 'PENDING', invoice_url = COALESCE($4, invoice_url), atualizado_em = now() WHERE id = $1`,
+      [ja.id, valor, ymd(due), up.invoiceUrl ?? null]
+    )
+    emitCrmChange()
+    return { leadId, competencia: comp, reaproveitada: false, atualizada: true, asaas_payment_id: ja.asaas_payment_id, invoice_url: up.invoiceUrl ?? ja.invoice_url, valor, vencimento: ymd(due), honorario: hon, multa, juros, dias }
+  }
   const customerId = await ensureCustomer(d)
   const p = await api<AsaasPayment>('/payments', {
     method: 'POST',

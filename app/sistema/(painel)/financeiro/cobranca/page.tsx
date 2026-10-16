@@ -5,7 +5,8 @@ import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { Loader2, Search, DollarSign, MessageCircle, X, Plus, Trash2, Phone, Mail, Smartphone, CalendarClock, ChevronUp, ChevronDown, ChevronsUpDown, ExternalLink, RefreshCw, Send, Copy, Zap, AlertTriangle, Check, Link2 } from 'lucide-react'
 import { referenciaDe } from '@/lib/referencia'
-import { listFinanceiro, listPagamentos, addPagamento, deletePagamento, listEventos, addEvento, asaasResumo, asaasSincronizar, asaasGerarAtraso, enviosResumo, enviarCobrancaAgora, listEnviosCobranca, gerarPixAutomatico, getPixAutomatico, cancelarPixAutomatico, type PagamentoRow, type EventoRow, type AsaasResumo, type AsaasResumoItem, type EnviosResumo, type EnvioRow, type PixAutoRow, type TipoEnvioCobranca } from '@/lib/api'
+import { MODELOS_COBRANCA, preencherModelo } from '@/lib/cobranca-modelos'
+import { listFinanceiro, listPagamentos, addPagamento, deletePagamento, listEventos, addEvento, asaasResumo, asaasSincronizar, asaasEnviarLink, cobrarComModelo, cobrarTodosComModelo, enviosResumo, enviarCobrancaAgora, listEnviosCobranca, gerarPixAutomatico, getPixAutomatico, cancelarPixAutomatico, type PagamentoRow, type EventoRow, type AsaasResumo, type AsaasResumoItem, type EnviosResumo, type EnvioRow, type PixAutoRow, type TipoEnvioCobranca } from '@/lib/api'
 
 type Row = Record<string, unknown>
 const s = (v: unknown) => String(v ?? '')
@@ -53,6 +54,8 @@ export default function FinanceiroPage() {
   const [enviando, setEnviando] = useState<string | null>(null)
   const [pago, setPago] = useState<Row | null>(null)
   const [gerando, setGerando] = useState<string | null>(null)
+  // Popup de cobrança: um cliente (row) ou todos ('todos')
+  const [cobrar, setCobrar] = useState<Row | 'todos' | null>(null)
 
   const load = useCallback(() => {
     listFinanceiro().then(setRows).catch(() => setRows([]))
@@ -72,22 +75,21 @@ export default function FinanceiroPage() {
     } catch (e) { alert('Envio: ' + ((e as Error).message || 'erro')) }
     finally { setEnviando(null) }
   }
-  // Link do honorário atrasado (mês sem boleto Asaas): cobrança avulsa c/ multa e juros, vence em 3 dias
-  async function gerarLinkAtraso(r: Row) {
+  // "Enviar link": atualiza (ou gera) o boleto do mês atrasado com multa + juros do dia, vencendo em
+  // 3 dias, e já envia ao cliente por WhatsApp/e-mail com PIX e boleto.
+  async function enviarLinkAtraso(r: Row) {
     const lid = s(r.lead_id)
     const nome = s(r.emp_nome) || s(r.lead_nome)
-    if (!confirm(`Gerar no Asaas o link do honorário atrasado de ${nome}?\n\nValor = honorário + multa 2% + juros 1% ao mês (desde o vencimento original). Vence em 3 dias.`)) return
+    if (!confirm(`Enviar para ${nome} o link de pagamento atualizado do honorário em atraso?\n\nValor = honorário + multa 2% + juros 1% ao mês (desde o vencimento original). O boleto vence em 3 dias.`)) return
     setGerando(lid)
     try {
-      const c = await asaasGerarAtraso(lid)
+      const { link: c, envio } = await asaasEnviarLink(lid)
       load()
-      const comp = `vencido em ${c.competencia.slice(5, 7)}/${c.competencia.slice(0, 4)} (referente a ${referenciaDe(c.competencia)?.extenso ?? '—'})`
-      const det = c.reaproveitada ? '(link já existia para este mês)'
-        : `Honorário ${money(c.honorario)} + multa ${money(c.multa)} + juros ${money(c.juros)} (${c.dias} dias)`
-      if (c.invoice_url) { try { await navigator.clipboard.writeText(c.invoice_url) } catch { /* sem clipboard */ } }
-      const enviarAgora = confirm(`Link do honorário ${comp} pronto${c.invoice_url ? ' (copiado)' : ''}:\n\n${money(c.valor)} · vence ${dataBR(c.vencimento)}\n${det}\n\nEnviar a cobrança de atraso agora (WhatsApp + e-mail) com esse PIX/boleto?`)
-      if (enviarAgora && envios?.whats) await enviar(lid, 'atraso')
-    } catch (e) { alert('Asaas: ' + ((e as Error).message || 'erro ao gerar o link')) }
+      const ref = referenciaDe(c.competencia)?.extenso ?? '—'
+      const det = c.multa != null ? `Honorário ${money(c.honorario)} + multa ${money(c.multa)} + juros ${money(c.juros)} (${c.dias} dias)` : '(boleto já atualizado hoje)'
+      const falhas = envio.envios.filter(e => !e.ok)
+      alert(`Link enviado — referente a ${ref}\n\n${money(c.valor)} · vence ${dataBR(c.vencimento)}\n${det}\n\n${envio.envios.map(e => `${e.ok ? '✓' : '✗'} ${e.canal}${e.erro ? ': ' + e.erro : ''}`).join('\n')}${falhas.length ? '\n\nAtenção: houve falha em algum canal.' : ''}`)
+    } catch (e) { alert('Enviar link: ' + ((e as Error).message || 'erro')) }
     finally { setGerando(null) }
   }
   async function syncLead(leadId: string) {
@@ -144,6 +146,21 @@ export default function FinanceiroPage() {
           <p className="text-gray-500 text-sm mt-0.5">{rows === null ? 'Carregando...' : `${filtered.length} cliente(s) em atraso · R$ ${totalEmAberto.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} em aberto`}</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
+          {envios?.whats && (() => {
+            const pendentes = filtered.filter(r => !(envios.cobradosHoje ?? []).includes(s(r.lead_id))).length
+            const massa = envios.cobrancaEmMassa
+            return massa ? (
+              <span className="inline-flex items-center gap-1.5 h-10 px-3 rounded-xl text-xs font-bold" style={{ background: 'rgba(37,211,102,0.12)', color: '#16a34a' }}>
+                <Loader2 size={13} className="animate-spin" /> Cobrando… {massa.feitos}/{massa.total}
+              </span>
+            ) : (
+              <button onClick={() => setCobrar('todos')} disabled={!pendentes}
+                title={pendentes ? 'Enviar a mensagem escolhida para todos que ainda não foram cobrados hoje' : 'Todos já foram cobrados hoje'}
+                className="inline-flex items-center gap-1.5 h-10 px-4 rounded-xl text-sm font-bold disabled:opacity-40" style={{ background: '#25D366', color: '#fff' }}>
+                <Send size={14} /> Cobrar todos ({pendentes})
+              </button>
+            )
+          })()}
           {asaas?.configurado && (
             <span className="text-[10px] font-bold uppercase tracking-wide px-2 h-6 inline-flex items-center rounded-md"
               style={asaas.ambiente === 'production'
@@ -207,7 +224,6 @@ export default function FinanceiroPage() {
                         const lid = s(r.lead_id)
                         const ult = envios?.envios[lid]
                         const tipo: TipoEnvioCobranca = s(r.status_global || r.financeiro_status) === 'atrasado' ? 'atraso' : 'lembrete'
-                        const temCob = !!asaas?.resumo[lid]
                         return (
                           <div className="flex items-center gap-2">
                             <button onClick={() => setPago(r)} title="Marcar como pago (dá baixa na cobrança do mês)"
@@ -215,18 +231,24 @@ export default function FinanceiroPage() {
                               <Check size={12} /> Marcar pago
                             </button>
                             {tipo === 'atraso' && asaas?.configurado && (
-                              <button onClick={() => gerarLinkAtraso(r)} disabled={gerando === lid}
-                                title="Gerar no Asaas o PIX/boleto do honorário atrasado (multa 2% + juros 1% a.m., vence em 3 dias)"
+                              <button onClick={() => enviarLinkAtraso(r)} disabled={gerando === lid}
+                                title="Envia ao cliente o PIX/boleto do honorário atrasado com valores atualizados (multa 2% + juros 1% a.m., vence em 3 dias)"
                                 className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 h-7 rounded-lg disabled:opacity-40" style={{ background: '#F47920', color: '#fff' }}>
-                                {gerando === lid ? <Loader2 size={12} className="animate-spin" /> : <Link2 size={12} />} Gerar link
+                                {gerando === lid ? <Loader2 size={12} className="animate-spin" /> : <Link2 size={12} />} Enviar link
                               </button>
                             )}
                             {envios?.whats ? (
-                              <button onClick={() => enviar(lid, tipo)} disabled={enviando === lid}
-                                title={temCob ? `Enviar ${tipo} pelo WhatsApp da Nauta (com PIX/boleto)` : `Enviar ${tipo} pelo WhatsApp da Nauta (sem Asaas — só o lembrete/honorário)`}
-                                className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 h-7 rounded-lg disabled:opacity-40" style={{ background: '#25D366', color: '#fff' }}>
-                                {enviando === lid ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} />} {tipo === 'atraso' ? 'Cobrar' : 'Lembrar'}
-                              </button>
+                              (envios.cobradosHoje ?? []).includes(lid) ? (
+                                <button disabled title="Já cobrado hoje — libera de novo amanhã"
+                                  className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 h-7 rounded-lg opacity-40 cursor-not-allowed" style={{ background: '#25D366', color: '#fff' }}>
+                                  <Check size={12} /> Cobrado hoje
+                                </button>
+                              ) : (
+                                <button onClick={() => setCobrar(r)} title="Escolher a mensagem de cobrança e enviar (WhatsApp + e-mail, sem link)"
+                                  className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 h-7 rounded-lg" style={{ background: '#25D366', color: '#fff' }}>
+                                  <Send size={12} /> Cobrar
+                                </button>
+                              )
                             ) : s(r.status_global || r.financeiro_status) === 'atrasado' && (
                               <a href={`https://wa.me/55${waDigits(tel)}?text=${encodeURIComponent(msgCobranca(s(r.lead_nome) || s(r.responsavel), meses))}`} target="_blank" rel="noopener noreferrer"
                                 className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 h-7 rounded-lg" style={{ background: '#25D366', color: '#fff' }}>
@@ -235,7 +257,7 @@ export default function FinanceiroPage() {
                             )}
                             {ult && (
                               <span className="text-[10px] text-gray-500 whitespace-nowrap" title={`Último envio: ${ult.tipo} por ${ult.canal}`}>
-                                {ult.ok ? '✓' : '✗'} {ult.tipo === 'disponivel' ? 'disponível' : ult.tipo} {ult.data.slice(8, 10)}/{ult.data.slice(5, 7)}
+                                {ult.ok ? '✓' : '✗'} {rotuloEnvio(ult.tipo)} {ult.data.slice(8, 10)}/{ult.data.slice(5, 7)}
                               </span>
                             )}
                           </div>
@@ -251,6 +273,8 @@ export default function FinanceiroPage() {
       )}
 
       {cobranca && <CobrancaModal row={cobranca} onClose={() => setCobranca(null)} onChanged={load} />}
+      {cobrar && <CobrarModal alvo={cobrar} pendentes={filtered.filter(r => !(envios?.cobradosHoje ?? []).includes(s(r.lead_id)))}
+        onClose={() => setCobrar(null)} onEnviado={() => { setCobrar(null); load() }} />}
       {pago && <PagoModal row={pago} onClose={() => setPago(null)} onSaved={() => { setPago(null); load() }} />}
     </div>
   )
@@ -588,6 +612,91 @@ function CobrancaModal({ row, onClose, onChanged }: { row: Row; onClose: () => v
             </div>
           </div>
         )}
+      </div>
+    </div>
+  )
+}
+
+// Rótulo do último envio (régua, link ou cobrança manual "cobranca_N")
+function rotuloEnvio(tipo: string) {
+  if (tipo === 'disponivel') return 'disponível'
+  const m = /^cobranca_(\d)$/.exec(tipo)
+  return m ? `cobrança nível ${m[1]}` : tipo
+}
+
+// Popup "Cobrar": escolhe 1 dos 5 modelos (leve → notificação final) e envia sem link de pagamento.
+function CobrarModal({ alvo, pendentes, onClose, onEnviado }: { alvo: Row | 'todos'; pendentes: Row[]; onClose: () => void; onEnviado: () => void }) {
+  const [modelo, setModelo] = useState(1)
+  const [enviando, setEnviando] = useState(false)
+  const todos = alvo === 'todos'
+  const exemplo: Row | undefined = todos ? pendentes[0] : alvo
+  const prev = (() => {
+    const m = MODELOS_COBRANCA.find(x => x.id === modelo)!
+    if (!exemplo) return m.texto
+    const meses = Math.max(1, Number(exemplo.meses_atraso || 1))
+    return preencherModelo(m.texto, {
+      nome: (s(exemplo.responsavel) || s(exemplo.lead_nome) || 'cliente').trim().split(/\s+/)[0],
+      empresa: s(exemplo.emp_nome) || s(exemplo.lead_nome), valor: money(Number(exemplo.valor_honorario || 0) * meses),
+      venc: dataBR(exemplo.proximo_vencimento), meses,
+    })
+  })()
+  const CORES = ['#69a8d9', '#88b87f', '#ffb752', '#F47920', '#d15b47']
+
+  async function enviar() {
+    if (todos && !confirm(`Enviar a mensagem "${MODELOS_COBRANCA[modelo - 1].titulo}" para ${pendentes.length} cliente(s) que ainda não foram cobrados hoje?\n\nO envio é feito aos poucos (1 a cada 1–2 minutos) para proteger o WhatsApp.`)) return
+    setEnviando(true)
+    try {
+      if (todos) {
+        const r = await cobrarTodosComModelo(modelo)
+        alert(r.iniciado ? `Cobrança iniciada para ${r.total} cliente(s). Os envios acontecem em segundo plano — acompanhe pelo contador no topo.` : 'Nenhum cliente pendente de cobrança hoje.')
+      } else {
+        const r = await cobrarComModelo(s(alvo.lead_id), modelo)
+        const falhas = r.envios.filter(e => !e.ok)
+        if (falhas.length) alert('Enviado com falha em algum canal:\n' + r.envios.map(e => `${e.ok ? '✓' : '✗'} ${e.canal}${e.erro ? ': ' + e.erro : ''}`).join('\n'))
+      }
+      onEnviado()
+    } catch (e) { alert('Cobrança: ' + ((e as Error).message || 'erro')); setEnviando(false) }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/60" onClick={onClose} />
+      <div className="relative w-full max-w-3xl max-h-[92vh] overflow-y-auto rounded-2xl p-6" style={{ background: 'var(--sys-modal)', border: '1px solid var(--sys-border-2)' }}>
+        <button onClick={onClose} className="absolute top-4 right-4 text-gray-500 hover:text-white"><X size={20} /></button>
+        <div className="text-center mb-5">
+          <h2 className="text-lg font-black text-white">{todos ? 'Cobrar todos' : 'Cobrar cliente'}</h2>
+          <p className="text-sm text-gray-500 mt-1">
+            {todos ? `${pendentes.length} cliente(s) em atraso ainda não cobrados hoje` : (s((alvo as Row).emp_nome) || s((alvo as Row).lead_nome))}
+            {' · '}escolha a mensagem — vai por WhatsApp e e-mail, sem link de pagamento
+          </p>
+        </div>
+        <div className="grid md:grid-cols-2 gap-5">
+          <div className="space-y-2">
+            {MODELOS_COBRANCA.map((m, i) => (
+              <button key={m.id} onClick={() => setModelo(m.id)}
+                className="w-full text-left rounded-xl px-3.5 py-2.5 transition-colors"
+                style={{ background: modelo === m.id ? `color-mix(in srgb, ${CORES[i]} 16%, transparent)` : 'var(--sys-surface-3)', border: `1.5px solid ${modelo === m.id ? CORES[i] : 'var(--sys-border-2)'}` }}>
+                <p className="text-sm font-bold text-white flex items-center gap-2">
+                  <span className="inline-block w-2.5 h-2.5 rounded-full" style={{ background: CORES[i] }} /> {m.titulo}
+                </p>
+                <p className="text-[11px] text-gray-500 mt-0.5 pl-[18px]">{m.descricao}</p>
+              </button>
+            ))}
+          </div>
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-wide text-gray-400 mb-1.5">Prévia {todos && exemplo ? `(ex.: ${s(exemplo.emp_nome) || s(exemplo.lead_nome)})` : ''}</p>
+            <div className="rounded-xl p-3.5 text-sm text-gray-300 whitespace-pre-line leading-relaxed" style={{ background: 'var(--sys-surface-3)', border: '1px solid var(--sys-border-2)' }}>
+              {prev.replace(/\*/g, '')}
+            </div>
+            <p className="text-[11px] text-gray-500 mt-2">Cada cliente recebe no máximo 1 cobrança por dia.</p>
+          </div>
+        </div>
+        <div className="flex justify-center gap-2 mt-6">
+          <button onClick={onClose} className="h-10 px-5 rounded-xl text-sm font-bold" style={{ background: '#ffb752', color: '#fff' }}>Cancelar</button>
+          <button onClick={enviar} disabled={enviando || (todos && !pendentes.length)} className="h-10 px-5 rounded-xl text-sm font-bold inline-flex items-center gap-2 disabled:opacity-50" style={{ background: '#25D366', color: '#fff' }}>
+            {enviando ? <Loader2 size={15} className="animate-spin" /> : <Send size={15} />} {todos ? `Enviar para ${pendentes.length}` : 'Enviar cobrança'}
+          </button>
+        </div>
       </div>
     </div>
   )

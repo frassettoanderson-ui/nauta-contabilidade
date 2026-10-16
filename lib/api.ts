@@ -581,6 +581,10 @@ export interface CobrancaAtraso {
 export function asaasGerarAtraso(leadId: string): Promise<CobrancaAtraso> {
   return fetch('/api/financeiro/asaas', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ leadId, atraso: true }) }).then(r => json(r))
 }
+/** Atualiza (multa + juros do dia, vence em 3 dias) ou gera o boleto do atraso e já envia ao cliente */
+export function asaasEnviarLink(leadId: string): Promise<{ link: CobrancaAtraso & { atualizada?: boolean }; envio: { envios: { canal: string; ok: boolean; erro?: string }[] } }> {
+  return fetch('/api/financeiro/asaas', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ leadId, enviarLink: true }) }).then(r => json(r))
+}
 export function asaasSincronizarTodos(): Promise<{ resultados: { leadId: string; nome: string; ok: boolean; erro?: string }[] }> {
   return fetch('/api/financeiro/asaas', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ todos: true }) }).then(r => json(r))
 }
@@ -595,6 +599,8 @@ export interface EnviosResumo {
   whats: boolean; email: boolean
   envios: Record<string, { tipo: string; canal: string; ok: boolean; data: string }>
   pixAuto: Record<string, string> // leadId → CREATED | ACTIVE | CANCELLED | EXPIRED | REFUSED
+  cobradosHoje?: string[] // leads que já receberam a cobrança manual hoje (1 por dia)
+  cobrancaEmMassa?: { total: number; feitos: number; inicio: string } | null
 }
 export interface PixAutoRow { id: string; asaas_auth_id: string; status: string; start_date: string | null; valor: number; payload: string | null; encoded_image: string | null; expira_em: string | null }
 const postEnvios = (body: Record<string, unknown>) =>
@@ -603,6 +609,13 @@ export function enviosResumo(): Promise<EnviosResumo> { return fetch('/api/finan
 export function listEnviosCobranca(leadId: string): Promise<EnvioRow[]> { return fetch(`/api/financeiro/envios?leadId=${encodeURIComponent(leadId)}`).then(r => json(r)) }
 export function enviarCobrancaAgora(leadId: string, tipo: TipoEnvioCobranca): Promise<{ envios: { canal: string; ok: boolean; erro?: string }[] }> {
   return postEnvios({ leadId, tipo }).then(r => json(r))
+}
+// Cobrança manual: 1 dos 5 modelos (sem link), no máximo 1 por cliente por dia
+export function cobrarComModelo(leadId: string, modelo: number): Promise<{ envios: { canal: string; ok: boolean; erro?: string }[] }> {
+  return postEnvios({ leadId, modeloCobranca: modelo }).then(r => json(r))
+}
+export function cobrarTodosComModelo(modelo: number): Promise<{ iniciado: boolean; total: number }> {
+  return postEnvios({ cobrarTodos: true, modelo }).then(r => json(r))
 }
 export function gerarPixAutomatico(leadId: string): Promise<PixAutoRow> { return postEnvios({ leadId, pixAuto: true }).then(r => json(r)) }
 export function getPixAutomatico(leadId: string): Promise<PixAutoRow | null> { return fetch(`/api/financeiro/envios?leadId=${encodeURIComponent(leadId)}&pixAuto=1`).then(r => json(r)) }

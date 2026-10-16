@@ -4,6 +4,7 @@ import { getOrCreatePixAuto } from './pix-automatico'
 import { pixDaCobranca } from './asaas'
 import { calcStatusFinanceiro, vencimentoAjustado } from './financeiro-calc'
 import { referenciaDe } from './referencia'
+import { MODELOS_COBRANCA, preencherModelo } from './cobranca-modelos'
 
 // ─── Régua de cobrança pelos canais da Nauta ─────────────────────────────────
 // WhatsApp: API pública do Whats Profissional (número do atendimento) — sem custo por msg.
@@ -88,10 +89,10 @@ async function contexto(leadId: string, cobrancaId?: string, tipo?: TipoEnvio): 
   // Mês dos serviços (referência) = mês anterior ao do vencimento da mensalidade
   let mesVenc: string | null = cob?.competencia ?? null
   // Link do atraso (cobrança de mês passado com vencimento novo): na mensagem vale o vencimento ORIGINAL
-  if (tipo === 'atraso' && cob?.competencia && l.honorario_vencimento && cob.competencia.slice(0, 7) < (cob.vencimento || '').slice(0, 7)) {
+  if (tipo === 'atraso' && cob?.competencia && l.honorario_vencimento && String(cob.vencimento || '') >= new Date().toLocaleDateString('sv-SE')) {
     const dia = Number(String(l.honorario_vencimento).slice(8, 10))
-    const orig = vencimentoAjustado(dia, Number(cob.competencia.slice(0, 4)), Number(cob.competencia.slice(5, 7)) - 1)
-    venc = dataBR(`${orig.getFullYear()}-${String(orig.getMonth() + 1).padStart(2, '0')}-${String(orig.getDate()).padStart(2, '0')}`)
+    const y = Number(cob.competencia.slice(0, 4)), m = Number(cob.competencia.slice(5, 7))
+    venc = dataBR(`${y}-${String(m).padStart(2, '0')}-${String(Math.min(dia, new Date(y, m, 0).getDate())).padStart(2, '0')}`)
   }
   if (!cob && l.honorario_vencimento) {
     try {
@@ -325,4 +326,85 @@ export async function resumoEnvios(empresaId: string) {
   const map: Record<string, { tipo: string; canal: string; ok: boolean; data: string }> = {}
   for (const row of r.rows) map[String(row.lead_id)] = { tipo: row.tipo, canal: row.canal, ok: !!row.ok, data: row.data }
   return map
+}
+
+// ── Cobrança manual (botão "Cobrar" / "Cobrar todos") ───────────────────────
+// Mensagem escolhida entre 5 modelos (leve → notificação final), SEM link de pagamento.
+// No máximo 1 por cliente por dia (registrada em cobranca_envios com tipo 'cobranca_N').
+export async function cobradosHoje(empresaId: string): Promise<string[]> {
+  const r = await pool.query(
+    `SELECT DISTINCT lead_id FROM cobranca_envios
+      WHERE tipo LIKE 'cobranca\\_%' AND ok = true AND criado_em::date = current_date
+        AND lead_id IN (SELECT id FROM leads WHERE empresa_id = $1)`, [empresaId]
+  )
+  return r.rows.map(x => String(x.lead_id))
+}
+
+export async function enviarCobrancaManual(leadId: string, modeloId: number) {
+  const modelo = MODELOS_COBRANCA.find(m => m.id === modeloId)
+  if (!modelo) throw new Error('Modelo de mensagem inválido')
+  const ja = await pool.query(
+    `SELECT 1 FROM cobranca_envios WHERE lead_id = $1 AND tipo LIKE 'cobranca\\_%' AND ok = true AND criado_em::date = current_date LIMIT 1`, [leadId]
+  )
+  if (ja.rows[0]) throw new Error('Este cliente já foi cobrado hoje')
+  const l = (await pool.query(
+    `SELECT l.nome, l.whatsapp, l.email, l.valor_honorario, l.empresa_id, to_char(l.honorario_vencimento,'YYYY-MM-DD') AS v1,
+            l.fin_resp_nome, l.fin_resp_email, l.fin_resp_whatsapp, c.emp_nome, c.cli_nome_completo, c.emp_telefone, c.emp_email
+       FROM leads l LEFT JOIN clientes c ON c.lead_id = l.id WHERE l.id = $1`, [leadId]
+  )).rows[0]
+  if (!l) throw new Error('Cliente não encontrado')
+  const pagos = new Set((await pool.query(
+    `SELECT to_char(competencia,'YYYY-MM') AS c FROM financeiro_pagamentos WHERE lead_id = $1 AND pago_em IS NOT NULL`, [leadId]
+  )).rows.map(x => String(x.c)))
+  const st = l.v1 ? calcStatusFinanceiro(l.v1, pagos) : null
+  const meses = Math.max(1, st?.mesesAtraso ?? 1)
+  const pv = st?.proximoVencimento
+  const venc = pv ? `${String(pv.getDate()).padStart(2, '0')}/${String(pv.getMonth() + 1).padStart(2, '0')}/${pv.getFullYear()}` : '—'
+  const texto = preencherModelo(modelo.texto, {
+    nome: primeiroNome(l.fin_resp_nome || l.cli_nome_completo || l.nome), empresa: l.emp_nome || l.nome,
+    valor: brl(Number(l.valor_honorario || 0) * meses), venc, meses,
+  })
+  const whatsapp = soDigitos(l.fin_resp_whatsapp || l.whatsapp || l.emp_telefone)
+  const email = l.fin_resp_email || l.emp_email || l.email || ''
+  const tipo = `cobranca_${modelo.id}`
+  const reg = (canal: string, destino: string, ok: boolean, erro?: string) => pool.query(
+    `INSERT INTO cobranca_envios (empresa_id, lead_id, cobranca_id, tipo, canal, destino, mensagem, ok, erro) VALUES ($1,$2,NULL,$3,$4,$5,$6,$7,$8)`,
+    [l.empresa_id, leadId, tipo, canal, destino, texto, ok, erro ?? null]
+  )
+  const out: { canal: string; ok: boolean; erro?: string }[] = []
+  if (whatsConfigurado() && whatsapp) {
+    try { const dest = await enviarWhats(whatsapp, [texto]); await reg('whatsapp', dest, true); out.push({ canal: 'whatsapp', ok: true }) }
+    catch (e) { const erro = (e as Error).message; await reg('whatsapp', whatsapp, false, erro); out.push({ canal: 'whatsapp', ok: false, erro }) }
+  }
+  if (emailConfigurado() && email) {
+    const limpo = texto.replace(/\*/g, '')
+    const html = `<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#1e293b;line-height:1.55;white-space:pre-line">${escHtml(limpo)}</div>`
+    try { await enviarEmail(email, `Honorário em aberto — ${l.emp_nome || l.nome}`, html, limpo); await reg('email', email, true); out.push({ canal: 'email', ok: true }) }
+    catch (e) { const erro = (e as Error).message; await reg('email', email, false, erro); out.push({ canal: 'email', ok: false, erro }) }
+  }
+  if (!out.length) throw new Error('Cliente sem WhatsApp e sem e-mail para cobrança')
+  emitCrmChange()
+  return { leadId, modelo: modelo.id, envios: out }
+}
+
+// "Cobrar todos": envia o modelo escolhido para os clientes em atraso ainda não cobrados hoje.
+// Em segundo plano, com intervalo entre clientes (proteção do chip).
+let cobrancaEmMassa: { total: number; feitos: number; inicio: string } | null = null
+export const statusCobrancaEmMassa = () => cobrancaEmMassa
+export async function cobrarTodos(leadIds: string[], modeloId: number, intervaloMs: [number, number] = [60000, 100000]) {
+  if (cobrancaEmMassa) throw new Error('Já existe uma cobrança em massa em andamento')
+  if (!MODELOS_COBRANCA.some(m => m.id === modeloId)) throw new Error('Modelo de mensagem inválido')
+  const alvos = [...new Set(leadIds)]
+  cobrancaEmMassa = { total: alvos.length, feitos: 0, inicio: new Date().toISOString() }
+  void (async () => {
+    try {
+      for (let i = 0; i < alvos.length; i++) {
+        if (new Date().getHours() >= 19) break
+        try { await enviarCobrancaManual(alvos[i], modeloId) } catch { /* já cobrado hoje / sem contato: segue */ }
+        cobrancaEmMassa!.feitos = i + 1
+        if (i < alvos.length - 1) await sleep(intervaloMs[0] + Math.random() * (intervaloMs[1] - intervaloMs[0]))
+      }
+    } finally { cobrancaEmMassa = null }
+  })()
+  return { iniciado: true, total: alvos.length }
 }

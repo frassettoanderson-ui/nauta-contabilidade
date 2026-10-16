@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { empresaAtivaId } from '@/lib/tenant'
+import pool from '@/lib/db'
+import { enviarCobranca } from '@/lib/cobranca-envio'
 import { asaasConfigurado, asaasAmbiente, sincronizarLead, sincronizarTodos, cancelarAssinatura, gerarCobrancaAtraso, listCobrancasLead, resumoCobrancas } from '@/lib/asaas'
 
 export const dynamic = 'force-dynamic'
@@ -35,6 +37,14 @@ export async function POST(req: NextRequest) {
     if (!body.leadId) return NextResponse.json({ error: 'leadId obrigatório' }, { status: 400 })
     if (body.cancelar) return NextResponse.json(await cancelarAssinatura(String(body.leadId)))
     if (body.atraso) return NextResponse.json(await gerarCobrancaAtraso(String(body.leadId)))
+    // POST { leadId, enviarLink } → boleto do atraso com valores do dia + envia (WhatsApp/e-mail) c/ PIX e boleto
+    if (body.enviarLink) {
+      const lid = String(body.leadId)
+      const c = await gerarCobrancaAtraso(lid)
+      const cob = (await pool.query(`SELECT id FROM financeiro_cobrancas WHERE asaas_payment_id = $1`, [c.asaas_payment_id])).rows[0]
+      const envio = await enviarCobranca(lid, 'atraso', cob?.id ? String(cob.id) : undefined)
+      return NextResponse.json({ link: c, envio })
+    }
     return NextResponse.json(await sincronizarLead(String(body.leadId)))
   } catch (e) {
     return NextResponse.json({ error: (e as Error).message }, { status: 400 })

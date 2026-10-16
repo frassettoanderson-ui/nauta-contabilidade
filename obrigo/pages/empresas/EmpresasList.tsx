@@ -26,7 +26,7 @@ interface Pagina {
   total: number;
 }
 
-interface ChipF { kind: 'status' | 'grupo' | 'tag' | 'departamento'; valor: string; label: string }
+interface ChipF { kind: 'status' | 'grupo' | 'tag' | 'departamento' | 'contabilidade'; valor: string; label: string }
 
 type OrdenarCampo = 'razao' | 'fantasia' | 'socio' | 'cnpj' | 'cidade' | 'uf' | 'regime' | 'cadastro';
 const CAMPO_ORDEM: Record<OrdenarCampo, keyof EmpresaLista> = {
@@ -82,6 +82,7 @@ export default function EmpresasList() {
   const [comboTxt, setComboTxt] = useState('');
   const [comboAberto, setComboAberto] = useState(false);
   const [chips, setChips] = useState<ChipF[]>([]);
+  const [contabilidade, setContabilidade] = useState<'' | 'atuan' | 'nauta'>('');
   const [ordenar, setOrdenar] = useState<OrdenarCampo>('razao');
   const [dir, setDir] = useState<'asc' | 'desc'>('asc');
   // painel inline expandido na linha (comentarios/tarefas/contatos/responsaveis)
@@ -124,12 +125,13 @@ export default function EmpresasList() {
     if (tagId) qs.set('tagId', tagId);
     if (departamentoId) qs.set('departamentoId', departamentoId);
     if (grupoId) qs.set('grupoId', grupoId);
+    if (contabilidade) qs.set('contabilidade', contabilidade);
     if (motivoUrl) { qs.set('motivoId', motivoUrl); qs.set('status', 'todos'); }
     if (onboardingMode) { qs.set('somenteOnboarding', '1'); qs.set('status', 'todos'); }
     return qs.toString();
   }
   // scroll infinito: carrega mais empresas ao rolar
-  const lista = useScrollInfinito<EmpresaLista>((p) => api.get<Pagina>(`/empresas?${montarQs(p)}`), [buscaDeb, status, tagId, departamentoId, grupoId, motivoUrl, refresh]);
+  const lista = useScrollInfinito<EmpresaLista>((p) => api.get<Pagina>(`/empresas?${montarQs(p)}`), [buscaDeb, status, tagId, departamentoId, grupoId, contabilidade, motivoUrl, refresh]);
   const loading = lista.loading;
   const items = lista.items;
   const itensOrdenados = useMemo(() => {
@@ -171,6 +173,7 @@ export default function EmpresasList() {
     if (busca.trim()) qs.set('busca', busca.trim());
     if (tagId) qs.set('tagId', tagId);
     if (departamentoId) qs.set('departamentoId', departamentoId);
+    if (contabilidade) qs.set('contabilidade', contabilidade);
     if (motivoUrl) { qs.set('motivoId', motivoUrl); qs.set('status', 'todos'); }
     if (onboardingMode) { qs.set('somenteOnboarding', '1'); qs.set('status', 'todos'); }
     const todas = await api.get<Pagina>(`/empresas?${qs}`);
@@ -210,6 +213,7 @@ export default function EmpresasList() {
     if (c.kind === 'grupo') setGrupoId(c.valor);
     if (c.kind === 'tag') setTagId(c.valor);
     if (c.kind === 'departamento') setDepartamentoId(c.valor);
+    if (c.kind === 'contabilidade') setContabilidade(c.valor as 'atuan' | 'nauta');
     setComboTxt(''); setComboAberto(false);
   }
   function removeChip(c: ChipF) {
@@ -218,6 +222,7 @@ export default function EmpresasList() {
     if (c.kind === 'grupo') setGrupoId('');
     if (c.kind === 'tag') setTagId('');
     if (c.kind === 'departamento') setDepartamentoId('');
+    if (c.kind === 'contabilidade') setContabilidade('');
   }
 
   async function excluirEmpresa(id: string, razao: string) {
@@ -237,6 +242,10 @@ export default function EmpresasList() {
     { valor: 'inativos', label: 'Ocultar Ativas' },
     { valor: 'todos', label: 'Exibir Inativas' },
   ] as const).filter((o) => o.label.toLowerCase().includes(tq));
+  const optsContab = ([
+    { valor: 'atuan', label: 'Atuan' },
+    { valor: 'nauta', label: 'Nauta Contabilidade' },
+  ] as const).filter((o) => o.label.toLowerCase().includes(tq) || 'contabilidade'.includes(tq));
   const optsGrupos = grupos.filter((g) => g.nome.toLowerCase().includes(tq));
   const optsTags = tags.filter((t) => t.nome.toLowerCase().includes(tq));
   const optsDeptos = departamentos.filter((d) => d.nome.toLowerCase().includes(tq));
@@ -406,6 +415,10 @@ export default function EmpresasList() {
               {optsStatus.map((o) => (
                 <button key={o.valor} onMouseDown={() => addChip({ kind: 'status', valor: o.valor, label: o.label })} className="block w-full px-3 py-1.5 text-left text-[13px] hover:bg-marca-50">{o.label}</button>
               ))}
+              {optsContab.length > 0 && <div className="px-3 py-1 text-[11px] font-semibold text-slate-400">Filtrar por Contabilidade</div>}
+              {optsContab.map((o) => (
+                <button key={o.valor} onMouseDown={() => addChip({ kind: 'contabilidade', valor: o.valor, label: `Contabilidade: ${o.label}` })} className="block w-full px-3 py-1.5 text-left text-[13px] hover:bg-marca-50">{o.label}</button>
+              ))}
               {optsGrupos.length > 0 && <div className="px-3 py-1 text-[11px] font-semibold text-slate-400">Filtrar por grupos de empresa</div>}
               {optsGrupos.map((g) => (
                 <button key={g.id} onMouseDown={() => addChip({ kind: 'grupo', valor: g.id, label: `Grupo: ${g.nome}` })} className="block w-full px-3 py-1.5 text-left text-[13px] hover:bg-marca-50">Grupo: {g.nome}</button>
@@ -418,7 +431,7 @@ export default function EmpresasList() {
               {optsDeptos.map((d) => (
                 <button key={d.id} onMouseDown={() => addChip({ kind: 'departamento', valor: d.id, label: `Depto: ${d.nome}` })} className="block w-full px-3 py-1.5 text-left text-[13px] hover:bg-marca-50">Depto: {d.nome}</button>
               ))}
-              {optsStatus.length + optsGrupos.length + optsTags.length + optsDeptos.length === 0 && (
+              {optsStatus.length + optsContab.length + optsGrupos.length + optsTags.length + optsDeptos.length === 0 && (
                 <div className="px-3 py-2 text-[12px] text-slate-400">Nenhum filtro encontrado.</div>
               )}
             </div>

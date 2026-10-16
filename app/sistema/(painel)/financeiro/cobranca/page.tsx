@@ -56,6 +56,8 @@ export default function FinanceiroPage() {
   const [gerando, setGerando] = useState<string | null>(null)
   // Popup de cobrança: um cliente (row) ou todos ('todos')
   const [cobrar, setCobrar] = useState<Row | 'todos' | null>(null)
+  // Abas: Atuan (em atraso, cobrança automática/manual) e Nauta Contabilidade (todos os clientes, só baixa manual)
+  const [aba, setAba] = useState<'atuan' | 'nauta'>('atuan')
 
   const load = useCallback(() => {
     listFinanceiro().then(setRows).catch(() => setRows([]))
@@ -103,9 +105,13 @@ export default function FinanceiroPage() {
 
   // Cobrança = clientes com honorário em atraso (qualquer mês passado não pago — status_global),
   // exceto os da Nauta Contabilidade (cobrança manual, fora do fluxo automático).
-  const emAtraso = (r: Row) => s(r.status_global || r.financeiro_status) === 'atrasado' && s(r.contabilidade) !== 'nauta'
+  const atrasado = (r: Row) => s(r.status_global || r.financeiro_status) === 'atrasado'
+  const ehNauta = (r: Row) => s(r.contabilidade) === 'nauta'
+  const emAtraso = (r: Row) => (aba === 'nauta' ? ehNauta(r) : atrasado(r) && !ehNauta(r))
+  const qtdAtuan = base.filter(r => atrasado(r) && !ehNauta(r)).length
+  const qtdNauta = base.filter(ehNauta).length
   // "Em aberto" = honorário × meses em atraso (soma o que está devendo, não só 1 mês).
-  const totalEmAberto = base.filter(emAtraso).reduce((s2, r) => s2 + Number(r.valor_honorario || 0) * Math.max(1, Number(r.meses_atraso || 1)), 0)
+  const totalEmAberto = base.filter(r => emAtraso(r) && atrasado(r)).reduce((s2, r) => s2 + Number(r.valor_honorario || 0) * Math.max(1, Number(r.meses_atraso || 1)), 0)
   const filtered = base.filter(r => {
     if (!emAtraso(r)) return false
     if (!busca.trim()) return true
@@ -143,10 +149,10 @@ export default function FinanceiroPage() {
       <div className="flex items-center justify-between mb-5 gap-4 flex-wrap">
         <div>
           <h1 className="text-2xl font-black text-white flex items-center gap-2" style={{ letterSpacing: '-0.02em' }}><AlertTriangle size={22} className="text-[#f87171]" /> Cobrança</h1>
-          <p className="text-gray-500 text-sm mt-0.5">{rows === null ? 'Carregando...' : `${filtered.length} cliente(s) em atraso · R$ ${totalEmAberto.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} em aberto`}</p>
+          <p className="text-gray-500 text-sm mt-0.5">{rows === null ? 'Carregando...' : `${filtered.length} cliente(s) ${aba === 'nauta' ? 'da Nauta Contabilidade' : 'em atraso'} · R$ ${totalEmAberto.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} em aberto`}</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
-          {envios?.whats && (() => {
+          {aba === 'atuan' && envios?.whats && (() => {
             const pendentes = filtered.filter(r => !(envios.cobradosHoje ?? []).includes(s(r.lead_id))).length
             const massa = envios.cobrancaEmMassa
             return massa ? (
@@ -176,6 +182,20 @@ export default function FinanceiroPage() {
           </div>
         </div>
       </div>
+
+      {/* Abas por escritório */}
+      <div className="flex items-end gap-1 mb-5 border-b" style={{ borderColor: 'var(--sys-border)' }}>
+        {([['atuan', 'Atuan', qtdAtuan], ['nauta', 'Nauta Contabilidade', qtdNauta]] as const).map(([id, label, n]) => (
+          <button key={id} onClick={() => setAba(id)}
+            className="px-4 py-2.5 text-sm font-bold -mb-px border-b-2 transition-colors"
+            style={{ borderColor: aba === id ? '#F47920' : 'transparent', color: aba === id ? '#F47920' : '#64748b' }}>
+            {label} <span className="ml-1 text-[11px] font-semibold opacity-70">{rows ? n : '·'}</span>
+          </button>
+        ))}
+      </div>
+      {aba === 'nauta' && rows !== null && (
+        <p className="text-xs text-gray-500 mb-3 -mt-2 text-center">Clientes da Nauta Contabilidade: cobrança manual, fora do Asaas e da régua. Use <b>Marcar pago</b> quando o cliente pagar.</p>
+      )}
 
       {rows === null ? (
         <div className="flex justify-center py-20"><Loader2 size={24} className="animate-spin text-[color:var(--sys-accent)]" /></div>
@@ -216,8 +236,10 @@ export default function FinanceiroPage() {
                     <td className="px-4 py-3 text-gray-400">{dataBR(r.proximo_vencimento)}</td>
                     <td className="px-4 py-3"><StatusBadge status={s(r.status_global || r.financeiro_status)} meses={meses} /></td>
                     <td className="px-4 py-3" onClick={e => e.stopPropagation()}>
-                      <AsaasCell item={asaas?.resumo[s(r.lead_id)]} configurado={!!asaas?.configurado} pixAuto={envios?.pixAuto[s(r.lead_id)]}
-                        syncing={syncing === s(r.lead_id)} onSync={() => syncLead(s(r.lead_id))} />
+                      {aba === 'nauta' ? <span className="text-[11px] text-gray-500">Cobrança manual</span> : (
+                        <AsaasCell item={asaas?.resumo[s(r.lead_id)]} configurado={!!asaas?.configurado} pixAuto={envios?.pixAuto[s(r.lead_id)]}
+                          syncing={syncing === s(r.lead_id)} onSync={() => syncLead(s(r.lead_id))} />
+                      )}
                     </td>
                     <td className="px-4 py-3" onClick={e => e.stopPropagation()}>
                       {(() => {
@@ -230,14 +252,14 @@ export default function FinanceiroPage() {
                               className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 h-7 rounded-lg" style={{ background: '#69a8d9', color: '#fff' }}>
                               <Check size={12} /> Marcar pago
                             </button>
-                            {tipo === 'atraso' && asaas?.configurado && (
+                            {aba === 'atuan' && tipo === 'atraso' && asaas?.configurado && (
                               <button onClick={() => enviarLinkAtraso(r)} disabled={gerando === lid}
                                 title="Envia ao cliente o PIX/boleto do honorário atrasado com valores atualizados (multa 2% + juros 1% a.m., vence em 3 dias)"
                                 className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 h-7 rounded-lg disabled:opacity-40" style={{ background: '#F47920', color: '#fff' }}>
                                 {gerando === lid ? <Loader2 size={12} className="animate-spin" /> : <Link2 size={12} />} Enviar link
                               </button>
                             )}
-                            {envios?.whats ? (
+                            {aba === 'nauta' ? null : envios?.whats ? (
                               (envios.cobradosHoje ?? []).includes(lid) ? (
                                 <button disabled title="Já cobrado hoje — libera de novo amanhã"
                                   className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 h-7 rounded-lg opacity-40 cursor-not-allowed" style={{ background: '#25D366', color: '#fff' }}>

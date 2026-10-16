@@ -78,25 +78,23 @@ export default function CobrancaModal({ leadId, nome: nomeInit, cnpj: cnpjInit, 
 
   return (
     <div className="fixed inset-0 z-[55] flex items-center justify-center p-4">
-      <div className="absolute inset-0 backdrop-blur-md" style={{ background: 'rgba(5,4,20,0.8)' }} onClick={onClose} />
-      <div className="relative z-10 w-full max-w-md rounded-2xl p-6" style={{ background: 'rgba(15,14,26,0.97)', border: '1px solid var(--sys-border-2)' }}>
-        <div className="flex items-center justify-between mb-1">
-          <h2 className="text-lg font-black text-white">Cadastrar Cobrança</h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-white"><X size={20} /></button>
-        </div>
-        <p className="text-gray-500 text-sm mb-5">Campos com <span className="text-red-400 font-semibold">borda vermelha</span> precisam ser preenchidos. Clique em <b>Editar</b> para ajustar.</p>
+      <div className="absolute inset-0" style={{ background: 'rgba(15,23,42,0.55)' }} onClick={onClose} />
+      <div className="relative z-10 w-full max-w-md rounded-2xl p-6 shadow-xl" style={{ background: '#ffffff', border: '1px solid #e2e8f0' }}>
+        <button onClick={onClose} className="absolute top-4 right-4" style={{ color: '#94a3b8' }}><X size={20} /></button>
+        <h2 className="text-lg font-black text-center" style={{ color: '#0e2240' }}>Cadastrar Cobrança</h2>
+        <p className="text-sm mb-5 mt-1 text-center" style={{ color: '#64748b' }}>Campos com <span className="font-semibold" style={{ color: '#d15b47' }}>borda vermelha</span> precisam ser preenchidos. Clique em <b>Editar</b> para ajustar.</p>
 
         <div className="space-y-3">
           {campos.map(c => {
             const vazio = !String(c.val).trim()
             return (
               <div key={c.label}>
-                <label className="block text-xs font-semibold text-gray-400 mb-1.5">{c.label}</label>
+                <label className="block text-xs font-semibold mb-1.5" style={{ color: '#64748b' }}>{c.label}</label>
                 <input type={c.type} value={c.val} disabled={!editando} onChange={e => c.set(e.target.value)}
-                  className="w-full h-11 px-4 rounded-xl text-sm text-white placeholder-gray-600 outline-none disabled:opacity-80"
+                  className="w-full h-11 px-4 rounded-xl text-sm outline-none"
                   style={{
-                    background: 'var(--sys-surface-3)',
-                    border: `1px solid ${vazio ? 'rgba(239,68,68,0.75)' : 'var(--sys-border-2)'}`,
+                    background: editando ? '#ffffff' : '#f8fafc', color: '#1e293b',
+                    border: `1px solid ${vazio ? 'rgba(209,91,71,0.8)' : '#cbd5e1'}`,
                     boxShadow: vazio ? '0 0 0 3px rgba(239,68,68,0.12)' : 'none',
                   }} />
               </div>
@@ -105,25 +103,25 @@ export default function CobrancaModal({ leadId, nome: nomeInit, cnpj: cnpjInit, 
         </div>
 
         {copiado && (
-          <p className="text-[13px] text-green-400 font-semibold mt-4 flex items-center gap-1.5">
+          <p className="text-[13px] font-semibold mt-4 flex items-center justify-center gap-1.5" style={{ color: '#16a34a' }}>
             <Check size={15} /> Copiado para a área de transferência — cole no WhatsApp/Financeiro.
           </p>
         )}
 
         <div className="grid grid-cols-3 gap-2 mt-5">
           <button onClick={onClose}
-            className="h-11 rounded-xl text-sm font-bold text-gray-300 transition-colors"
-            style={{ background: 'var(--sys-surface-3)', border: '1px solid var(--sys-border-2)' }}>
+            className="h-11 rounded-xl text-sm font-bold transition-colors"
+            style={{ background: '#ffb752', color: '#fff' }}>
             Cancelar
           </button>
           <button onClick={() => setEditando(true)} disabled={editando}
             className="h-11 rounded-xl text-sm font-bold flex items-center justify-center gap-1.5 disabled:opacity-50"
-            style={{ background: 'color-mix(in srgb, var(--sys-accent) 15%, transparent)', border: '1px solid color-mix(in srgb, var(--sys-accent) 40%, transparent)', color: 'var(--sys-accent)' }}>
+            style={{ background: '#69a8d9', color: '#fff' }}>
             <Pencil size={14} /> Editar
           </button>
           <button onClick={salvar}
-            className="h-11 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-1.5"
-            style={{ background: 'linear-gradient(135deg, #ef4444, #dc2626)' }}>
+            className="h-11 rounded-xl text-sm font-bold flex items-center justify-center gap-1.5"
+            style={{ background: '#88b87f', color: '#fff' }}>
             {copiado ? <Check size={15} /> : <Copy size={15} />} Salvar
           </button>
         </div>

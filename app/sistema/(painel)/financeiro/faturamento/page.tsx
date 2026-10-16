@@ -31,7 +31,7 @@ function Card({ label, valor, sub, cor, icon: Icon }: { label: string; valor: st
     <div className="flex-1 min-w-[200px] rounded-2xl p-5 text-center flex flex-col items-center justify-center" style={{ background: 'var(--sys-surface)', border: '1px solid var(--sys-border)' }}>
       <Icon size={20} className="mb-1.5" style={{ color: cor || 'var(--sys-accent)' }} />
       <p className="text-gray-400 text-[11px] font-bold uppercase tracking-wide">{label}</p>
-      <p className="text-2xl font-black mt-1.5" style={{ color: cor || '#fff', letterSpacing: '-0.02em' }}>{valor}</p>
+      <p className="text-2xl font-black mt-1.5" style={{ color: cor || '#1e293b', letterSpacing: '-0.02em' }}>{valor}</p>
       {sub && <p className="text-xs text-gray-500 mt-1">{sub}</p>}
     </div>
   )
@@ -45,6 +45,8 @@ export default function FaturamentoPage() {
   const [rows, setRows] = useState<Row[] | null>(null)
   const [busca, setBusca] = useState('')
   const [filtro, setFiltro] = useState<'todos' | StatusKey>('todos')
+  // Abas por escritório: Atuan e Nauta Contabilidade (totais e lista seguem a aba)
+  const [aba, setAba] = useState<'atuan' | 'nauta'>('atuan')
   const [sort, setSort] = useState<{ key: string; dir: 1 | -1 }>({ key: 'empresa', dir: 1 })
   const [asaas, setAsaas] = useState<AsaasResumo | null>(null)
   const [syncing, setSyncing] = useState(false)
@@ -77,7 +79,9 @@ export default function FaturamentoPage() {
     finally { setSyncing(false) }
   }
 
-  const base = rows ?? []
+  const escritorio = (r: Row) => (s(r.contabilidade) === 'nauta' ? 'nauta' : 'atuan')
+  const base = (rows ?? []).filter(r => escritorio(r) === aba)
+  const qtdAba = (a: 'atuan' | 'nauta') => (rows ?? []).filter(r => escritorio(r) === a).length
   const [cy, cm] = comp.split('-').map(Number)
   const mesLabel = new Date(cy, cm - 1, 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
   const isMesAtual = comp === nowComp()
@@ -143,6 +147,17 @@ export default function FaturamentoPage() {
               className="h-10 pl-9 pr-4 rounded-xl text-sm text-white placeholder-gray-600 outline-none w-72" style={{ background: 'var(--sys-surface-3)', border: '1px solid var(--sys-border-2)' }} />
           </div>
         </div>
+      </div>
+
+      {/* Abas por escritório */}
+      <div className="flex items-end gap-1 mb-5 border-b" style={{ borderColor: 'var(--sys-border)' }}>
+        {([['atuan', 'Atuan'], ['nauta', 'Nauta Contabilidade']] as const).map(([id, label]) => (
+          <button key={id} onClick={() => setAba(id)}
+            className="px-4 py-2.5 text-sm font-bold -mb-px border-b-2 transition-colors"
+            style={{ borderColor: aba === id ? '#F47920' : 'transparent', color: aba === id ? '#F47920' : '#64748b' }}>
+            {label} <span className="ml-1 text-[11px] font-semibold opacity-70">{rows ? qtdAba(id) : '·'}</span>
+          </button>
+        ))}
       </div>
 
       {/* Seletor de mês (competência) */}

@@ -73,7 +73,7 @@ async function contexto(leadId: string, cobrancaId?: string, tipo?: TipoEnvio): 
     ? (await pool.query(`SELECT id, asaas_payment_id, valor, to_char(vencimento,'YYYY-MM-DD') AS vencimento, to_char(competencia,'YYYY-MM-DD') AS competencia, invoice_url FROM financeiro_cobrancas WHERE id = $1`, [cobrancaId])).rows[0]
     : (await pool.query(`SELECT id, asaas_payment_id, valor, to_char(vencimento,'YYYY-MM-DD') AS vencimento, to_char(competencia,'YYYY-MM-DD') AS competencia, invoice_url
                            FROM financeiro_cobrancas
-                          WHERE lead_id = $1 AND status IN ('PENDING','OVERDUE')
+                          WHERE lead_id = $1 AND tipo = 'honorario' AND status IN ('PENDING','OVERDUE')
                             -- atraso: só cobrança JÁ vencida ou de mês passado (link do atraso) — nunca a do mês corrente
                             AND ($2::boolean = false OR vencimento < current_date OR competencia < date_trunc('month', current_date))
                           ORDER BY competencia ASC, vencimento ASC LIMIT 1`, [leadId, tipo === 'atraso'])).rows[0]
@@ -244,7 +244,7 @@ export async function rodarRegua(opts: { hoje?: Date; intervaloMs?: [number, num
          FROM financeiro_cobrancas fc
          JOIN leads l ON l.id = fc.lead_id
          LEFT JOIN clientes c ON c.lead_id = l.id
-        WHERE fc.status IN ('PENDING','OVERDUE') AND fc.vencimento = $1::date
+        WHERE fc.status IN ('PENDING','OVERDUE') AND fc.tipo = 'honorario' AND fc.vencimento = $1::date
           AND COALESCE(l.pix_automatico_ativo, false) = false
           AND COALESCE(l.contabilidade, 'atuan') <> 'nauta'
           AND COALESCE(c.situacao, 'ativo') <> 'inativo'
@@ -279,7 +279,7 @@ export async function alvosDisponivel(ate: string) {
        FROM financeiro_cobrancas fc
        JOIN leads l ON l.id = fc.lead_id
        LEFT JOIN clientes c ON c.lead_id = l.id
-      WHERE fc.status = 'PENDING' AND fc.vencimento > current_date AND fc.vencimento <= $1::date
+      WHERE fc.status = 'PENDING' AND fc.tipo = 'honorario' AND fc.vencimento > current_date AND fc.vencimento <= $1::date
         AND to_char(fc.competencia, 'YYYY-MM') = to_char(fc.vencimento, 'YYYY-MM') -- link de atraso não entra
         AND COALESCE(l.pix_automatico_ativo, false) = false
         AND COALESCE(l.contabilidade, 'atuan') <> 'nauta'
@@ -407,4 +407,41 @@ export async function cobrarTodos(leadIds: string[], modeloId: number, intervalo
     } finally { cobrancaEmMassa = null }
   })()
   return { iniciado: true, total: alvos.length }
+}
+
+// Envia ao cliente a cobrança de um serviço avulso (WhatsApp + e-mail, com PIX e boleto)
+export async function enviarServicoAvulso(leadId: string, cobrancaId: string) {
+  const l = (await pool.query(
+    `SELECT l.nome, l.whatsapp, l.email, l.empresa_id, l.fin_resp_nome, l.fin_resp_email, l.fin_resp_whatsapp,
+            c.emp_nome, c.cli_nome_completo, c.emp_telefone, c.emp_email
+       FROM leads l LEFT JOIN clientes c ON c.lead_id = l.id WHERE l.id = $1`, [leadId]
+  )).rows[0]
+  const cob = (await pool.query(
+    `SELECT id, asaas_payment_id, servico, valor, to_char(vencimento,'YYYY-MM-DD') AS vencimento, invoice_url FROM financeiro_cobrancas WHERE id = $1 AND lead_id = $2`, [cobrancaId, leadId]
+  )).rows[0]
+  if (!l || !cob) throw new Error('Cobrança não encontrada')
+  let pix = ''
+  if (cob.asaas_payment_id) { try { pix = await pixDaCobranca(cob.asaas_payment_id) } catch { /* sem pix */ } }
+  const nome = primeiroNome(l.fin_resp_nome || l.cli_nome_completo || l.nome)
+  const corpo = `${saudacao()} ${nome}!!!\n\nSegue a cobrança do serviço *${cob.servico}* prestado para a *${l.emp_nome || l.nome}* 😊\n\nVencimento: *${dataBR(cob.vencimento)}* 📅\nValor: *${brl(Number(cob.valor))}* 💰\n\nAbaixo a chave PIX e o boleto para pagar como preferir!\n\nQualquer dúvida estamos à disposição.`
+  const whatsapp = soDigitos(l.fin_resp_whatsapp || l.whatsapp || l.emp_telefone)
+  const email = l.fin_resp_email || l.emp_email || l.email || ''
+  const reg = (canal: string, destino: string, mensagem: string, ok: boolean, erro?: string) => pool.query(
+    `INSERT INTO cobranca_envios (empresa_id, lead_id, cobranca_id, tipo, canal, destino, mensagem, ok, erro) VALUES ($1,$2,$3,'avulso',$4,$5,$6,$7,$8)`,
+    [l.empresa_id, leadId, cob.id, canal, destino, mensagem, ok, erro ?? null]
+  )
+  const out: { canal: string; ok: boolean; erro?: string }[] = []
+  if (whatsConfigurado() && whatsapp) {
+    const partes = [corpo, ...(pix ? [pix] : []), ...(cob.invoice_url ? [`📄 Boleto: ${cob.invoice_url}`] : [])]
+    try { const dest = await enviarWhats(whatsapp, partes); await reg('whatsapp', dest, partes.join('\n\n'), true); out.push({ canal: 'whatsapp', ok: true }) }
+    catch (e) { const erro = (e as Error).message; await reg('whatsapp', whatsapp, partes.join('\n\n'), false, erro); out.push({ canal: 'whatsapp', ok: false, erro }) }
+  }
+  if (emailConfigurado() && email) {
+    const c = { pix, link: cob.invoice_url || '' } as unknown as Ctx
+    const m = corpoEmail(corpo, c, false)
+    try { await enviarEmail(email, `Cobrança de serviço — ${cob.servico}`, m.html, m.text); await reg('email', email, m.text, true); out.push({ canal: 'email', ok: true }) }
+    catch (e) { const erro = (e as Error).message; await reg('email', email, m.text, false, erro); out.push({ canal: 'email', ok: false, erro }) }
+  }
+  emitCrmChange()
+  return { envios: out }
 }

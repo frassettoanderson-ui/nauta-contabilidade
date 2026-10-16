@@ -154,22 +154,28 @@ const PAGO = new Set(['RECEIVED', 'CONFIRMED', 'RECEIVED_IN_CASH'])
 
 export async function upsertCobranca(p: AsaasPayment, leadId: string, empresaId: string | null, competenciaOverride?: string) {
   const pagoEm = PAGO.has(p.status) ? (p.clientPaymentDate || p.paymentDate || null) : null
+  const avulso = String(p.externalReference ?? '').startsWith('avulso:')
   // Competência: a já gravada na cobrança vale (ex.: link avulso de um mês atrasado, que vence
   // no mês atual mas quita o mês antigo); só um override explícito a substitui.
   const up = await pool.query(
     `INSERT INTO financeiro_cobrancas
-       (empresa_id, lead_id, asaas_payment_id, asaas_subscription_id, competencia, valor, vencimento, status, billing_type, invoice_url, bank_slip_url, pago_em, raw)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
+       (empresa_id, lead_id, asaas_payment_id, asaas_subscription_id, competencia, valor, vencimento, status, billing_type, invoice_url, bank_slip_url, pago_em, raw, tipo)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$15)
      ON CONFLICT (asaas_payment_id) DO UPDATE SET
        status = EXCLUDED.status, valor = EXCLUDED.valor, vencimento = EXCLUDED.vencimento,
        competencia = CASE WHEN $14::boolean THEN EXCLUDED.competencia ELSE financeiro_cobrancas.competencia END,
        billing_type = EXCLUDED.billing_type, invoice_url = EXCLUDED.invoice_url, bank_slip_url = EXCLUDED.bank_slip_url,
        pago_em = EXCLUDED.pago_em, raw = EXCLUDED.raw, atualizado_em = now()
-     RETURNING to_char(competencia, 'YYYY-MM-DD') AS competencia`,
+     RETURNING to_char(competencia, 'YYYY-MM-DD') AS competencia, tipo`,
     [empresaId, leadId, p.id, p.subscription ?? null, competenciaOverride ?? compOf(p.dueDate), Number(p.value || 0), p.dueDate, p.status, p.billingType,
-     p.invoiceUrl ?? null, p.bankSlipUrl ?? null, pagoEm, JSON.stringify(p), !!competenciaOverride]
+     p.invoiceUrl ?? null, p.bankSlipUrl ?? null, pagoEm, JSON.stringify(p), !!competenciaOverride, avulso ? 'avulso' : 'honorario']
   )
   const competencia: string = up.rows[0].competencia
+  if (avulso || up.rows[0].tipo === 'avulso') {
+    // Serviço avulso: só registra o caixa quando pago — não dá baixa em mês de honorário
+    if (pagoEm) await lancarFluxoCaixa(p, leadId, empresaId, competencia, pagoEm)
+    return
+  }
   // Descrição no Asaas (aparece no boleto/fatura): "… — referente a setembro/2026" (mês dos serviços)
   if (p.status === 'PENDING' && !/referente a/i.test(p.description ?? '')) {
     const ref = referenciaDe(competencia)?.extenso
@@ -206,11 +212,13 @@ async function lancarFluxoCaixa(p: AsaasPayment, leadId: string, empresaId: stri
     `SELECT COALESCE(NULLIF(c.emp_nome,''), l.nome) AS nome FROM leads l LEFT JOIN clientes c ON c.lead_id = l.id WHERE l.id = $1`, [leadId]
   )).rows[0]?.nome || 'Cliente'
   const compBR = `${competencia.slice(5, 7)}/${competencia.slice(0, 4)}`
+  const cobInfo = (await pool.query(`SELECT tipo, servico FROM financeiro_cobrancas WHERE asaas_payment_id = $1`, [p.id])).rows[0]
+  const ehAvulso = cobInfo?.tipo === 'avulso'
   const empExpr = 'COALESCE($7, (SELECT id FROM empresas WHERE slug = \'nauta\'))'
   await pool.query(
     `INSERT INTO fin_lancamentos (tipo, categoria, descricao, cliente_nome, valor, data, autor, empresa_id, origem, origem_ref)
-     VALUES ('entrada', 'Honorários', $1, $2, $3, $4, $5, ${empExpr}, 'asaas', $6)`,
-    [`Honorário ${nome} — ${compBR}`, nome, net, pagoEm, 'Asaas', p.id, empresaId]
+     VALUES ('entrada', $8, $1, $2, $3, $4, $5, ${empExpr}, 'asaas', $6)`,
+    [ehAvulso ? `Serviço avulso: ${cobInfo?.servico || 'serviço'} — ${nome}` : `Honorário ${nome} — ${compBR}`, nome, net, pagoEm, 'Asaas', p.id, empresaId, ehAvulso ? 'Serviços avulsos' : 'Honorários']
   )
   if (tarifa > 0) {
     await pool.query(
@@ -270,7 +278,7 @@ export async function quitarNoAsaas(leadId: string, competencia: string, valor: 
   const data = pagoEm && pagoEm <= ymd(new Date()) ? pagoEm : ymd(new Date())
   const r = await pool.query(
     `SELECT id, asaas_payment_id, valor FROM financeiro_cobrancas
-      WHERE lead_id = $1 AND to_char(competencia,'YYYY-MM') = $2 AND status IN ('PENDING','OVERDUE') AND asaas_payment_id IS NOT NULL`,
+      WHERE lead_id = $1 AND tipo = 'honorario' AND to_char(competencia,'YYYY-MM') = $2 AND status IN ('PENDING','OVERDUE') AND asaas_payment_id IS NOT NULL`,
     [leadId, competencia.slice(0, 7)]
   )
   const out: { asaasPaymentId: string; ok: boolean; erro?: string }[] = []
@@ -312,7 +320,7 @@ export async function alterarDiaVencimento(leadId: string, dia: number) {
   if (asaasConfigurado()) {
     const r = await pool.query(
       `SELECT id, asaas_payment_id, to_char(vencimento,'YYYY-MM-DD') AS venc FROM financeiro_cobrancas
-        WHERE lead_id = $1 AND status = 'PENDING' AND asaas_payment_id IS NOT NULL AND vencimento >= current_date
+        WHERE lead_id = $1 AND tipo = 'honorario' AND status = 'PENDING' AND asaas_payment_id IS NOT NULL AND vencimento >= current_date
           AND to_char(competencia,'YYYY-MM') = to_char(vencimento,'YYYY-MM')`, [leadId]
     )
     for (const c of r.rows) {
@@ -352,7 +360,7 @@ export async function excluirCobrancaMes(leadId: string, competencia: string) {
   )
   if (pago.rows[0]) throw new Error('Esta cobrança já foi paga — não pode ser excluída')
   const cobs = (await pool.query(
-    `SELECT id, asaas_payment_id, status FROM financeiro_cobrancas WHERE lead_id = $1 AND to_char(competencia,'YYYY-MM') = $2 AND status <> 'DELETED'`,
+    `SELECT id, asaas_payment_id, status FROM financeiro_cobrancas WHERE lead_id = $1 AND tipo = 'honorario' AND to_char(competencia,'YYYY-MM') = $2 AND status <> 'DELETED'`,
     [leadId, comp]
   )).rows
   if (cobs.some(c => PAGO.has(c.status))) throw new Error('Esta cobrança já foi paga no Asaas — não pode ser excluída')
@@ -378,7 +386,7 @@ export async function desfazerQuitacaoAsaas(leadId: string, competencia: string)
   if (!asaasConfigurado()) return []
   const r = await pool.query(
     `SELECT id, asaas_payment_id FROM financeiro_cobrancas
-      WHERE lead_id = $1 AND to_char(competencia,'YYYY-MM') = $2 AND status = 'RECEIVED_IN_CASH' AND asaas_payment_id IS NOT NULL`,
+      WHERE lead_id = $1 AND tipo = 'honorario' AND to_char(competencia,'YYYY-MM') = $2 AND status = 'RECEIVED_IN_CASH' AND asaas_payment_id IS NOT NULL`,
     [leadId, competencia.slice(0, 7)]
   )
   const out: { asaasPaymentId: string; ok: boolean; erro?: string }[] = []
@@ -425,7 +433,7 @@ export async function gerarCobrancaAtraso(leadId: string) {
   const ja = (await pool.query(
     `SELECT id, asaas_payment_id, invoice_url, valor, to_char(vencimento,'YYYY-MM-DD') AS vencimento, (atualizado_em::date = current_date) AS hoje
        FROM financeiro_cobrancas
-      WHERE lead_id = $1 AND competencia = $2::date AND status IN ('PENDING','OVERDUE') AND asaas_payment_id IS NOT NULL
+      WHERE lead_id = $1 AND tipo = 'honorario' AND competencia = $2::date AND status IN ('PENDING','OVERDUE') AND asaas_payment_id IS NOT NULL
       ORDER BY vencimento DESC LIMIT 1`, [leadId, comp]
   )).rows[0]
   if (ja) {
@@ -519,7 +527,7 @@ export async function processarWebhook(body: { event?: string; payment?: AsaasPa
 export async function competenciaAberta(leadId: string): Promise<string> {
   const c = await pool.query(
     `SELECT to_char(competencia,'YYYY-MM-01') AS c FROM financeiro_cobrancas
-      WHERE lead_id = $1 AND status IN ('PENDING','OVERDUE') ORDER BY vencimento ASC LIMIT 1`, [leadId]
+      WHERE lead_id = $1 AND tipo = 'honorario' AND status IN ('PENDING','OVERDUE') ORDER BY vencimento ASC LIMIT 1`, [leadId]
   )
   if (c.rows[0]?.c) return c.rows[0].c
   const p = await pool.query(
@@ -558,10 +566,55 @@ export async function resumoCobrancas(empresaId: string) {
   const r = await pool.query(
     `SELECT DISTINCT ON (lead_id) lead_id, status, to_char(vencimento,'YYYY-MM-DD') AS vencimento, invoice_url, bank_slip_url, valor
        FROM financeiro_cobrancas
-      WHERE empresa_id = $1 OR lead_id IN (SELECT id FROM leads WHERE empresa_id = $1)
+      WHERE tipo = 'honorario' AND (empresa_id = $1 OR lead_id IN (SELECT id FROM leads WHERE empresa_id = $1))
       ORDER BY lead_id, (status IN ('PENDING','OVERDUE')) DESC, vencimento ASC`, [empresaId]
   )
   const map: Record<string, { status: string; vencimento: string; invoice_url: string | null; bank_slip_url: string | null; valor: number }> = {}
   for (const row of r.rows) map[String(row.lead_id)] = { status: row.status, vencimento: row.vencimento, invoice_url: row.invoice_url, bank_slip_url: row.bank_slip_url, valor: Number(row.valor) }
   return map
+}
+
+// ── Serviço avulso (ficha › Financeiro › "Cobrar serviço avulso") ───────────
+// Cobrança única no Asaas, separada do honorário: externalReference "avulso:<lead>" → tipo 'avulso'.
+export async function criarServicoAvulso(leadId: string, servico: string, valor: number, vencimento: string) {
+  if (!servico.trim()) throw new Error('Informe o serviço prestado')
+  if (!(valor > 0)) throw new Error('Informe o valor')
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(vencimento) || vencimento < ymd(new Date())) throw new Error('Vencimento inválido (não pode ser no passado)')
+  const d = await dadosLead(leadId)
+  const customerId = await ensureCustomer(d)
+  const p = await api<AsaasPayment>('/payments', {
+    method: 'POST',
+    body: JSON.stringify({
+      customer: customerId, billingType: 'UNDEFINED', value: +valor.toFixed(2), dueDate: vencimento,
+      description: `${servico.trim()} — ${d.emp_nome || d.nome}`, externalReference: `avulso:${leadId}`,
+    }),
+  })
+  await upsertCobranca(p, leadId, d.empresa_id)
+  const r = await pool.query(
+    `UPDATE financeiro_cobrancas SET tipo = 'avulso', servico = $2 WHERE asaas_payment_id = $1 RETURNING id`, [p.id, servico.trim()]
+  )
+  emitCrmChange()
+  return { id: String(r.rows[0]?.id ?? ''), asaas_payment_id: p.id, invoice_url: p.invoiceUrl ?? null, valor: p.value, vencimento: p.dueDate }
+}
+
+export async function listServicosAvulsos(leadId: string) {
+  const r = await pool.query(
+    `SELECT id, servico, valor, to_char(vencimento,'YYYY-MM-DD') AS vencimento, status, to_char(pago_em,'YYYY-MM-DD') AS pago_em,
+            invoice_url, to_char(criado_em,'YYYY-MM-DD') AS criado_em
+       FROM financeiro_cobrancas WHERE lead_id = $1 AND tipo = 'avulso' AND status <> 'DELETED' ORDER BY vencimento DESC, criado_em DESC`, [leadId]
+  )
+  return r.rows
+}
+
+export async function excluirServicoAvulso(leadId: string, id: string) {
+  const c = (await pool.query(`SELECT asaas_payment_id, status FROM financeiro_cobrancas WHERE id = $1 AND lead_id = $2 AND tipo = 'avulso'`, [id, leadId])).rows[0]
+  if (!c) throw new Error('Cobrança não encontrada')
+  if (PAGO.has(c.status)) throw new Error('Este serviço já foi pago — não pode ser excluído')
+  if (c.asaas_payment_id) {
+    try { await api(`/payments/${c.asaas_payment_id}`, { method: 'DELETE' }) }
+    catch (e) { if (!/404|not found|não encontrad/i.test((e as Error).message)) throw new Error('Asaas recusou a exclusão: ' + (e as Error).message) }
+  }
+  await pool.query(`UPDATE financeiro_cobrancas SET status = 'DELETED', atualizado_em = now() WHERE id = $1`, [id])
+  emitCrmChange()
+  return { ok: true }
 }

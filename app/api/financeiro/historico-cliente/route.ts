@@ -41,7 +41,7 @@ export async function GET(req: NextRequest) {
   const cobr = (await pool.query(
     `SELECT id, to_char(competencia,'YYYY-MM') AS comp, to_char(vencimento,'YYYY-MM-DD') AS venc,
             valor, status, to_char(pago_em,'YYYY-MM-DD"T"HH24:MI:SS') AS pago_em, invoice_url
-       FROM financeiro_cobrancas WHERE lead_id = $1 AND status <> 'DELETED'`, [leadId]
+       FROM financeiro_cobrancas WHERE lead_id = $1 AND tipo = 'honorario' AND status <> 'DELETED'`, [leadId]
   )).rows
   const pagtos = (await pool.query(
     `SELECT to_char(competencia,'YYYY-MM') AS comp, valor, to_char(pago_em,'YYYY-MM-DD"T"HH24:MI:SS') AS pago_em, dispensado

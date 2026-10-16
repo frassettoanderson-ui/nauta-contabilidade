@@ -1192,6 +1192,8 @@ function dtHoraBR(iso: string) { return `${dtBR(iso)} ${iso.slice(11, 16)}`; }
 function SecFinanceiro({ empresa }: { empresa: EmpresaDetalhe }) {
   const toast = useToast();
   const [excluindo, setExcluindo] = useState<string | null>(null);
+  const [avulsoModal, setAvulsoModal] = useState(false);
+  const [avulsoKey, setAvulsoKey] = useState(0);
   const [meses, setMeses] = useState<MesFin[] | null>(null);
   const [erro, setErro] = useState('');
   const [aberto, setAberto] = useState<string | null>(null);
@@ -1289,14 +1291,16 @@ function SecFinanceiro({ empresa }: { empresa: EmpresaDetalhe }) {
 
   return (
     <div className="space-y-4">
-      <CobrancaConfig leadId={empresa.nautaLeadId} onVencimentoAlterado={recarregar} />
+      <CobrancaConfig leadId={empresa.nautaLeadId} onVencimentoAlterado={recarregar} onCobrarAvulso={() => setAvulsoModal(true)} />
+      <ServicosAvulsos leadId={empresa.nautaLeadId} recarregarKey={avulsoKey} />
+      {avulsoModal && <ServicoAvulsoModal leadId={empresa.nautaLeadId} onClose={() => setAvulsoModal(false)} onCriado={() => { setAvulsoModal(false); setAvulsoKey((k) => k + 1); }} />}
       {historico}
     </div>
   );
 }
 
 // Responsável pelo financeiro (destino de boleto/WhatsApp/e-mail) + alteração do dia de vencimento
-function CobrancaConfig({ leadId, onVencimentoAlterado }: { leadId: string; onVencimentoAlterado: () => void }) {
+function CobrancaConfig({ leadId, onVencimentoAlterado, onCobrarAvulso }: { leadId: string; onVencimentoAlterado: () => void; onCobrarAvulso: () => void }) {
   const toast = useToast();
   const [resp, setResp] = useState<{ nome: string; email: string; whatsapp: string } | null>(null);
   const [dia, setDia] = useState<number | null>(null);
@@ -1337,6 +1341,9 @@ function CobrancaConfig({ leadId, onVencimentoAlterado }: { leadId: string; onVe
           <span className="text-[12px] text-slate-500">{dia ? <>Vence todo dia <b className="text-slate-700">{dia}</b></> : 'Sem dia de vencimento'}</span>
           <button onClick={() => setModal(true)} className="inline-flex items-center gap-1.5 rounded bg-marca-500 px-3 py-1.5 text-[12px] font-semibold text-white hover:bg-marca-600">
             <CalendarDays size={14} /> Alterar vencimento
+          </button>
+          <button onClick={onCobrarAvulso} className="inline-flex items-center gap-1.5 rounded bg-status-info px-3 py-1.5 text-[12px] font-semibold text-white hover:opacity-90" style={{ background: '#69a8d9' }}>
+            <DollarSign size={14} /> Cobrar serviço avulso
           </button>
         </div>
       </div>
@@ -1398,6 +1405,141 @@ function AlterarVencimentoModal({ url, diaAtual, onClose, onFeito }: { url: stri
           <button onClick={onClose} className="rounded bg-status-warn px-4 py-1.5 text-[13px] font-semibold text-white hover:opacity-90">Cancelar</button>
           <button onClick={confirmar} disabled={enviando} className="inline-flex items-center gap-1.5 rounded bg-status-ok px-4 py-1.5 text-[13px] font-semibold text-white hover:opacity-90 disabled:opacity-60">
             {enviando ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />} Confirmar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ---------- Serviços avulsos (cobrança única no Asaas, fora do honorário) ----------
+interface ServicoAvulso { id: string; servico: string; valor: number; vencimento: string; status: string; pago_em: string | null; invoice_url: string | null }
+const PAGO_AV = new Set(['RECEIVED', 'CONFIRMED', 'RECEIVED_IN_CASH']);
+const brlAv = (n: number) => 'R$ ' + Number(n || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+
+function ServicosAvulsos({ leadId, recarregarKey }: { leadId: string; recarregarKey: number }) {
+  const toast = useToast();
+  const [lista, setLista] = useState<ServicoAvulso[] | null>(null);
+  const [excluindo, setExcluindo] = useState<string | null>(null);
+  const url = `/api/financeiro/${encodeURIComponent(leadId)}/avulsos`;
+  const carregar = () => { fetch(url, { credentials: 'include' }).then((r) => (r.ok ? r.json() : [])).then(setLista).catch(() => setLista([])); };
+  useEffect(carregar, [url, recarregarKey]);
+
+  async function excluir(sv: ServicoAvulso) {
+    if (!window.confirm(`Excluir a cobrança do serviço "${sv.servico}" (${brlAv(sv.valor)})?\n\nO boleto é apagado também no Asaas.`)) return;
+    setExcluindo(sv.id);
+    try {
+      const r = await fetch(`${url}?id=${encodeURIComponent(sv.id)}`, { method: 'DELETE', credentials: 'include' });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(j.error || 'Erro ao excluir');
+      toast('ok', 'Cobrança do serviço excluída.'); carregar();
+    } catch (e) { toast('erro', (e as Error).message); }
+    finally { setExcluindo(null); }
+  }
+
+  if (!lista || lista.length === 0) return null;
+  const hoje = new Date().toLocaleDateString('sv-SE');
+  return (
+    <div className="overflow-hidden rounded border border-slate-200 bg-white">
+      <p className="border-b border-slate-200 bg-slate-50 px-3 py-2 text-[12px] font-bold text-slate-600">Serviços avulsos</p>
+      <table className="w-full text-[13px]">
+        <thead className="text-left text-[12px] font-semibold text-slate-500">
+          <tr><th className="px-3 py-2">Serviço</th><th className="px-3 py-2">Vencimento</th><th className="px-3 py-2">Valor</th><th className="px-3 py-2">Situação</th><th className="w-20" /></tr>
+        </thead>
+        <tbody className="divide-y divide-slate-100">
+          {lista.map((sv) => {
+            const pago = PAGO_AV.has(sv.status);
+            const vencido = !pago && sv.vencimento < hoje;
+            return (
+              <tr key={sv.id}>
+                <td className="px-3 py-2 font-medium text-slate-700">{sv.servico}</td>
+                <td className="px-3 py-2 text-slate-600">{dtBR(sv.vencimento)}</td>
+                <td className="px-3 py-2 text-slate-600">{brlAv(sv.valor)}</td>
+                <td className="px-3 py-2">
+                  <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${pago ? 'bg-emerald-100 text-emerald-700' : vencido ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>
+                    {pago ? `Pago em ${dtBR(sv.pago_em)}` : vencido ? 'Vencido' : 'Em aberto'}
+                  </span>
+                </td>
+                <td className="px-3 py-2">
+                  <div className="flex items-center justify-end gap-3">
+                    {sv.invoice_url && <a href={sv.invoice_url} target="_blank" rel="noopener noreferrer" title="Abrir boleto/PIX" className="text-status-info hover:opacity-70"><DollarSign size={14} /></a>}
+                    {!pago && (
+                      <button title="Excluir esta cobrança (apaga também no Asaas)" onClick={() => excluir(sv)} disabled={excluindo === sv.id} className="text-status-danger hover:opacity-70 disabled:opacity-50">
+                        {excluindo === sv.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                      </button>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function ServicoAvulsoModal({ leadId, onClose, onCriado }: { leadId: string; onClose: () => void; onCriado: () => void }) {
+  const toast = useToast();
+  const [servico, setServico] = useState('');
+  const [valor, setValor] = useState(''); // máscara de moeda: "1.234,56"
+  const [venc, setVenc] = useState('');
+  const [enviar, setEnviar] = useState(true);
+  const [salvando, setSalvando] = useState(false);
+  const hoje = new Date().toLocaleDateString('sv-SE');
+  const mascaraMoeda = (v: string) => { const d = v.replace(/\D/g, '').replace(/^0+/, ''); if (!d) return ''; const n = Number(d) / 100; return n.toLocaleString('pt-BR', { minimumFractionDigits: 2 }); };
+  const valorNum = () => Number(valor.replace(/\./g, '').replace(',', '.')) || 0;
+
+  async function salvar() {
+    if (!servico.trim()) { toast('erro', 'Informe o serviço prestado.'); return; }
+    if (!(valorNum() > 0)) { toast('erro', 'Informe o valor.'); return; }
+    if (!venc || venc < hoje) { toast('erro', 'Informe um vencimento a partir de hoje.'); return; }
+    setSalvando(true);
+    try {
+      const r = await fetch(`/api/financeiro/${encodeURIComponent(leadId)}/avulsos`, {
+        method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ servico: servico.trim(), valor: valorNum(), vencimento: venc, enviar }),
+      });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(j.error || 'Erro ao gerar a cobrança');
+      const envios: { canal: string; ok: boolean }[] = j.envio?.envios ?? [];
+      const falhou = envios.some((e) => !e.ok);
+      toast(falhou ? 'erro' : 'ok', enviar
+        ? (falhou ? 'Cobrança gerada no Asaas, mas houve falha ao enviar para o cliente.' : 'Cobrança gerada no Asaas e enviada ao cliente.')
+        : 'Cobrança gerada no Asaas.');
+      if (j.invoice_url) { try { await navigator.clipboard.writeText(j.invoice_url); } catch { /* sem clipboard */ } }
+      onCriado();
+    } catch (e) { toast('erro', (e as Error).message); setSalvando(false); }
+  }
+
+  const campo = 'w-full rounded border border-slate-300 px-3 py-2 text-[13px] focus:border-marca-500 focus:outline-none';
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      <div className="relative w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
+        <button onClick={onClose} className="absolute right-3 top-3 text-slate-400 hover:text-slate-600"><X size={18} /></button>
+        <div className="mb-4 text-center">
+          <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-full" style={{ background: 'rgba(105,168,217,0.15)', color: '#69a8d9' }}><DollarSign size={22} /></div>
+          <h3 className="text-[16px] font-bold text-slate-800">Cobrar serviço avulso</h3>
+          <p className="mt-1 text-[12px] text-slate-500">Gera uma cobrança no Asaas separada do honorário mensal.</p>
+        </div>
+        <div className="space-y-3">
+          <label className="block"><span className="mb-0.5 block text-[11px] font-semibold text-slate-500">Serviço prestado</span>
+            <input className={campo} value={servico} onChange={(e) => setServico(e.target.value)} placeholder="Ex.: Alteração contratual, IRPF, certidão…" autoFocus /></label>
+          <div className="grid grid-cols-2 gap-3">
+            <label className="block"><span className="mb-0.5 block text-[11px] font-semibold text-slate-500">Valor (R$)</span>
+              <input className={campo} inputMode="numeric" value={valor} onChange={(e) => setValor(mascaraMoeda(e.target.value))} placeholder="0,00" /></label>
+            <label className="block"><span className="mb-0.5 block text-[11px] font-semibold text-slate-500">Vencimento</span>
+              <input type="date" className={campo} min={hoje} value={venc} onChange={(e) => setVenc(e.target.value)} /></label>
+          </div>
+          <label className="flex items-center justify-center gap-2 pt-1 text-[12px] text-slate-600">
+            <input type="checkbox" checked={enviar} onChange={(e) => setEnviar(e.target.checked)} /> Enviar ao cliente agora (WhatsApp + e-mail, com PIX e boleto)
+          </label>
+        </div>
+        <div className="mt-5 flex justify-center gap-2">
+          <button onClick={onClose} className="rounded bg-status-warn px-4 py-1.5 text-[13px] font-semibold text-white hover:opacity-90">Cancelar</button>
+          <button onClick={salvar} disabled={salvando} className="inline-flex items-center gap-1.5 rounded bg-status-ok px-4 py-1.5 text-[13px] font-semibold text-white hover:opacity-90 disabled:opacity-60">
+            {salvando ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />} Gerar cobrança
           </button>
         </div>
       </div>

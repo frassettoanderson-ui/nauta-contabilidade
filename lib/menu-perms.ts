@@ -116,3 +116,35 @@ export function podeVer(perms: string[] | null | undefined, href: string): boole
   if (perms == null || SEMPRE_VISIVEL.includes(href)) return true
   return perms.includes(href)
 }
+
+// ─── Acesso por URL (middleware) ────────────────────────────────────────────
+// Telas abertas a qualquer usuário logado
+const ROTAS_LIVRES = ['/sistema/sugestoes', '/sistema/sem-acesso', '/sistema/login', '/sistema/recuperar-senha', '/sistema/criar-usuario']
+// Itens que não liberam as subtelas por prefixo (são telas próprias)
+const SO_EXATO = new Set(['/sistema', '/sistema/obrigo'])
+
+/** O usuário (perms do menu) pode abrir esta tela? perms null = vê tudo. */
+export function rotaPermitida(pathname: string, perms: string[] | null | undefined): boolean {
+  if (perms == null) return true
+  const p = pathname.replace(/\/+$/, '') || '/'
+  if (ROTAS_LIVRES.some(r => p === r || p.startsWith(r + '/'))) return true
+  if (perms.some(h => (SO_EXATO.has(h) ? p === h : p === h || p.startsWith(h + '/')))) return true
+  // Índice de um grupo (ex.: /sistema/financeiro) quando há alguma subtela liberada
+  if (perms.some(h => h.startsWith(p + '/') && p !== '/sistema')) return true
+  // Onboarding em lista e a ficha da empresa (aberta pelo card) fazem parte do Onboarding
+  if (perms.includes('/sistema/onboarding') && (p === '/sistema/obrigo/empresas' || p.startsWith('/sistema/obrigo/empresas/'))) return true
+  return false
+}
+
+/** Primeira tela liberada (destino quando o usuário não pode abrir o Dashboard). */
+export function primeiraRota(perms: string[] | null | undefined): string {
+  if (perms == null || perms.includes('/sistema')) return '/sistema'
+  return perms[0] || '/sistema/sugestoes'
+}
+
+/** APIs sensíveis: dados do Financeiro só p/ quem tem alguma tela do Financeiro. */
+export function apiPermitida(pathname: string, perms: string[] | null | undefined): boolean {
+  if (perms == null) return true
+  if (pathname.startsWith('/api/financeiro/')) return perms.some(h => h.startsWith('/sistema/financeiro'))
+  return true
+}

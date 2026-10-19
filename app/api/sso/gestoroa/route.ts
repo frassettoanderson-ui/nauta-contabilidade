@@ -20,7 +20,9 @@ export async function GET(req: Request) {
 
   // Sem sessão: manda para o login da Nauta e volta para cá depois de autenticar.
   // Location relativo: resolve no domínio do navegador (atrás do proxy, req.url vê localhost:3000).
-  if (!user?.email) {
+  // Sem e-mail no cadastro: identifica pelo nome de usuário (login), estável e único
+  const identidade = user?.email || (user?.name ? `${user.name.trim().toLowerCase().replace(/[^a-z0-9._-]+/g, '.')}@usuarios.obrigo.interno` : '')
+  if (!identidade) {
     if (modoJson) return NextResponse.json({ error: 'nao autenticado' }, { status: 401 })
     return new NextResponse(null, {
       status: 307,
@@ -34,7 +36,7 @@ export async function GET(req: Request) {
   }
 
   const base = (process.env.GESTOROA_BASE_URL || '/gestoroa').replace(/\/$/, '')
-  const token = signSsoToken({ email: user.email, nome: user.name, role: user.role }, secret)
+  const token = signSsoToken({ email: identidade, nome: user?.name, role: user?.role }, secret)
   const action = `${base}/api/v1/auth/sso`
 
   if (modoJson) {

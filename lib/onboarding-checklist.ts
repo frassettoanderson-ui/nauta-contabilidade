@@ -31,14 +31,16 @@ const BASE: Record<SetorId, ChecklistItem[]> = {
     { key: 'pessoal:esocial',       label: 'Conferir eventos do eSocial' },
     { key: 'pessoal:afastamentos',  label: 'Verificar afastamentos, férias e rescisões pendentes' },
   ],
+  // Lista do setor fiscal (21/10/2026). DTEC e Livro mantêm as chaves antigas (preserva o que já foi marcado).
   fiscal: [
-    { key: 'fiscal:prefeitura',       label: 'Acesso à prefeitura' },
-    { key: 'fiscal:estado',           label: 'Vinculação no Estado' },
-    { key: 'fiscal:simples',          label: 'Cadastro Simples Nacional' },
-    { key: 'fiscal:livro',            label: 'Livro eletrônico' },
-    { key: 'fiscal:particularidades', label: 'Confirmar particularidades da atividade no Estado' },
-    { key: 'fiscal:detec',            label: 'Cadastrar DETEC' },
-    { key: 'fiscal:calendario',       label: 'Definir calendário de envio de documentos' },
+    { key: 'fiscal:certificado',      label: 'Certificado Digital' },
+    { key: 'fiscal:detec',            label: 'Cadastro DTEC' },
+    { key: 'fiscal:nfse',             label: 'Cadastro NFS-e' },
+    { key: 'fiscal:livro',            label: 'Livro Eletrônico' },
+    { key: 'fiscal:ie',               label: 'Inscrição Estadual' },
+    { key: 'fiscal:sedif',            label: 'SEDIF-SN' },
+    { key: 'fiscal:sintegra',         label: 'SINTEGRA' },
+    { key: 'fiscal:codigo-simples',   label: 'Código de Acesso SIMPLES Nacional' },
   ],
   atendente: [
     { key: 'atendente:alvara',     label: 'Emitir as guias de alvará municipal' },

@@ -1,9 +1,9 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { Loader2, Check, CheckCircle2, Link2, Rocket, MessageCircle, Pencil, ClipboardCheck, X, ChevronDown, ChevronUp, Copy, ExternalLink, Clock, LayoutGrid, List as ListIcon, Eye, EyeOff } from 'lucide-react'
+import { Loader2, Check, CheckCircle2, Link2, Rocket, MessageCircle, Pencil, ClipboardCheck, X, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Copy, ExternalLink, Clock, LayoutGrid, List as ListIcon, Eye, EyeOff } from 'lucide-react'
 import Link from 'next/link'
 import { getOnboardingBoard, setOnboardingCheck, concluirOnboarding, gerarLinkCadastro, abrirFichaObrigo, type OnboardingCliente } from '@/lib/api'
 import { SETORES, itensDoSetor, podeEditarSetor, checksEfetivos, setorConcluido, setorItensCompletos, tudoConcluido, doneKey, ITEM_CADASTRO, type SetorId } from '@/lib/onboarding-checklist'
@@ -40,6 +40,32 @@ export default function OnboardingPage() {
     const todos = SETORES.flatMap(s => itensDoSetor(s.id, c.onboarding_categoria ?? ''))
     return todos.length ? todos.filter(i => ck.includes(i.key)).length / todos.length : 0
   }
+  // Setas nas laterais da tela: avançam/voltam 1 card por clique (além da barra de rolagem)
+  const boardRef = useRef<HTMLDivElement>(null)
+  const [setas, setSetas] = useState<{ l: number; r: number; esq: boolean; dir: boolean; rola: boolean } | null>(null)
+  const atualizarSetas = useCallback(() => {
+    const el = boardRef.current
+    if (!el) { setSetas(null); return }
+    const rc = el.getBoundingClientRect()
+    setSetas({
+      l: rc.left + 8, r: window.innerWidth - rc.right + 8,
+      esq: el.scrollLeft > 4, dir: el.scrollLeft + el.clientWidth < el.scrollWidth - 4,
+      rola: el.scrollWidth > el.clientWidth + 4,
+    })
+  }, [])
+  function moverCard(sentido: 1 | -1) {
+    const el = boardRef.current
+    if (!el) return
+    const cards = Array.from(el.children) as HTMLElement[]
+    const passo = cards.length > 1 ? cards[1].offsetLeft - cards[0].offsetLeft : 340
+    const atual = Math.round(el.scrollLeft / passo)
+    el.scrollTo({ left: Math.max(0, (atual + sentido) * passo), behavior: 'smooth' })
+  }
+  useEffect(() => {
+    const t = setTimeout(atualizarSetas, 50)
+    window.addEventListener('resize', atualizarSetas)
+    return () => { clearTimeout(t); window.removeEventListener('resize', atualizarSetas) }
+  }, [atualizarSetas, board, ordem])
   const toggleVerTodos = (id: string) => setVerTodos(s => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n })
   const toggleExpandir = (id: string) => setExpandidos(s => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n })
 
@@ -153,7 +179,15 @@ export default function OnboardingPage() {
           <p className="text-gray-400 text-sm">Nenhum cliente em onboarding no momento.</p>
         </div>
       ) : (
-        <div className="flex gap-5 overflow-x-auto pb-4">
+        <>
+        {setas?.rola && ([['esq', -1, setas.esq, { left: setas.l }], ['dir', 1, setas.dir, { right: setas.r }]] as const).map(([lado, sentido, ativo, pos]) => (
+          <button key={lado} onClick={() => moverCard(sentido)} disabled={!ativo} title={sentido < 0 ? 'Card anterior' : 'Próximo card'}
+            className="w-11 h-11 rounded-full shadow-lg flex items-center justify-center transition-opacity disabled:opacity-25 disabled:cursor-default"
+            style={{ position: 'fixed', top: '50%', transform: 'translateY(-50%)', zIndex: 30, background: '#F47920', color: '#fff', ...pos }}>
+            {sentido < 0 ? <ChevronLeft size={22} /> : <ChevronRight size={22} />}
+          </button>
+        ))}
+        <div ref={boardRef} onScroll={atualizarSetas} className="flex gap-5 overflow-x-auto pb-4">
           {(ordem === 'recentes' ? board
             : ordem === 'antigos' ? [...board].reverse()
             : [...board].sort((a, b) => (progresso(b) - progresso(a)) * (ordem === 'mais' ? 1 : -1))
@@ -327,6 +361,7 @@ export default function OnboardingPage() {
             )
           })}
         </div>
+        </>
       )}
 
       {editId && <LeadModal leadId={editId} mode="edit" onClose={() => setEditId(null)} onChanged={load} />}

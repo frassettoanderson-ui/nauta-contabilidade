@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { Loader2, Check, CheckCircle2, Link2, Rocket, MessageCircle, Pencil, ClipboardCheck, X, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Copy, ExternalLink, Clock, LayoutGrid, List as ListIcon, Eye, EyeOff } from 'lucide-react'
+import { Loader2, Check, CheckCircle2, Link2, Rocket, MessageCircle, Pencil, ClipboardCheck, X, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Copy, ExternalLink, Clock, LayoutGrid, List as ListIcon, Eye, EyeOff, Search } from 'lucide-react'
 import Link from 'next/link'
 import { getOnboardingBoard, setOnboardingCheck, concluirOnboarding, gerarLinkCadastro, abrirFichaObrigo, type OnboardingCliente } from '@/lib/api'
 import { SETORES, itensDoSetor, podeEditarSetor, checksEfetivos, setorConcluido, setorItensCompletos, tudoConcluido, doneKey, ITEM_CADASTRO, type SetorId } from '@/lib/onboarding-checklist'
@@ -65,7 +65,8 @@ export default function OnboardingPage() {
     const t = setTimeout(atualizarSetas, 50)
     window.addEventListener('resize', atualizarSetas)
     return () => { clearTimeout(t); window.removeEventListener('resize', atualizarSetas) }
-  }, [atualizarSetas, board, ordem])
+  }, [atualizarSetas, board, ordem, busca])
+  const [busca, setBusca] = useState('')
   const toggleVerTodos = (id: string) => setVerTodos(s => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n })
   const toggleExpandir = (id: string) => setExpandidos(s => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n })
 
@@ -145,6 +146,12 @@ export default function OnboardingPage() {
     )
   }
 
+  const semAcento = (t: string) => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
+  const termo = semAcento(busca.trim())
+  const boardFiltrado = (board ?? []).filter(c => !termo
+    || semAcento(`${c.emp_nome ?? ''} ${c.nome ?? ''}`).includes(termo)
+    || (termo.replace(/D/g, '').length >= 3 && (c.emp_cnpj ?? '').replace(/D/g, '').includes(termo.replace(/D/g, ''))))
+
   return (
     <div className="p-6 lg:p-8">
       <div className="flex items-start justify-between gap-3">
@@ -156,6 +163,11 @@ export default function OnboardingPage() {
         </div>
         {/* Ordenação + alternador Kanban / Lista (Lista = mesma tela de Empresas, só onboarding) */}
         <div className="flex items-center gap-1.5 shrink-0">
+          <div className="relative mr-1.5">
+            <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar por nome ou CNPJ…"
+              className="w-56 rounded-md border border-slate-300 bg-white py-1.5 pl-8 pr-2.5 text-[13px] text-slate-700 outline-none focus:border-[#F47920]" />
+          </div>
           <select value={ordem} onChange={e => setOrdem(e.target.value)} title="Ordenar os cards"
             className="rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-[13px] font-semibold text-slate-600 outline-none mr-1.5">
             <option value="recentes">Chegada: mais recentes primeiro</option>
@@ -188,9 +200,12 @@ export default function OnboardingPage() {
           </button>
         ))}
         <div ref={boardRef} onScroll={atualizarSetas} className="flex gap-5 overflow-x-auto pb-4">
-          {(ordem === 'recentes' ? board
-            : ordem === 'antigos' ? [...board].reverse()
-            : [...board].sort((a, b) => (progresso(b) - progresso(a)) * (ordem === 'mais' ? 1 : -1))
+          {boardFiltrado.length === 0 && (
+            <p className="w-full py-10 text-center text-sm text-gray-500">Nenhum cliente encontrado para "{busca}".</p>
+          )}
+          {(ordem === 'recentes' ? boardFiltrado
+            : ordem === 'antigos' ? [...boardFiltrado].reverse()
+            : [...boardFiltrado].sort((a, b) => (progresso(b) - progresso(a)) * (ordem === 'mais' ? 1 : -1))
           ).map(c => {
             const cat = c.onboarding_categoria ?? ''
             const checks = checksEfetivos(c.checks, c.cadastro_completo)

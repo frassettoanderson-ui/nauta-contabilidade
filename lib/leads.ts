@@ -166,6 +166,8 @@ export async function iniciarOnboarding(leadId: string, categoria: string) {
     [leadId, categoria]
   )
   emitCrmChange()
+  // Obrigô: a empresa sai da fase comercial (passa a aparecer nas listas)
+  syncEmpresaFromLead(leadId).catch(() => {})
   // Cobrança automática: cria cliente + assinatura mensal no Asaas (não bloqueia o onboarding se falhar)
   if (asaasConfigurado()) {
     sincronizarLead(leadId).catch(e => console.error('[asaas] sincronizarLead falhou:', (e as Error).message))

@@ -212,7 +212,8 @@ export async function getDashboard(empresaId: string): Promise<DashboardData> {
   const cnpjRow = await pool.query(
     `SELECT COUNT(*)::int AS matrizes,
             COALESCE(SUM(CASE WHEN jsonb_typeof(emp_filiais) = 'array' THEN jsonb_array_length(emp_filiais) ELSE 0 END), 0)::int AS filiais
-       FROM clientes WHERE empresa_id = $1 AND COALESCE(situacao, 'ativo') <> 'inativo'`,
+       FROM clientes WHERE empresa_id = $1 AND COALESCE(situacao, 'ativo') <> 'inativo'
+        AND (lead_id IS NULL OR lead_id IN (SELECT id FROM leads WHERE COALESCE(em_onboarding, false) OR COALESCE(onboarding_concluido, false)))`,
     [empresaId]
   )
   const cnpjsAtivos = Number(cnpjRow.rows[0]?.matrizes || 0) + Number(cnpjRow.rows[0]?.filiais || 0)

@@ -36,6 +36,8 @@ export async function listClientes(empresaId: string) {
      FROM clientes c
      LEFT JOIN leads l ON l.id = c.lead_id
      WHERE c.empresa_id = $1
+       -- lead ainda no CRM (contrato), onboarding não iniciado: não aparece até iniciar
+       AND (c.lead_id IS NULL OR COALESCE(l.em_onboarding, false) OR COALESCE(l.onboarding_concluido, false))
      ORDER BY c.criado_em DESC`,
     [empresaId]
   )

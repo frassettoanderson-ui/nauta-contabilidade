@@ -24,6 +24,7 @@ export default function OnboardingPage() {
   const ehGestor = role === 'admin' || role === 'gerente'
 
   const [board, setBoard] = useState<OnboardingCliente[] | null>(null)
+  const [busca, setBusca] = useState('') // filtro por nome/CNPJ
   const [busy, setBusy] = useState<string | null>(null)
   const [editId, setEditId] = useState<string | null>(null)
   const [concluindo, setConcluindo] = useState<OnboardingCliente | null>(null)
@@ -66,7 +67,6 @@ export default function OnboardingPage() {
     window.addEventListener('resize', atualizarSetas)
     return () => { clearTimeout(t); window.removeEventListener('resize', atualizarSetas) }
   }, [atualizarSetas, board, ordem, busca])
-  const [busca, setBusca] = useState('')
   const toggleVerTodos = (id: string) => setVerTodos(s => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n })
   const toggleExpandir = (id: string) => setExpandidos(s => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n })
 

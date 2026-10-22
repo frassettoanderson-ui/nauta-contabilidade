@@ -10,7 +10,7 @@ import { getSomAtivo } from '@/lib/sys-prefs'
 import LogoObrigo from './LogoObrigo'
 import {
   Users, UserPlus, Search, FileText, FilePlus, FileClock, FileSearch,
-  Briefcase, LayoutGrid, Inbox, BarChart3, TrendingUp, UserCog, Building2,
+  Briefcase, LayoutGrid, Inbox, BarChart3, TrendingUp, Calculator, UserCog, Building2,
   Rocket, Settings, DollarSign, LayoutDashboard, MessageCircle,
   ArrowDownCircle, ArrowUpCircle, Repeat, CalendarCheck, Target, Percent, AlertTriangle, Receipt,
   ChevronRight, ChevronLeft, Menu, X, Home, User, HelpCircle, Power,
@@ -69,7 +69,13 @@ const NAV: NavItem[] = [
     { label: 'Formulário do cliente', icon: ClipboardList, href: `${OB}/societario/formularios` },
   ] },
   { label: 'MEI',        href: '/sistema/mei',        icon: Store },
-  { label: 'Alvarás / Regularização', href: '/sistema/alvaras', icon: BadgeCheck },
+  { label: 'Alvarás / Regularização', icon: BadgeCheck, href: `${OB}/alvaras`, children: [
+    { label: 'Painel', icon: LayoutDashboard, href: `${OB}/alvaras` },
+    { label: 'Vencimentos e renovações', icon: CalendarCheck, href: `${OB}/alvaras/vencimentos` },
+    { label: 'Kanban de legalização', icon: LayoutGrid, href: `${OB}/alvaras/kanban` },
+    { label: 'Calculadora de taxas', icon: Calculator, href: `${OB}/alvaras/calculadora` },
+    { label: 'Matriz, órgãos e checklists', icon: ClipboardList, href: `${OB}/alvaras/referencias` },
+  ] },
   // Menu do Obrigô, igual ao do app separado (gestor-oa/web/src/components/Layout.tsx),
   // menos "Dados do meu perfil" (fica na barra de cima) e "Trocar estilo" (estilo único).
   // Clicar em "Acessórias" abre a tela inicial do Obrigô (painel das entregas); o flyout segue no hover.

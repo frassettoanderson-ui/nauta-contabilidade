@@ -21,6 +21,11 @@ import KanbanSocietario from './pages/societario/Kanban';
 import GestaoSocietario from './pages/societario/Gestao';
 import ProcessosSocietario from './pages/societario/ProcessosSoc';
 import FormulariosSocietario from './pages/societario/Formularios';
+import PainelAlvaras from './pages/alvaras/Painel';
+import VencimentosAlvaras from './pages/alvaras/Vencimentos';
+import KanbanAlvaras from './pages/alvaras/KanbanAlv';
+import CalculadoraAlvaras from './pages/alvaras/Calculadora';
+import ReferenciasAlvaras from './pages/alvaras/Referencias';
 import Auditoria from './pages/Auditoria';
 import EmpresasList from './pages/empresas/EmpresasList';
 import MotivosCancelamento from './pages/empresas/MotivosCancelamento';
@@ -155,6 +160,11 @@ function Rotas() {
         <Route path="societario/gestao" element={<GestaoSocietario />} />
         <Route path="societario/processos" element={<ProcessosSocietario />} />
         <Route path="societario/formularios" element={<FormulariosSocietario />} />
+        <Route path="alvaras" element={<PainelAlvaras />} />
+        <Route path="alvaras/vencimentos" element={<VencimentosAlvaras />} />
+        <Route path="alvaras/kanban" element={<KanbanAlvaras />} />
+        <Route path="alvaras/calculadora" element={<CalculadoraAlvaras />} />
+        <Route path="alvaras/referencias" element={<ReferenciasAlvaras />} />
         <Route path="processos" element={<Processos />} />
         <Route path="processos/novo" element={<ProcessoForm />} />
         <Route path="processos/matrizes" element={<Matrizes />} />

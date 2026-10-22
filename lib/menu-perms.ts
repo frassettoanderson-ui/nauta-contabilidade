@@ -47,7 +47,6 @@ export const MENU_GRUPOS: MenuGrupo[] = [
     { href: '/sistema/fiscal', label: 'Fiscal' },
     { href: '/sistema/pessoal', label: 'Pessoal' },
     { href: '/sistema/mei', label: 'MEI' },
-    { href: '/sistema/alvaras', label: 'Alvarás / Regularização' },
     { href: '/sistema/configuracoes', label: 'Configurações' },
   ] },
   { grupo: 'Societário', itens: [
@@ -55,6 +54,13 @@ export const MENU_GRUPOS: MenuGrupo[] = [
     { href: '/sistema/obrigo/societario/gestao', label: 'Gestão e Dashboard' },
     { href: '/sistema/obrigo/societario/processos', label: 'Processos' },
     { href: '/sistema/obrigo/societario/formularios', label: 'Formulário do cliente' },
+  ] },
+  { grupo: 'Alvarás / Regularização', itens: [
+    { href: '/sistema/obrigo/alvaras', label: 'Painel' },
+    { href: '/sistema/obrigo/alvaras/vencimentos', label: 'Vencimentos e renovações' },
+    { href: '/sistema/obrigo/alvaras/kanban', label: 'Kanban de legalização' },
+    { href: '/sistema/obrigo/alvaras/calculadora', label: 'Calculadora de taxas' },
+    { href: '/sistema/obrigo/alvaras/referencias', label: 'Matriz, órgãos e checklists' },
   ] },
   { grupo: 'Usuários', itens: [
     { href: '/sistema/usuarios/criar', label: 'Criar Usuário' },

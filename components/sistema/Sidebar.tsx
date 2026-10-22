@@ -15,7 +15,7 @@ import {
   ArrowDownCircle, ArrowUpCircle, Repeat, CalendarCheck, Target, Percent, AlertTriangle, Receipt,
   ChevronRight, ChevronLeft, Menu, X, Home, User, HelpCircle, Power,
   Globe, List, Heart, CheckCircle, Folder, MessageSquare, UploadCloud, Tags, Bot, Download, HardDrive,
-  Smartphone, Star, ClipboardList, Lightbulb, type LucideIcon,
+  Smartphone, Star, ClipboardList, Lightbulb, Landmark, Store, BadgeCheck, type LucideIcon,
 } from 'lucide-react'
 
 // Módulo Obrigô embutido (app/sistema/(painel)/obrigo/[[...slug]])
@@ -64,6 +64,9 @@ const NAV: NavItem[] = [
   ] },
   { label: 'Fiscal',     href: '/sistema/fiscal',     icon: Calculator },
   { label: 'Pessoal',    href: '/sistema/pessoal',    icon: Users },
+  { label: 'Societário', href: '/sistema/societario', icon: Landmark },
+  { label: 'MEI',        href: '/sistema/mei',        icon: Store },
+  { label: 'Alvarás / Regularização', href: '/sistema/alvaras', icon: BadgeCheck },
   // Menu do Obrigô, igual ao do app separado (gestor-oa/web/src/components/Layout.tsx),
   // menos "Dados do meu perfil" (fica na barra de cima) e "Trocar estilo" (estilo único).
   // Clicar em "Acessórias" abre a tela inicial do Obrigô (painel das entregas); o flyout segue no hover.

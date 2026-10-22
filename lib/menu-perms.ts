@@ -46,6 +46,9 @@ export const MENU_GRUPOS: MenuGrupo[] = [
   { grupo: 'Áreas', itens: [
     { href: '/sistema/fiscal', label: 'Fiscal' },
     { href: '/sistema/pessoal', label: 'Pessoal' },
+    { href: '/sistema/societario', label: 'Societário' },
+    { href: '/sistema/mei', label: 'MEI' },
+    { href: '/sistema/alvaras', label: 'Alvarás / Regularização' },
     { href: '/sistema/configuracoes', label: 'Configurações' },
   ] },
   { grupo: 'Usuários', itens: [

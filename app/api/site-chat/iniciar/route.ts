@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { criarConversaSite } from '@/lib/chat'
+import { contatoBloqueado } from '@/lib/bloqueio'
 
 export const dynamic = 'force-dynamic'
 
@@ -8,6 +9,9 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
     if (!body?.nome || !body?.setor) return NextResponse.json({ error: 'Dados incompletos' }, { status: 400 })
+    if (await contatoBloqueado({ telefone: body.telefone, email: body.email })) {
+      return NextResponse.json({ error: 'Não foi possível iniciar o atendimento' }, { status: 403 })
+    }
     const conversaId = await criarConversaSite({
       ehCliente: !!body.ehCliente,
       nome: String(body.nome).slice(0, 120),

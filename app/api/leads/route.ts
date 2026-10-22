@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { insertLead, getLeads, addAtividade } from '@/lib/leads'
 import { empresaAtivaId } from '@/lib/tenant'
+import { contatoBloqueado } from '@/lib/bloqueio'
 
 export const dynamic = 'force-dynamic'
 
@@ -23,6 +24,10 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
     if (!body.nome) {
       return NextResponse.json({ error: 'Nome é obrigatório' }, { status: 400 })
+    }
+    // Vindo do site (sem sessão) de contato bloqueado: responde ok e não grava nada
+    if (!session && await contatoBloqueado({ telefone: body.whatsapp, email: body.email })) {
+      return NextResponse.json({ ok: true })
     }
     // logado -> empresa ativa; vindo do site público (sem sessão) -> null -> cai na Nauta
     const empresaId = session ? await empresaAtivaId() : null

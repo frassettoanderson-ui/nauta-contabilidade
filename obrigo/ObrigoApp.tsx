@@ -26,6 +26,12 @@ import VencimentosAlvaras from './pages/alvaras/Vencimentos';
 import KanbanAlvaras from './pages/alvaras/KanbanAlv';
 import CalculadoraAlvaras from './pages/alvaras/Calculadora';
 import ReferenciasAlvaras from './pages/alvaras/Referencias';
+import PainelMei from './pages/mei/Painel';
+import LancamentosMei from './pages/mei/Lancamentos';
+import DasDasnMei from './pages/mei/DasDasn';
+import DebitosMei from './pages/mei/Debitos';
+import DreMei from './pages/mei/Dre';
+import CalculadoraMei from './pages/mei/Calculadora';
 import Auditoria from './pages/Auditoria';
 import EmpresasList from './pages/empresas/EmpresasList';
 import MotivosCancelamento from './pages/empresas/MotivosCancelamento';
@@ -165,6 +171,12 @@ function Rotas() {
         <Route path="alvaras/kanban" element={<KanbanAlvaras />} />
         <Route path="alvaras/calculadora" element={<CalculadoraAlvaras />} />
         <Route path="alvaras/referencias" element={<ReferenciasAlvaras />} />
+        <Route path="mei" element={<PainelMei />} />
+        <Route path="mei/lancamentos" element={<LancamentosMei />} />
+        <Route path="mei/das" element={<DasDasnMei />} />
+        <Route path="mei/debitos" element={<DebitosMei />} />
+        <Route path="mei/dre" element={<DreMei />} />
+        <Route path="mei/calculadora" element={<CalculadoraMei />} />
         <Route path="processos" element={<Processos />} />
         <Route path="processos/novo" element={<ProcessoForm />} />
         <Route path="processos/matrizes" element={<Matrizes />} />

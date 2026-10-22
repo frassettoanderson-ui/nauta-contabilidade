@@ -1,6 +1,6 @@
-'use client'
-import EmConstrucao from '@/components/sistema/EmConstrucao'
-import { Store } from 'lucide-react'
+import { redirect } from 'next/navigation'
+
+// O MEI vive no módulo Obrigô
 export default function Page() {
-  return <EmConstrucao titulo="MEI" icon={Store} descricao="Módulo de MEI. Em breve." />
+  redirect('/sistema/obrigo/mei')
 }

@@ -68,7 +68,14 @@ const NAV: NavItem[] = [
     { label: 'Processos', icon: List, href: `${OB}/societario/processos` },
     { label: 'Formulário do cliente', icon: ClipboardList, href: `${OB}/societario/formularios` },
   ] },
-  { label: 'MEI',        href: '/sistema/mei',        icon: Store },
+  { label: 'MEI', icon: Store, href: `${OB}/mei`, children: [
+    { label: 'Painel MEI', icon: LayoutDashboard, href: `${OB}/mei` },
+    { label: 'Lançamentos', icon: FilePlus, href: `${OB}/mei/lancamentos` },
+    { label: 'DAS e DASN', icon: CalendarCheck, href: `${OB}/mei/das` },
+    { label: 'Débitos e parcelamento', icon: Receipt, href: `${OB}/mei/debitos` },
+    { label: 'DRE', icon: BarChart3, href: `${OB}/mei/dre` },
+    { label: 'Calculadora e guia', icon: Calculator, href: `${OB}/mei/calculadora` },
+  ] },
   { label: 'Alvarás / Regularização', icon: BadgeCheck, href: `${OB}/alvaras`, children: [
     { label: 'Painel', icon: LayoutDashboard, href: `${OB}/alvaras` },
     { label: 'Vencimentos e renovações', icon: CalendarCheck, href: `${OB}/alvaras/vencimentos` },

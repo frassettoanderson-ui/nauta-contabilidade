@@ -46,7 +46,6 @@ export const MENU_GRUPOS: MenuGrupo[] = [
   { grupo: 'Áreas', itens: [
     { href: '/sistema/fiscal', label: 'Fiscal' },
     { href: '/sistema/pessoal', label: 'Pessoal' },
-    { href: '/sistema/mei', label: 'MEI' },
     { href: '/sistema/configuracoes', label: 'Configurações' },
   ] },
   { grupo: 'Societário', itens: [
@@ -61,6 +60,14 @@ export const MENU_GRUPOS: MenuGrupo[] = [
     { href: '/sistema/obrigo/alvaras/kanban', label: 'Kanban de legalização' },
     { href: '/sistema/obrigo/alvaras/calculadora', label: 'Calculadora de taxas' },
     { href: '/sistema/obrigo/alvaras/referencias', label: 'Matriz, órgãos e checklists' },
+  ] },
+  { grupo: 'MEI', itens: [
+    { href: '/sistema/obrigo/mei', label: 'Painel MEI' },
+    { href: '/sistema/obrigo/mei/lancamentos', label: 'Lançamentos' },
+    { href: '/sistema/obrigo/mei/das', label: 'DAS e DASN' },
+    { href: '/sistema/obrigo/mei/debitos', label: 'Débitos e parcelamento' },
+    { href: '/sistema/obrigo/mei/dre', label: 'DRE' },
+    { href: '/sistema/obrigo/mei/calculadora', label: 'Calculadora e guia' },
   ] },
   { grupo: 'Usuários', itens: [
     { href: '/sistema/usuarios/criar', label: 'Criar Usuário' },

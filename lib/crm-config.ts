@@ -40,3 +40,5 @@ export function classEmoji(n: number): string {
   const e = ['❄️', '🥶', '😐', '🙂', '😍', '🔥']
   return e[Math.max(0, Math.min(5, n))]
 }
+
+export const ORIGENS = ['Site', 'WhatsApp', 'Facebook', 'Instagram', 'Anúncio', 'Google', 'Indicação', 'Espontâneo', 'Outro']

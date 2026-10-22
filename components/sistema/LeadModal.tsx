@@ -14,7 +14,7 @@ import {
   getClienteByLead, listUsuarios, getContratoByLead, gerarContrato, enviarParaAssinatura,
   type LeadDetail, type UsuarioRow, type ContratoRow,
 } from '@/lib/api'
-import { ETAPAS, INTERESSES } from '@/lib/crm-config'
+import { ETAPAS, INTERESSES, ORIGENS } from '@/lib/crm-config'
 import { isContratoPronto } from '@/lib/contratos'
 import ClassBar from './ClassBar'
 
@@ -30,7 +30,7 @@ export default function LeadModal({ leadId, onClose, onChanged, mode = 'view' }:
   const [enviandoAssinatura, setEnviandoAssinatura] = useState(false)
   const [linkCopiado, setLinkCopiado] = useState(false)
   const [editing, setEditing] = useState(false)
-  const [edit, setEdit] = useState({ nome: '', whatsapp: '', email: '', interesse: '' })
+  const [edit, setEdit] = useState({ nome: '', whatsapp: '', email: '', interesse: '', origem: '', indicado_por: '' })
   const [novaAtiv, setNovaAtiv] = useState('')
   const [lembDesc, setLembDesc] = useState('')
   const [lembData, setLembData] = useState(todayStr())
@@ -54,7 +54,7 @@ export default function LeadModal({ leadId, onClose, onChanged, mode = 'view' }:
   const load = useCallback(() => {
     getLeadDetail(leadId).then(d => {
       setD(d)
-      if (mode === 'edit') { setEdit({ nome: d.nome, whatsapp: d.whatsapp || '', email: d.email || '', interesse: d.interesse || '' }); setEditing(true) }
+      if (mode === 'edit') { setEdit({ nome: d.nome, whatsapp: d.whatsapp || '', email: d.email || '', interesse: d.interesse || '', origem: d.origem || '', indicado_por: d.indicado_por || '' }); setEditing(true) }
       getClienteByLead(leadId).then(c => setCadastroCompleto(isContratoPronto(c, d as unknown as Record<string, unknown>))).catch(() => setCadastroCompleto(false))
     })
     getContratoByLead(leadId).then(setContrato).catch(() => {})
@@ -82,12 +82,13 @@ export default function LeadModal({ leadId, onClose, onChanged, mode = 'view' }:
 
   function startEdit() {
     if (!d) return
-    setEdit({ nome: d.nome, whatsapp: d.whatsapp || '', email: d.email || '', interesse: d.interesse || '' })
+    setEdit({ nome: d.nome, whatsapp: d.whatsapp || '', email: d.email || '', interesse: d.interesse || '', origem: d.origem || '', indicado_por: d.indicado_por || '' })
     setEditing(true)
   }
   async function saveEdit() {
+    if (edit.origem === 'Indicação' && !edit.indicado_por.trim()) { alert('Informe quem indicou.'); return }
     setBusy(true)
-    await updateLead(leadId, edit); await load(); onChanged(); setEditing(false); setBusy(false)
+    await updateLead(leadId, { ...edit, origem: edit.origem || null, indicado_por: edit.origem === 'Indicação' ? edit.indicado_por.trim() : null }); await load(); onChanged(); setEditing(false); setBusy(false)
   }
 
   async function setEtapa(etapa: string) {
@@ -172,6 +173,15 @@ export default function LeadModal({ leadId, onClose, onChanged, mode = 'view' }:
                   <option value="">Selecione o interesse</option>
                   {INTERESSES.map(i => <option key={i} value={i}>{i}</option>)}
                 </select>
+                <select value={edit.origem} onChange={e => setEdit(s => ({ ...s, origem: e.target.value }))}
+                  className="w-full h-11 px-4 rounded-xl text-sm text-white outline-none [&>option]:text-gray-900 [&>option]:bg-white" style={FS}>
+                  <option value="">Origem do lead</option>
+                  {ORIGENS.map(o => <option key={o} value={o}>{o}</option>)}
+                </select>
+                {edit.origem === 'Indicação' && (
+                  <input value={edit.indicado_por} onChange={e => setEdit(s => ({ ...s, indicado_por: e.target.value }))} placeholder="Indicado por"
+                    className="w-full h-11 px-4 rounded-xl text-sm text-white placeholder-gray-600 outline-none" style={FS} />
+                )}
                 <div className="flex gap-2">
                   <button onClick={saveEdit} disabled={busy} className="flex-1 h-10 rounded-xl font-bold text-white flex items-center justify-center gap-2" style={{ background: 'linear-gradient(135deg, var(--sys-accent), var(--sys-accent-2))' }}>
                     {busy ? <Loader2 size={15} className="animate-spin" /> : <><Save size={15} /> Salvar</>}
@@ -208,6 +218,7 @@ export default function LeadModal({ leadId, onClose, onChanged, mode = 'view' }:
                   <p className="text-gray-400"><span className="text-gray-600">WhatsApp:</span> {d.whatsapp || '—'}</p>
                   <p className="text-gray-400"><span className="text-gray-600">E-mail:</span> {d.email || '—'}</p>
                   <p className="text-gray-400"><span className="text-gray-600">Criado em:</span> {format(new Date(d.criado_em), 'dd/MM/yyyy', { locale: ptBR })}</p>
+                  <p className="text-gray-400"><span className="text-gray-600">Origem:</span> {d.origem || '—'}</p>
                   {d.indicado_por && <p className="text-gray-400"><span className="text-gray-600">Indicado por:</span> {d.indicado_por}</p>}
                 </div>
 

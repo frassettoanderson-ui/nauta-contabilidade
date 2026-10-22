@@ -3,15 +3,13 @@
 import { useState } from 'react'
 import { X, Loader2, UserPlus } from 'lucide-react'
 import { createLead, type LeadRow } from '@/lib/api'
-import { INTERESSES } from '@/lib/crm-config'
+import { INTERESSES, ORIGENS } from '@/lib/crm-config'
 
 const FIELD     = 'w-full h-11 px-4 rounded-xl text-sm text-white placeholder-gray-600 outline-none'
 const FIELD_SEL = 'w-full h-11 px-4 rounded-xl text-sm text-white placeholder-gray-600 outline-none [&>option]:text-gray-900 [&>option]:bg-white'
 const FS = { background: 'var(--sys-surface-3)', border: '1px solid var(--sys-border-2)' }
 
 export default function AddLeadModal({ onClose, onCreated }: { onClose: () => void; onCreated: (l: LeadRow) => void }) {
-  const ORIGENS = ['Site', 'WhatsApp', 'Facebook', 'Instagram', 'Anúncio', 'Google', 'Indicação', 'Espontâneo', 'Outro']
-
   const [form, setForm] = useState({ nome: '', whatsapp: '', email: '', interesse: '', origem: '', indicado_por: '' })
   const [saving, setSaving] = useState(false)
   const set = (k: string, v: unknown) => setForm(f => ({ ...f, [k]: v }))

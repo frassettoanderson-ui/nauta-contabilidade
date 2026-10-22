@@ -111,6 +111,7 @@ export async function getLeadDetail(id: string) {
 const LEAD_UPDATE_COLS = new Set([
   'nome', 'whatsapp', 'email', 'interesse', 'etapa', 'classificacao',
   'valor_honorario', 'valor_abertura', 'honorario_vencimento', 'negociacao_obs',
+  'origem', 'indicado_por',
 ])
 
 export async function updateLead(id: string, fields: Record<string, unknown>) {

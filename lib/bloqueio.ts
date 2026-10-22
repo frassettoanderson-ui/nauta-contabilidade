@@ -2,20 +2,7 @@ import pool from './db'
 
 // Contatos bloqueados no site (formulário de contato e chat): telefone (só dígitos, sem DDI) ou e-mail.
 // O bloqueado não é avisado: o formulário responde como se tivesse enviado, mas nada é gravado.
-let pronto: Promise<unknown> | null = null
-function garantirTabela() {
-  pronto ??= pool.query(`
-    CREATE TABLE IF NOT EXISTS contatos_bloqueados (
-      id        uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-      tipo      text NOT NULL CHECK (tipo IN ('fone', 'email')),
-      valor     text NOT NULL,
-      motivo    text,
-      criado_em timestamptz NOT NULL DEFAULT now(),
-      UNIQUE (tipo, valor)
-    )`)
-  return pronto
-}
-
+// Tabela: supabase/crm32-contatos-bloqueados.sql
 const fone = (v?: string | null) => {
   let d = String(v ?? '').replace(/\D/g, '')
   if (d.length > 11 && d.startsWith('55')) d = d.slice(2)
@@ -24,7 +11,6 @@ const fone = (v?: string | null) => {
 const email = (v?: string | null) => String(v ?? '').trim().toLowerCase()
 
 export async function contatoBloqueado(c: { telefone?: string | null; email?: string | null; contato?: string | null }): Promise<boolean> {
-  await garantirTabela()
   const fones = [fone(c.telefone), fone(c.contato)].filter(Boolean)
   const emails = [email(c.email), c.contato?.includes('@') ? email(c.contato) : ''].filter(Boolean)
   if (!fones.length && !emails.length) return false

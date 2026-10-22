@@ -17,6 +17,10 @@ import Usuarios from './pages/Usuarios';
 import UsuarioForm from './pages/UsuarioForm';
 import Perfil from './pages/Perfil';
 import EmConstrucao from './pages/EmConstrucao';
+import KanbanSocietario from './pages/societario/Kanban';
+import GestaoSocietario from './pages/societario/Gestao';
+import ProcessosSocietario from './pages/societario/ProcessosSoc';
+import FormulariosSocietario from './pages/societario/Formularios';
 import Auditoria from './pages/Auditoria';
 import EmpresasList from './pages/empresas/EmpresasList';
 import MotivosCancelamento from './pages/empresas/MotivosCancelamento';
@@ -147,6 +151,10 @@ function Rotas() {
         <Route path="robo/assinaturas" element={<Assinaturas />} />
         <Route path="robo/assinaturas/novo" element={<AssinaturaForm />} />
         <Route path="robo/assinaturas/:id" element={<AssinaturaForm />} />
+        <Route path="societario" element={<KanbanSocietario />} />
+        <Route path="societario/gestao" element={<GestaoSocietario />} />
+        <Route path="societario/processos" element={<ProcessosSocietario />} />
+        <Route path="societario/formularios" element={<FormulariosSocietario />} />
         <Route path="processos" element={<Processos />} />
         <Route path="processos/novo" element={<ProcessoForm />} />
         <Route path="processos/matrizes" element={<Matrizes />} />

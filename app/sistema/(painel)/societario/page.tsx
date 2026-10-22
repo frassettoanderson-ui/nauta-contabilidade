@@ -1,6 +1,6 @@
-'use client'
-import EmConstrucao from '@/components/sistema/EmConstrucao'
-import { Landmark } from 'lucide-react'
+import { redirect } from 'next/navigation'
+
+// O Societário vive no módulo Obrigô
 export default function Page() {
-  return <EmConstrucao titulo="Societário" icon={Landmark} descricao="Módulo societário (aberturas, alterações contratuais e baixas). Em breve." />
+  redirect('/sistema/obrigo/societario')
 }

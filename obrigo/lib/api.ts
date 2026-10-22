@@ -11,7 +11,7 @@ export function getAccessToken() {
 }
 
 // Dentro da Nauta o modulo Obrigo fala com a API do Obrigo servida no mesmo dominio (/gestoroa/api/v1).
-const BASE = `${(process.env.NEXT_PUBLIC_OBRIGO_BASE ?? '/gestoroa').replace(/\/$/, '')}/api/v1`;
+export const BASE = `${(process.env.NEXT_PUBLIC_OBRIGO_BASE ?? '/gestoroa').replace(/\/$/, '')}/api/v1`;
 
 export class ApiError extends Error {
   constructor(
@@ -103,6 +103,8 @@ export const api = {
     rawRequest<T>(path, { method: 'POST', body }),
   put: <T>(path: string, body?: unknown) =>
     rawRequest<T>(path, { method: 'PUT', body }),
+  patch: <T>(path: string, body?: unknown) =>
+    rawRequest<T>(path, { method: 'PATCH', body }),
   del: <T>(path: string) => rawRequest<T>(path, { method: 'DELETE' }),
   upload: <T>(path: string, formData: FormData) =>
     rawRequest<T>(path, { method: 'POST', formData }),

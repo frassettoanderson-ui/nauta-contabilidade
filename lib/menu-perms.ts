@@ -46,10 +46,15 @@ export const MENU_GRUPOS: MenuGrupo[] = [
   { grupo: 'Áreas', itens: [
     { href: '/sistema/fiscal', label: 'Fiscal' },
     { href: '/sistema/pessoal', label: 'Pessoal' },
-    { href: '/sistema/societario', label: 'Societário' },
     { href: '/sistema/mei', label: 'MEI' },
     { href: '/sistema/alvaras', label: 'Alvarás / Regularização' },
     { href: '/sistema/configuracoes', label: 'Configurações' },
+  ] },
+  { grupo: 'Societário', itens: [
+    { href: '/sistema/obrigo/societario', label: 'Kanban' },
+    { href: '/sistema/obrigo/societario/gestao', label: 'Gestão e Dashboard' },
+    { href: '/sistema/obrigo/societario/processos', label: 'Processos' },
+    { href: '/sistema/obrigo/societario/formularios', label: 'Formulário do cliente' },
   ] },
   { grupo: 'Usuários', itens: [
     { href: '/sistema/usuarios/criar', label: 'Criar Usuário' },

@@ -62,7 +62,12 @@ const NAV: NavItem[] = [
     { label: 'Conversão', href: '/sistema/relatorios/conversao', icon: TrendingUp },
     { label: 'Empresas', href: '/sistema/relatorios/empresas', icon: Building2 },
   ] },
-  { label: 'Societário', href: '/sistema/societario', icon: Landmark },
+  { label: 'Societário', icon: Landmark, href: `${OB}/societario`, children: [
+    { label: 'Kanban', icon: LayoutGrid, href: `${OB}/societario` },
+    { label: 'Gestão e Dashboard', icon: BarChart3, href: `${OB}/societario/gestao` },
+    { label: 'Processos', icon: List, href: `${OB}/societario/processos` },
+    { label: 'Formulário do cliente', icon: ClipboardList, href: `${OB}/societario/formularios` },
+  ] },
   { label: 'MEI',        href: '/sistema/mei',        icon: Store },
   { label: 'Alvarás / Regularização', href: '/sistema/alvaras', icon: BadgeCheck },
   // Menu do Obrigô, igual ao do app separado (gestor-oa/web/src/components/Layout.tsx),

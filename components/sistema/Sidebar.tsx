@@ -10,7 +10,7 @@ import { getSomAtivo } from '@/lib/sys-prefs'
 import LogoObrigo from './LogoObrigo'
 import {
   Users, UserPlus, Search, FileText, FilePlus, FileClock, FileSearch,
-  Briefcase, LayoutGrid, Inbox, BarChart3, TrendingUp, Calculator, UserCog, Building2,
+  Briefcase, LayoutGrid, Inbox, BarChart3, TrendingUp, UserCog, Building2,
   Rocket, Settings, DollarSign, LayoutDashboard, MessageCircle,
   ArrowDownCircle, ArrowUpCircle, Repeat, CalendarCheck, Target, Percent, AlertTriangle, Receipt,
   ChevronRight, ChevronLeft, Menu, X, Home, User, HelpCircle, Power,
@@ -62,8 +62,6 @@ const NAV: NavItem[] = [
     { label: 'Conversão', href: '/sistema/relatorios/conversao', icon: TrendingUp },
     { label: 'Empresas', href: '/sistema/relatorios/empresas', icon: Building2 },
   ] },
-  { label: 'Fiscal',     href: '/sistema/fiscal',     icon: Calculator },
-  { label: 'Pessoal',    href: '/sistema/pessoal',    icon: Users },
   { label: 'Societário', href: '/sistema/societario', icon: Landmark },
   { label: 'MEI',        href: '/sistema/mei',        icon: Store },
   { label: 'Alvarás / Regularização', href: '/sistema/alvaras', icon: BadgeCheck },

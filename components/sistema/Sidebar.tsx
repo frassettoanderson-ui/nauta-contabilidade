@@ -15,7 +15,7 @@ import {
   ArrowDownCircle, ArrowUpCircle, Repeat, CalendarCheck, Target, Percent, AlertTriangle, Receipt,
   ChevronRight, ChevronLeft, Menu, X, Home, User, HelpCircle, Power,
   Globe, List, Heart, CheckCircle, Folder, MessageSquare, UploadCloud, Tags, Bot, Download, HardDrive,
-  Smartphone, Star, ClipboardList, Lightbulb, Landmark, Store, BadgeCheck, type LucideIcon,
+  Smartphone, Star, ClipboardList, Lightbulb, Landmark, Store, BadgeCheck, ShieldAlert, type LucideIcon,
 } from 'lucide-react'
 
 // Módulo Obrigô embutido (app/sistema/(painel)/obrigo/[[...slug]])
@@ -82,6 +82,14 @@ const NAV: NavItem[] = [
     { label: 'Kanban de legalização', icon: LayoutGrid, href: `${OB}/alvaras/kanban` },
     { label: 'Calculadora de taxas', icon: Calculator, href: `${OB}/alvaras/calculadora` },
     { label: 'Matriz, órgãos e checklists', icon: ClipboardList, href: `${OB}/alvaras/referencias` },
+  ] },
+  { label: 'Situação Fiscal (e-CAC)', icon: ShieldAlert, href: `${OB}/fiscal/empresas`, children: [
+    { label: 'Empresas', icon: Building2, href: `${OB}/fiscal/empresas` },
+    { label: 'Puxar do e-CAC', icon: UploadCloud, href: `${OB}/fiscal/puxar` },
+    { label: 'Eventos futuros (Simples)', icon: CalendarCheck, href: `${OB}/fiscal/eventos` },
+    { label: 'Painel Fiscal do cliente', icon: FileText, href: `${OB}/fiscal/cliente` },
+    { label: 'Relatório de acessos', icon: FileSearch, href: `${OB}/fiscal/acessos` },
+    { label: 'Consulta de optantes', icon: CheckCircle, href: `${OB}/fiscal/optantes` },
   ] },
   // Menu do Obrigô, igual ao do app separado (gestor-oa/web/src/components/Layout.tsx),
   // menos "Dados do meu perfil" (fica na barra de cima) e "Trocar estilo" (estilo único).

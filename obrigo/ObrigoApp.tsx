@@ -32,6 +32,12 @@ import DasDasnMei from './pages/mei/DasDasn';
 import DebitosMei from './pages/mei/Debitos';
 import DreMei from './pages/mei/Dre';
 import CalculadoraMei from './pages/mei/Calculadora';
+import EmpresasFiscal from './pages/fiscal/Empresas';
+import PuxarEcac from './pages/fiscal/Puxar';
+import EventosFuturos from './pages/fiscal/EventosFuturos';
+import PainelFiscalCliente from './pages/fiscal/PainelCliente';
+import AcessosEcac from './pages/fiscal/Acessos';
+import ConsultaOptantes from './pages/fiscal/Optantes';
 import Auditoria from './pages/Auditoria';
 import EmpresasList from './pages/empresas/EmpresasList';
 import MotivosCancelamento from './pages/empresas/MotivosCancelamento';
@@ -171,6 +177,13 @@ function Rotas() {
         <Route path="alvaras/kanban" element={<KanbanAlvaras />} />
         <Route path="alvaras/calculadora" element={<CalculadoraAlvaras />} />
         <Route path="alvaras/referencias" element={<ReferenciasAlvaras />} />
+        <Route path="fiscal" element={<Navigate to="/fiscal/empresas" replace />} />
+        <Route path="fiscal/empresas" element={<EmpresasFiscal />} />
+        <Route path="fiscal/puxar" element={<PuxarEcac />} />
+        <Route path="fiscal/eventos" element={<EventosFuturos />} />
+        <Route path="fiscal/cliente" element={<PainelFiscalCliente />} />
+        <Route path="fiscal/acessos" element={<AcessosEcac />} />
+        <Route path="fiscal/optantes" element={<ConsultaOptantes />} />
         <Route path="mei" element={<PainelMei />} />
         <Route path="mei/lancamentos" element={<LancamentosMei />} />
         <Route path="mei/das" element={<DasDasnMei />} />

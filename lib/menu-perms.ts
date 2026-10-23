@@ -61,6 +61,14 @@ export const MENU_GRUPOS: MenuGrupo[] = [
     { href: '/sistema/obrigo/alvaras/calculadora', label: 'Calculadora de taxas' },
     { href: '/sistema/obrigo/alvaras/referencias', label: 'Matriz, órgãos e checklists' },
   ] },
+  { grupo: 'Situação Fiscal (e-CAC)', itens: [
+    { href: '/sistema/obrigo/fiscal/empresas', label: 'Empresas' },
+    { href: '/sistema/obrigo/fiscal/puxar', label: 'Puxar do e-CAC' },
+    { href: '/sistema/obrigo/fiscal/eventos', label: 'Eventos futuros (Simples)' },
+    { href: '/sistema/obrigo/fiscal/cliente', label: 'Painel Fiscal do cliente' },
+    { href: '/sistema/obrigo/fiscal/acessos', label: 'Relatório de acessos' },
+    { href: '/sistema/obrigo/fiscal/optantes', label: 'Consulta de optantes' },
+  ] },
   { grupo: 'MEI', itens: [
     { href: '/sistema/obrigo/mei', label: 'Painel MEI' },
     { href: '/sistema/obrigo/mei/lancamentos', label: 'Lançamentos' },

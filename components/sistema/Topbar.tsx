@@ -8,7 +8,7 @@ import { getPerfil, updatePerfil, uploadDoc, type PerfilRow } from '@/lib/api'
 // Topbar no padrão do Obrigô (Layout.tsx: `flex items-center gap-4 bg-marinho-800 px-6 py-2.5 text-white`):
 // à direita, nome do usuário (text-sm font-medium) e escritório (text-xs text-marca-100).
 // Aqui o bloco do usuário abre um menu com "Meu perfil" e "Sair" (substitui os botões flutuantes).
-const ESCRITORIO = 'Nauta Contabilidade'
+const ESCRITORIO = 'Atuan Contabilidade'
 
 // Reduz a imagem para no máx. 512px e exporta JPEG leve antes do upload
 async function compressImage(file: File, max = 512): Promise<File> {
@@ -60,8 +60,8 @@ export default function Topbar() {
                 : <User size={16} />}
             </span>
             <span className="text-right leading-tight">
-              <span className="block text-sm font-medium">{nome}</span>
-              <span className="block text-xs" style={{ color: '#FDE6D3' }}>{ESCRITORIO}</span>
+              <span className="block text-sm font-semibold" style={{ color: '#ffffff' }}>{nome}</span>
+              <span className="block text-xs font-medium" style={{ color: '#F8B07A' }}>{ESCRITORIO}</span>
             </span>
             <ChevronDown size={14} className="opacity-70" />
           </button>

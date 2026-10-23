@@ -48,7 +48,7 @@ export async function insertLead(lead: {
   // Sem empresa (ex.: lead vindo do site público) -> cai na Nauta.
   const res = await pool.query(
     `INSERT INTO leads (nome, whatsapp, email, interesse, etapa, classificacao, responsavel_id, responsavel_nome, origem, indicado_por, empresa_id)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, COALESCE($11, (SELECT id FROM empresas WHERE slug = 'nauta'))) RETURNING *`,
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, COALESCE($11, (SELECT id FROM empresas WHERE slug = 'atuan'))) RETURNING *`,
     [lead.nome, lead.whatsapp, lead.email, lead.interesse, lead.etapa ?? 'novo', lead.classificacao ?? 0,
      lead.responsavel_id ?? null, lead.responsavel_nome ?? null, lead.origem ?? null, lead.indicado_por ?? null, lead.empresa_id ?? null]
   )
@@ -403,7 +403,7 @@ export async function addPagamento(leadId: string, competencia: string, valor: n
   // competencia 'YYYY-MM' -> primeiro dia do mês; empresa_id obrigatório p/ aparecer no Dashboard
   const res = await pool.query(
     `INSERT INTO financeiro_pagamentos (lead_id, competencia, valor, pago_em, empresa_id)
-     VALUES ($1, ($2 || '-01')::date, $3, $4, COALESCE($5, (SELECT id FROM empresas WHERE slug = 'nauta')))
+     VALUES ($1, ($2 || '-01')::date, $3, $4, COALESCE($5, (SELECT id FROM empresas WHERE slug = 'atuan')))
      RETURNING id, to_char(competencia,'YYYY-MM') AS competencia, valor, pago_em, criado_em`,
     [leadId, competencia, valor, pagoEm, empresaId ?? null]
   )

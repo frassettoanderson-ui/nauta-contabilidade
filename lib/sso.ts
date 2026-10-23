@@ -9,7 +9,7 @@ function b64url(buf: Buffer): string {
 }
 
 export function signSsoToken(
-  payload: { email: string; nome?: string | null; role?: string | null },
+  payload: { email: string; nome?: string | null; role?: string | null; perfil?: string | null },
   secret: string,
   ttlSec = 120,
 ): string {
@@ -18,6 +18,7 @@ export function signSsoToken(
     email: payload.email,
     nome: payload.nome ?? undefined,
     role: payload.role ?? undefined,
+    perfil: payload.perfil ?? undefined, // atuan | nauta | meis -> escritorio no Obrigô
     iat: agora,
     exp: agora + ttlSec,
   }

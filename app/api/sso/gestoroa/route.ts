@@ -13,7 +13,7 @@ export async function GET(req: Request) {
   // ?next=/empresas/nova → abre essa tela do Obrigô já logado (só caminho relativo simples)
   const nextRaw = new URL(req.url).searchParams.get('next') ?? ''
   const next = /^\/[A-Za-z0-9\-_/]*(\?[A-Za-z0-9\-_=&%]*)?$/.test(nextRaw) ? nextRaw : ''
-  const user = session?.user as { email?: string; name?: string; role?: string } | undefined
+  const user = session?.user as { email?: string; name?: string; role?: string; empresaAtiva?: { slug?: string } | null } | undefined
   // ?json=1 → usado pelo módulo Obrigô embutido em /sistema/obrigo: devolve o token para o
   // próprio navegador apresentar à API do Obrigô via fetch (sem página intermediária).
   const modoJson = new URL(req.url).searchParams.get('json') === '1'
@@ -36,7 +36,7 @@ export async function GET(req: Request) {
   }
 
   const base = (process.env.GESTOROA_BASE_URL || '/gestoroa').replace(/\/$/, '')
-  const token = signSsoToken({ email: identidade, nome: user?.name, role: user?.role }, secret)
+  const token = signSsoToken({ email: identidade, nome: user?.name, role: user?.role, perfil: user?.empresaAtiva?.slug }, secret)
   const action = `${base}/api/v1/auth/sso`
 
   if (modoJson) {

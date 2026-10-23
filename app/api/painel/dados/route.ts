@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
     if (!session) return NextResponse.json({ error: 'Token inválido' }, { status: 401 })
   }
   try {
-    const emp = await pool.query(`SELECT id FROM empresas WHERE slug = 'nauta' LIMIT 1`)
+    const emp = await pool.query(`SELECT id FROM empresas WHERE slug = 'atuan' LIMIT 1`)
     const empresaId = emp.rows[0]?.id
     if (!empresaId) return NextResponse.json({ error: 'Empresa não encontrada' }, { status: 500 })
     const d = await getDashboard(empresaId)

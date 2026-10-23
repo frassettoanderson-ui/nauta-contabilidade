@@ -2,13 +2,14 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { signOut, useSession } from 'next-auth/react'
-import { User, Camera, Loader2, ChevronDown, LogOut } from 'lucide-react'
+import { User, Camera, Loader2, ChevronDown, LogOut, Check } from 'lucide-react'
 import { getPerfil, updatePerfil, uploadDoc, type PerfilRow } from '@/lib/api'
 
 // Topbar no padrão do Obrigô (Layout.tsx: `flex items-center gap-4 bg-marinho-800 px-6 py-2.5 text-white`):
 // à direita, nome do usuário (text-sm font-medium) e escritório (text-xs text-marca-100).
-// Aqui o bloco do usuário abre um menu com "Meu perfil" e "Sair" (substitui os botões flutuantes).
-const ESCRITORIO = 'Atuan Contabilidade'
+// Aqui o bloco do usuário abre um menu com a troca de perfil (Atuan / Nauta / MEIs), "Meu perfil" e "Sair".
+// Cada perfil é uma empresa do ERP (tabela empresas) e um escritório no Obrigô (SSO leva o slug).
+type EmpresaPerfil = { id: string; nome: string; slug: string }
 
 // Reduz a imagem para no máx. 512px e exporta JPEG leve antes do upload
 async function compressImage(file: File, max = 512): Promise<File> {
@@ -31,7 +32,7 @@ const ROLE_LABEL: Record<string, string> = {
 }
 
 export default function Topbar() {
-  const { data: session } = useSession()
+  const { data: session, update } = useSession()
   const [perfil, setPerfil] = useState<PerfilRow | null>(null)
   const [menu, setMenu] = useState(false)
   const [open, setOpen] = useState(false)
@@ -46,6 +47,18 @@ export default function Topbar() {
   }, [])
 
   const nome = perfil?.nome_completo || session?.user?.name || session?.user?.email || 'Usuário'
+  const su = session?.user as { empresas?: EmpresaPerfil[]; empresaAtiva?: EmpresaPerfil | null } | undefined
+  const perfis = su?.empresas ?? []
+  const ativo = su?.empresaAtiva ?? null
+  const [trocando, setTrocando] = useState<string | null>(null)
+  // Troca o perfil: atualiza o token, força o Obrigô a refazer o SSO no escritório novo e recarrega
+  const trocarPerfil = async (id: string) => {
+    if (id === ativo?.id) { setMenu(false); return }
+    setTrocando(id)
+    await update({ empresaId: id })
+    try { sessionStorage.removeItem('obrigo_sso_ok') } catch { /* ignora */ }
+    window.location.reload()
+  }
   const sair = async () => { await signOut({ redirect: false }); window.location.href = '/sistema/login' }
 
   return (
@@ -61,12 +74,25 @@ export default function Topbar() {
             </span>
             <span className="text-right leading-tight">
               <span className="block text-sm font-semibold" style={{ color: '#ffffff' }}>{nome}</span>
-              <span className="block text-xs font-medium" style={{ color: '#F8B07A' }}>{ESCRITORIO}</span>
+              <span className="block text-xs font-medium" style={{ color: '#F8B07A' }}>{ativo?.nome ?? 'Atuan Contabilidade'}</span>
             </span>
             <ChevronDown size={14} className="opacity-70" />
           </button>
           {menu && (
-            <div className="absolute right-6 top-14 z-50 w-48 overflow-hidden rounded-md border border-slate-200 bg-white text-slate-700 shadow-xl">
+            <div className="absolute right-6 top-14 z-50 w-60 overflow-hidden rounded-md border border-slate-200 bg-white text-slate-700 shadow-xl">
+              {perfis.length > 1 && (
+                <div className="border-b border-slate-100 py-1">
+                  <p className="px-3 pb-1 pt-1.5 text-[11px] font-semibold uppercase tracking-wide text-slate-400">Perfil</p>
+                  {perfis.map(p => (
+                    <button key={p.id} onClick={() => trocarPerfil(p.id)} disabled={!!trocando}
+                      className={`flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-slate-50 ${p.id === ativo?.id ? 'font-semibold text-slate-900' : ''}`}>
+                      <span className="flex-1 text-left">{p.nome}</span>
+                      {trocando === p.id ? <Loader2 size={14} className="animate-spin text-slate-400" />
+                        : p.id === ativo?.id && <Check size={15} style={{ color: '#F47920' }} />}
+                    </button>
+                  ))}
+                </div>
+              )}
               <button onClick={() => { setMenu(false); setOpen(true) }} className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-slate-50">
                 <User size={15} className="text-slate-400" /> Meu perfil
               </button>

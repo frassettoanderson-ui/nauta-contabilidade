@@ -57,7 +57,7 @@ export async function pagarContaPagar(empresaId: string, id: string, pagoEm: str
   const desc = c.fornecedor ? `${c.descricao} — ${c.fornecedor}` : c.descricao
   const lanc = await pool.query(
     `INSERT INTO fin_lancamentos (tipo, categoria, descricao, cliente_nome, valor, data, autor, empresa_id, origem, origem_ref)
-     VALUES ('despesa', $1, $2, $3, $4, $5, 'Contas a pagar', COALESCE($6,(SELECT id FROM empresas WHERE slug='nauta')), 'conta_pagar', $7) RETURNING id`,
+     VALUES ('despesa', $1, $2, $3, $4, $5, 'Contas a pagar', COALESCE($6,(SELECT id FROM empresas WHERE slug='atuan')), 'conta_pagar', $7) RETURNING id`,
     [c.categoria || 'Contas a pagar', desc, c.fornecedor ?? null, Number(c.valor) || 0, pagoEm, c.empresa_id, id]
   )
   await pool.query(`UPDATE fin_contas_pagar SET pago = true, pago_em = $2, lancamento_id = $3, atualizado_em = now() WHERE id = $1`, [id, pagoEm, lanc.rows[0].id])

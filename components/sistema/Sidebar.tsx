@@ -99,6 +99,7 @@ const NAV: NavItem[] = [
       { label: 'Usuarios e Permissoes', icon: Users, href: `${OB}/usuarios` },
       { label: 'Departamentos', icon: Tags, href: `${OB}/cadastros` },
       { label: 'Configuracoes gerais', icon: Settings, href: `${OB}/configuracoes` },
+      { label: 'Integrações (API e webhooks)', icon: Repeat, href: `${OB}/integracoes` },
       { label: 'e-Continuo', icon: Bot, children: [
         { label: 'Configurar obrigacoes', icon: Settings, href: `${OB}/robo/assinaturas` },
         { label: 'Conectar Google Drive', icon: HardDrive, href: `${OB}/robo/drive` },

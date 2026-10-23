@@ -90,6 +90,7 @@ export const MENU_GRUPOS: MenuGrupo[] = [
     { href: '/sistema/obrigo/usuarios', label: 'Sistema — Usuários e Permissões' },
     { href: '/sistema/obrigo/cadastros', label: 'Sistema — Departamentos' },
     { href: '/sistema/obrigo/configuracoes', label: 'Sistema — Configurações gerais' },
+    { href: '/sistema/obrigo/integracoes', label: 'Sistema — Integrações (API e webhooks)' },
     { href: '/sistema/obrigo/robo/assinaturas', label: 'e-Contínuo — Configurar obrigações' },
     { href: '/sistema/obrigo/robo/drive', label: 'e-Contínuo — Conectar Google Drive' },
     { href: '/sistema/obrigo/robo/envio', label: 'e-Contínuo — Envio manual' },

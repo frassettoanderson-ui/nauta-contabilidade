@@ -5,6 +5,7 @@ import { emitCrmChange } from './realtime'
 import { calcStatusFinanceiro, vencimentoAjustado } from './financeiro-calc'
 import { syncEmpresaFromLead } from './obrigo-sync'
 import { preencherDatasAbertura } from './cnpj-abertura'
+import { emitir, emitirDoLead, montarLead } from './integracoes'
 const ymdLocal = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 
 export type Lead = {
@@ -53,6 +54,8 @@ export async function insertLead(lead: {
      lead.responsavel_id ?? null, lead.responsavel_nome ?? null, lead.origem ?? null, lead.indicado_por ?? null, lead.empresa_id ?? null]
   )
   emitCrmChange()
+  // Integrações: avisa os webhooks do perfil (lead.criado)
+  void emitir(res.rows[0]?.empresa_id, 'lead.criado', { lead: montarLead(res.rows[0]) })
   return res.rows[0]
 }
 
@@ -169,6 +172,8 @@ export async function iniciarOnboarding(leadId: string, categoria: string) {
   emitCrmChange()
   // Obrigô: a empresa sai da fase comercial (passa a aparecer nas listas)
   syncEmpresaFromLead(leadId).catch(() => {})
+  // Integrações: boas-vindas etc. (onboarding.iniciado)
+  void emitirDoLead(leadId, 'onboarding.iniciado', { categoria })
   // Cobrança automática: cria cliente + assinatura mensal no Asaas (não bloqueia o onboarding se falhar)
   if (asaasConfigurado()) {
     sincronizarLead(leadId).catch(e => console.error('[asaas] sincronizarLead falhou:', (e as Error).message))
@@ -286,6 +291,10 @@ export async function setOnboardingCheck(leadId: string, itemKey: string, done: 
     await pool.query(`DELETE FROM onboarding_checks WHERE lead_id = $1 AND item_key = $2`, [leadId, itemKey])
   }
   emitCrmChange()
+  // Integrações: item do checklist (ou setor inteiro, quando é o marcador "setor:__done")
+  const [setor, item] = itemKey.split(':')
+  if (item === '__done') { if (done) void emitirDoLead(leadId, 'onboarding.setor_concluido', { setor, por: byUser }) }
+  else void emitirDoLead(leadId, 'onboarding.item_marcado', { setor, item: itemKey, feito: done, por: byUser })
 }
 
 export async function concluirOnboarding(leadId: string, valor?: number | null, vencimento?: string | null) {
@@ -302,6 +311,7 @@ export async function concluirOnboarding(leadId: string, valor?: number | null, 
   emitCrmChange()
   // Libera a empresa no Obrigô (sai do onboarding → aparece no menu Empresas).
   void syncEmpresaFromLead(leadId)
+  void emitirDoLead(leadId, 'onboarding.concluido')
 }
 
 // ─── FINANCEIRO ──────────────────────────────────────────────────────────

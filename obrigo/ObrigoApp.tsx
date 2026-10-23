@@ -38,6 +38,7 @@ import EventosFuturos from './pages/fiscal/EventosFuturos';
 import PainelFiscalCliente from './pages/fiscal/PainelCliente';
 import AcessosEcac from './pages/fiscal/Acessos';
 import ConsultaOptantes from './pages/fiscal/Optantes';
+import Integracoes from './pages/integracoes/Integracoes';
 import Auditoria from './pages/Auditoria';
 import EmpresasList from './pages/empresas/EmpresasList';
 import MotivosCancelamento from './pages/empresas/MotivosCancelamento';
@@ -177,6 +178,7 @@ function Rotas() {
         <Route path="alvaras/kanban" element={<KanbanAlvaras />} />
         <Route path="alvaras/calculadora" element={<CalculadoraAlvaras />} />
         <Route path="alvaras/referencias" element={<ReferenciasAlvaras />} />
+        <Route path="integracoes" element={<Integracoes />} />
         <Route path="fiscal" element={<Navigate to="/fiscal/empresas" replace />} />
         <Route path="fiscal/empresas" element={<EmpresasFiscal />} />
         <Route path="fiscal/puxar" element={<PuxarEcac />} />

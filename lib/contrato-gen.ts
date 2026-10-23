@@ -3,6 +3,7 @@ import { getClienteByLead } from './clientes'
 import { buildContratoHtml, type ContratoLogos } from './contrato-html'
 import { tipoFromInteresse } from './contratos'
 import { emitCrmChange } from './realtime'
+import { emitirDoLead } from './integracoes'
 import { writeFile, mkdir, readFile } from 'fs/promises'
 import path from 'path'
 import { exec } from 'child_process'
@@ -36,6 +37,7 @@ export async function marcarAssinaturaManual(leadId: string, fileUrl: string) {
     [fileUrl, contrato.id]
   )
   emitCrmChange()
+  void emitirDoLead(leadId, 'contrato.assinado', { contrato: { id: contrato.id, tipo: contrato.tipo ?? null, forma: 'manual', url_assinado: null } })
   return { ok: true, contratoId: contrato.id }
 }
 

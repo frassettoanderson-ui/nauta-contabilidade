@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import pool from '@/lib/db'
 import { emitCrmChange } from '@/lib/realtime'
 import { anexarContratoAssinadoPorAutentiqueId } from '@/lib/obrigo-sync'
+import { emitirDoLead } from '@/lib/integracoes'
 
 export const dynamic = 'force-dynamic'
 
@@ -40,11 +41,15 @@ export async function POST(req: NextRequest) {
 
     if (todosAssinaram) {
       const signedUrl = data?.files?.signed || null
+      // O Autentique avisa mais de uma vez (assinatura + documento finalizado): o evento sai só na 1ª
+      const novos = await pool.query(`SELECT id, lead_id, tipo FROM contratos WHERE autentique_id = $1 AND status <> 'assinado'`, [documentId])
       await pool.query(
         `UPDATE contratos SET autentique_status = 'assinado', autentique_url = $1, status = 'assinado' WHERE autentique_id = $2`,
         [signedUrl, documentId]
       )
       emitCrmChange()
+      // Integrações: contrato.assinado
+      for (const c of novos.rows) if (c.lead_id) void emitirDoLead(c.lead_id, 'contrato.assinado', { contrato: { id: c.id, tipo: c.tipo, forma: 'eletronica', url_assinado: signedUrl } })
       // Grava o contrato assinado nos Arquivos anexos da empresa no Obrigô.
       void anexarContratoAssinadoPorAutentiqueId(documentId)
     }

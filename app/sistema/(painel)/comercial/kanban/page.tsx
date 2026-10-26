@@ -121,7 +121,7 @@ export default function KanbanPage() {
   }
 
   async function handleCancelarAssinatura(l: LeadRow) {
-    if (!confirm(`Cancelar o envio do contrato de "${l.nome}"? O documento será excluído na Autentique e o link enviado ao cliente deixará de funcionar. Você poderá reenviar depois.`)) return
+    if (!confirm(`Cancelar o envio do contrato de "${l.nome}"? O documento será cancelado no assinador e o link enviado ao cliente deixará de funcionar. Você poderá reenviar depois.`)) return
     try {
       await cancelarAssinatura(l.id)
       load()

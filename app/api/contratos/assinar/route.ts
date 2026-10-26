@@ -4,6 +4,8 @@ import { authOptions } from '@/lib/auth'
 import { gerarContrato, getContratoByLead } from '@/lib/contrato-gen'
 import { criarDocumento, assinarDocumento, criarLinkAssinatura } from '@/lib/autentique'
 import { getClienteByLead } from '@/lib/clientes'
+import { holysignAtivo, enviarContrato } from '@/lib/holysign'
+import type { ContratadaId } from '@/lib/contratada'
 import pool from '@/lib/db'
 import { readFile } from 'fs/promises'
 import path from 'path'
@@ -49,6 +51,25 @@ export async function POST(req: NextRequest) {
 
     const nomeSocio = String((socio1?.nome_completo as string) || (cliente.cli_nome_completo as string) || 'Sócio 1').trim()
     const nomeEmpresa = (cliente.emp_nome as string) || 'Cliente'
+
+    // Holysign (assinador da HolyTech): contrato já sai assinado pelo representante da contratada
+    // (Nauta ou Atuan); o cliente recebe o convite e, quando assina, o webhook libera o onboarding.
+    const contratada = ((contrato.contratada as string) || 'nauta') as ContratadaId
+    if (holysignAtivo(contratada)) {
+      const lead = (await pool.query(`SELECT whatsapp FROM leads WHERE id = $1`, [leadId])).rows[0]
+      const s1 = socio1 as { cpf?: string; nome_completo?: string } | undefined
+      const doc = await enviarContrato(contratada, {
+        titulo: `Contrato - ${nomeEmpresa}`, pdfBase64, externalId: `erp-contrato-${contrato.id}`,
+        callbackUrl: `${(process.env.NEXTAUTH_URL || 'https://obrigo.com.br').replace(/\/$/, '')}/api/holysign/webhook`,
+        cliente: { nome: nomeSocio, cpf: (s1?.cpf as string) || (cliente.cli_cpf as string) || null, email: emailSocio, whatsapp: lead?.whatsapp || (cliente.emp_telefone as string) || null },
+      })
+      const linkAssinatura = doc.signatarios.find(s => s.papel !== 'contratada')?.link ?? null
+      await pool.query(
+        `UPDATE contratos SET provedor = 'holysign', autentique_id = $1, autentique_status = 'pendente', status = 'aguardando_assinatura', link_assinatura = $3 WHERE id = $2`,
+        [doc.id, contrato.id, linkAssinatura]
+      )
+      return NextResponse.json({ ok: true, provedor: 'holysign', documento_id: doc.id, link_assinatura: linkAssinatura })
+    }
 
     // 4. Cria documento no Autentique com 2 signatários: Nauta + Sócio 1
     const doc = await criarDocumento(

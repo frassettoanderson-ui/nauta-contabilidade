@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { deletarDocumento } from '@/lib/autentique'
+import { cancelarContrato } from '@/lib/holysign'
+import type { ContratadaId } from '@/lib/contratada'
 import pool from '@/lib/db'
 
 export const dynamic = 'force-dynamic'
@@ -18,7 +20,7 @@ export async function POST(req: NextRequest) {
   try {
     // Pega o contrato mais recente do lead que esteja aguardando assinatura
     const r = await pool.query(
-      `SELECT id, autentique_id, autentique_status FROM contratos
+      `SELECT id, autentique_id, autentique_status, provedor, contratada FROM contratos
         WHERE lead_id = $1 ORDER BY criado_em DESC LIMIT 1`,
       [leadId]
     )
@@ -29,7 +31,13 @@ export async function POST(req: NextRequest) {
     }
 
     // Exclui na Autentique (se ainda houver id vinculado)
-    if (contrato.autentique_id) {
+    if (contrato.autentique_id && contrato.provedor === 'holysign') {
+      try {
+        await cancelarContrato((contrato.contratada || 'nauta') as ContratadaId, contrato.autentique_id)
+      } catch (e) {
+        console.error('[CANCELAR] Holysign cancelar falhou:', e)
+      }
+    } else if (contrato.autentique_id) {
       try {
         await deletarDocumento(contrato.autentique_id)
       } catch (e) {
@@ -40,7 +48,7 @@ export async function POST(req: NextRequest) {
 
     // Reseta o contrato para permitir reenvio
     await pool.query(
-      `UPDATE contratos SET autentique_id = NULL, autentique_status = NULL, autentique_url = NULL, status = 'gerado' WHERE id = $1`,
+      `UPDATE contratos SET autentique_id = NULL, autentique_status = NULL, autentique_url = NULL, link_assinatura = NULL, provedor = 'autentique', status = 'gerado' WHERE id = $1`,
       [contrato.id]
     )
 

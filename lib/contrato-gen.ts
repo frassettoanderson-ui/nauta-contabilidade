@@ -4,6 +4,7 @@ import { buildContratoHtml, type ContratoLogos } from './contrato-html'
 import { tipoFromInteresse } from './contratos'
 import { emitCrmChange } from './realtime'
 import { emitirDoLead } from './integracoes'
+import { CONTRATADAS, contratadaDoLead } from './contratada'
 import { writeFile, mkdir, readFile } from 'fs/promises'
 import path from 'path'
 import { exec } from 'child_process'
@@ -87,7 +88,8 @@ export async function gerarContrato(leadId: string) {
 
   const tipo = tipoFromInteresse(lead.interesse)
   const logos = await loadLogos()
-  const html = buildContratoHtml(cliente as Record<string, unknown>, lead, logos)
+  const contratada = await contratadaDoLead(lead) // Nauta ou Atuan (conforme o perfil)
+  const html = buildContratoHtml(cliente as Record<string, unknown>, lead, logos, CONTRATADAS[contratada])
 
   const stamp = Date.now()
   const tmp = path.join('/tmp', `contrato-${leadId}-${stamp}`)
@@ -104,9 +106,9 @@ export async function gerarContrato(leadId: string) {
   const url = `/api/sistema/arquivo/${filename}`
 
   const ins = await pool.query(
-    `INSERT INTO contratos (lead_id, cliente_id, tipo, status, pdf_url)
-     VALUES ($1, $2, $3, 'gerado', $4) RETURNING *`,
-    [leadId, cliente.id, tipo, url]
+    `INSERT INTO contratos (lead_id, cliente_id, tipo, status, pdf_url, contratada)
+     VALUES ($1, $2, $3, 'gerado', $4, $5) RETURNING *`,
+    [leadId, cliente.id, tipo, url, contratada]
   )
   emitCrmChange()
   return ins.rows[0]

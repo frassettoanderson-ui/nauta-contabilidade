@@ -1,4 +1,5 @@
 import { tipoFromInteresse, OBJETO, usaEmpresa, usaAbertura, TIPO_LABEL } from './contratos'
+import { CONTRATADAS, type Contratada } from './contratada'
 
 type Obj = Record<string, any>
 
@@ -21,7 +22,7 @@ const linha = (label: string, value: unknown) =>
   `<tr><th>${label}</th><td>${esc(val(value))}</td></tr>`
 
 /** HTML do contrato (papel timbrado Nauta), conforme o tipo derivado do interesse. */
-export function buildContratoHtml(cliente: Obj, lead: Obj, logos: ContratoLogos = {}): string {
+export function buildContratoHtml(cliente: Obj, lead: Obj, logos: ContratoLogos = {}, k: Contratada = CONTRATADAS.nauta): string {
   const tipo = tipoFromInteresse(lead?.interesse) || 3
   // Foro: padrão Imbituba/SC. Exceções por lead (demanda 2026-08-17).
   const FORO_OVERRIDE: Record<string, string> = {
@@ -88,15 +89,16 @@ export function buildContratoHtml(cliente: Obj, lead: Obj, logos: ContratoLogos 
   const Cl = (n: number, titulo: string, corpo: string) =>
     `<h2><span class="cl-num">CLÁUSULA ${n}</span> ${titulo}</h2>${corpo}`
 
-  const masthead = logos.header
+  // Timbre da contratada (a logo do ERP é da Nauta; a Atuan sai com o nome escrito)
+  const masthead = logos.header && k.usaLogo
     ? `<table class="mast"><tr>
-         <td class="mast-logo"><img src="${logos.header}" alt="Nauta Contabilidade"/></td>
-         <td class="mast-info">Contabilidade Digital<br/>CNPJ 19.361.966/0001-82<br/>Imbituba/SC · nautacontabilidade.com.br</td>
+         <td class="mast-logo"><img src="${logos.header}" alt="${k.razao}"/></td>
+         <td class="mast-info">${k.marcaSub}<br/>CNPJ ${k.cnpj}<br/>${k.cidade}${k.site ? ` · ${k.site}` : ''}</td>
        </tr></table>`
-    : `<div class="brand">NAUTA <span>CONTABILIDADE</span></div>
-       <div class="brand-sub">Contabilidade Digital · Imbituba/SC · CNPJ 19.361.966/0001-82</div>`
+    : `<div class="brand">${k.marca}</div>
+       <div class="brand-sub">${k.marcaSub} · ${k.cidade} · CNPJ ${k.cnpj}</div>`
 
-  const marcaDagua = logos.marca
+  const marcaDagua = logos.marca && k.usaLogo
     ? `<div class="marca-dagua"><img src="${logos.marca}" alt=""/></div>`
     : ''
 
@@ -178,10 +180,10 @@ export function buildContratoHtml(cliente: Obj, lead: Obj, logos: ContratoLogos 
 
     <div class="parte-titulo">Contratada</div>
     <table class="dados">
-      ${linha('Razão Social', 'NAUTA CONTABILIDADE LTDA')}
-      ${linha('CNPJ', '19.361.966/0001-82')}
-      ${linha('Endereço', 'Avenida Santa Catarina — Centro, Imbituba/SC')}
-      ${linha('Responsável Técnico', 'Guilherme Dias Ronchi — CRC 041514/O')}
+      ${linha('Razão Social', k.razao)}
+      ${linha('CNPJ', k.cnpj)}
+      ${linha('Endereço', k.endereco)}
+      ${k.responsavel ? linha('Responsável Técnico', k.responsavel) : ''}
     </table>
 
     <p class="preambulo">Pelo presente instrumento particular, as partes acima devidamente qualificadas, doravante denominadas simplesmente CONTRATADA e CONTRATANTE, na melhor forma de direito, ajustam e contratam a prestação de serviços profissionais de contabilidade, segundo as cláusulas e condições adiante listadas.</p>
@@ -280,7 +282,7 @@ export function buildContratoHtml(cliente: Obj, lead: Obj, logos: ContratoLogos 
       <tr>
         <td class="sig">
           <div class="sig-line"></div>
-          <div class="sig-name">NAUTA CONTABILIDADE LTDA</div>
+          <div class="sig-name">${k.razao}</div>
           <div class="sig-role">CONTRATADA</div>
         </td>
         <td class="sig">
@@ -358,7 +360,7 @@ export function buildContratoHtml(cliente: Obj, lead: Obj, logos: ContratoLogos 
       <li>Atendimento das demais exigências previstas na legislação.</li>
     </ul>
 
-    <div class="foot">NAUTA CONTABILIDADE LTDA · CNPJ 19.361.966/0001-82 · Avenida Santa Catarina, Centro — Imbituba/SC · nautacontabilidade.com.br</div>
+    <div class="foot">${k.razao} · CNPJ ${k.cnpj} · ${k.endereco}${k.site ? ` · ${k.site}` : ''}</div>
   </div>
 </body></html>`
 }

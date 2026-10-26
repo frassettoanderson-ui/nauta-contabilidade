@@ -228,9 +228,9 @@ export default function KanbanPage() {
                         {/* Duplicar (canto superior direito) */}
                         <button title="Duplicar card" draggable={false}
                           onClick={e => { e.stopPropagation(); handleDuplicar(l) }}
-                          className="absolute top-1.5 right-1.5 w-6 h-6 rounded-md flex items-center justify-center transition-colors hover:bg-black/5"
-                          style={{ border: '1px solid var(--sys-border)', color: '#64748b', background: 'var(--sys-surface)' }}>
-                          {dupBusy === l.id ? <Loader2 size={12} className="animate-spin" /> : <Copy size={12} />}
+                          className="absolute top-2 right-2 z-10 w-7 h-7 rounded-md flex items-center justify-center transition-colors hover:brightness-95"
+                          style={{ border: '1px solid #cbd5e1', color: '#0e2240', background: '#ffffff', boxShadow: '0 1px 2px rgba(14,34,64,0.12)' }}>
+                          {dupBusy === l.id ? <Loader2 size={14} className="animate-spin" /> : <Copy size={14} />}
                         </button>
                         {/* Topo: tag origem + alerta */}
                         <div className="flex items-center justify-between gap-2 mb-1.5 min-h-[18px]">

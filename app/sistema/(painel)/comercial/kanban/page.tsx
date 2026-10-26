@@ -2,8 +2,8 @@
 
 import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { Loader2, Plus, Bell, Check, XCircle, FileText, MessageCircle, Pencil, ClipboardCheck, AlertCircle, Rocket } from 'lucide-react'
-import { getLeads, updateLead, iniciarOnboarding, cancelarAssinatura, marcarAssinaturaManual, abrirFichaObrigo, type LeadRow } from '@/lib/api'
+import { Loader2, Plus, Bell, Check, XCircle, FileText, MessageCircle, Pencil, ClipboardCheck, AlertCircle, Rocket, Copy } from 'lucide-react'
+import { getLeads, updateLead, iniciarOnboarding, cancelarAssinatura, duplicarLead, marcarAssinaturaManual, abrirFichaObrigo, type LeadRow } from '@/lib/api'
 import { ETAPAS } from '@/lib/crm-config'
 import { versiculoAleatorio, type Versiculo } from '@/lib/versiculos'
 import ClassBar from '@/components/sistema/ClassBar'
@@ -120,6 +120,16 @@ export default function KanbanPage() {
     }
   }
 
+  // Duplicar card: mesmo contato e negociação, na mesma coluna, com "(cópia)" no nome
+  const [dupBusy, setDupBusy] = useState<string | null>(null)
+  async function handleDuplicar(l: LeadRow) {
+    if (!confirm(`Duplicar o card de "${l.nome}"? Será criado um card novo com os mesmos dados de contato e negociação (sem contrato e sem cadastro).`)) return
+    setDupBusy(l.id)
+    try { await duplicarLead(l.id); load() }
+    catch { alert('Não foi possível duplicar o card.') }
+    finally { setDupBusy(null) }
+  }
+
   async function handleCancelarAssinatura(l: LeadRow) {
     if (!confirm(`Cancelar o envio do contrato de "${l.nome}"? O documento será cancelado no assinador e o link enviado ao cliente deixará de funcionar. Você poderá reenviar depois.`)) return
     try {
@@ -215,11 +225,18 @@ export default function KanbanPage() {
                             boxShadow: '0 1px 3px rgba(0,0,0,0.25)',
                           }} />
 
+                        {/* Duplicar (canto superior direito) */}
+                        <button title="Duplicar card" draggable={false}
+                          onClick={e => { e.stopPropagation(); handleDuplicar(l) }}
+                          className="absolute top-1.5 right-1.5 w-6 h-6 rounded-md flex items-center justify-center transition-colors hover:bg-black/5"
+                          style={{ border: '1px solid var(--sys-border)', color: '#64748b', background: 'var(--sys-surface)' }}>
+                          {dupBusy === l.id ? <Loader2 size={12} className="animate-spin" /> : <Copy size={12} />}
+                        </button>
                         {/* Topo: tag origem + alerta */}
                         <div className="flex items-center justify-between gap-2 mb-1.5 min-h-[18px]">
                           {l.origem ? <OrigemTag origem={l.origem} /> : <span />}
                           {temPend && (
-                            <span className="shrink-0 flex items-center gap-0.5 text-[10px] font-bold px-2 py-0.5 rounded-full animate-pulse" style={{ background: '#f59e0b', color: '#1a1830' }}>
+                            <span className="shrink-0 mr-6 flex items-center gap-0.5 text-[10px] font-bold px-2 py-0.5 rounded-full animate-pulse" style={{ background: '#f59e0b', color: '#1a1830' }}>
                               <Bell size={10} /> hoje
                             </span>
                           )}

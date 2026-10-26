@@ -143,6 +143,9 @@ export function enviarParaAssinatura(leadId: string): Promise<{ ok: boolean; aut
     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ leadId }),
   }).then(r => json(r))
 }
+export function duplicarLead(leadId: string): Promise<{ ok: boolean; id: string }> {
+  return fetch(`/api/leads/${leadId}/duplicar`, { method: 'POST' }).then(r => json(r))
+}
 export function cancelarAssinatura(leadId: string): Promise<{ ok: boolean }> {
   return fetch('/api/contratos/cancelar', {
     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ leadId }),

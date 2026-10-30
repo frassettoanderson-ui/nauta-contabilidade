@@ -77,18 +77,18 @@ export default function FinanceiroPage() {
     } catch (e) { alert('Envio: ' + ((e as Error).message || 'erro')) }
     finally { setEnviando(null) }
   }
-  // "Enviar link": atualiza (ou gera) o boleto do mês atrasado com multa + juros do dia, vencendo em
-  // 3 dias, e já envia ao cliente por WhatsApp/e-mail com PIX e boleto.
-  async function enviarLinkAtraso(r: Row) {
+  // "Enviar link": atualiza (ou gera) o boleto do mês atrasado com multa + juros do dia (ou só o
+  // honorário, se desmarcado na janela), vencendo em 3 dias, e já envia ao cliente por WhatsApp/e-mail.
+  const [linkAtraso, setLinkAtraso] = useState<Row | null>(null)
+  async function enviarLinkAtraso(r: Row, semEncargos: boolean) {
     const lid = s(r.lead_id)
-    const nome = s(r.emp_nome) || s(r.lead_nome)
-    if (!confirm(`Enviar para ${nome} o link de pagamento atualizado do honorário em atraso?\n\nValor = honorário + multa 2% + juros 1% ao mês (desde o vencimento original). O boleto vence em 3 dias.`)) return
+    setLinkAtraso(null)
     setGerando(lid)
     try {
-      const { link: c, envio } = await asaasEnviarLink(lid)
+      const { link: c, envio } = await asaasEnviarLink(lid, semEncargos)
       load()
       const ref = referenciaDe(c.competencia)?.extenso ?? '—'
-      const det = c.multa != null ? `Honorário ${money(c.honorario)} + multa ${money(c.multa)} + juros ${money(c.juros)} (${c.dias} dias)` : '(boleto já atualizado hoje)'
+      const det = c.multa == null ? '(boleto já atualizado hoje)' : semEncargos ? 'Só o honorário — sem multa e juros' : `Honorário ${money(c.honorario)} + multa ${money(c.multa)} + juros ${money(c.juros)} (${c.dias} dias)`
       const falhas = envio.envios.filter(e => !e.ok)
       alert(`Link enviado — referente a ${ref}\n\n${money(c.valor)} · vence ${dataBR(c.vencimento)}\n${det}\n\n${envio.envios.map(e => `${e.ok ? '✓' : '✗'} ${e.canal}${e.erro ? ': ' + e.erro : ''}`).join('\n')}${falhas.length ? '\n\nAtenção: houve falha em algum canal.' : ''}`)
     } catch (e) { alert('Enviar link: ' + ((e as Error).message || 'erro')) }
@@ -253,8 +253,8 @@ export default function FinanceiroPage() {
                               <Check size={12} /> Marcar pago
                             </button>
                             {aba === 'atuan' && tipo === 'atraso' && asaas?.configurado && (
-                              <button onClick={() => enviarLinkAtraso(r)} disabled={gerando === lid}
-                                title="Envia ao cliente o PIX/boleto do honorário atrasado com valores atualizados (multa 2% + juros 1% a.m., vence em 3 dias)"
+                              <button onClick={() => setLinkAtraso(r)} disabled={gerando === lid}
+                                title="Envia ao cliente o PIX/boleto do honorário atrasado (com ou sem multa e juros, vence em 3 dias)"
                                 className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 h-7 rounded-lg disabled:opacity-40" style={{ background: '#F47920', color: '#fff' }}>
                                 {gerando === lid ? <Loader2 size={12} className="animate-spin" /> : <Link2 size={12} />} Enviar link
                               </button>
@@ -297,6 +297,7 @@ export default function FinanceiroPage() {
       {cobranca && <CobrancaModal row={cobranca} onClose={() => setCobranca(null)} onChanged={load} />}
       {cobrar && <CobrarModal alvo={cobrar} pendentes={filtered.filter(r => !(envios?.cobradosHoje ?? []).includes(s(r.lead_id)))}
         onClose={() => setCobrar(null)} onEnviado={() => { setCobrar(null); load() }} />}
+      {linkAtraso && <LinkAtrasoModal row={linkAtraso} onClose={() => setLinkAtraso(null)} onConfirmar={sem => enviarLinkAtraso(linkAtraso, sem)} />}
       {pago && <PagoModal row={pago} onClose={() => setPago(null)} onSaved={() => { setPago(null); load() }} />}
     </div>
   )
@@ -718,6 +719,35 @@ function CobrarModal({ alvo, pendentes, onClose, onEnviado }: { alvo: Row | 'tod
           <button onClick={onClose} className="h-10 px-5 rounded-xl text-sm font-bold" style={{ background: '#ffb752', color: '#fff' }}>Cancelar</button>
           <button onClick={enviar} disabled={enviando || (todos && !pendentes.length)} className="h-10 px-5 rounded-xl text-sm font-bold inline-flex items-center gap-2 disabled:opacity-50" style={{ background: '#25D366', color: '#fff' }}>
             {enviando ? <Loader2 size={15} className="animate-spin" /> : <Send size={15} />} {todos ? `Enviar para ${pendentes.length}` : 'Enviar cobrança'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Confirmação do "Enviar link" do atraso, com a opção de tirar a multa e os juros
+function LinkAtrasoModal({ row, onClose, onConfirmar }: { row: Row; onClose: () => void; onConfirmar: (semEncargos: boolean) => void }) {
+  const [encargos, setEncargos] = useState(true)
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/60" onClick={onClose} />
+      <div className="relative w-full max-w-md rounded-2xl p-6 text-center" style={{ background: 'var(--sys-modal)', border: '1px solid var(--sys-border-2)' }}>
+        <button onClick={onClose} className="absolute top-4 right-4 text-gray-500 hover:text-white"><X size={20} /></button>
+        <h2 className="text-lg font-black text-white">Enviar link do atraso</h2>
+        <p className="text-sm text-gray-500 mt-1">{s(row.emp_nome) || s(row.lead_nome)}</p>
+        <p className="text-sm text-gray-300 mt-4">PIX e boleto do honorário em atraso, vencendo em 3 dias, por WhatsApp e e-mail.</p>
+        <label className="mt-4 flex items-center justify-center gap-2.5 text-sm font-bold text-white cursor-pointer select-none">
+          <input type="checkbox" checked={encargos} onChange={e => setEncargos(e.target.checked)} className="w-4 h-4 accent-[#F47920]" />
+          Cobrar multa e juros
+        </label>
+        <p className="text-[11px] text-gray-500 mt-1.5">
+          {encargos ? 'Honorário + multa 2% + juros 1% ao mês desde o vencimento original.' : 'Só o valor do honorário, sem multa e sem juros.'}
+        </p>
+        <div className="flex justify-center gap-2 mt-6">
+          <button onClick={onClose} className="h-10 px-5 rounded-xl text-sm font-bold" style={{ background: '#ffb752', color: '#fff' }}>Cancelar</button>
+          <button onClick={() => onConfirmar(!encargos)} className="h-10 px-5 rounded-xl text-sm font-bold inline-flex items-center gap-2" style={{ background: '#F47920', color: '#fff' }}>
+            <Link2 size={15} /> Enviar link
           </button>
         </div>
       </div>

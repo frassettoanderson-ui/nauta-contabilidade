@@ -585,8 +585,8 @@ export function asaasGerarAtraso(leadId: string): Promise<CobrancaAtraso> {
   return fetch('/api/financeiro/asaas', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ leadId, atraso: true }) }).then(r => json(r))
 }
 /** Atualiza (multa + juros do dia, vence em 3 dias) ou gera o boleto do atraso e já envia ao cliente */
-export function asaasEnviarLink(leadId: string): Promise<{ link: CobrancaAtraso & { atualizada?: boolean }; envio: { envios: { canal: string; ok: boolean; erro?: string }[] } }> {
-  return fetch('/api/financeiro/asaas', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ leadId, enviarLink: true }) }).then(r => json(r))
+export function asaasEnviarLink(leadId: string, semEncargos = false): Promise<{ link: CobrancaAtraso & { atualizada?: boolean }; envio: { envios: { canal: string; ok: boolean; erro?: string }[] } }> {
+  return fetch('/api/financeiro/asaas', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ leadId, enviarLink: true, semEncargos }) }).then(r => json(r))
 }
 export function asaasSincronizarTodos(): Promise<{ resultados: { leadId: string; nome: string; ok: boolean; erro?: string }[] }> {
   return fetch('/api/financeiro/asaas', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ todos: true }) }).then(r => json(r))

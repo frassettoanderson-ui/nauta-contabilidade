@@ -36,11 +36,11 @@ export async function POST(req: NextRequest) {
     if (body.todos) return NextResponse.json({ resultados: await sincronizarTodos(g.empresaId!) })
     if (!body.leadId) return NextResponse.json({ error: 'leadId obrigatório' }, { status: 400 })
     if (body.cancelar) return NextResponse.json(await cancelarAssinatura(String(body.leadId)))
-    if (body.atraso) return NextResponse.json(await gerarCobrancaAtraso(String(body.leadId)))
-    // POST { leadId, enviarLink } → boleto do atraso com valores do dia + envia (WhatsApp/e-mail) c/ PIX e boleto
+    if (body.atraso) return NextResponse.json(await gerarCobrancaAtraso(String(body.leadId), 3, !!body.semEncargos))
+    // POST { leadId, enviarLink, semEncargos? } → boleto do atraso com valores do dia (ou só o honorário) + envia (WhatsApp/e-mail) c/ PIX e boleto
     if (body.enviarLink) {
       const lid = String(body.leadId)
-      const c = await gerarCobrancaAtraso(lid)
+      const c = await gerarCobrancaAtraso(lid, 3, !!body.semEncargos)
       const cob = (await pool.query(`SELECT id FROM financeiro_cobrancas WHERE asaas_payment_id = $1`, [c.asaas_payment_id])).rows[0]
       const envio = await enviarCobranca(lid, 'atraso', cob?.id ? String(cob.id) : undefined)
       return NextResponse.json({ link: c, envio })

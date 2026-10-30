@@ -406,7 +406,8 @@ export async function desfazerQuitacaoAsaas(leadId: string, competencia: string)
 // desde o vencimento original. A competência fica gravada → o pagamento quita o mês certo.
 export const MULTA_ATRASO = 0.02
 export const JUROS_MES_ATRASO = 0.01
-export async function gerarCobrancaAtraso(leadId: string, diasVencimento = 3) {
+// semEncargos = true → cobra só o honorário (sem multa e sem juros), a critério do escritório.
+export async function gerarCobrancaAtraso(leadId: string, diasVencimento = 3, semEncargos = false) {
   const d = await dadosLead(leadId)
   if ((d.contabilidade || 'atuan') === 'nauta') throw new Error('Cliente da Nauta Contabilidade — cobrança manual')
   const hon = Number(d.valor_honorario)
@@ -422,10 +423,12 @@ export async function gerarCobrancaAtraso(leadId: string, diasVencimento = 3) {
 
   const due = new Date(); due.setHours(0, 0, 0, 0); due.setDate(due.getDate() + diasVencimento)
   const dias = Math.max(0, Math.round((due.getTime() - new Date(vencOrig.getFullYear(), vencOrig.getMonth(), vencOrig.getDate()).getTime()) / 86400000))
-  const multa = +(hon * MULTA_ATRASO).toFixed(2)
-  const juros = +(hon * JUROS_MES_ATRASO * dias / 30).toFixed(2)
+  const multa = semEncargos ? 0 : +(hon * MULTA_ATRASO).toFixed(2)
+  const juros = semEncargos ? 0 : +(hon * JUROS_MES_ATRASO * dias / 30).toFixed(2)
   const valor = +(hon + multa + juros).toFixed(2)
   const compBR = `${comp.slice(5, 7)}/${comp.slice(0, 4)}`
+  const descricao = `Honorários contábeis — ${d.emp_nome || d.nome} — referente a ${referenciaDe(comp)?.extenso ?? compBR} (venc. original ${vencOrig.toLocaleDateString('pt-BR')}; ${semEncargos ? `em atraso, sem multa e juros: honorário ${hon.toFixed(2)}` : `em atraso: honorário ${hon.toFixed(2)} + multa ${multa.toFixed(2)} + juros ${juros.toFixed(2)}`})`
+  const encargos = semEncargos ? { fine: { value: 0 }, interest: { value: 0 } } : { fine: { value: MULTA_ATRASO * 100 }, interest: { value: JUROS_MES_ATRASO * 100 } }
 
   // Já existe cobrança (assinatura ou link anterior) desse mês em aberto? Atualiza o próprio boleto
   // com os valores do dia (multa + juros) e vencimento em 3 dias — não cria outro. Se já foi
@@ -437,13 +440,11 @@ export async function gerarCobrancaAtraso(leadId: string, diasVencimento = 3) {
       ORDER BY vencimento DESC LIMIT 1`, [leadId, comp]
   )).rows[0]
   if (ja) {
-    if (ja.hoje && ja.vencimento >= ymd(new Date())) return { leadId, competencia: comp, reaproveitada: true, ...ja }
+    if (ja.hoje && ja.vencimento >= ymd(new Date()) && Number(ja.valor) === valor) return { leadId, competencia: comp, reaproveitada: true, ...ja }
     const up = await api<AsaasPayment>(`/payments/${ja.asaas_payment_id}`, {
       method: 'PUT',
       body: JSON.stringify({
-        value: valor, dueDate: ymd(due),
-        description: `Honorários contábeis — ${d.emp_nome || d.nome} — referente a ${referenciaDe(comp)?.extenso ?? compBR} (venc. original ${vencOrig.toLocaleDateString('pt-BR')}; em atraso: honorário ${hon.toFixed(2)} + multa ${multa.toFixed(2)} + juros ${juros.toFixed(2)})`,
-        fine: { value: MULTA_ATRASO * 100 }, interest: { value: JUROS_MES_ATRASO * 100 },
+        value: valor, dueDate: ymd(due), description: descricao, ...encargos,
       }),
     })
     await pool.query(
@@ -461,10 +462,9 @@ export async function gerarCobrancaAtraso(leadId: string, diasVencimento = 3) {
       billingType: 'UNDEFINED',
       value: valor,
       dueDate: ymd(due),
-      description: `Honorários contábeis — ${d.emp_nome || d.nome} — referente a ${referenciaDe(comp)?.extenso ?? compBR} (venc. original ${vencOrig.toLocaleDateString('pt-BR')}; em atraso: honorário ${hon.toFixed(2)} + multa ${multa.toFixed(2)} + juros ${juros.toFixed(2)})`,
+      description: descricao,
       externalReference: d.id,
-      fine: { value: MULTA_ATRASO * 100 },
-      interest: { value: JUROS_MES_ATRASO * 100 },
+      ...encargos,
     }),
   })
   await upsertCobranca(p, d.id, d.empresa_id, comp)

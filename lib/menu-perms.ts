@@ -34,6 +34,7 @@ export const MENU_GRUPOS: MenuGrupo[] = [
   { grupo: 'Relatórios', itens: [
     { href: '/sistema/relatorios/conversao', label: 'Conversão' },
     { href: '/sistema/relatorios/empresas', label: 'Empresas' },
+    { href: '/sistema/relatorios/links-cadastro', label: 'Links de cadastro' },
   ] },
   { grupo: 'Financeiro', itens: [
     { href: '/sistema/financeiro/faturamento', label: 'Faturamento' },

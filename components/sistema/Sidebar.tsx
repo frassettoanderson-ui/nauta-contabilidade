@@ -15,7 +15,7 @@ import {
   ArrowDownCircle, ArrowUpCircle, Repeat, CalendarCheck, Target, Percent, AlertTriangle, Receipt,
   ChevronRight, ChevronLeft, Menu, X, Home, User, HelpCircle, Power,
   Globe, List, Heart, CheckCircle, Folder, MessageSquare, UploadCloud, Tags, Bot, Download, HardDrive,
-  Smartphone, Star, ClipboardList, Lightbulb, Landmark, Store, BadgeCheck, ShieldAlert, type LucideIcon,
+  Smartphone, Star, ClipboardList, Link2, Lightbulb, Landmark, Store, BadgeCheck, ShieldAlert, type LucideIcon,
 } from 'lucide-react'
 
 // Módulo Obrigô embutido (app/sistema/(painel)/obrigo/[[...slug]])
@@ -61,6 +61,7 @@ const NAV: NavItem[] = [
   { label: 'Relatórios', icon: BarChart3, children: [
     { label: 'Conversão', href: '/sistema/relatorios/conversao', icon: TrendingUp },
     { label: 'Empresas', href: '/sistema/relatorios/empresas', icon: Building2 },
+    { label: 'Links de cadastro', href: '/sistema/relatorios/links-cadastro', icon: Link2 },
   ] },
   { label: 'Societário', icon: Landmark, href: `${OB}/societario`, children: [
     { label: 'Kanban', icon: LayoutGrid, href: `${OB}/societario` },
